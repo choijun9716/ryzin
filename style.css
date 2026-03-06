@@ -1188,7 +1188,11 @@ ul {
 
     .strengths-bento .bento-card {
         grid-column: span 1 !important;
-        padding: 28px 20px;
+        padding: 32px 24px;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .b-num {
