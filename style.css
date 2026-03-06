@@ -365,6 +365,45 @@ ul {
     min-height: 90vh;
     display: flex;
     align-items: center;
+    justify-content: center;
+}
+
+.hero-video-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* 클릭 방지 */
+}
+
+.hero-video-wrapper iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 56.25vw;
+    /* 16:9 비율 (100 * 9 / 16) */
+    min-height: 100vh;
+    min-width: 177.77vh;
+    /* 16:9 비율 (100 * 16 / 9) */
+    transform: translate(-50%, -50%) scale(1.35);
+    /* 강제 확대하여 상하단 레터박스 제거 */
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, var(--bg-main) 100%);
+    z-index: 1;
 }
 
 .hero-content {
@@ -417,6 +456,14 @@ ul {
 .lead-text strong {
     font-weight: 600;
     color: var(--text-pure);
+}
+
+/* Scroll Text Reveal Effect */
+.scroll-reveal-text span,
+.scroll-reveal-text strong {
+    color: rgba(255, 255, 255, 0.15);
+    /* 초기에 어둡게 시작 */
+    transition: color 0.1s ease-out, text-shadow 0.1s ease-out;
 }
 
 .features-grid {
@@ -579,11 +626,25 @@ ul {
     padding: 40px;
     position: relative;
     background: rgba(255, 255, 255, 0.01);
-    transition: border-color 0.3s;
+    transition: all 0.3s ease;
 }
 
 .bento-card:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    background: #fff;
+    border-color: #fff;
+    box-shadow: 0 10px 40px rgba(255, 255, 255, 0.15);
+    transform: translateY(-5px);
+}
+
+/* Hover 상태일 때 내부 텍스트 색상 반전 (White -> Black) */
+.bento-card:hover .b-num,
+.bento-card:hover h3,
+.bento-card:hover p {
+    color: #000;
+}
+
+.bento-card:hover .b-num {
+    opacity: 1;
 }
 
 /* Bento spans */
@@ -615,16 +676,19 @@ ul {
     opacity: 0.5;
     margin-bottom: 20px;
     line-height: 1;
+    transition: color 0.3s ease, opacity 0.3s ease;
 }
 
 .bento-card h3 {
     font-size: 1.3rem;
     margin-bottom: 12px;
+    transition: color 0.3s ease;
 }
 
 .bento-card p {
     font-size: 0.95rem;
     color: var(--text-muted);
+    transition: color 0.3s ease;
 }
 
 
@@ -1171,5 +1235,300 @@ ul {
     .f-links {
         flex-direction: column;
         gap: 16px;
+    }
+}
+
+/* ---------------------------------
+   SaaS ROI Calculator UI Styles
+----------------------------------- */
+.calc-section {
+    padding: 100px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.calc-header-pill {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+}
+
+.calc-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 60px;
+}
+
+.calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+/* Left Form Box */
+.calc-left {
+    background: #111;
+    border-radius: 16px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+}
+
+.calc-left-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-pure);
+}
+
+.calc-row {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.calc-label-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calc-label {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+.calc-val-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-pure);
+}
+
+/* Custom Sliders */
+input[type=range].calc-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    padding: 10px 0;
+}
+
+input[type=range].calc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    margin-top: -10px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    transition: transform 0.1s;
+}
+
+input[type=range].calc-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+input[type=range].calc-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: #333;
+    border-radius: 2px;
+}
+
+.calc-slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: -8px;
+}
+
+/* Fancy Toggles */
+.fancy-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #1a1a1a;
+    border-radius: 12px;
+}
+
+.fancy-toggle-label {
+    font-size: 1rem;
+    color: var(--text-pure);
+    font-weight: 500;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #333;
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: #fff;
+}
+
+input:checked+.slider:before {
+    transform: translateX(20px);
+    background-color: #000;
+}
+
+/* Right Result Cards */
+.calc-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.res-card {
+    background: #111;
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+}
+
+.res-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.res-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.res-icon-box i {
+    width: 14px;
+    height: 14px;
+    color: var(--text-pure);
+}
+
+.res-val {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-pure);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.res-val span {
+    font-size: 2.2rem;
+}
+
+.res-val .unit {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.res-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+/* Bottom CTA Footer */
+.calc-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #111;
+    border-radius: 16px;
+    padding: 24px 40px;
+    margin-top: 24px;
+    gap: 24px;
+    flex-wrap: wrap;
+    /* 내용이 많아지면 자동으로 줄바꿈 되도록 설정 */
+}
+
+.calc-footer-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    flex: 1 1 auto;
+    word-break: keep-all;
+}
+
+.calc-footer-text strong {
+    font-weight: 700;
+    color: var(--text-pure);
+}
+
+.calc-footer .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    /* 버튼 글자가 두 줄로 깨지는 현상 방지 */
+    min-width: 140px;
+    text-align: center;
+}
+
+@media (max-width: 991px) {
+    .calc-title {
+        font-size: 2rem;
+    }
+
+    .calc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .calc-footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+        padding: 24px;
     }
 }

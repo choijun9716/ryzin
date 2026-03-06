@@ -147,12 +147,153 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('nextBtn');
 
     if (portfolioSlider && prevBtn && nextBtn) {
+        const itemWidth = 344;
+        let autoSlideInterval;
+
+        const slideNext = () => {
+            // Check if reached the end
+            if (portfolioSlider.scrollLeft + portfolioSlider.clientWidth >= portfolioSlider.scrollWidth - 10) {
+                // If at the end, smoothly scroll back to start
+                portfolioSlider.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                portfolioSlider.scrollBy({ left: itemWidth, behavior: 'smooth' });
+            }
+        };
+
+        const startAutoSlide = () => {
+            autoSlideInterval = setInterval(slideNext, 3000); // 3초마다 슬라이드
+        };
+
+        const stopAutoSlide = () => {
+            clearInterval(autoSlideInterval);
+        };
+
         prevBtn.addEventListener('click', () => {
-            portfolioSlider.scrollBy({ left: -344, behavior: 'smooth' });
+            portfolioSlider.scrollBy({ left: -itemWidth, behavior: 'smooth' });
         });
         nextBtn.addEventListener('click', () => {
-            portfolioSlider.scrollBy({ left: 344, behavior: 'smooth' });
+            slideNext();
         });
+
+        // 마우스를 올리면 자동 슬라이드 일시 정지
+        portfolioSlider.addEventListener('mouseenter', stopAutoSlide);
+        portfolioSlider.addEventListener('mouseleave', startAutoSlide);
+
+        // 첫 시작 시 자동 슬라이드 동작
+        startAutoSlide();
+    }
+
+    // 5. Scroll Text Reveal Effect
+    const scrollRevealText = document.getElementById('scrollRevealText');
+    if (scrollRevealText) {
+        const spans = Array.from(scrollRevealText.querySelectorAll('span, strong'));
+
+        const handleScrollReveal = () => {
+            const rect = scrollRevealText.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            const start = windowHeight * 0.85;
+            const end = windowHeight * 0.3;
+
+            let progress = (start - rect.top) / (start - end);
+            progress = Math.max(0, Math.min(1, progress));
+
+            const total = spans.length;
+            const highlightCount = Math.floor(progress * total);
+
+            spans.forEach((span, index) => {
+                const isStrong = span.tagName.toLowerCase() === 'strong';
+                if (index < highlightCount) {
+                    span.style.color = isStrong ? 'var(--text-pure)' : 'var(--text-primary)';
+                    if (isStrong) span.style.textShadow = '0 0 10px rgba(255, 255, 255, 0.4)';
+                } else {
+                    span.style.color = 'rgba(255, 255, 255, 0.15)';
+                    if (isStrong) span.style.textShadow = 'none';
+                }
+            });
+        };
+
+        window.addEventListener('scroll', handleScrollReveal, { passive: true });
+        handleScrollReveal(); // 초기 진입 시 체킹
+    }
+
+    // 7. Smart ROI Calculator Logic
+    const elCamera = document.getElementById('cCamera');
+    const elBanner = document.getElementById('cBanner');
+    const elTime = document.getElementById('cTime');
+    const elShowhost = document.getElementById('cShowhost');
+    const elAds = document.getElementById('cAds');
+
+    // Text Elements
+    const tCam = document.getElementById('cCamText');
+    const tBan = document.getElementById('cBanText');
+    const tTime = document.getElementById('cTimeText');
+
+    const rPkgName = document.getElementById('rPkgName');
+    const rPkgDesc = document.getElementById('rPkgDesc');
+    const rPkgPrice = document.getElementById('rPkgPrice');
+    const rTotal = document.getElementById('rTotal');
+    const rFooterText = document.getElementById('rFooterText');
+
+    if (elCamera && elBanner && elTime && rTotal) {
+        const PACKAGES = {
+            mobile: { name: '모바일 LIVE', price: 250000, baseCamera: 1, baseBanner: 0, desc: '거품을 쏙 뺀 가장 경제적인 송출 위주의 라이브 패키지입니다.' },
+            starter: { name: '스타터 LIVE', price: 450000, baseCamera: 1, baseBanner: 5, desc: '배너와 기본 구성을 갖춘 스탠다드 라이브 패키지입니다.' },
+            ryzin: { name: '라이즈 LIVE', price: 750000, baseCamera: 3, baseBanner: 10, desc: '다양한 카메라 구도와 풀옵션을 제공하는 프리미엄 패키지입니다.' }
+        };
+
+        const formatNum = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        const updateCalc = () => {
+            const cameras = parseInt(elCamera.value);
+            const banners = parseInt(elBanner.value) || 0;
+            const timeMins = parseInt(elTime.value);
+            const needShowhost = elShowhost.checked;
+            const needAds = elAds.checked;
+
+            tCam.innerText = cameras;
+            tBan.innerText = banners;
+            tTime.innerText = timeMins;
+
+            let targetPkg = PACKAGES.mobile;
+            if (cameras >= 3) {
+                targetPkg = PACKAGES.ryzin;
+            } else if (cameras === 2 || banners >= 5) {
+                targetPkg = PACKAGES.starter;
+            }
+
+            let currentTotal = targetPkg.price;
+
+            const extraBanners = Math.max(0, banners - targetPkg.baseBanner);
+            currentTotal += (extraBanners * 5000);
+
+            const extraTime = Math.max(0, timeMins - 60);
+            const extraTimeSlots = Math.floor(extraTime / 10);
+            currentTotal += (extraTimeSlots * 10000);
+
+            if (needShowhost) {
+                currentTotal += 200000;
+            }
+
+            rPkgName.innerText = targetPkg.name;
+            rPkgDesc.innerText = targetPkg.desc;
+            rPkgPrice.innerText = formatNum(targetPkg.price);
+
+            rTotal.style.opacity = '0.5';
+            setTimeout(() => {
+                rTotal.innerText = formatNum(currentTotal);
+                rTotal.style.opacity = '1';
+            }, 50);
+
+            rFooterText.innerHTML = `지금 <strong>${targetPkg.name}</strong> 패키지로 완벽한 라이브를 준비해 보세요.`;
+        };
+
+        [elCamera, elBanner, elTime, elShowhost, elAds].forEach(el => {
+            el.addEventListener('input', updateCalc);
+            el.addEventListener('change', updateCalc);
+        });
+
+        updateCalc();
     }
 
     (function () { var w = window; if (w.ChannelIO) { return w.console.error("ChannelIO script included twice."); } var ch = function () { ch.c(arguments); }; ch.q = []; ch.c = function (args) { ch.q.push(args); }; w.ChannelIO = ch; function l() { if (w.ChannelIOInitialized) { return; } w.ChannelIOInitialized = true; var s = document.createElement("script"); s.type = "text/javascript"; s.async = true; s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js"; var x = document.getElementsByTagName("script")[0]; if (x.parentNode) { x.parentNode.insertBefore(s, x); } } if (document.readyState === "complete") { l(); } else { w.addEventListener("DOMContentLoaded", l); w.addEventListener("load", l); } })();

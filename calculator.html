@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RYZIN | 라이브커머스 예상 견적 계산기</title>
+    <!-- CSS & Fonts -->
+    <link rel="stylesheet" href="./style.css">
+    <!-- Google Fonts: Barginz style typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        /* Calculator Specific Overrides */
+        body {
+            padding-top: 80px;
+        }
+
+        .calc-page {
+            padding: 60px 0;
+            min-height: calc(100vh - 80px);
+        }
+
+        .calc-header {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .calc-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .calc-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Grid Layout: Left (Form) / Right (Result) */
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* ----- Left: Form Section ----- */
+        .calc-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-light);
+            border-radius: 24px;
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-pure);
+            margin-bottom: 12px;
+        }
+
+        .form-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Inputs */
+        .calc-input,
+        .calc-select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-light);
+            color: var(--text-pure);
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .calc-input:focus,
+        .calc-select:focus {
+            border-color: var(--text-pure);
+            outline: none;
+        }
+
+        /* Slider */
+        .slider-wrapper {
+            margin-top: 10px;
+        }
+
+        .slider-val-display {
+            text-align: right;
+            color: var(--text-pure);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 8px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: var(--text-pure);
+            cursor: pointer;
+            margin-top: -10px;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--border-light);
+            border-radius: 2px;
+        }
+
+        /* Toggle Switch */
+        .switch-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+        }
+
+        .switch-label {
+            font-weight: 600;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-light);
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--text-pure);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+            background-color: var(--bg-main);
+        }
+
+        /* ----- Right: Result Section ----- */
+        .result-sticky {
+            position: sticky;
+            top: 120px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-pure);
+            font-size: 0.85rem;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        .pkg-name-display {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--text-pure);
+        }
+
+        .pkg-desc-display {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-light);
+            padding-top: 24px;
+            margin-top: 24px;
+        }
+
+        .price-label {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .price-amount {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--text-pure);
+        }
+
+        .price-currency {
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-top: 32px;
+        }
+
+        @media (max-width: 991px) {
+            .calc-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-sticky {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar (Same as index.html) -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="./index.html" style="color:var(--text-pure); text-decoration:none;">RYZIN</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="./index.html#about" class="nav-link">서비스</a>
+                <a href="./index.html#portfolio" class="nav-link">레퍼런스</a>
+                <a href="./index.html#pricing" class="nav-link">제작비용</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="./index.html#contact" class="btn btn-pill-outline">상담 문의</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="calc-page">
+        <div class="container container-lg">
+            <div class="calc-header fade-up">
+                <h1 class="calc-title">예상 견적 계산기</h1>
+                <p class="calc-subtitle">필요한 항목들을 선택하시면 최적화된 맞춤 패키지와 예상 견적을 즉시 확인하실 수 있습니다.</p>
+            </div>
+
+            <div class="calc-grid fade-up" style="transition-delay: 0.2s;">
+                <!-- Left: Input Form -->
+                <div class="calc-box form-section">
+
+                    <div class="form-group">
+                        <label class="form-label">상품 갯수 <span class="form-desc">방송에서 판매할 상품 수</span></label>
+                        <input type="number" id="calcItemCount" class="calc-input" value="1" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">카메라 수 <span class="form-desc">다양한 앵글의 구도가 필요하신가요?</span></label>
+                        <select id="calcCameraCount" class="calc-select">
+                            <option value="1">1대 (단일 구도 / 실속형)</option>
+                            <option value="2">2대 (다양한 카메라 구도)</option>
+                            <option value="3">3대 (현장감 극대화)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">필요 배너 갯수 <span class="form-desc">방송 중 사용할 안내/홍보 배너 (장당 5,000원
+                                대행)</span></label>
+                        <input type="number" id="calcBannerCount" class="calc-input" value="0" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-label">방송 시간 <span class="form-desc">기본 60분 (10분 추가당 +10,000원)</span></div>
+                        <div class="slider-wrapper">
+                            <input type="range" id="calcTime" min="60" max="180" step="10" value="60">
+                            <div class="slider-val-display"><span id="timeVal">60</span> 분</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="switch-wrap">
+                            <div>
+                                <div class="switch-label">전문 쇼호스트 섭외</div>
+                                <div class="form-desc mt-2">브랜드 톤앤매너에 맞는 전문 진행자 매칭 (+200,000원)</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="calcShowhost">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="switch-wrap">
+                            <div>
+                                <div class="switch-label">퍼포먼스 광고 집행 (옵션)</div>
+                                <div class="form-desc mt-2">방송 예고 및 트래픽 폭발을 위한 맞춤형 광고 (+별도 안내)</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="calcAds">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right: Result Card -->
+                <div class="result-section">
+                    <div class="result-sticky">
+                        <div class="result-badge"><i data-feather="zap"
+                                style="width:14px; height:14px; margin-right:4px; vertical-align:middle;"></i>추천 패키지
+                        </div>
+                        <h2 class="pkg-name-display" id="resPkgName">모바일 LIVE</h2>
+                        <p class="pkg-desc-display" id="resPkgDesc">기본 1대 카메라 단일 구도로 거품을 쏙 뺀 가장 경제적인 송출 위주의 라이브커머스
+                            패키지입니다.</p>
+
+                        <div id="extraNoticeArea" style="display:none; margin-bottom:20px;">
+                            <div
+                                style="padding:12px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); font-size:0.9rem; color:var(--text-pure);">
+                                <span style="color:#a78bfa;">+ 퍼포먼스 광고 옵션</span><br>
+                                <span style="color:var(--text-muted);">요청하신 광고 옵션은 예산에 맞춰 별도 견적을 안내해 드립니다.</span>
+                            </div>
+                        </div>
+
+                        <div class="price-row">
+                            <div class="price-label">예상 총 견적</div>
+                            <div class="price-wrap">
+                                <span class="price-amount" id="resTotalPrice">250,000</span><span
+                                    class="price-currency">원</span>
+                            </div>
+                        </div>
+                        <p style="text-align:right; font-size:0.8rem; color:var(--text-muted); margin-top:8px;">* VAT 별도
+                        </p>
+
+                        <a href="https://walla.my/v/OFCFXX7TjI4A1BNQBGTr" target="_blank"
+                            class="btn btn-pill-solid btn-lg btn-full" id="btnSubmitCalc">이 견적으로 바로 문의하기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        feather.replace();
+
+        // Elements
+        const elItemCount = document.getElementById('calcItemCount');
+        const elCameraCount = document.getElementById('calcCameraCount');
+        const elBannerCount = document.getElementById('calcBannerCount');
+        const elTime = document.getElementById('calcTime');
+        const elTimeValText = document.getElementById('timeVal');
+        const elShowhost = document.getElementById('calcShowhost');
+        const elAds = document.getElementById('calcAds');
+
+        const resPkgName = document.getElementById('resPkgName');
+        const resPkgDesc = document.getElementById('resPkgDesc');
+        const resTotalPrice = document.getElementById('resTotalPrice');
+        const extraNoticeArea = document.getElementById('extraNoticeArea');
+
+        // Packages Data
+        const PACKAGES = {
+            mobile: { name: '모바일 LIVE', price: 250000, baseCamera: 1, baseBanner: 0, desc: '거품을 쏙 뺀 가장 경제적인 송출 위주의 라이브 패키지' },
+            starter: { name: '스타터 LIVE', price: 450000, baseCamera: 1, baseBanner: 5, desc: '기본적인 라이브 구성과 배너 5장이 포함된 스탠다드 패키지' },
+            ryzin: { name: '라이즈 LIVE', price: 750000, baseCamera: 3, baseBanner: 10, desc: '현장감을 극대화하는 멀티 앵글과 배너 10장이 포함된 프리미엄 패키지' }
+        };
+
+        const formatNum = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        const calculateAndRender = () => {
+            const cameras = parseInt(elCameraCount.value);
+            const banners = parseInt(elBannerCount.value) || 0;
+            const timeMins = parseInt(elTime.value);
+            const needShowhost = elShowhost.checked;
+            const needAds = elAds.checked;
+
+            // Slider Display Update
+            elTimeValText.innerText = timeMins;
+
+            // 1. Determine Recommended Package
+            let targetPkg = PACKAGES.mobile;
+
+            if (cameras >= 2) {
+                targetPkg = PACKAGES.ryzin; // 카메라 2~3대 무조건 라이즈
+            } else if (banners >= 5) {
+                targetPkg = PACKAGES.starter; // 카메라 1대라도 배너 5장이상이면 스타터 추천
+            } else {
+                targetPkg = PACKAGES.mobile;
+            }
+
+            let currentTotal = targetPkg.price;
+
+            // 2. Extra Banners Calc
+            // 해당 패키지가 제공하는 기본 배너 수 이상으로 사용할 때만 장당 +5,000원 추가
+            const extraBanners = Math.max(0, banners - targetPkg.baseBanner);
+            currentTotal += (extraBanners * 5000);
+
+            // 3. Extra Time Calc
+            // 60분 초과 시 10분당 +10,000원
+            const extraTime = Math.max(0, timeMins - 60);
+            const extraTimeSlots = Math.floor(extraTime / 10);
+            currentTotal += (extraTimeSlots * 10000);
+
+            // 4. Showhost Option
+            if (needShowhost) {
+                currentTotal += 200000;
+            }
+
+            // 5. Check Ads Option
+            extraNoticeArea.style.display = needAds ? 'block' : 'none';
+
+            // Render Final Info
+            resPkgName.innerText = targetPkg.name;
+            resPkgDesc.innerText = targetPkg.desc;
+
+            // Apply Price Format and Animation class briefly
+            resTotalPrice.style.opacity = '0.5';
+            setTimeout(() => {
+                resTotalPrice.innerText = formatNum(currentTotal);
+                resTotalPrice.style.opacity = '1';
+            }, 100);
+
+        };
+
+        const inputs = [elItemCount, elCameraCount, elBannerCount, elTime, elShowhost, elAds];
+        inputs.forEach(input => {
+            input.addEventListener('input', calculateAndRender);
+            input.addEventListener('change', calculateAndRender);
+        });
+
+        calculateAndRender();
+    </script>
+</body>
+
+</html>
