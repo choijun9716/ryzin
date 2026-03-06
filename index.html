@@ -41,7 +41,6 @@
             </nav>
 
             <div class="nav-actions">
-                <a href="#calculator" class="btn btn-pill-outline" style="margin-right: 8px;">예상 견적 계산</a>
                 <a href="#contact" class="btn btn-pill-solid">상담 문의</a>
                 <button class="mobile-menu-btn"><i data-feather="menu"></i></button>
             </div>
@@ -347,118 +346,6 @@
             </div>
         </section>
 
-        <!-- 6.5 Calculator Section (SaaS ROI Style) -->
-        <section class="calc-section" id="calculator">
-            <div class="container container-md text-center fade-up">
-                <div class="calc-header-pill">예상 견적 계산기</div>
-                <h2 class="calc-title">원하시는 조건을 선택하시면<br>자동으로 견적을 계산해 드립니다.</h2>
-            </div>
-
-            <div class="container container-lg fade-up" style="transition-delay: 0.2s;">
-                <div class="calc-grid">
-                    <!-- Left Panel -->
-                    <div class="calc-left">
-                        <div class="calc-left-title">원하시는 옵션을 선택해 보세요</div>
-
-                        <!-- 카메라 수 -->
-                        <div class="calc-row">
-                            <div class="calc-label-wrap">
-                                <span class="calc-label">필요 카메라 수</span>
-                                <span class="calc-val-text"><span id="cCamText">1</span>대</span>
-                            </div>
-                            <input type="range" id="cCamera" class="calc-slider" min="1" max="3" step="1" value="1">
-                            <div class="calc-slider-labels">
-                                <span>1대 (기본)</span>
-                                <span>3대 (다양한 화각연출)</span>
-                            </div>
-                        </div>
-
-                        <!-- 배너 수 -->
-                        <div class="calc-row">
-                            <div class="calc-label-wrap">
-                                <span class="calc-label">배너 장수</span>
-                                <span class="calc-val-text"><span id="cBanText">0</span>장</span>
-                            </div>
-                            <input type="range" id="cBanner" class="calc-slider" min="0" max="25" step="1" value="0">
-                            <div class="calc-slider-labels">
-                                <span>0장</span>
-                                <span>25장</span>
-                            </div>
-                        </div>
-
-                        <!-- 방송 시간 -->
-                        <div class="calc-row">
-                            <div class="calc-label-wrap">
-                                <span class="calc-label">예상 방송 시간 (기본 60분)</span>
-                                <span class="calc-val-text"><span id="cTimeText">60</span>분</span>
-                            </div>
-                            <input type="range" id="cTime" class="calc-slider" min="60" max="90" step="10" value="60">
-                            <div class="calc-slider-labels">
-                                <span>60분</span>
-                                <span>90분</span>
-                            </div>
-                        </div>
-
-                        <!-- 옵션 토글 -->
-                        <div class="calc-row mt-2">
-                            <div class="fancy-toggle">
-                                <div class="fancy-toggle-label">쇼호스트 1인 추가</div>
-                                <label class="switch">
-                                    <input type="checkbox" id="cShowhost">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="fancy-toggle">
-                                <div class="fancy-toggle-label">퍼포먼스 광고 집행</div>
-                                <label class="switch">
-                                    <input type="checkbox" id="cAds">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Panel -->
-                    <div class="calc-right">
-                        <div class="res-card">
-                            <div class="res-card-top">
-                                <div class="res-icon-box"><i data-feather="box"></i></div>
-                                <span>추천 라이브 패키지</span>
-                            </div>
-                            <div class="res-val" id="rPkgName">모바일 LIVE</div>
-                            <div class="res-desc" id="rPkgDesc">기본 1대 카메라 단일 구도로 거품을 쏙 뺀 가장 경제적인 송출 위주의 라이브 패키지입니다.
-                            </div>
-                        </div>
-
-                        <div class="res-card">
-                            <div class="res-card-top">
-                                <div class="res-icon-box"><i data-feather="check-circle"></i></div>
-                                <span>패키지 기본 단가</span>
-                            </div>
-                            <div class="res-val"><span id="rPkgPrice">250,000</span><span class="unit">원</span></div>
-                        </div>
-
-                        <div class="res-card">
-                            <div class="res-card-top">
-                                <div class="res-icon-box"><i data-feather="credit-card"></i></div>
-                                <span>옵션 포함 예상 총 견적</span>
-                            </div>
-                            <div class="res-val" style="color: #fff;"><span id="rTotal">250,000</span><span
-                                    class="unit">원</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Footer CTA -->
-                <div class="calc-footer">
-                    <div class="calc-footer-text" id="rFooterText">
-                        지금 <strong>모바일 LIVE</strong> 패키지로 완벽한 라이브를 준비해 보세요.
-                    </div>
-                    <a href="https://walla.my/v/OFCFXX7TjI4A1BNQBGTr" target="_blank" class="btn btn-pill-solid"
-                        style="background:#fff; color:#000;">무료 상담 받기</a>
-                </div>
-            </div>
-        </section>
 
         <!-- 7. Process Section (체계적인 15일 프로세스) -->
         <section class="section-padding" id="process" style="border-top: 1px solid rgba(255,255,255,0.05);">

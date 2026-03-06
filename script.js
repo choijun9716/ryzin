@@ -206,9 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (index < highlightCount) {
                     span.style.color = isStrong ? 'var(--text-pure)' : 'var(--text-primary)';
                     if (isStrong) span.style.textShadow = '0 0 10px rgba(255, 255, 255, 0.4)';
+                    span.style.fontWeight = isStrong ? '800' : '600'; // 활성화 시 폰트 두께 업
                 } else {
                     span.style.color = 'rgba(255, 255, 255, 0.15)';
                     if (isStrong) span.style.textShadow = 'none';
+                    span.style.fontWeight = isStrong ? '600' : '300'; // 미활성 시 기본 두께 유지
                 }
             });
         };
@@ -217,84 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         handleScrollReveal(); // 초기 진입 시 체킹
     }
 
-    // 7. Smart ROI Calculator Logic
-    const elCamera = document.getElementById('cCamera');
-    const elBanner = document.getElementById('cBanner');
-    const elTime = document.getElementById('cTime');
-    const elShowhost = document.getElementById('cShowhost');
-    const elAds = document.getElementById('cAds');
 
-    // Text Elements
-    const tCam = document.getElementById('cCamText');
-    const tBan = document.getElementById('cBanText');
-    const tTime = document.getElementById('cTimeText');
-
-    const rPkgName = document.getElementById('rPkgName');
-    const rPkgDesc = document.getElementById('rPkgDesc');
-    const rPkgPrice = document.getElementById('rPkgPrice');
-    const rTotal = document.getElementById('rTotal');
-    const rFooterText = document.getElementById('rFooterText');
-
-    if (elCamera && elBanner && elTime && rTotal) {
-        const PACKAGES = {
-            mobile: { name: '모바일 LIVE', price: 250000, baseCamera: 1, baseBanner: 0, desc: '거품을 쏙 뺀 가장 경제적인 송출 위주의 라이브 패키지입니다.' },
-            starter: { name: '스타터 LIVE', price: 450000, baseCamera: 1, baseBanner: 5, desc: '배너와 기본 구성을 갖춘 스탠다드 라이브 패키지입니다.' },
-            ryzin: { name: '라이즈 LIVE', price: 750000, baseCamera: 3, baseBanner: 10, desc: '다양한 카메라 구도와 풀옵션을 제공하는 프리미엄 패키지입니다.' }
-        };
-
-        const formatNum = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-        const updateCalc = () => {
-            const cameras = parseInt(elCamera.value);
-            const banners = parseInt(elBanner.value) || 0;
-            const timeMins = parseInt(elTime.value);
-            const needShowhost = elShowhost.checked;
-            const needAds = elAds.checked;
-
-            tCam.innerText = cameras;
-            tBan.innerText = banners;
-            tTime.innerText = timeMins;
-
-            let targetPkg = PACKAGES.mobile;
-            if (cameras >= 3) {
-                targetPkg = PACKAGES.ryzin;
-            } else if (cameras === 2 || banners >= 5) {
-                targetPkg = PACKAGES.starter;
-            }
-
-            let currentTotal = targetPkg.price;
-
-            const extraBanners = Math.max(0, banners - targetPkg.baseBanner);
-            currentTotal += (extraBanners * 5000);
-
-            const extraTime = Math.max(0, timeMins - 60);
-            const extraTimeSlots = Math.floor(extraTime / 10);
-            currentTotal += (extraTimeSlots * 10000);
-
-            if (needShowhost) {
-                currentTotal += 200000;
-            }
-
-            rPkgName.innerText = targetPkg.name;
-            rPkgDesc.innerText = targetPkg.desc;
-            rPkgPrice.innerText = formatNum(targetPkg.price);
-
-            rTotal.style.opacity = '0.5';
-            setTimeout(() => {
-                rTotal.innerText = formatNum(currentTotal);
-                rTotal.style.opacity = '1';
-            }, 50);
-
-            rFooterText.innerHTML = `지금 <strong>${targetPkg.name}</strong> 패키지로 완벽한 라이브를 준비해 보세요.`;
-        };
-
-        [elCamera, elBanner, elTime, elShowhost, elAds].forEach(el => {
-            el.addEventListener('input', updateCalc);
-            el.addEventListener('change', updateCalc);
-        });
-
-        updateCalc();
-    }
 
     (function () { var w = window; if (w.ChannelIO) { return w.console.error("ChannelIO script included twice."); } var ch = function () { ch.c(arguments); }; ch.q = []; ch.c = function (args) { ch.q.push(args); }; w.ChannelIO = ch; function l() { if (w.ChannelIOInitialized) { return; } w.ChannelIOInitialized = true; var s = document.createElement("script"); s.type = "text/javascript"; s.async = true; s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js"; var x = document.getElementsByTagName("script")[0]; if (x.parentNode) { x.parentNode.insertBefore(s, x); } } if (document.readyState === "complete") { l(); } else { w.addEventListener("DOMContentLoaded", l); w.addEventListener("load", l); } })();
 
