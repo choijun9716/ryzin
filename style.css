@@ -852,6 +852,35 @@ ul {
     opacity: 1;
 }
 
+/* Studio Item Overrides */
+.studio-item {
+    flex: 0 0 70vw;
+    max-width: 900px;
+    border: none;
+    background: transparent;
+}
+
+.studio-item:hover {
+    transform: none;
+    border-color: transparent;
+}
+
+.studio-item::after {
+    display: none;
+    /* No dark overlay on hover */
+}
+
+.studio-img {
+    height: auto;
+    aspect-ratio: 16 / 9;
+}
+
+.studio-img img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
 .p-img-wrapper {
     width: 100%;
     aspect-ratio: 9 / 16;
@@ -1156,6 +1185,10 @@ ul {
         gap: 12px 6px;
     }
 
+    .studio-item {
+        flex: 0 0 85vw;
+    }
+
     .nav-actions .btn {
         display: none;
     }
@@ -1187,6 +1220,10 @@ ul {
         font-size: 1.2rem;
         font-weight: 600;
         color: var(--text-pure);
+    }
+
+    .studio-item {
+        flex: 0 0 85vw;
     }
 
     .mobile-menu-btn {

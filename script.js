@@ -264,6 +264,72 @@ document.addEventListener('DOMContentLoaded', () => {
         startAutoSlide();
     }
 
+    // Studio Slider Logic
+    const studioSlider = document.getElementById('studioSlider');
+    const studioPrevBtn = document.getElementById('studioPrevBtn');
+    const studioNextBtn = document.getElementById('studioNextBtn');
+
+    if (studioSlider && studioPrevBtn && studioNextBtn) {
+        let studioAutoSlideInterval;
+        let isStudioReversing = false;
+
+        const getStudioItemWidth = () => {
+            const firstItem = studioSlider.querySelector('.studio-item');
+            return firstItem ? firstItem.offsetWidth + 24 : 800; // width + gap
+        };
+
+        const slideStudioNext = () => {
+            const itemWidth = getStudioItemWidth();
+            // Check if reached the right end
+            if (studioSlider.scrollLeft + studioSlider.clientWidth >= studioSlider.scrollWidth - 10) {
+                isStudioReversing = true;
+                slideStudioPrev();
+            } else {
+                isStudioReversing = false;
+                studioSlider.scrollBy({ left: itemWidth, behavior: 'smooth' });
+            }
+        };
+
+        const slideStudioPrev = () => {
+            const itemWidth = getStudioItemWidth();
+            // Check if reached the left start
+            if (studioSlider.scrollLeft <= 5) {
+                isStudioReversing = false;
+                slideStudioNext();
+            } else {
+                isStudioReversing = true;
+                studioSlider.scrollBy({ left: -itemWidth, behavior: 'smooth' });
+            }
+        };
+
+        const autoStudioSlide = () => {
+            if (isStudioReversing) {
+                slideStudioPrev();
+            } else {
+                slideStudioNext();
+            }
+        };
+
+        const startStudioAutoSlide = () => {
+            studioAutoSlideInterval = setInterval(autoStudioSlide, 4000); // 4초마다 슬라이드
+        };
+
+        const stopStudioAutoSlide = () => {
+            clearInterval(studioAutoSlideInterval);
+        };
+
+        studioPrevBtn.addEventListener('click', slideStudioPrev);
+        studioNextBtn.addEventListener('click', slideStudioNext);
+
+        studioSlider.addEventListener('mouseenter', stopStudioAutoSlide);
+        studioSlider.addEventListener('touchstart', stopStudioAutoSlide);
+
+        studioSlider.addEventListener('mouseleave', startStudioAutoSlide);
+        studioSlider.addEventListener('touchend', startStudioAutoSlide);
+
+        startStudioAutoSlide();
+    }
+
     // 5. Scroll Text Reveal Effect
     const scrollRevealText = document.getElementById('scrollRevealText');
     if (scrollRevealText) {
