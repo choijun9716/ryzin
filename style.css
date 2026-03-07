@@ -912,6 +912,29 @@ ul {
 }
 
 
+/* Brand Section Custom Title */
+.brand-section-title {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--text-pure);
+    margin-bottom: 2rem;
+    display: inline-block;
+    animation: text-glow-pulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes text-glow-pulse {
+    0% {
+        text-shadow: 0 0 2px rgba(255, 255, 255, 0.1), 0 0 6px rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    100% {
+        text-shadow: 0 0 4px rgba(255, 255, 255, 0.3), 0 0 8px rgba(255, 255, 255, 0.2), 0 0 12px rgba(255, 255, 255, 0.1);
+        color: #e2e2e2;
+    }
+}
+
 /* Logo Marquee */
 .marquee-wrapper {
     overflow: hidden;
@@ -1105,16 +1128,42 @@ ul {
         display: block;
     }
 
+    /* [모바일] 메인 최상단 대제목(히어로 타이틀) 글씨 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1.5rem, 2rem 등) */
     .hero-title {
-        font-size: 2.2rem;
+        font-size: 2.8rem;
     }
 
+    /* [모바일] 각 구역별 대제목(섹션 타이틀) 글씨 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 2rem, 3rem 등) */
+    .section-title {
+        font-size: 2.0rem;
+    }
+
+    /* [모바일] 브랜드사 섹션 타이틀 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 2rem, 3rem 등) */
+    .brand-section-title {
+        font-size: 2.0rem;
+    }
+
+    /* [모바일] 메인 최상단 타이틀 아래 메인 카피(설명) 글씨 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1rem, 0.8rem 등) */
     .hero-desc {
-        font-size: 0.95rem;
+        font-size: 1.0rem;
     }
 
+    /* [모바일] 각 섹션 위, 아래 여백 조절 */
     .section-padding {
         padding: 60px 0;
+    }
+
+    /* [모바일] 제작 패키지 안내 카드 안쪽 여백 조절 */
+    /* 숫자를 키우면 여백이 넓어지고 내용 공간이 좁아집니다. (기존 데스크탑은 40px) */
+    .price-table {
+        padding: 24px 20px;
+        /* 화면 좌우로 30px씩 정확하게 여백을 둡니다. 약간 더 넓거나 좁게 하려면 60px 숫자를 변경하세요. */
+        width: calc(100% - 60px);
+        margin: 0 auto;
     }
 
     .hero-btns {
@@ -1182,11 +1231,15 @@ ul {
         padding: 20px 16px;
     }
 
+    /* [모바일] '이런 브랜드에게 필요합니다' 등 기본 작은 카드의 내용 텍스트 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1rem, 0.8rem 등) */
     .minimal-card p {
         font-size: 0.9rem;
         line-height: 1.4;
     }
 
+    /* [모바일] 위 카드 내용 중 강조된 두꺼운 글씨 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1.1rem, 1.2rem 등) */
     .minimal-card p strong {
         font-size: 1rem;
     }
@@ -1211,12 +1264,16 @@ ul {
         opacity: 0.3;
     }
 
+    /* [모바일] '라이진만의 강점' 섹션 등 카드(bento-card)의 소제목 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1.2rem, 1.5rem 등) */
     .strengths-bento .bento-card h3 {
         font-size: 1.05rem;
         margin-bottom: 0;
         align-self: end;
     }
 
+    /* [모바일] '라이진만의 강점' 섹션 등 카드(bento-card)의 세부 내용 글씨 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1rem, 0.9rem 등) */
     .strengths-bento .bento-card p {
         font-size: 0.85rem;
         margin-bottom: 0;
@@ -1539,8 +1596,10 @@ input:checked+.slider:before {
         padding: 60px 0;
     }
 
+    /* [모바일] 예상 견적 계산기 탭의 대제목 크기 조절 */
+    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1rem, 1.2rem 등) */
     .calc-title {
-        font-size: 1.7rem;
+        font-size: 0.85rem;
         margin-bottom: 40px;
     }
 
