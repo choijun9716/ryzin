@@ -207,37 +207,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (portfolioSlider && prevBtn && nextBtn) {
-        const itemWidth = 344;
+        const itemWidth = 344; // Includes gap and paddings
         let autoSlideInterval;
+        let isReversing = false;
 
         const slideNext = () => {
-            // Check if reached the end
+            // Check if reached the right end
             if (portfolioSlider.scrollLeft + portfolioSlider.clientWidth >= portfolioSlider.scrollWidth - 10) {
-                // If at the end, smoothly scroll back to start
-                portfolioSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                isReversing = true;
+                slidePrev();
             } else {
+                isReversing = false;
                 portfolioSlider.scrollBy({ left: itemWidth, behavior: 'smooth' });
             }
         };
 
+        const slidePrev = () => {
+            // Check if reached the left start
+            if (portfolioSlider.scrollLeft <= 5) {
+                isReversing = false;
+                slideNext();
+            } else {
+                isReversing = true;
+                portfolioSlider.scrollBy({ left: -itemWidth, behavior: 'smooth' });
+            }
+        };
+
+        const autoSlide = () => {
+            if (isReversing) {
+                slidePrev();
+            } else {
+                slideNext();
+            }
+        };
+
         const startAutoSlide = () => {
-            autoSlideInterval = setInterval(slideNext, 3000); // 3초마다 슬라이드
+            autoSlideInterval = setInterval(autoSlide, 3000); // 3초마다 슬라이드
         };
 
         const stopAutoSlide = () => {
             clearInterval(autoSlideInterval);
         };
 
-        prevBtn.addEventListener('click', () => {
-            portfolioSlider.scrollBy({ left: -itemWidth, behavior: 'smooth' });
-        });
-        nextBtn.addEventListener('click', () => {
-            slideNext();
-        });
+        prevBtn.addEventListener('click', slidePrev);
+        nextBtn.addEventListener('click', slideNext);
 
         // 마우스를 올리면 자동 슬라이드 일시 정지
         portfolioSlider.addEventListener('mouseenter', stopAutoSlide);
+        // 모바일 터치 시에도 일시 정지 (선택 사항 - 부드러운 스크롤을 위해 추가)
+        portfolioSlider.addEventListener('touchstart', stopAutoSlide);
+
         portfolioSlider.addEventListener('mouseleave', startAutoSlide);
+        portfolioSlider.addEventListener('touchend', startAutoSlide);
 
         // 첫 시작 시 자동 슬라이드 동작
         startAutoSlide();
