@@ -852,6 +852,24 @@ ul {
     opacity: 1;
 }
 
+
+.p-img-wrapper {
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+}
+
+.p-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.portfolio-item:hover .p-img-wrapper img {
+    transform: scale(1.05);
+}
+
 /* Studio Item Overrides */
 .studio-item {
     flex: 0 0 85vw;
@@ -870,32 +888,13 @@ ul {
     /* No dark overlay on hover */
 }
 
-.studio-img {
+.p-img-wrapper.studio-img {
     height: auto;
     aspect-ratio: 16 / 9;
 }
 
-.studio-img img {
+.p-img-wrapper.studio-img img {
     object-fit: cover;
-    width: 100%;
-    height: 100%;
-}
-
-.p-img-wrapper {
-    width: 100%;
-    aspect-ratio: 9 / 16;
-    overflow: hidden;
-}
-
-.p-img-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
-
-.portfolio-item:hover .p-img-wrapper img {
-    transform: scale(1.05);
 }
 
 .p-info {
