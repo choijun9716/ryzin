@@ -764,6 +764,39 @@ ul {
     color: var(--text-pure);
 }
 
+/* Portfolio Category Filters */
+.portfolio-filters {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Pretendard', sans-serif;
+}
+
+.filter-btn:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: var(--text-pure);
+}
+
+.filter-btn.active {
+    background: var(--text-pure);
+    color: #000;
+    border-color: var(--text-pure);
+    font-weight: 600;
+}
+
 /* Portfolio Slider */
 .portfolio-slider-wrap {
     position: relative;

@@ -172,10 +172,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 4. Portfolio Slider
+    // 4. Portfolio Slider & Filters
     const portfolioSlider = document.getElementById('portfolioSlider');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+    // Portfolio Filtering Logic
+    if (filterBtns.length > 0 && portfolioItems.length > 0) {
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+
+                const filterValue = btn.getAttribute('data-filter');
+
+                portfolioItems.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Reset slider to the beginning when filtering
+                if (portfolioSlider) {
+                    portfolioSlider.scrollTo({ left: 0, behavior: 'smooth' });
+                }
+            });
+        });
+    }
 
     if (portfolioSlider && prevBtn && nextBtn) {
         const itemWidth = 344;

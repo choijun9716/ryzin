@@ -158,13 +158,23 @@
                     <p class="text-muted mt-3">라이진이 기획하고 제작한 성공적인 라이브 프로젝트입니다.<br>이미지를 클릭하시면 실제 라이브 방송으로 이동합니다.</p>
                 </div>
 
+                <!-- Portfolio Category Filters -->
+                <div class="portfolio-filters text-center mb-4 fade-up">
+                    <button class="filter-btn active" data-filter="all">전체</button>
+                    <button class="filter-btn" data-filter="food">식품</button>
+                    <button class="filter-btn" data-filter="beauty">뷰티</button>
+                    <button class="filter-btn" data-filter="health">건기식</button>
+                    <button class="filter-btn" data-filter="fashion">패션</button>
+                </div>
+
                 <div class="portfolio-slider-wrap fade-up mt-5">
                     <button class="slider-btn prev-btn" id="prevBtn"><i data-feather="chevron-left"></i></button>
                     <div class="portfolio-slider" id="portfolioSlider">
                         <!-- 💡 [관리자 안내] 새로운 레퍼런스를 추가하려면 아래의 <a href="...">...</a> 블록을 통째로 복사해서 맨 위에 붙여넣으세요. -->
 
                         <!-- 레퍼런스 1 (가장 최신) -->
-                        <a href="https://naver.me/5B09TjTM" class="portfolio-item" target="_blank">
+                        <a href="https://naver.me/5B09TjTM" class="portfolio-item" data-category="beauty"
+                            target="_blank">
                             <div class="p-img-wrapper">
                                 <img src="./assets/baegayul.jpg"
                                     onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bf85033e5a?q=80&w=400&h=700&fit=crop'"
@@ -178,7 +188,8 @@
                         </a>
 
                         <!-- 레퍼런스 2 -->
-                        <a href="https://naver.me/xvCFx5DD" class="portfolio-item" target="_blank">
+                        <a href="https://naver.me/xvCFx5DD" class="portfolio-item" data-category="health"
+                            target="_blank">
                             <div class="p-img-wrapper">
                                 <img src="./assets/boo.png"
                                     onerror="this.src='https://images.unsplash.com/photo-1544161515-4abddceb5329?q=80&w=400&h=700&fit=crop'"
@@ -192,7 +203,8 @@
                         </a>
 
                         <!-- 레퍼런스 3 -->
-                        <a href="https://naver.me/FYrhPfac" class="portfolio-item" target="_blank">
+                        <a href="https://naver.me/FYrhPfac" class="portfolio-item" data-category="fashion"
+                            target="_blank">
                             <div class="p-img-wrapper">
                                 <img src="./assets/evisu.jpg"
                                     onerror="this.src='https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=400&h=700&fit=crop'"
@@ -206,7 +218,7 @@
                         </a>
 
                         <!-- 레퍼런스 4 -->
-                        <a href="https://naver.me/G1pUox02" class="portfolio-item" target="_blank">
+                        <a href="https://naver.me/G1pUox02" class="portfolio-item" data-category="food" target="_blank">
                             <div class="p-img-wrapper">
                                 <img src="./assets/full.jpg"
                                     onerror="this.src='https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&h=700&fit=crop'"
@@ -219,7 +231,8 @@
                             <div class="p-overlay-icon"><i data-feather="play-circle"></i></div>
                         </a>
 
-                        <a href="https://naver.me/GP2MIZ2g" class="portfolio-item" target="_blank">
+                        <a href="https://naver.me/GP2MIZ2g" class="portfolio-item" data-category="health"
+                            target="_blank">
                             <div class="p-img-wrapper">
                                 <img src="./assets/01.png"
                                     onerror="this.src='https://images.unsplash.com/photo-1544161515-4abddceb5329?q=80&w=400&h=700&fit=crop'"
