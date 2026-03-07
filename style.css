@@ -854,8 +854,8 @@ ul {
 
 /* Studio Item Overrides */
 .studio-item {
-    flex: 0 0 100%;
-    max-width: 100%;
+    flex: 0 0 85vw;
+    max-width: 1200px;
     border: none;
     background: transparent;
 }
@@ -1186,7 +1186,7 @@ ul {
     }
 
     .studio-item {
-        flex: 0 0 100%;
+        flex: 0 0 95vw;
     }
 
     .nav-actions .btn {
