@@ -1234,6 +1234,12 @@ ul {
         display: block;
     }
 
+    /* [모바일] 메인 최상단 전체 내용물 상하 위치 조금 더 위로 올리기 */
+    .hero-content {
+        margin-top: -8vh;
+        /* Center more accurately on mobile screens */
+    }
+
     /* [모바일] 메인 최상단 대제목(히어로 타이틀) 글씨 크기 조절 */
     /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1.5rem, 2rem 등) */
     .hero-title {
