@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
             gestureDirection: 'vertical',
             smooth: true,
             mouseMultiplier: 1,
-            smoothTouch: false,
-            touchMultiplier: 2,
+            smoothTouch: true,
+            touchMultiplier: 1.5,
             infinite: false,
         });
 
