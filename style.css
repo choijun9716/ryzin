@@ -406,17 +406,19 @@ ul {
 .glow-orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(100px);
-    /* Heavy blur for soft glow */
-    opacity: 0.45;
-    /* Increased significantly to be visible */
+    filter: blur(80px);
+    /* Slightly less blur to keep some shape */
+    opacity: 0.85;
+    /* Massively increased visibility */
+    mix-blend-mode: screen;
+    /* Makes the light pop against dark backgrounds */
     animation: floatGlow 15s infinite ease-in-out alternate;
 }
 
 .orb-1 {
     width: 60vw;
     height: 60vw;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 1);
     top: -20%;
     left: -10%;
     animation-duration: 25s;
@@ -425,8 +427,8 @@ ul {
 .orb-2 {
     width: 50vw;
     height: 50vw;
-    background: rgba(200, 200, 255, 0.5);
-    /* Slight cool white */
+    background: rgba(230, 230, 255, 0.8);
+    /* Stronger cool white */
     bottom: -10%;
     right: -10%;
     animation-duration: 20s;
@@ -436,7 +438,7 @@ ul {
 .orb-3 {
     width: 40vw;
     height: 40vw;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.9);
     top: 30%;
     left: 50%;
     transform: translateX(-50%);
