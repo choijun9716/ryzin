@@ -3,14 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 0-1. Initialize Lenis (Smooth Scroll)
     if (typeof Lenis !== 'undefined') {
         const lenis = new Lenis({
-            duration: 1.2,
+            duration: 2.5,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
             direction: 'vertical',
             gestureDirection: 'vertical',
             smooth: true,
-            mouseMultiplier: 1,
+            mouseMultiplier: 0.8,
             smoothTouch: true,
-            touchMultiplier: 1.5,
+            touchMultiplier: 1.2,
             infinite: false,
         });
 
