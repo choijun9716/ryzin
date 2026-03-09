@@ -388,6 +388,77 @@ ul {
     justify-content: center;
 }
 
+/* Animated Hero Glow Background */
+.hero-animated-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    background-color: var(--bg-main);
+    /* Ensure dark base */
+}
+
+.glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    /* Heavy blur for soft glow */
+    opacity: 0.15;
+    /* Subtle white/gray */
+    animation: floatGlow 15s infinite ease-in-out alternate;
+}
+
+.orb-1 {
+    width: 60vw;
+    height: 60vw;
+    background: rgba(255, 255, 255, 0.8);
+    top: -20%;
+    left: -10%;
+    animation-duration: 25s;
+}
+
+.orb-2 {
+    width: 50vw;
+    height: 50vw;
+    background: rgba(200, 200, 255, 0.5);
+    /* Slight cool white */
+    bottom: -10%;
+    right: -10%;
+    animation-duration: 20s;
+    animation-direction: alternate-reverse;
+}
+
+.orb-3 {
+    width: 40vw;
+    height: 40vw;
+    background: rgba(255, 255, 255, 0.6);
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-duration: 30s;
+}
+
+@keyframes floatGlow {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(5%, 10%) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-5%, 5%) scale(0.9);
+    }
+
+    100% {
+        transform: translate(-10%, -5%) scale(1.05);
+    }
+}
+
 .hero-video-wrapper {
     position: absolute;
     top: 0;
