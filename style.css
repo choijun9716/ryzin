@@ -200,6 +200,26 @@ ul {
     letter-spacing: -0.04em;
 }
 
+/* Sticky Scroll Reveal */
+.scroll-reveal-container {
+    height: 200vh;
+    /* Distance to scroll while pinned */
+    position: relative;
+    width: 100%;
+}
+
+.sticky-reveal {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    z-index: 10;
+}
+
 .badge-pill {
     display: inline-block;
     padding: 6px 16px;

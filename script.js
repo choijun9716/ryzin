@@ -331,22 +331,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5. Scroll Text Reveal Effect
+    const scrollRevealContainer = document.getElementById('scrollRevealContainer');
     const scrollRevealText = document.getElementById('scrollRevealText');
-    if (scrollRevealText) {
+
+    if (scrollRevealContainer && scrollRevealText) {
         const spans = Array.from(scrollRevealText.querySelectorAll('span, strong'));
 
         const handleScrollReveal = () => {
-            const rect = scrollRevealText.getBoundingClientRect();
+            const rect = scrollRevealContainer.getBoundingClientRect();
             const windowHeight = window.innerHeight;
 
-            const start = windowHeight * 0.85;
-            const end = windowHeight * 0.3;
+            // The total scroll distance within the container
+            const totalScrollable = rect.height - windowHeight;
+            let progress = 0;
 
-            let progress = (start - rect.top) / (start - end);
-            progress = Math.max(0, Math.min(1, progress));
+            if (rect.top > 0) {
+                // Not reached the pinning point yet
+                progress = 0;
+            } else if (Math.abs(rect.top) >= totalScrollable) {
+                // Passed the pinning point, text fully revealed
+                progress = 1;
+            } else {
+                // Currently pinned and scrolling
+                progress = Math.abs(rect.top) / totalScrollable;
+            }
 
             const total = spans.length;
-            const highlightCount = Math.floor(progress * total);
+
+            // To make the transition feel more natural, add a small buffer at start and end
+            let adjustedProgress = (progress - 0.1) / 0.8;
+            adjustedProgress = Math.max(0, Math.min(1, adjustedProgress));
+
+            const highlightCount = Math.floor(adjustedProgress * total);
 
             spans.forEach((span, index) => {
                 const isStrong = span.tagName.toLowerCase() === 'strong';
@@ -363,6 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         window.addEventListener('scroll', handleScrollReveal, { passive: true });
+        window.addEventListener('resize', handleScrollReveal, { passive: true });
         handleScrollReveal(); // 초기 진입 시 체킹
     }
 
