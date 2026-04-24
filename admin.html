@@ -56,7 +56,6 @@
 
         .settings-btn:hover { background: rgba(255,255,255,0.1); }
 
-        /* Settings Modal */
         #settingsOverlay {
             position: fixed;
             top:0; left:0; width:100%; height:100%;
@@ -111,13 +110,13 @@
             transition: 0.3s;
         }
 
-        .item-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.3); }
+        .item-card:hover { border-color: rgba(255,255,255,0.3); }
 
         .item-img {
             width: 100%;
             aspect-ratio: 9/16;
             object-fit: cover;
-            opacity: 0.8;
+            opacity: 1;
         }
 
         .item-meta {
@@ -189,6 +188,8 @@
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .sortable-ghost { opacity: 0.3; }
     </style>
 </head>
 <body>
@@ -200,7 +201,7 @@
         </header>
 
         <div class="upload-card">
-            <h2 style="margin-top:0; font-weight:400; margin-bottom:20px;">Add New Reference</h2>
+            <h2 id="formTitle" style="margin-top:0; font-weight:400; margin-bottom:20px;">Add New Reference</h2>
             <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div>
                     <div class="form-group">
@@ -232,11 +233,12 @@
                     </div>
                 </div>
             </div>
-            <button class="primary-btn" onclick="addNewItem()">업로드 및 저장 (Auto Push)</button>
+            <button class="primary-btn" id="submitBtn" onclick="submitData()">업로드 및 저장 (Auto Push)</button>
+            <button class="settings-btn" id="cancelEditBtn" style="width:100%; margin-top:10px; display:none; justify-content:center;" onclick="resetForm()">취소 (Cancel Edit)</button>
         </div>
 
         <section>
-            <h2 style="font-weight:400; margin-bottom:20px;">Current References</h2>
+            <h2 style="font-weight:400; margin-bottom:20px;">Current References <span style="font-size:0.8rem; color:var(--text-dim);">(Drag to reorder)</span></h2>
             <div class="portfolio-list" id="portfolioList">
                 <!-- Items injected here -->
             </div>
@@ -269,11 +271,13 @@
         <div class="loader"></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
         feather.replace();
 
         let portfolioData = [];
         let selectedFile = null;
+        let editingIndex = -1;
 
         // Load configs
         document.getElementById('gitOwner').value = localStorage.getItem('gitOwner') || 'choijun9716';
@@ -300,7 +304,6 @@
             const token = localStorage.getItem('gitToken');
 
             if (!owner || !repo || !token) {
-                // If not set, try local fetch as fallback (only works on server)
                 try {
                     const res = await fetch('./portfolio.json');
                     portfolioData = await res.json();
@@ -321,13 +324,32 @@
                     portfolioData = await res.json();
                     renderList();
                 } else if (res.status === 404) {
-                    portfolioData = []; // New repo
+                    portfolioData = [];
                     renderList();
                 }
             } catch (e) {
                 console.error(e);
             }
             showLoading(false);
+            initSortable();
+        }
+
+        function initSortable() {
+            const el = document.getElementById('portfolioList');
+            Sortable.create(el, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: async function () {
+                    const newOrder = [];
+                    const items = el.querySelectorAll('.item-card');
+                    items.forEach(item => {
+                        const idx = parseInt(item.getAttribute('data-index'));
+                        newOrder.push(portfolioData[idx]);
+                    });
+                    portfolioData = newOrder;
+                    await saveJsonOnly();
+                }
+            });
         }
 
         function renderList() {
@@ -336,15 +358,17 @@
             portfolioData.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'item-card';
+                card.setAttribute('data-index', index);
                 card.innerHTML = `
-                    <img src="${item.image}" class="item-img">
+                    <div style="cursor: grab;">
+                        <img src="${item.image}" class="item-img" draggable="false">
+                    </div>
                     <div class="item-meta">
                         <div class="item-title">${item.title}</div>
                         <div class="item-cat">${item.category}</div>
                     </div>
                     <div class="action-btns">
-                        <button class="icon-btn" onclick="moveItem(${index}, -1)"><i data-feather="chevron-left"></i></button>
-                        <button class="icon-btn" onclick="moveItem(${index}, 1)"><i data-feather="chevron-right"></i></button>
+                        <button class="icon-btn" onclick="openEdit(${index})"><i data-feather="edit-2"></i></button>
                         <button class="icon-btn delete" onclick="deleteItem(${index})"><i data-feather="trash-2"></i></button>
                     </div>
                 `;
@@ -353,34 +377,74 @@
             feather.replace();
         }
 
-        function handleFile(input) {
-            if (input.files && input.files[0]) {
-                selectedFile = input.files[0];
-                document.getElementById('fileName').textContent = selectedFile.name;
-            }
+        function openEdit(index) {
+            editingIndex = index;
+            const item = portfolioData[index];
+            document.getElementById('newTitle').value = item.title;
+            document.getElementById('newCategory').value = item.category;
+            document.getElementById('newLink').value = item.link;
+            document.getElementById('formTitle').textContent = 'Edit Reference';
+            document.getElementById('submitBtn').textContent = '정보 수정하기 (Apply Edit)';
+            document.getElementById('cancelEditBtn').style.display = 'flex';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function moveItem(index, dir) {
-            const target = index + dir;
-            if (target < 0 || target >= portfolioData.length) return;
-            const temp = portfolioData[index];
-            portfolioData[index] = portfolioData[target];
-            portfolioData[target] = temp;
+        function resetForm() {
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newLink').value = '';
+            document.getElementById('formTitle').textContent = 'Add New Reference';
+            document.getElementById('submitBtn').textContent = '업로드 및 저장 (Auto Push)';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            selectedFile = null;
+            editingIndex = -1;
+            document.getElementById('fileName').textContent = 'Drop image or click to upload';
             renderList();
-            saveJsonOnly();
         }
 
-        async function deleteItem(index) {
-            if (!confirm('문항을 삭제하시겠습니까?')) return;
-            portfolioData.splice(index, 1);
-            renderList();
-            await saveJsonOnly();
-        }
+        async function submitData() {
+            const title = document.getElementById('newTitle').value;
+            const cat = document.getElementById('newCategory').value;
+            const link = document.getElementById('newLink').value;
 
-        async function saveJsonOnly() {
+            if (!title) { alert('제목을 입력해주세요.'); return; }
+
             showLoading(true);
+
             try {
-                await updateFileInGit('portfolio.json', JSON.stringify(portfolioData, null, 2), 'Update portfolio order/content');
+                let imagePath = editingIndex > -1 ? portfolioData[editingIndex].image : null;
+
+                if (selectedFile) {
+                    const fileName = `assets/${Date.now()}_${selectedFile.name.replace(/\s/g, '_')}`;
+                    const base64Content = await toBase64(selectedFile);
+                    await updateFileInGit(fileName, base64Content.split(',')[1], `Upload image for: ${title}`, true);
+                    imagePath = "./" + fileName;
+                }
+
+                if (!imagePath) { alert('이미지를 선택해주세요.'); showLoading(false); return; }
+
+                if (editingIndex > -1) {
+                    // Update
+                    portfolioData[editingIndex] = {
+                        ...portfolioData[editingIndex],
+                        title: title,
+                        category: cat,
+                        tagKey: "tag_" + cat,
+                        image: imagePath,
+                        link: link || "#"
+                    };
+                } else {
+                    // Create
+                    portfolioData.unshift({
+                        title: title,
+                        category: cat,
+                        tagKey: "tag_" + cat,
+                        image: imagePath,
+                        link: link || "#"
+                    });
+                }
+
+                await saveJsonOnly();
+                resetForm();
                 alert('변경사항이 성공적으로 반영되었습니다.');
             } catch (e) {
                 alert('에러: ' + e.message);
@@ -388,41 +452,17 @@
             showLoading(false);
         }
 
-        async function addNewItem() {
-            const title = document.getElementById('newTitle').value;
-            const cat = document.getElementById('newCategory').value;
-            const link = document.getElementById('newLink').value;
+        async function deleteItem(index) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            portfolioData.splice(index, 1);
+            await saveJsonOnly();
+            renderList();
+        }
 
-            if (!title || !selectedFile) {
-                alert('제목과 이미지는 필수입니다.');
-                return;
-            }
-
+        async function saveJsonOnly() {
             showLoading(true);
-
             try {
-                // 1. Upload Image to assets/
-                const fileName = `assets/${Date.now()}_${selectedFile.name.replace(/\s/g, '_')}`;
-                const base64Content = await toBase64(selectedFile);
-                await updateFileInGit(fileName, base64Content.split(',')[1], `Add new reference image: ${title}`, true);
-
-                // 2. Update JSON
-                const newItem = {
-                    title: title,
-                    category: cat,
-                    tagKey: "tag_" + cat, // Simple mapping
-                    image: "./" + fileName,
-                    link: link || "#"
-                };
-                portfolioData.unshift(newItem); // Add to top
-                await updateFileInGit('portfolio.json', JSON.stringify(portfolioData, null, 2), `Add new reference: ${title}`);
-                
-                alert('업로드 완료 및 깃허브 푸시 성공!');
-                document.getElementById('newTitle').value = '';
-                document.getElementById('newLink').value = '';
-                selectedFile = null;
-                document.getElementById('fileName').textContent = 'Drop image or click to upload';
-                renderList();
+                await updateFileInGit('portfolio.json', JSON.stringify(portfolioData, null, 2), 'Sync portfolio changes (Sort/Edit/Delete)');
             } catch (e) {
                 alert('에러: ' + e.message);
             }
@@ -434,9 +474,8 @@
             const repo = localStorage.getItem('gitRepo');
             const token = localStorage.getItem('gitToken');
 
-            if (!token) throw new Error('GitHub 토큰이 설정되지 않았습니다.');
+            if (!token) throw new Error('GitHub 토큰이 설정되지 않았습니.');
 
-            // Get SHA if file exists
             let sha = '';
             try {
                 const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
@@ -456,10 +495,7 @@
 
             const putRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
                 method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
 
@@ -476,6 +512,13 @@
                 reader.onload = () => resolve(reader.result);
                 reader.onerror = error => reject(error);
             });
+        }
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                document.getElementById('fileName').textContent = selectedFile.name;
+            }
         }
 
         function showLoading(show) {
