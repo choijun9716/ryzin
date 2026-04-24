@@ -7,17 +7,17 @@
     "link": "https://naver.me/GP2MIZ2g"
   },
   {
-    "title": "네이티컬 (NATICAL)",
-    "category": "fashion",
-    "tagKey": "tag_fashion_misc",
-    "image": "./assets/natical.png",
-    "link": "#"
-  },
-  {
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food_traditional",
     "image": "./assets/gangneung.png",
+    "link": "#"
+  },
+  {
+    "title": "네이티컬 (NATICAL)",
+    "category": "fashion",
+    "tagKey": "tag_fashion_misc",
+    "image": "./assets/natical.png",
     "link": "#"
   },
   {
