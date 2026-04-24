@@ -1,12 +1,5 @@
 [
   {
-    "title": "닥터오라이언 (Dr.O'Lion)",
-    "category": "health",
-    "tagKey": "tag_inositol",
-    "image": "./assets/drolion.png",
-    "link": "#"
-  },
-  {
     "title": "백아율 (수분 라인)",
     "category": "beauty",
     "tagKey": "tag_beauty",
