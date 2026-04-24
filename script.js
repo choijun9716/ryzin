@@ -307,7 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeTab = document.querySelector('.pricing-tab.active');
         if (activeTab && tabSlider) {
             tabSlider.style.width = activeTab.offsetWidth + 'px';
-            tabSlider.style.transform = `translateX(${activeTab.offsetLeft - activeTab.parentElement.offsetLeft - 6}px)`;
+            // Parent has 5px padding, slider has left: 5px. 
+            // activeTab.offsetLeft is already relative to the parent because .pricing-tabs is relative.
+            tabSlider.style.transform = `translateX(${activeTab.offsetLeft - 5}px)`;
         }
     }
 
