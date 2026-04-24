@@ -293,9 +293,19 @@
                     <p class="text-muted mt-2" data-i18n="price_VAT">VAT 별도 기준</p>
                 </div>
 
-                <div class="pricing-flex mt-5">
-                    <!-- Starter -->
-                    <div class="price-table fade-up">
+                <!-- Toggle Buttons -->
+                <div class="pricing-tabs-wrap fade-up mt-5">
+                    <div class="pricing-tabs">
+                        <button class="pricing-tab active" data-target="p-mobile" data-i18n="p1_name">모바일 LIVE</button>
+                        <button class="pricing-tab" data-target="p-starter" data-i18n="p2_name">스타터 LIVE</button>
+                        <button class="pricing-tab" data-target="p-rise" data-i18n="p3_name">라이즈 LIVE</button>
+                        <div class="tab-slider"></div>
+                    </div>
+                </div>
+
+                <div class="pricing-display-area mt-5">
+                    <!-- Starter (Mobile) -->
+                    <div class="price-table active" id="p-mobile">
                         <div class="p-header">
                             <h3 class="p-name" data-i18n="p1_name">모바일 LIVE</h3>
                         </div>
@@ -312,8 +322,8 @@
                         </ul>
                     </div>
 
-                    <!-- Rise (Focus) -->
-                    <div class="price-table p-active fade-up" style="transition-delay: 0.1s;">
+                    <!-- Rise (Starter) -->
+                    <div class="price-table" id="p-starter">
                         <div class="p-header">
                             <h3 class="p-name text-pure" data-i18n="p2_name">스타터 LIVE</h3>
                         </div>
@@ -331,8 +341,8 @@
                         </ul>
                     </div>
 
-                    <!-- Premium -->
-                    <div class="price-table fade-up" style="transition-delay: 0.2s;">
+                    <!-- Premium (Rise) -->
+                    <div class="price-table" id="p-rise">
                         <div class="p-header">
                             <h3 class="p-name" data-i18n="p3_name">라이즈 LIVE</h3>
                         </div>
@@ -351,40 +361,6 @@
                             </li>
                         </ul>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 6.5. Studio Section (스튜디오 소개) -->
-        <section class="section-padding" id="studio" style="border-top: 1px solid rgba(255,255,255,0.05);">
-            <div class="container container-lg">
-                <div class="text-center mb-5 fade-up">
-                    <div class="badge-pill mb-3" data-i18n="studio_badge">Studio</div>
-                    <h2 class="section-title" data-i18n="studio_title">자체 스튜디오</h2>
-                    <p class="text-muted mt-3" style="font-size: 1.1rem;" data-i18n="studio_desc">최적의 라이브 환경을 제공하는 라이진
-                        스튜디오를 만나보세요.</p>
-                </div>
-
-                <div class="portfolio-slider-wrap fade-up mt-5">
-                    <button class="slider-btn prev-btn" id="studioPrevBtn"><i data-feather="chevron-left"></i></button>
-                    <div class="portfolio-slider" id="studioSlider">
-                        <div class="portfolio-item studio-item">
-                            <div class="p-img-wrapper studio-img">
-                                <img src="./assets/studio1.jpg" alt="라이진 자체 스튜디오 1">
-                            </div>
-                        </div>
-                        <div class="portfolio-item studio-item">
-                            <div class="p-img-wrapper studio-img">
-                                <img src="./assets/studio2.jpg" alt="라이진 자체 스튜디오 2">
-                            </div>
-                        </div>
-                        <div class="portfolio-item studio-item">
-                            <div class="p-img-wrapper studio-img">
-                                <img src="./assets/studio3.jpg" alt="라이진 자체 스튜디오 3">
-                            </div>
-                        </div>
-                    </div>
-                    <button class="slider-btn next-btn" id="studioNextBtn"><i data-feather="chevron-right"></i></button>
                 </div>
             </div>
         </section>

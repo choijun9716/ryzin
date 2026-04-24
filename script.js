@@ -326,73 +326,46 @@ document.addEventListener('DOMContentLoaded', () => {
         startAutoSlide();
     }
 
-    // Studio Slider Logic
-    const studioSlider = document.getElementById('studioSlider');
-    const studioPrevBtn = document.getElementById('studioPrevBtn');
-    const studioNextBtn = document.getElementById('studioNextBtn');
+    // 5. Pricing Toggle Logic
+    const pricingTabs = document.querySelectorAll('.pricing-tab');
+    const priceTables = document.querySelectorAll('.pricing-display-area .price-table');
+    const tabSlider = document.querySelector('.tab-slider');
 
-    if (studioSlider && studioPrevBtn && studioNextBtn) {
-        let studioAutoSlideInterval;
-        let isStudioReversing = false;
-
-        const getStudioItemWidth = () => {
-            const firstItem = studioSlider.querySelector('.studio-item');
-            return firstItem ? firstItem.offsetWidth + 24 : 800; // width + gap
-        };
-
-        const slideStudioNext = () => {
-            const itemWidth = getStudioItemWidth();
-            // Check if reached the right end
-            if (studioSlider.scrollLeft + studioSlider.clientWidth >= studioSlider.scrollWidth - 10) {
-                isStudioReversing = true;
-                slideStudioPrev();
-            } else {
-                isStudioReversing = false;
-                studioSlider.scrollBy({ left: itemWidth, behavior: 'smooth' });
-            }
-        };
-
-        const slideStudioPrev = () => {
-            const itemWidth = getStudioItemWidth();
-            // Check if reached the left start
-            if (studioSlider.scrollLeft <= 5) {
-                isStudioReversing = false;
-                slideStudioNext();
-            } else {
-                isStudioReversing = true;
-                studioSlider.scrollBy({ left: -itemWidth, behavior: 'smooth' });
-            }
-        };
-
-        const autoStudioSlide = () => {
-            if (isStudioReversing) {
-                slideStudioPrev();
-            } else {
-                slideStudioNext();
-            }
-        };
-
-        const startStudioAutoSlide = () => {
-            studioAutoSlideInterval = setInterval(autoStudioSlide, 4000); // 4초마다 슬라이드
-        };
-
-        const stopStudioAutoSlide = () => {
-            clearInterval(studioAutoSlideInterval);
-        };
-
-        studioPrevBtn.addEventListener('click', slideStudioPrev);
-        studioNextBtn.addEventListener('click', slideStudioNext);
-
-        studioSlider.addEventListener('mouseenter', stopStudioAutoSlide);
-        studioSlider.addEventListener('touchstart', stopStudioAutoSlide);
-
-        studioSlider.addEventListener('mouseleave', startStudioAutoSlide);
-        studioSlider.addEventListener('touchend', startStudioAutoSlide);
-
-        startStudioAutoSlide();
+    function updateTabSlider() {
+        const activeTab = document.querySelector('.pricing-tab.active');
+        if (activeTab && tabSlider) {
+            tabSlider.style.width = activeTab.offsetWidth + 'px';
+            tabSlider.style.transform = `translateX(${activeTab.offsetLeft - activeTab.parentElement.offsetLeft - 6}px)`;
+        }
     }
 
-    // 5. Scroll Text Reveal Effect
+    if (pricingTabs.length > 0) {
+        pricingTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.getAttribute('data-target');
+
+                // Update Tabs
+                pricingTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update Tables
+                priceTables.forEach(table => {
+                    table.classList.remove('active');
+                    if (table.id === targetId) {
+                        table.classList.add('active');
+                    }
+                });
+
+                updateTabSlider();
+            });
+        });
+
+        // Initial setup
+        setTimeout(updateTabSlider, 100); 
+        window.addEventListener('resize', updateTabSlider);
+    }
+
+    // 6. Scroll Text Reveal Effect
     const scrollRevealContainer = document.getElementById('scrollRevealContainer');
     const scrollRevealText = document.getElementById('scrollRevealText');
 

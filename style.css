@@ -787,6 +787,68 @@ ul {
     align-items: stretch;
 }
 
+.pricing-tabs-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.pricing-tabs {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px;
+    border-radius: 50px;
+    display: flex;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pricing-tab {
+    padding: 12px 30px;
+    border-radius: 40px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease;
+}
+
+.pricing-tab.active {
+    color: var(--bg-main);
+}
+
+.tab-slider {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    bottom: 6px;
+    background: var(--text-pure);
+    border-radius: 40px;
+    z-index: 1;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease;
+}
+
+.pricing-display-area {
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.pricing-display-area .price-table {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.pricing-display-area .price-table.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
 .price-table {
     flex: 1;
     border: 1px solid var(--border-light);
@@ -799,6 +861,7 @@ ul {
 .price-table.p-active {
     border-color: rgba(255, 255, 255, 0.4);
     background: rgba(255, 255, 255, 0.03);
+    position: relative;
 }
 
 .p-header {
