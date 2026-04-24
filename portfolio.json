@@ -35,17 +35,17 @@
     "link": "#"
   },
   {
-    "title": "개님의상점",
-    "category": "pet",
-    "tagKey": "tag_pet",
-    "image": "./assets/dogshop.png",
-    "link": "#"
-  },
-  {
     "title": "미야비스 (MIYABI'S)",
     "category": "food",
     "tagKey": "tag_food_dessert",
     "image": "./assets/miyabis.png",
+    "link": "#"
+  },
+  {
+    "title": "개님의상점",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/dogshop.png",
     "link": "#"
   },
   {
