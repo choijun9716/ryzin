@@ -35,17 +35,17 @@
     "link": "#"
   },
   {
-    "title": "부이 (BOOIE)",
-    "category": "life",
-    "tagKey": "tag_life_goods",
-    "image": "./assets/booie.png",
-    "link": "#"
-  },
-  {
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food_traditional",
     "image": "./assets/gangneung.png",
+    "link": "#"
+  },
+  {
+    "title": "부이 (BOOIE)",
+    "category": "life",
+    "tagKey": "tag_life_goods",
+    "image": "./assets/booie.png",
     "link": "#"
   },
   {
