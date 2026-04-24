@@ -28,17 +28,17 @@
     "link": "#"
   },
   {
-    "title": "트러스티푸드 (Trusty Food)",
-    "category": "pet",
-    "tagKey": "tag_pet",
-    "image": "./assets/trusty.png",
-    "link": "#"
-  },
-  {
     "title": "미야비스 (MIYABI'S)",
     "category": "food",
     "tagKey": "tag_food_dessert",
     "image": "./assets/miyabis.png",
+    "link": "#"
+  },
+  {
+    "title": "트러스티푸드 (Trusty Food)",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/trusty.png",
     "link": "#"
   },
   {
