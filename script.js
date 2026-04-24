@@ -1,33 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 0-1. Initialize Lenis (Smooth Scroll)
-    if (typeof Lenis !== 'undefined') {
-        const lenis = new Lenis({
-            duration: 2.5,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            direction: 'vertical',
-            gestureDirection: 'vertical',
-            smooth: true,
-            mouseMultiplier: 0.8,
-            smoothTouch: true,
-            touchMultiplier: 1.2,
-            infinite: false,
-        });
-
-        function raf(time) {
-            lenis.raf(time);
-            requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
-
-        // Update anchor links to use Lenis scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                lenis.scrollTo(this.getAttribute('href'));
-            });
-        });
-    }
 
     // 0-2. Custom Cursor Logic (Desktop only behavior injected via CSS hiding default)
     const cursor = document.querySelector('.cursor');

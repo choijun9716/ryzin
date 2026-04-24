@@ -1,27 +1,10 @@
 /* Reset & Fonts - Pretendard for clean, modern look */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/static/pretendard.css");
-
-/* Lenis Smooth Scroll Base */
-html.lenis,
-html.lenis body {
-    height: auto;
+ 
+html {
+    scroll-behavior: smooth;
 }
 
-.lenis.lenis-smooth {
-    scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-    overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-    overflow: hidden;
-}
-
-.lenis.lenis-scrolling iframe {
-    pointer-events: none;
-}
 
 /* Custom Premium Cursor (Desktop Only) */
 @media (min-width: 1025px) {
