@@ -56,20 +56,6 @@
     "link": "#"
   },
   {
-    "title": "바디사랑",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/bodylove.png",
-    "link": "#"
-  },
-  {
-    "title": "트러스티푸드",
-    "category": "pet",
-    "tagKey": "tag_pet",
-    "image": "./assets/trusty.png",
-    "link": "#"
-  },
-  {
     "title": "개님의상점",
     "category": "pet",
     "tagKey": "tag_pet",
@@ -102,6 +88,20 @@
     "category": "fashion",
     "tagKey": "tag_fashion",
     "image": "./assets/natical.png",
+    "link": "#"
+  },
+  {
+    "title": "바디사랑",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/bodylove.png",
+    "link": "#"
+  },
+  {
+    "title": "트러스티푸드",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/trusty.png",
     "link": "#"
   }
 ]
