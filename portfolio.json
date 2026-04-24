@@ -1,12 +1,5 @@
 [
   {
-    "title": "풀럽잇 (Full Luv Eat)",
-    "category": "food",
-    "tagKey": "tag_salad",
-    "image": "./assets/full_salad.png",
-    "link": "https://naver.me/G1pUox02"
-  },
-  {
     "title": "에브리해빗 (Every Habit)",
     "category": "health",
     "tagKey": "tag_enzyme",
