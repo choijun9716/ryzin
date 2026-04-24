@@ -1,5 +1,12 @@
 [
   {
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/1777009265039_백아율.png",
+    "link": "#"
+  },
+  {
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food_traditional",
