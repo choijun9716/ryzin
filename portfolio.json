@@ -7,6 +7,13 @@
     "link": "#"
   },
   {
+    "title": "풀럽잇",
+    "category": "food",
+    "tagKey": "tag_food",
+    "image": "./assets/1777008630387_Screenshot_2026-04-22_18-20-42.png",
+    "link": "#"
+  },
+  {
     "title": "좋은버릇 카무트효소",
     "category": "health",
     "tagKey": "tag_health",
@@ -18,13 +25,6 @@
     "category": "beauty",
     "tagKey": "tag_beauty",
     "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.png",
-    "link": "#"
-  },
-  {
-    "title": "풀럽잇",
-    "category": "food",
-    "tagKey": "tag_food",
-    "image": "./assets/1777008630387_Screenshot_2026-04-22_18-20-42.png",
     "link": "#"
   },
   {
