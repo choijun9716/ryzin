@@ -56,18 +56,18 @@
     "link": "#"
   },
   {
-    "title": "트러스티푸드",
-    "category": "pet",
-    "tagKey": "tag_pet",
-    "image": "./assets/trusty.png",
+    "title": "부이",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/booie.png",
     "link": "#"
   },
   {
-    "title": "부었냥",
-    "category": "health",
-    "tagKey": "tag_innerbeauty",
-    "image": "./assets/boo.png",
-    "link": "https://naver.me/xvCFx5DD"
+    "title": "개님의상점",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/dogshop.png",
+    "link": "#"
   },
   {
     "title": "에비수 ",
@@ -91,17 +91,17 @@
     "link": "#"
   },
   {
-    "title": "개님의상점",
+    "title": "트러스티푸드",
     "category": "pet",
     "tagKey": "tag_pet",
-    "image": "./assets/dogshop.png",
+    "image": "./assets/trusty.png",
     "link": "#"
   },
   {
-    "title": "부이",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/booie.png",
-    "link": "#"
+    "title": "부었냥",
+    "category": "health",
+    "tagKey": "tag_innerbeauty",
+    "image": "./assets/boo.png",
+    "link": "https://naver.me/xvCFx5DD"
   }
 ]
