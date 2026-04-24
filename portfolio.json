@@ -21,6 +21,13 @@
     "link": "#"
   },
   {
+    "title": "야다 (YADAH)",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/yadah.png",
+    "link": "#"
+  },
+  {
     "title": "미야비스 (MIYABI'S)",
     "category": "food",
     "tagKey": "tag_food_dessert",
@@ -60,13 +67,6 @@
     "category": "life",
     "tagKey": "tag_life_goods",
     "image": "./assets/booie.png",
-    "link": "#"
-  },
-  {
-    "title": "야다 (YADAH)",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/yadah.png",
     "link": "#"
   },
   {
