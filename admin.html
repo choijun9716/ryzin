@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/feather-icons"></script>
     <style>
+        /* Restore native cursor for admin page */
+        * { cursor: auto !important; }
+        
         :root {
             --admin-bg: #0a0a0a;
             --card-bg: #1a1a1a;
@@ -292,13 +295,39 @@
         }
 
         async function init() {
+            const owner = localStorage.getItem('gitOwner');
+            const repo = localStorage.getItem('gitRepo');
+            const token = localStorage.getItem('gitToken');
+
+            if (!owner || !repo || !token) {
+                // If not set, try local fetch as fallback (only works on server)
+                try {
+                    const res = await fetch('./portfolio.json');
+                    portfolioData = await res.json();
+                    renderList();
+                } catch (e) {
+                    console.log('Setup required: git config is missing.');
+                }
+                return;
+            }
+
+            showLoading(true);
             try {
-                const res = await fetch('./portfolio.json');
-                portfolioData = await res.json();
-                renderList();
+                const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/portfolio.json`, {
+                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3.raw' }
+                });
+                
+                if (res.ok) {
+                    portfolioData = await res.json();
+                    renderList();
+                } else if (res.status === 404) {
+                    portfolioData = []; // New repo
+                    renderList();
+                }
             } catch (e) {
                 console.error(e);
             }
+            showLoading(false);
         }
 
         function renderList() {
