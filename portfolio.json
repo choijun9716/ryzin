@@ -7,13 +7,6 @@
     "link": "#"
   },
   {
-    "title": "쏘랩",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/1777009373298_스크린샷_2026-04-09_오후_8.52.10.png",
-    "link": "#"
-  },
-  {
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food_traditional",
@@ -88,6 +81,13 @@
     "category": "pet",
     "tagKey": "tag_pet",
     "image": "./assets/trusty.png",
+    "link": "#"
+  },
+  {
+    "title": "쏘랩",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/1777009373298_스크린샷_2026-04-09_오후_8.52.10.png",
     "link": "#"
   },
   {
