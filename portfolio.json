@@ -63,9 +63,9 @@
     "link": "#"
   },
   {
-    "title": "부이 (BOOIE)",
+    "title": "부이",
     "category": "life",
-    "tagKey": "tag_life_goods",
+    "tagKey": "tag_life",
     "image": "./assets/booie.png",
     "link": "#"
   },
