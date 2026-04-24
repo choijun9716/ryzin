@@ -177,10 +177,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const filterBtns = document.querySelectorAll('.filter-btn');
-    const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+    async function loadPortfolio() {
+        try {
+            const response = await fetch('./portfolio.json');
+            const data = await response.json();
+            
+            if (portfolioSlider) {
+                portfolioSlider.innerHTML = ''; // Clear existing
+                data.forEach(item => {
+                    const itemEl = document.createElement('a');
+                    itemEl.href = item.link;
+                    itemEl.className = 'portfolio-item';
+                    itemEl.setAttribute('data-category', item.category);
+                    itemEl.target = '_blank';
+                    
+                    itemEl.innerHTML = `
+                        <div class="p-img-wrapper">
+                            <img src="${item.image}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1584362924585-cdb273ff5f3e?q=80&w=400&h=700&fit=crop'">
+                        </div>
+                        <div class="p-info">
+                            <h3>${item.title}</h3>
+                            <p data-i18n="${item.tagKey}">${item.title}</p>
+                        </div>
+                        <div class="p-overlay-icon"><i data-feather="play-circle"></i></div>
+                    `;
+                    portfolioSlider.appendChild(itemEl);
+                });
+                
+                // Re-initialize icons and hover effects
+                if (typeof feather !== 'undefined') feather.replace();
+                
+                const newItems = portfolioSlider.querySelectorAll('.portfolio-item');
+                newItems.forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        if (cursor && follower) {
+                            cursor.classList.add('hover-active');
+                            follower.classList.add('hover-active');
+                        }
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        if (cursor && follower) {
+                            cursor.classList.remove('hover-active');
+                            follower.classList.remove('hover-active');
+                        }
+                    });
+                });
+
+                // Apply current language
+                const currentLang = langToggleBtn ? langToggleBtn.textContent.toLowerCase() : 'ko';
+                document.querySelectorAll('#portfolioSlider [data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (translations[currentLang] && translations[currentLang][key]) {
+                        el.innerHTML = translations[currentLang][key];
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('Portfolio load error:', err);
+        }
+    }
+
+    loadPortfolio();
 
     // Portfolio Filtering Logic
-    if (filterBtns.length > 0 && portfolioItems.length > 0) {
+    if (filterBtns.length > 0) {
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 // Remove active class from all buttons
@@ -189,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('active');
 
                 const filterValue = btn.getAttribute('data-filter');
+                const portfolioItems = document.querySelectorAll('.portfolio-item');
 
                 portfolioItems.forEach(item => {
                     if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {

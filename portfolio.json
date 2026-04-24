@@ -1,0 +1,107 @@
+[
+  {
+    "title": "닥터오라이언 (Dr.O'Lion)",
+    "category": "health",
+    "tagKey": "tag_inositol",
+    "image": "./assets/drolion.png",
+    "link": "#"
+  },
+  {
+    "title": "백아율 (수분 라인)",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/baegayul_moisture.png",
+    "link": "https://naver.me/5B09TjTM"
+  },
+  {
+    "title": "백아율 (오리진 라인)",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/baegayul_origin.png",
+    "link": "https://naver.me/5B09TjTM"
+  },
+  {
+    "title": "풀럽잇 (Full Luv Eat)",
+    "category": "food",
+    "tagKey": "tag_salad",
+    "image": "./assets/full_salad.png",
+    "link": "https://naver.me/G1pUox02"
+  },
+  {
+    "title": "에브리해빗 (Every Habit)",
+    "category": "health",
+    "tagKey": "tag_enzyme",
+    "image": "./assets/everyhabit_enzyme.png",
+    "link": "https://naver.me/GP2MIZ2g"
+  },
+  {
+    "title": "네이티컬 (NATICAL)",
+    "category": "fashion",
+    "tagKey": "tag_fashion_misc",
+    "image": "./assets/natical.png",
+    "link": "#"
+  },
+  {
+    "title": "바디사랑 (Body Love)",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/bodylove.png",
+    "link": "#"
+  },
+  {
+    "title": "트러스티푸드 (Trusty Food)",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/trusty.png",
+    "link": "#"
+  },
+  {
+    "title": "개님의상점",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/dogshop.png",
+    "link": "#"
+  },
+  {
+    "title": "부이 (BOOIE)",
+    "category": "life",
+    "tagKey": "tag_life_goods",
+    "image": "./assets/booie.png",
+    "link": "#"
+  },
+  {
+    "title": "미야비스 (MIYABI'S)",
+    "category": "food",
+    "tagKey": "tag_food_dessert",
+    "image": "./assets/miyabis.png",
+    "link": "#"
+  },
+  {
+    "title": "강릉은정한과",
+    "category": "food",
+    "tagKey": "tag_food_traditional",
+    "image": "./assets/gangneung.png",
+    "link": "#"
+  },
+  {
+    "title": "야다 (YADAH)",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/yadah.png",
+    "link": "#"
+  },
+  {
+    "title": "부었냥",
+    "category": "health",
+    "tagKey": "tag_innerbeauty",
+    "image": "./assets/boo.png",
+    "link": "https://naver.me/xvCFx5DD"
+  },
+  {
+    "title": "에비수 (EVISU)",
+    "category": "fashion",
+    "tagKey": "tag_fashion",
+    "image": "./assets/evisu.jpg",
+    "link": "https://naver.me/FYrhPfac"
+  }
+]

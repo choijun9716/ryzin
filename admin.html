@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RYZIN Admin - Portfolio Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        :root {
+            --admin-bg: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --accent: #ffffff;
+            --text-dim: rgba(255,255,255,0.6);
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .admin-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 20px;
+        }
+
+        h1 { font-weight: 300; letter-spacing: -1px; }
+
+        .settings-btn {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .settings-btn:hover { background: rgba(255,255,255,0.1); }
+
+        /* Settings Modal */
+        #settingsOverlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            width: 400px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-dim); }
+        input, select, textarea {
+            width: 100%;
+            background: #2a2a2a;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .upload-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .portfolio-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: #111;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: 0.3s;
+        }
+
+        .item-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.3); }
+
+        .item-img {
+            width: 100%;
+            aspect-ratio: 9/16;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .item-meta {
+            padding: 15px;
+        }
+
+        .item-title { font-size: 0.9rem; font-weight: 500; margin-bottom: 5px; }
+        .item-cat { font-size: 0.75rem; color: var(--text-dim); }
+
+        .action-btns {
+            position: absolute;
+            top: 10px; right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .icon-btn {
+            background: rgba(0,0,0,0.6);
+            border: none;
+            color: #fff;
+            padding: 6px;
+            border-radius: 50%;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+
+        .icon-btn.delete:hover { background: #ff4444; }
+
+        .primary-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .drag-area {
+            border: 2px dashed rgba(255,255,255,0.1);
+            padding: 30px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .drag-area:hover { border-color: #fff; background: rgba(255,255,255,0.02); }
+
+        #loadingOverlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <header>
+            <h1>Portfolio Manager</h1>
+            <button class="settings-btn" onclick="toggleSettings()"><i data-feather="settings"></i> 깃허브 설정</button>
+        </header>
+
+        <div class="upload-card">
+            <h2 style="margin-top:0; font-weight:400; margin-bottom:20px;">Add New Reference</h2>
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <div class="form-group">
+                        <label>Brand Name</label>
+                        <input type="text" id="newTitle" placeholder="e.g. Dr.O'Lion">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="newCategory">
+                            <option value="beauty">Beauty</option>
+                            <option value="food">Food</option>
+                            <option value="health">Health/Supplement</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="life">Life/Living</option>
+                            <option value="pet">Pet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Link URL</label>
+                        <input type="text" id="newLink" placeholder="https://...">
+                    </div>
+                </div>
+                <div>
+                    <label>Reference Image (9:16 recommended)</label>
+                    <div class="drag-area" onclick="document.getElementById('fileInput').click()">
+                        <i data-feather="upload-cloud" style="margin-bottom:10px;"></i>
+                        <p id="fileName">Drop image or click to upload</p>
+                        <input type="file" id="fileInput" hidden accept="image/*" onchange="handleFile(this)">
+                    </div>
+                </div>
+            </div>
+            <button class="primary-btn" onclick="addNewItem()">업로드 및 저장 (Auto Push)</button>
+        </div>
+
+        <section>
+            <h2 style="font-weight:400; margin-bottom:20px;">Current References</h2>
+            <div class="portfolio-list" id="portfolioList">
+                <!-- Items injected here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsOverlay">
+        <div class="modal">
+            <h2 style="margin-top:0;">Git Config</h2>
+            <div class="form-group">
+                <label>GitHub Username</label>
+                <input type="text" id="gitOwner" value="choijun9716">
+            </div>
+            <div class="form-group">
+                <label>Repository Name</label>
+                <input type="text" id="gitRepo" value="ryzin">
+            </div>
+            <div class="form-group">
+                <label>Personal Access Token (PAT)</label>
+                <input type="password" id="gitToken" placeholder="ghp_xxx...">
+                <p style="font-size:0.7rem; color: #ff4444; margin-top:5px;">* repo 권한이 있는 토큰이 필요합니다.</p>
+            </div>
+            <button class="primary-btn" onclick="saveSettings()">Save Configuration</button>
+            <button class="settings-btn" style="width:100%; margin-top:10px; justify-content:center;" onclick="toggleSettings()">Cancel</button>
+        </div>
+    </div>
+
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <script>
+        feather.replace();
+
+        let portfolioData = [];
+        let selectedFile = null;
+
+        // Load configs
+        document.getElementById('gitOwner').value = localStorage.getItem('gitOwner') || 'choijun9716';
+        document.getElementById('gitRepo').value = localStorage.getItem('gitRepo') || 'ryzin';
+        document.getElementById('gitToken').value = localStorage.getItem('gitToken') || '';
+
+        function toggleSettings() {
+            const overlay = document.getElementById('settingsOverlay');
+            overlay.style.display = (overlay.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function saveSettings() {
+            localStorage.setItem('gitOwner', document.getElementById('gitOwner').value);
+            localStorage.setItem('gitRepo', document.getElementById('gitRepo').value);
+            localStorage.setItem('gitToken', document.getElementById('gitToken').value);
+            alert('Settings saved locally.');
+            toggleSettings();
+            init();
+        }
+
+        async function init() {
+            try {
+                const res = await fetch('./portfolio.json');
+                portfolioData = await res.json();
+                renderList();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('portfolioList');
+            list.innerHTML = '';
+            portfolioData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <img src="${item.image}" class="item-img">
+                    <div class="item-meta">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-cat">${item.category}</div>
+                    </div>
+                    <div class="action-btns">
+                        <button class="icon-btn" onclick="moveItem(${index}, -1)"><i data-feather="chevron-left"></i></button>
+                        <button class="icon-btn" onclick="moveItem(${index}, 1)"><i data-feather="chevron-right"></i></button>
+                        <button class="icon-btn delete" onclick="deleteItem(${index})"><i data-feather="trash-2"></i></button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+            feather.replace();
+        }
+
+        function handleFile(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                document.getElementById('fileName').textContent = selectedFile.name;
+            }
+        }
+
+        function moveItem(index, dir) {
+            const target = index + dir;
+            if (target < 0 || target >= portfolioData.length) return;
+            const temp = portfolioData[index];
+            portfolioData[index] = portfolioData[target];
+            portfolioData[target] = temp;
+            renderList();
+            saveJsonOnly();
+        }
+
+        async function deleteItem(index) {
+            if (!confirm('문항을 삭제하시겠습니까?')) return;
+            portfolioData.splice(index, 1);
+            renderList();
+            await saveJsonOnly();
+        }
+
+        async function saveJsonOnly() {
+            showLoading(true);
+            try {
+                await updateFileInGit('portfolio.json', JSON.stringify(portfolioData, null, 2), 'Update portfolio order/content');
+                alert('변경사항이 성공적으로 반영되었습니다.');
+            } catch (e) {
+                alert('에러: ' + e.message);
+            }
+            showLoading(false);
+        }
+
+        async function addNewItem() {
+            const title = document.getElementById('newTitle').value;
+            const cat = document.getElementById('newCategory').value;
+            const link = document.getElementById('newLink').value;
+
+            if (!title || !selectedFile) {
+                alert('제목과 이미지는 필수입니다.');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                // 1. Upload Image to assets/
+                const fileName = `assets/${Date.now()}_${selectedFile.name.replace(/\s/g, '_')}`;
+                const base64Content = await toBase64(selectedFile);
+                await updateFileInGit(fileName, base64Content.split(',')[1], `Add new reference image: ${title}`, true);
+
+                // 2. Update JSON
+                const newItem = {
+                    title: title,
+                    category: cat,
+                    tagKey: "tag_" + cat, // Simple mapping
+                    image: "./" + fileName,
+                    link: link || "#"
+                };
+                portfolioData.unshift(newItem); // Add to top
+                await updateFileInGit('portfolio.json', JSON.stringify(portfolioData, null, 2), `Add new reference: ${title}`);
+                
+                alert('업로드 완료 및 깃허브 푸시 성공!');
+                document.getElementById('newTitle').value = '';
+                document.getElementById('newLink').value = '';
+                selectedFile = null;
+                document.getElementById('fileName').textContent = 'Drop image or click to upload';
+                renderList();
+            } catch (e) {
+                alert('에러: ' + e.message);
+            }
+            showLoading(false);
+        }
+
+        async function updateFileInGit(path, content, message, isBase64 = false) {
+            const owner = localStorage.getItem('gitOwner');
+            const repo = localStorage.getItem('gitRepo');
+            const token = localStorage.getItem('gitToken');
+
+            if (!token) throw new Error('GitHub 토큰이 설정되지 않았습니다.');
+
+            // Get SHA if file exists
+            let sha = '';
+            try {
+                const getRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                if (getRes.status === 200) {
+                    const getData = await getRes.json();
+                    sha = getData.sha;
+                }
+            } catch (e) {}
+
+            const body = {
+                message: message,
+                content: isBase64 ? content : btoa(unescape(encodeURIComponent(content))),
+                sha: sha
+            };
+
+            const putRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!putRes.ok) {
+                const err = await putRes.json();
+                throw new Error(err.message);
+            }
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
+
+        init();
+    </script>
+</body>
+</html>
