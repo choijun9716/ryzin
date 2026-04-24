@@ -1,12 +1,5 @@
 [
   {
-    "title": "백아율 (오리진 라인)",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/baegayul_origin.png",
-    "link": "https://naver.me/5B09TjTM"
-  },
-  {
     "title": "풀럽잇 (Full Luv Eat)",
     "category": "food",
     "tagKey": "tag_salad",
