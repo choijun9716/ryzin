@@ -56,13 +56,6 @@
     "link": "#"
   },
   {
-    "title": "네티컬 연구소",
-    "category": "fashion",
-    "tagKey": "tag_fashion",
-    "image": "./assets/natical.png",
-    "link": "#"
-  },
-  {
     "title": "바디사랑",
     "category": "life",
     "tagKey": "tag_life",
@@ -103,5 +96,12 @@
     "tagKey": "tag_fashion",
     "image": "./assets/evisu.jpg",
     "link": "https://naver.me/FYrhPfac"
+  },
+  {
+    "title": "네티컬 연구소",
+    "category": "fashion",
+    "tagKey": "tag_fashion",
+    "image": "./assets/natical.png",
+    "link": "#"
   }
 ]
