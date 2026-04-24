@@ -1,5 +1,12 @@
 [
   {
+    "title": "닥터올라리언",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/1777009091267_Screenshot_2026-04-02_17-55-57.png",
+    "link": "#"
+  },
+  {
     "title": "좋은버릇 카무트효소",
     "category": "health",
     "tagKey": "tag_health",
