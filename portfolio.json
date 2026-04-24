@@ -1,5 +1,12 @@
 [
   {
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.png",
+    "link": "#"
+  },
+  {
     "title": "풀럽잇",
     "category": "food",
     "tagKey": "tag_food",
