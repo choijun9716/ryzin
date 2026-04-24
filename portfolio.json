@@ -21,17 +21,17 @@
     "link": "#"
   },
   {
-    "title": "바디사랑 (Body Love)",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/bodylove.png",
-    "link": "#"
-  },
-  {
     "title": "미야비스 (MIYABI'S)",
     "category": "food",
     "tagKey": "tag_food_dessert",
     "image": "./assets/miyabis.png",
+    "link": "#"
+  },
+  {
+    "title": "바디사랑 (Body Love)",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/bodylove.png",
     "link": "#"
   },
   {
