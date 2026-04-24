@@ -1,23 +1,16 @@
 [
   {
+    "title": "강릉은정한과",
+    "category": "food",
+    "tagKey": "tag_food_traditional",
+    "image": "./assets/gangneung.png",
+    "link": "#"
+  },
+  {
     "title": "닥터올라리언",
     "category": "health",
     "tagKey": "tag_health",
     "image": "./assets/1777009091267_Screenshot_2026-04-02_17-55-57.png",
-    "link": "#"
-  },
-  {
-    "title": "백아율",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.png",
-    "link": "#"
-  },
-  {
-    "title": "좋은버릇 카무트효소",
-    "category": "health",
-    "tagKey": "tag_health",
-    "image": "./assets/1777009032263_IMG_8057.PNG",
     "link": "#"
   },
   {
@@ -28,18 +21,25 @@
     "link": "#"
   },
   {
+    "title": "좋은버릇 카무트효소",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/1777009032263_IMG_8057.PNG",
+    "link": "#"
+  },
+  {
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.png",
+    "link": "#"
+  },
+  {
     "title": "에브리해빗",
     "category": "health",
     "tagKey": "tag_health",
     "image": "./assets/everyhabit_enzyme.png",
     "link": "https://naver.me/GP2MIZ2g"
-  },
-  {
-    "title": "강릉은정한과",
-    "category": "food",
-    "tagKey": "tag_food_traditional",
-    "image": "./assets/gangneung.png",
-    "link": "#"
   },
   {
     "title": "야다 ",
