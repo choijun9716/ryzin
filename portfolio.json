@@ -1,12 +1,5 @@
 [
   {
-    "title": "백아율",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/1777009265039_백아율.png",
-    "link": "#"
-  },
-  {
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food_traditional",
@@ -68,6 +61,13 @@
     "tagKey": "tag_innerbeauty",
     "image": "./assets/boo.png",
     "link": "https://naver.me/xvCFx5DD"
+  },
+  {
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/1777009265039_백아율.png",
+    "link": "#"
   },
   {
     "title": "트러스티푸드",
