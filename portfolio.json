@@ -1,5 +1,12 @@
 [
   {
+    "title": "강릉은정한과",
+    "category": "food",
+    "tagKey": "tag_food",
+    "image": "./assets/1777549940347_Screenshot_2026-04-30_18-28-26.png",
+    "link": "https://naver.me/58qF0tsA"
+  },
+  {
     "title": "에브리해빗 ",
     "category": "health",
     "tagKey": "tag_health",
