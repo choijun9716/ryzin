@@ -1,12 +1,5 @@
 [
   {
-    "title": "닥터올라이언",
-    "category": "health",
-    "tagKey": "tag_health",
-    "image": "./assets/1777537611679_Screenshot_2026-04-28_22-39-17.PNG",
-    "link": "#"
-  },
-  {
     "title": "에브리해빗 ",
     "category": "health",
     "tagKey": "tag_health",
@@ -46,6 +39,13 @@
     "category": "beauty",
     "tagKey": "tag_beauty",
     "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.png",
+    "link": "#"
+  },
+  {
+    "title": "닥터올라이언",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/1777537611679_Screenshot_2026-04-28_22-39-17.PNG",
     "link": "#"
   },
   {
