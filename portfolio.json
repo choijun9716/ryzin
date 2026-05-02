@@ -1,17 +1,17 @@
 [
   {
-    "title": "쏘랩",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/1777705406467_Screenshot_2026-05-01_19-45-35.png",
-    "link": "https://naver.me/GqfsQqds"
-  },
-  {
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food",
     "image": "./assets/1777549940347_Screenshot_2026-04-30_18-28-26.png",
     "link": "https://naver.me/58qF0tsA"
+  },
+  {
+    "title": "쏘랩",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/1777705406467_Screenshot_2026-05-01_19-45-35.png",
+    "link": "https://naver.me/GqfsQqds"
   },
   {
     "title": "에브리해빗 ",
