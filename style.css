@@ -188,8 +188,8 @@ ul {
 
 /* Sticky Scroll Reveal */
 .scroll-reveal-container {
-    height: 140vh;
-    /* Distance to scroll while pinned */
+    height: 120vh;
+    /* 고정되어 스크롤될 총 거리 */
     position: relative;
     width: 100%;
 }

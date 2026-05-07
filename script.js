@@ -366,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const total = spans.length;
 
-            // To make the transition feel more natural, add a small buffer at start and end
-            let adjustedProgress = (progress - 0.1) / 0.8;
+            // 스크롤 시작부터 끝까지 텍스트가 꽉 차도록 조정
+            let adjustedProgress = progress;
             adjustedProgress = Math.max(0, Math.min(1, adjustedProgress));
 
             const highlightCount = Math.floor(adjustedProgress * total);
