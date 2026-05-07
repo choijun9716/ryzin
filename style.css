@@ -81,6 +81,7 @@ html {
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
@@ -89,6 +90,8 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
     word-break: keep-all;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -1378,6 +1381,50 @@ ul {
 }
 
 @media (max-width: 768px) {
+    .pricing-tabs-wrap {
+        margin-top: 15px !important;
+        margin-bottom: 20px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+
+    .pricing-tabs {
+        width: 92% !important;
+        max-width: 270px !important;
+        margin: 0 auto !important;
+        padding: 2px !important;
+        min-height: 34px !important;
+    }
+
+    .pricing-tab {
+        padding: 5px 0 !important;
+        font-size: 0.62rem !important;
+        flex: 1 !important;
+        letter-spacing: -0.8px !important;
+        white-space: nowrap !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .price-table {
+        padding: 20px 16px !important;
+        border-radius: 20px !important;
+    }
+
+    .p-header {
+        margin-bottom: 12px !important;
+    }
+
+    .p-single span {
+        font-size: 1.6rem !important;
+    }
+
+    .p-features li {
+        font-size: 0.8rem !important;
+        margin-bottom: 10px !important;
+        gap: 8px !important;
+    }
 
     .portfolio-filters {
         gap: 12px 6px;
