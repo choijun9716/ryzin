@@ -786,7 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data['Selected Services'] = services; // Add consolidated services
 
             try {
-                const response = await fetch('https://formspree.io/f/mnjwengo', {
+                const response = await fetch('https://formspree.io/f/maqprbzv', {
                     method: 'POST',
                     body: JSON.stringify(data),
                     headers: {
