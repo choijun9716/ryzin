@@ -3,6 +3,48 @@
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food",
+    "image": "./assets/001.jpg",
+    "link": "https://view.shoppinglive.naver.com/replays/1836196"
+  },
+  {
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/002.jpg",
+    "link": "#"
+  },
+  {
+    "title": "Dr.O'Lion",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/003.jpg",
+    "link": "https://naver.me/FmGOvDAj"
+  },
+  {
+    "title": "좋은버릇",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/004.PNG",
+    "link": "https://naver.me/GlR5ZzPy"
+  },
+  {
+    "title": "Every Habit",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/01.jpg",
+    "link": "https://naver.me/GP2MIZ2g"
+  },
+  {
+    "title": "쏘랩 (SOLAB)",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/005.jpg",
+    "link": "https://naver.me/GqfsQqds"
+  },
+  {
+    "title": "강릉은정한과",
+    "category": "food",
+    "tagKey": "tag_food",
     "image": "./assets/gangneung.jpg",
     "link": "https://naver.me/58qF0tsA"
   },
