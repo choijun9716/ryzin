@@ -782,14 +782,15 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
 
             const formData = new FormData(form);
-            formData.append('Selected Services', services);
+            const data = Object.fromEntries(formData.entries());
+            data['Selected Services'] = services; // Add consolidated services
 
             try {
-                // Formspree real ID integration: mnjwengo
                 const response = await fetch('https://formspree.io/f/mnjwengo', {
                     method: 'POST',
-                    body: formData,
+                    body: JSON.stringify(data),
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     }
                 });
@@ -798,11 +799,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('문의가 성공적으로 접수되었습니다.');
                     form.reset();
                 } else {
-                    alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                    const errorData = await response.json();
+                    alert('제출 중 오류가 발생했습니다: ' + (errorData.error || '잠시 후 다시 시도해주세요.'));
                 }
             } catch (error) {
                 console.error('Form submission error:', error);
-                alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+                alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인하거나 브라우저 콘솔을 확인해주세요.');
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
