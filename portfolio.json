@@ -1,0 +1,149 @@
+[
+  {
+    "title": "강릉은정한과",
+    "category": "food",
+    "tagKey": "tag_food",
+    "image": "./assets/1777549940347_Screenshot_2026-04-30_18-28-26.jpg",
+    "link": "https://naver.me/58qF0tsA"
+  },
+  {
+    "title": "쏘랩",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/1777705406467_Screenshot_2026-05-01_19-45-35.jpg",
+    "link": "https://naver.me/GqfsQqds"
+  },
+  {
+    "title": "에브리해빗 ",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/1777009500454_Screenshot_2026-03-05_21-30-09.jpg",
+    "link": "https://naver.me/GP2MIZ2g"
+  },
+  {
+    "title": "닥터올라리언",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/1777009091267_Screenshot_2026-04-02_17-55-57.jpg",
+    "link": "https://naver.me/FmGOvDAj"
+  },
+  {
+    "title": "풀럽잇",
+    "category": "food",
+    "tagKey": "tag_food",
+    "image": "./assets/1777008630387_Screenshot_2026-04-22_18-20-42.jpg",
+    "link": "#"
+  },
+  {
+    "title": "좋은버릇 카무트효소",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/1777009032263_IMG_8057.PNG",
+    "link": "https://naver.me/GlR5ZzPy"
+  },
+  {
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.jpg",
+    "link": "#"
+  },
+  {
+    "title": "닥터올라이언",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/1777537611679_Screenshot_2026-04-28_22-39-17.PNG",
+    "link": "#"
+  },
+  {
+    "title": "에브리해빗",
+    "category": "health",
+    "tagKey": "tag_health",
+    "image": "./assets/everyhabit_enzyme.jpg",
+    "link": "https://naver.me/GP2MIZ2g"
+  },
+  {
+    "title": "야다 ",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/yadah.jpg",
+    "link": "#"
+  },
+  {
+    "title": "강릉은정한과",
+    "category": "food",
+    "tagKey": "tag_food",
+    "image": "./assets/gangneung.jpg",
+    "link": "https://view.shoppinglive.naver.com/replays/1836196"
+  },
+  {
+    "title": "미야비스",
+    "category": "food",
+    "tagKey": "tag_food",
+    "image": "./assets/miyabis.jpg",
+    "link": "#"
+  },
+  {
+    "title": "부었냥",
+    "category": "health",
+    "tagKey": "tag_innerbeauty",
+    "image": "./assets/boo.png",
+    "link": "https://naver.me/xvCFx5DD"
+  },
+  {
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/1777009265039_백아율.jpg",
+    "link": "#"
+  },
+  {
+    "title": "트러스티푸드",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/trusty.jpg",
+    "link": "#"
+  },
+  {
+    "title": "쏘랩",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/1777009373298_스크린샷_2026-04-09_오후_8.52.10.jpg",
+    "link": "#"
+  },
+  {
+    "title": "바디사랑",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/bodylove.jpg",
+    "link": "#"
+  },
+  {
+    "title": "에비수 ",
+    "category": "fashion",
+    "tagKey": "tag_fashion",
+    "image": "./assets/evisu.jpg",
+    "link": "https://naver.me/FYrhPfac"
+  },
+  {
+    "title": "네티컬 연구소",
+    "category": "fashion",
+    "tagKey": "tag_fashion",
+    "image": "./assets/natical.jpg",
+    "link": "#"
+  },
+  {
+    "title": "부이",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/booie.jpg",
+    "link": "#"
+  },
+  {
+    "title": "개님의상점",
+    "category": "pet",
+    "tagKey": "tag_pet",
+    "image": "./assets/dogshop.jpg",
+    "link": "#"
+  }
+]

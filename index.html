@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>라이진 라이브커머스 RYZIN LIVE</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="성공적인 라이브 커머스의 시작. 기획부터 송출까지 최적의 솔루션을 제공하는 라이진과 함께하세요. ">
+    <meta name="keywords" content="성공적인 라이브 커머스의 시작. 기획부터 송출까지 최적의 솔루션을 제공하는 라이진과 함께하세요.">
+    <meta name="author" content="라이진 라이브커머스">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ryzincorp.com/">
+
+    <!-- Open Graph Tag (SNS, Kakao, Web Share) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="라이진 라이브커머스 전문 에이전시">
+    <meta property="og:description" content="성공적인 라이브 커머스의 시작. 기획부터 송출까지 최적의 솔루션을 제공하는 라이진과 함께하세요.">
+    <meta property="og:image" content="https://ryzincorp.com/assets/og-image.jpg">
+    <meta property="og:url" content="https://ryzincorp.com/">
+
+    <!-- Naver / Google Specific -->
+    <meta name="naver-site-verification" content="74ebcb032f623b1bf92941362b125f48b91f3175" />
+    <meta name="NaverBot" content="All">
+    <meta name="NaverBot" content="index,follow">
+    <meta name="Yeti" content="All">
+    <meta name="Yeti" content="index,follow">
+
+
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/static/pretendard.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Feather Icons (Minimalist icons) -->
+    <script src="https://unpkg.com/feather-icons" defer></script>
+
+    <!-- Naver Analytics (Basic) -->
+    <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js" defer></script>
+    <script type="text/javascript">
+        if (!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1870f14e9dff3a0";
+        if (window.wcs) {
+            wcs_do();
+        }
+    </script>
+
+    <!-- Naver Analytics (Inflow Tracking) -->
+    <script type="text/javascript" src="//wcs.naver.net/wcslog.js" defer> </script>
+    <script type="text/javascript">
+        if (!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "s_3b474817ff03";
+        if (!_nasa) var _nasa = {};
+        if (window.wcs) {
+            wcs.inflow();
+            wcs_do();
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Background Effects -->
+    <div class="glow-bg glow-bg-top"></div>
+    <div class="glow-bg glow-bg-bottom"></div>
+
+    <!-- Navigation -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <img src="./assets/logo.png" alt="RYZIN LIVE PRODUCTION" loading="lazy"
+                    style="height: 40px; width: auto; display: block;">
+            </a>
+
+            <nav class="nav-menu">
+                <a href="#about" class="nav-link" data-i18n="nav_service">서비스</a>
+                <a href="#portfolio" class="nav-link" data-i18n="nav_portfolio">레퍼런스</a>
+                <a href="#pricing" class="nav-link" data-i18n="nav_pricing">제작비용</a>
+                <a href="#contact" class="nav-link" data-i18n="nav_contact">문의</a>
+            </nav>
+
+            <div class="nav-actions" style="display:flex; align-items:center; gap:8px;">
+                <div class="lang-selector" style="position:relative;">
+                    <button id="langToggleBtn" class="btn btn-pill-outline"
+                        style="padding:8px 12px; font-size:0.85rem; min-width:48px;">KO</button>
+                    <div id="langMenu" class="lang-menu"
+                        style="display:none; position:absolute; top:110%; right:0; background:#111; border:1px solid rgba(255,255,255,0.1); border-radius:8px; overflow:hidden; z-index:100; min-width:60px;">
+                        <a href="#" data-lang="ko"
+                            style="display:block; padding:8px; color:#fff; text-align:center; text-decoration:none; transition:background 0.2s;">KO</a>
+                        <a href="#" data-lang="en"
+                            style="display:block; padding:8px; color:#fff; text-align:center; text-decoration:none; transition:background 0.2s;">EN</a>
+                        <a href="#" data-lang="zh"
+                            style="display:block; padding:8px; color:#fff; text-align:center; text-decoration:none; transition:background 0.2s;">ZH</a>
+                    </div>
+                </div>
+                <style>
+                    .lang-menu.show {
+                        display: block !important;
+                    }
+
+                    .lang-menu a:hover {
+                        background: rgba(255, 255, 255, 0.1);
+                    }
+                </style>
+                <button class="mobile-menu-btn"><i data-feather="menu"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 1. Hero Section -->
+        <!-- 1. Hero Section -->
+        <section class="hero" id="home">
+            <div class="hero-gallery" id="dynamicHeroGallery">
+                <!-- Dynamically loaded via script below -->
+            </div>
+
+            <div class="hero-content">
+                <h1 class="hero-title-main">
+                    Beyond<br>
+                    Live Commerce
+                </h1>
+                <p class="hero-sub-text">
+                    브랜드의 성장을 함께 만듭니다.
+                </p>
+                <div class="hero-btns">
+                    <a href="#contact" class="btn-orange">제작문의</a>
+                    <a href="#portfolio" class="btn-translucent">레퍼런스 보기</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. About Section (라이브만 아니라 브랜드 성장을 만듭니다) -->
+        <section id="about" class="section-padding" style="position: relative; overflow: hidden;">
+            <div id="scrollRevealContainer" class="scroll-reveal-container">
+                <div class="sticky-reveal">
+                    <div class="container container-md text-center">
+                        <h2 class="section-title fade-up"
+                            style="font-family: 'Pretendard', sans-serif; font-size: 4.5rem; letter-spacing: -2.5px; font-weight: 800; line-height: 1.2;">
+                            Creating brand experiencesthrough content & technology</h2>
+
+                        <div class="about-text-box mt-5 fade-up">
+                            <p class="lead-text scroll-reveal-text" id="scrollRevealText"
+                                style="line-height: 1.8; font-size: 1.6rem; word-break: keep-all;">
+                                <span>RYZIN은</span> <span>브랜드</span> <span>경험을</span> <span>설계하는</span>
+                                <span>크리에이티브</span> <span>라이브</span> <span>프로덕션입니다.</span><br>
+                                <span>라이브커머스를</span> <span>넘어</span> <span>콘텐츠,</span> <span>디자인,</span>
+                                <span>비주얼</span> <span>프로덕션까지</span> <span>브랜드에</span> <span>필요한</span> <span>모든</span>
+                                <span>경험을</span> <span>연결합니다.</span><br>
+                                <span>감도</span> <span>높은</span> <span>비주얼과</span> <span>중심의</span> <span>제작</span>
+                                <span>시스템을</span> <span>바탕으로</span> <span>브랜드가</span> <span>더</span> <span>돋보일</span>
+                                <span>수</span> <span>있는</span> <span>콘텐츠를</span> <span>만듭니다.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 4. Portfolio Section (라이브 레퍼런스) -->
+        <section class="section-padding" id="portfolio" style="border-top: 1px solid rgba(255,255,255,0.05); background: #000;">
+            <div class="container container-lg">
+                <div class="text-center mb-5 fade-up">
+                    <h2 class="section-title" style="font-size: 48px; font-weight: 800; color: #fff;">Live Reference</h2>
+                </div>
+
+                <!-- Portfolio Category Filters -->
+                <div class="portfolio-filters text-center mb-5 fade-up">
+                    <div class="filter-pill-group">
+                        <button class="filter-pill-btn active" data-filter="all">전체</button>
+                        <button class="filter-pill-btn" data-filter="food">식품</button>
+                        <button class="filter-pill-btn" data-filter="beauty">뷰티</button>
+                        <button class="filter-pill-btn" data-filter="health">건기식</button>
+                        <button class="filter-pill-btn" data-filter="fashion">패션</button>
+                        <button class="filter-pill-btn" data-filter="pet">애견</button>
+                        <button class="filter-pill-btn" data-filter="life">라이프</button>
+                    </div>
+                </div>
+
+                <div class="portfolio-grid fade-up" id="portfolioGrid">
+                    <!-- Dynamic Grid Content -->
+                </div>
+
+                <div class="text-center mt-5 fade-up">
+                    <button class="btn btn-translucent" id="loadMoreBtn" style="padding: 15px 60px; font-size: 16px; border: 1px solid rgba(255,255,255,0.1);">더보기</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Pricing Section (제작 패키지 안내) -->
+        <section class="section-padding" id="pricing" style="border-top: 1px solid rgba(255,255,255,0.05);">
+            <div class="container container-lg">
+                <div class="text-center mb-5 fade-up">
+                    <div class="badge-pill mb-3" data-i18n="price_badge">Pricing</div>
+                    <h2 class="section-title" data-i18n="price_title">제작 패키지 안내</h2>
+                    <p class="text-muted mt-2" data-i18n="price_VAT">VAT 별도 기준</p>
+                </div>
+
+                <!-- Toggle Buttons -->
+                <div class="pricing-tabs-wrap fade-up mt-5">
+                    <div class="pricing-tabs">
+                        <button class="pricing-tab active" data-target="p-mobile" data-i18n="p1_name">모바일 LIVE</button>
+                        <button class="pricing-tab" data-target="p-starter" data-i18n="p2_name">스타터 LIVE</button>
+                        <button class="pricing-tab" data-target="p-rise" data-i18n="p3_name">라이즈 LIVE</button>
+                        <div class="tab-slider"></div>
+                    </div>
+                </div>
+
+                <div class="pricing-display-area mt-5">
+                    <!-- Starter (Mobile) -->
+                    <div class="price-table active" id="p-mobile">
+                        <div class="p-header">
+                            <h3 class="p-name" data-i18n="p1_name">모바일 LIVE</h3>
+                        </div>
+                        <div class="p-price">
+                            <div class="p-single" data-i18n="p1_price">1회 <span>250,000</span>원</div>
+                            <div class="p-multi text-muted" data-i18n="p_opt">기본 옵션 : 스튜디오 제공 + 쇼호스트 1인 <span></span>
+                            </div>
+                        </div>
+                        <ul class="p-features text-pure">
+                            <li data-i18n="p_60m"><i data-feather="check"></i> 60분 라이브 진행</li>
+                            <li data-i18n="p1_f2"><i data-feather="check"></i> 모바일 송출 1대 운용</li>
+                            <li data-i18n="p1_f3"><i data-feather="check"></i> 제품 SKU 3개 한정</li>
+                            <li class="f-bold" data-i18n="p1_f4"><i data-feather="plus"></i> VMD 1단 </li>
+                        </ul>
+                    </div>
+
+                    <!-- Rise (Starter) -->
+                    <div class="price-table" id="p-starter">
+                        <div class="p-header">
+                            <h3 class="p-name text-pure" data-i18n="p2_name">스타터 LIVE</h3>
+                        </div>
+                        <div class="p-price">
+                            <div class="p-single text-pure" data-i18n="p2_price">1회 <span>450,000</span>원</div>
+                            <div class="p-multi text-muted" data-i18n="p_opt">기본 옵션 : 스튜디오 제공 + 쇼호스트 1인 <span></span>
+                            </div>
+                        </div>
+                        <ul class="p-features text-pure">
+                            <li data-i18n="p_60m"><i data-feather="check"></i> 60분 라이브 진행</li>
+                            <li class="f-bold" data-i18n="p2_f2"><i data-feather="check"></i> 4K 카메라 1대</li>
+                            <li class="f-bold" data-i18n="p2_f3"><i data-feather="check"></i> PIP 배너5장</li>
+                            <li class="f-bold" data-i18n="p2_f4"><i data-feather="check"></i> 제품 SKU 5개</li>
+                            <li class="f-bold" data-i18n="p2_f5"><i data-feather="plus"></i> VMD 2단 </li>
+                        </ul>
+                    </div>
+
+                    <!-- Premium (Rise) -->
+                    <div class="price-table" id="p-rise">
+                        <div class="p-header">
+                            <h3 class="p-name" data-i18n="p3_name">라이즈 LIVE</h3>
+                        </div>
+                        <div class="p-price">
+                            <div class="p-single" data-i18n="p3_price">1회 <span>750,000</span>원</div>
+                            <div class="p-multi text-muted" data-i18n="p_opt">기본 옵션 : 스튜디오 제공 + 쇼호스트 1인 <span></span>
+                            </div>
+                        </div>
+                        <ul class="p-features">
+                            <li class="f-bold" data-i18n="p3_f1"><i data-feather="check"></i> 70분 라이브 진행</li>
+                            <li class="f-bold" data-i18n="p3_f2"><i data-feather="check"></i> 4K 카메라 2대</li>
+                            <li class="f-bold" data-i18n="p3_f3"><i data-feather="check"></i> PIP 배너10장 / CG 이펙트 </li>
+                            <li class="f-bold" data-i18n="p3_f4"><i data-feather="check"></i> 제품 SKU 제한없음</li>
+                            <li class="f-bold text-pure" data-i18n="p3_f5"><i data-feather="plus" class="text-pure"></i>
+                                브랜드 맞춤형 VMD
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+
+
+
+
+        <!-- 7. Brand Story Section -->
+        <section class="section-padding" id="brand-story" style="background: #000; padding-bottom: 120px;">
+            <div class="container">
+                <div class="text-center mb-5 fade-up">
+                    <h2 class="section-title" style="font-size: 42px; line-height: 1.3;">지금도 라이진과 성장하고 있는<br>브랜드사 이야기</h2>
+                </div>
+
+                <div class="brand-story-grid mt-5">
+                    <!-- Card 1 -->
+                    <div class="story-card fade-up">
+                        <div class="story-img">
+                            <img src="brand_story_portraits_1778857347660.png" alt="백아율 대표">
+                        </div>
+                        <div class="story-content">
+                            <h3>백아율</h3>
+                            <p>“라이브 방송 첫회차 부터 매출이 천만원, 이제부터 시작이죠”</p>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="story-card fade-up" style="transition-delay: 0.1s;">
+                        <div class="story-img">
+                            <img src="portrait_fullovit_1778857515446.png" alt="풀럽잇 대표">
+                        </div>
+                        <div class="story-content">
+                            <h3>풀럽잇</h3>
+                            <p>“라이진과 함께 6회차 방송 까지 했는데 매출도 잘나오고 좋았어요”</p>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="story-card fade-up" style="transition-delay: 0.2s;">
+                        <div class="story-img">
+                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&h=800&fit=crop" alt="쏘랩 대표">
+                        </div>
+                        <div class="story-content">
+                            <h3>쏘랩</h3>
+                            <p>“브랜드 팬들과 소통하는 시간이 되어서 너무 좋은거 같아요.”</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Project Request Section -->
+        <section class="section-padding minimal-grey" id="contact" style="padding-top: 100px; padding-bottom: 120px;">
+            <div class="container container-md">
+                <div class="text-center mb-5">
+                    <p style="font-size: 14px; color: #888; margin-bottom: 10px;">프로젝트 의뢰하기</p>
+                    <h2 style="font-size: 64px; font-weight: 800; color: #fff; letter-spacing: -2px;">Project Request<span style="color: #ff3333;">.</span></h2>
+                </div>
+
+                <form id="projectRequestForm" class="request-form mt-5">
+                    <div class="form-grid">
+                        <!-- Left Column -->
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Brand <span class="required">*</span></label>
+                                <input type="text" name="brand" placeholder="브랜드명을 입력해주세요." required>
+                            </div>
+                            <div class="form-group">
+                                <label>Site URL</label>
+                                <input type="url" name="url" placeholder="사이트 URL을 입력해주세요.">
+                            </div>
+                            <div class="form-group">
+                                <label>Name <span class="required">*</span></label>
+                                <input type="text" name="name" placeholder="담당자 성함을 입력해주세요." required>
+                            </div>
+                            <div class="form-group">
+                                <label>Contact <span class="required">*</span></label>
+                                <input type="tel" name="phone" placeholder="전화번호를 입력해주세요." required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email <span class="required">*</span></label>
+                                <input type="email" name="email" placeholder="이메일을 입력해주세요." required>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label>Services <span class="required">*</span></label>
+                                <div class="service-selection mt-3">
+                                    <label class="check-item">
+                                        <input type="checkbox" name="service" value="live">
+                                        <span>라이브커머스</span>
+                                    </label>
+                                    <label class="check-item">
+                                        <input type="checkbox" name="service" value="video">
+                                        <span>영상 콘텐츠제작</span>
+                                    </label>
+                                    <label class="check-item">
+                                        <input type="checkbox" name="service" value="drone">
+                                        <span>항공촬영</span>
+                                    </label>
+                                    <label class="check-item">
+                                        <input type="checkbox" name="service" value="influencer">
+                                        <span>인플루언서 공구</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Details <span class="required">*</span></label>
+                                <textarea name="details" placeholder="문의사항을 입력해주세요." rows="4" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-footer mt-5">
+                        <div class="privacy-check">
+                            <label class="check-item">
+                                <input type="checkbox" required>
+                                <span>개인정보수집 동의 [보기]</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-request-submit">문의하기</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="minimal-footer">
+        <div class="container">
+            <div class="footer-flex">
+                <div class="f-brand">
+                    <img src="./assets/logo.png" alt="RYZIN" loading="lazy"
+                        style="height: 32px; width: auto; opacity: 0.8; margin-bottom: 8px;">
+                    <p class="text-muted mt-2" data-i18n="f_info">
+                        대표 : 채이준 <br>
+                        사업자 등록번호 : 821-29-011-97<br>
+                        주소 : 경기도 하남시 미사강변동로 100-1 미사역 파라곤스퀘어 2064-2<br>
+                        이메일 : choijun@ryzincorp.com</p>
+                </div>
+                <div class="f-links">
+                    <a href="https://www.instagram.com/ryzin_live?igsh=MW9pMHp3dHF5aXVueA%3D%3D&utm_source=qr"
+                        data-i18n="f_insta">인스타그램</a>
+                    <a href="https://blog.naver.com/ryzin_live" data-i18n="f_blog">블로그</a>
+                    <a href="#" data-i18n="f_career">채용</a>
+                </div>
+            </div>
+            <div class="footer-divider"></div>
+            <div class="footer-bottom">
+                <p class="text-muted" data-i18n="f_copy">© 2025 RYZIN Production. All rights reserved.</p>
+                <div class="f-legal">
+                    <a href="#" data-i18n="f_terms">이용약관</a>
+                    <a href="#" class="text-pure" data-i18n="f_privacy">개인정보처리방침</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+
+
+
+
+    <!-- Initialize Feather Icons -->
+    <script>
+        feather.replace()
+    </script>
+    <script src="script.js"></script>
+    <!-- script.js will handle Channel IO and other logic -->
+</body>
+
+</html>
