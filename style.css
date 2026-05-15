@@ -2877,3 +2877,75 @@ section:not(#about)
         font-size: 13px !important;
     }
 }
+
+/* Partners Ticker Styles */
+.partners-ticker-wrapper {
+    overflow: hidden;
+    padding: 40px 0;
+    background: transparent;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.partners-ticker {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 20px 0;
+}
+
+.partners-ticker::before,
+.partners-ticker::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 150px;
+    height: 100%;
+    z-index: 2;
+}
+
+.partners-ticker::before {
+    left: 0;
+    background: linear-gradient(to right, #000, transparent);
+}
+
+.partners-ticker::after {
+    right: 0;
+    background: linear-gradient(to left, #000, transparent);
+}
+
+.partners-track {
+    display: flex;
+    gap: 60px;
+    width: max-content;
+    animation: scrollTicker 40s linear infinite;
+}
+
+.partners-track span {
+    font-size: 24px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+}
+
+.partners-track span:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes scrollTicker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+    .partners-track span {
+        font-size: 16px;
+        gap: 30px;
+    }
+    .partners-track {
+        gap: 30px;
+        animation-duration: 25s;
+    }
+}
