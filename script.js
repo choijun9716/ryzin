@@ -175,15 +175,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderPortfolio() {
+    function renderPortfolio(isAppend = false) {
         if (!portfolioGrid) return;
-        portfolioGrid.innerHTML = '';
-
+        
         const filtered = allPortfolioItems.filter(item =>
             currentFilter === 'all' || item.category === currentFilter
         );
 
-        const toShow = filtered.slice(0, visibleCount);
+        if (!isAppend) {
+            portfolioGrid.innerHTML = '';
+        }
+
+        const startIndex = isAppend ? visibleCount - 6 : 0;
+        const toShow = filtered.slice(startIndex, visibleCount);
 
         toShow.forEach(item => {
             const catLabel = categoryMap[item.category] || item.category;
@@ -203,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
             portfolioGrid.appendChild(itemEl);
         });
 
-        // Toggle Load More button - show on all screens
+        // Toggle Load More button
         if (loadMoreBtn) {
             if (filtered.length > visibleCount) {
                 loadMoreBtn.style.display = 'inline-block';
@@ -212,16 +216,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Trigger reveal animation for new items
+        // Trigger reveal animation
         setTimeout(() => {
-            document.querySelectorAll('.portfolio-card').forEach(el => el.classList.add('visible'));
+            document.querySelectorAll('.portfolio-card:not(.visible)').forEach(el => el.classList.add('visible'));
         }, 100);
     }
 
     if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', () => {
+        loadMoreBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent any default behavior just in case
             visibleCount += 6;
-            renderPortfolio();
+            renderPortfolio(true);
         });
     }
 
