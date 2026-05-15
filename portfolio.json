@@ -3,14 +3,14 @@
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food",
-    "image": "./assets/1777549940347_Screenshot_2026-04-30_18-28-26.jpg",
+    "image": "./assets/gangneung.jpg",
     "link": "https://naver.me/58qF0tsA"
   },
   {
     "title": "쏘랩",
     "category": "life",
     "tagKey": "tag_life",
-    "image": "./assets/1777705406467_Screenshot_2026-05-01_19-45-35.jpg",
+    "image": "./assets/1777705406467_Screenshot_2026-05-01_19-45-35.png",
     "link": "https://naver.me/GqfsQqds"
   },
   {
@@ -24,7 +24,7 @@
     "title": "닥터올라리언",
     "category": "health",
     "tagKey": "tag_health",
-    "image": "./assets/1777009091267_Screenshot_2026-04-02_17-55-57.jpg",
+    "image": "./assets/1777009091267_Screenshot_2026-04-02_17-55-57.png",
     "link": "https://naver.me/FmGOvDAj"
   },
   {
@@ -45,7 +45,7 @@
     "title": "백아율",
     "category": "beauty",
     "tagKey": "tag_beauty",
-    "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.jpg",
+    "image": "./assets/1777008953383_Screenshot_2026-04-21_08-48-22.png",
     "link": "#"
   },
   {

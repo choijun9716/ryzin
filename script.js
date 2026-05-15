@@ -166,17 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadPortfolio() {
         try {
-            let data;
-            const savedData = localStorage.getItem('portfolio_data');
-            
-            if (savedData) {
-                data = JSON.parse(savedData);
-            } else {
-                const response = await fetch('./portfolio.json');
-                data = await response.json();
-                localStorage.setItem('portfolio_data', JSON.stringify(data));
-            }
-            
+            const response = await fetch('./portfolio.json?v=' + new Date().getTime());
+            const data = await response.json();
             allPortfolioItems = data;
             renderPortfolio();
         } catch (err) {
