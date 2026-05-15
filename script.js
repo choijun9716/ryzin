@@ -785,8 +785,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('Selected Services', services);
 
             try {
-                // IMPORTANT: Replace 'choijun@ryzincorp.com' with your actual Formspree ID
-                const response = await fetch('https://formspree.io/f/xoqogndd', {
+                // Formspree real ID integration: mnjwengo
+                const response = await fetch('https://formspree.io/f/mnjwengo', {
                     method: 'POST',
                     body: formData,
                     headers: {
