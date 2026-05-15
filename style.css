@@ -184,10 +184,21 @@ ul {
 }
 
 /* Typography */
+/* Typography Base */
 .section-title {
-    font-size: 3rem;
+    font-size: 42px;
     font-weight: 800;
+    line-height: 1.2;
     letter-spacing: -0.04em;
+    color: #fff;
+    word-break: keep-all;
+}
+
+.project-request-title {
+    font-size: 64px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -2px;
 }
 
 /* Sticky Scroll Reveal */
@@ -1790,42 +1801,69 @@ ul {
     }
 
     /* [모바일] 각 구역별 대제목(섹션 타이틀) 글씨 크기 조절 */
-    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 2rem, 3rem 등) */
     .section-title {
-        font-size: 2.0rem;
+        font-size: 28px !important;
     }
 
-    /* [모바일] 브랜드사 섹션 타이틀 크기 조절 */
-    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 2rem, 3rem 등) */
-    .brand-section-title {
-        font-size: 2.0rem;
+    .project-request-title {
+        font-size: 42px !important;
+        letter-spacing: -1px;
     }
 
-    /* [모바일] 메인 최상단 타이틀 아래 메인 카피(설명) 글씨 크기 조절 */
-    /* 원하시는 크기로 숫자를 변경하시면 됩니다. (예: 1rem, 0.8rem 등) */
-    .hero-desc {
-        font-size: 1.0rem;
+    .lead-text {
+        font-size: 1.1rem !important;
+        line-height: 1.5 !important;
+    }
+
+    .hero-title-main {
+        font-size: 42px !important;
+        line-height: 1.1;
+    }
+
+    .hero-sub-text {
+        font-size: 16px !important;
+        margin-bottom: 30px;
     }
 
     /* [모바일] 각 섹션 위, 아래 여백 조절 */
     .section-padding {
-        padding: 60px 0;
+        padding: 50px 0 !important;
+    }
+
+    /* [모바일] 브랜드 스토리 카드 최적화 */
+    .story-card {
+        padding: 24px !important;
+        min-height: auto !important;
+    }
+
+    .story-content p {
+        font-size: 16px !important;
+        margin-bottom: 20px !important;
     }
 
     /* [모바일] 제작 패키지 안내 카드 안쪽 여백 조절 */
-    /* 숫자를 키우면 여백이 넓어지고 내용 공간이 좁아집니다. (기존 데스크탑은 40px) */
     .price-table {
         padding: 24px 20px;
-        /* 화면 좌우로 30px씩 정확하게 여백을 둡니다. 약간 더 넓거나 좁게 하려면 60px 숫자를 변경하세요. */
-        width: calc(100% - 60px);
+        width: calc(100% - 40px) !important;
         margin: 0 auto;
     }
 
-    .hero-btns {
-        flex-direction: column;
+    .p-caption {
+        font-size: 14px !important;
+        padding-top: 8px !important;
     }
 
-    .features-grid {
+    .filter-pill-group {
+        gap: 8px !important;
+        padding: 4px !important;
+    }
+
+    .filter-pill-btn {
+        padding: 8px 16px !important;
+        font-size: 13px !important;
+    }
+
+    .hero-btns {
         flex-direction: column;
     }
 
