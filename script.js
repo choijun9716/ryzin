@@ -189,42 +189,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const startIndex = isAppend ? visibleCount - 6 : 0;
         const toShow = filtered.slice(startIndex, visibleCount);
 
+        let newItemsHtml = '';
         toShow.forEach(item => {
             const catLabel = categoryMap[item.category] || item.category;
-            const itemEl = document.createElement('a');
-            itemEl.href = item.link || '#';
-            itemEl.className = 'portfolio-card fade-up';
-            itemEl.target = '_blank';
-
-            itemEl.innerHTML = `
-                <div class="p-img-box">
-                    <img src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1584362924585-cdb273ff5f3e?q=80&w=400&h=700&fit=crop'">
-                </div>
-                <div class="p-caption">
-                    <span>${catLabel}</span> | ${item.title}
-                </div>
+            newItemsHtml += `
+                <a href="${item.link || '#'}" class="portfolio-card portfolio-item-new" target="_blank">
+                    <div class="p-img-box">
+                        <img src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1584362924585-cdb273ff5f3e?q=80&w=400&h=700&fit=crop'">
+                    </div>
+                    <div class="p-caption">
+                        <span>${catLabel}</span> | ${item.title}
+                    </div>
+                </a>
             `;
-            portfolioGrid.appendChild(itemEl);
         });
+
+        if (isAppend) {
+            portfolioGrid.insertAdjacentHTML('beforeend', newItemsHtml);
+        } else {
+            portfolioGrid.innerHTML = newItemsHtml;
+        }
 
         // Toggle Load More button
         if (loadMoreBtn) {
-            if (filtered.length > visibleCount) {
-                loadMoreBtn.style.display = 'inline-block';
-            } else {
-                loadMoreBtn.style.display = 'none';
-            }
+            loadMoreBtn.style.display = (filtered.length > visibleCount) ? 'inline-block' : 'none';
         }
 
-        // Trigger reveal animation
-        setTimeout(() => {
-            document.querySelectorAll('.portfolio-card:not(.visible)').forEach(el => el.classList.add('visible'));
-        }, 100);
+        // Faster reveal for new items
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.portfolio-item-new').forEach(el => {
+                el.classList.add('visible');
+                el.classList.remove('portfolio-item-new');
+            });
+        });
     }
 
     if (loadMoreBtn) {
         loadMoreBtn.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent any default behavior just in case
+            e.preventDefault();
             visibleCount += 6;
             renderPortfolio(true);
         });
