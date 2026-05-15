@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!portfolioGrid) return;
         portfolioGrid.innerHTML = '';
 
-        const filtered = allPortfolioItems.filter(item => 
+        const filtered = allPortfolioItems.filter(item =>
             currentFilter === 'all' || item.category === currentFilter
         );
 
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
             itemEl.href = item.link || '#';
             itemEl.className = 'portfolio-card fade-up';
             itemEl.target = '_blank';
-            
+
             itemEl.innerHTML = `
                 <div class="p-img-box">
                     <img src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1584362924585-cdb273ff5f3e?q=80&w=400&h=700&fit=crop'">
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Initial setup
-        setTimeout(updateTabSlider, 100); 
+        setTimeout(updateTabSlider, 100);
         window.addEventListener('resize', updateTabSlider);
     }
 
@@ -342,9 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
         "pluginKey": "33157f92-9ee2-4c09-9776-c7daa26b5f25"
     });
 
-    
+
     // 6. Theme Toggle (REMOVED)
-    
+
     // 7. Language Toggle Full
     const langToggleBtn = document.getElementById('langToggleBtn');
     const langMenu = document.getElementById('langMenu');
@@ -696,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const lang = link.getAttribute('data-lang');
                 langToggleBtn.textContent = lang.toUpperCase();
-                
+
                 // Apply translation
                 document.querySelectorAll('[data-i18n]').forEach(el => {
                     const key = el.getAttribute('data-i18n');
@@ -731,7 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const colDiv = document.createElement('div');
             colDiv.className = 'gallery-column';
-            
+
             const trackDiv = document.createElement('div');
             trackDiv.className = `gallery-track ${isReverse ? 'reverse' : ''}`;
 
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 imgEl.decoding = 'async';
                 if (idx === 0) imgEl.setAttribute('fetchpriority', 'high');
                 else imgEl.loading = 'lazy';
-                
+
                 itemDiv.appendChild(imgEl);
                 trackDiv.appendChild(itemDiv);
             });
@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const services = Array.from(form.querySelectorAll('input[name="service"]:checked')).map(cb => cb.nextElementSibling.textContent).join(', ');
             if (services.length === 0) {
                 alert('최소 하나 이상의 항목을 선택해주세요.');
@@ -777,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const submitBtn = form.querySelector('.btn-request-submit');
             const originalText = submitBtn.textContent;
-            
+
             submitBtn.textContent = '제출 중...';
             submitBtn.disabled = true;
 
@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('Selected Services', services);
 
             try {
-                // IMPORTANT: Replace 'xoqogndd' with your actual Formspree ID
+                // IMPORTANT: Replace 'choijun@ryzincorp.com' with your actual Formspree ID
                 const response = await fetch('https://formspree.io/f/xoqogndd', {
                     method: 'POST',
                     body: formData,
@@ -795,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (response.ok) {
-                    alert('문의가 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
+                    alert('문의가 성공적으로 접수되었습니다.');
                     form.reset();
                 } else {
                     alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
