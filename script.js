@@ -766,11 +766,10 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('projectRequestForm');
     if (form) {
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Basic validation for at least one service
-            const services = form.querySelectorAll('input[name="service"]:checked');
+            const services = Array.from(form.querySelectorAll('input[name="service"]:checked')).map(cb => cb.nextElementSibling.textContent).join(', ');
             if (services.length === 0) {
                 alert('최소 하나 이상의 항목을 선택해주세요.');
                 return;
@@ -782,13 +781,32 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.textContent = '제출 중...';
             submitBtn.disabled = true;
 
-            // Mock submission delay
-            setTimeout(() => {
-                alert('문의가 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
-                form.reset();
+            const formData = new FormData(form);
+            formData.append('Selected Services', services);
+
+            try {
+                // IMPORTANT: Replace 'xoqogndd' with your actual Formspree ID
+                const response = await fetch('https://formspree.io/f/xoqogndd', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('문의가 성공적으로 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
+                    form.reset();
+                } else {
+                    alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+                alert('네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.');
+            } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
-            }, 1500);
+            }
         });
     }
 });
