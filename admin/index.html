@@ -466,7 +466,7 @@
     <script>
         // --- 1. SHA-256 보안 로그인 인증 부 ---
         const EXPECTED_ID_HASH = '1f114c000fb55663750eb26c7e3f8863b156a004ab0b59b158097b090e544be8'; // 'choijun'
-        const EXPECTED_PW_HASH = '863fd2e904ef6dbec7b4cdc541bdb5669a07edad54ba36b1f2db6d836eb0283d'; // 'wldns9716'
+        const EXPECTED_PW_HASH = '863fd2e904ef6dbec7b4cdc541bdb5669a07edad54ba36b1f2db6d836eb0283d'; // 'dlwns9716'
 
         async function sha256(str) {
             try {
@@ -490,7 +490,7 @@
                 const pwInput = document.getElementById('loginPw').value.trim();
                 
                 // [최종 철권 방어] 복잡한 암호화 로직을 모두 폐기하고 가장 완벽하고 단순한 일치 검사로 100% 성공 보장
-                if (idInput === 'choijun' && pwInput === 'wldns9716') {
+                if (idInput === 'choijun' && pwInput === 'dlwns9716') {
                     localStorage.setItem('admin_logged_in', 'true');
                     document.getElementById('loginOverlay').style.display = 'none';
                     document.body.style.overflow = '';
