@@ -203,72 +203,13 @@
 
                 <!-- Toggle Buttons -->
                 <div class="pricing-tabs-wrap fade-up mt-5">
-                    <div class="pricing-tabs">
-                        <button class="pricing-tab active" data-target="p-mobile" data-i18n="p1_name">모바일 LIVE</button>
-                        <button class="pricing-tab" data-target="p-starter" data-i18n="p2_name">스타터 LIVE</button>
-                        <button class="pricing-tab" data-target="p-rise" data-i18n="p3_name">라이즈 LIVE</button>
-                        <div class="tab-slider"></div>
+                    <div class="pricing-tabs" id="pricingTabs">
+                        <!-- Dynamic Tabs -->
                     </div>
                 </div>
 
-                <div class="pricing-display-area mt-5">
-                    <!-- Starter (Mobile) -->
-                    <div class="price-table active" id="p-mobile">
-                        <div class="p-header">
-                            <h3 class="p-name" data-i18n="p1_name">모바일 LIVE</h3>
-                        </div>
-                        <div class="p-price">
-                            <div class="p-single" data-i18n="p1_price">1회 <span>250,000</span>원</div>
-                            <div class="p-multi text-muted" data-i18n="p_opt">기본 옵션 : 스튜디오 제공 + 쇼호스트 1인 <span></span>
-                            </div>
-                        </div>
-                        <ul class="p-features text-pure">
-                            <li data-i18n="p_60m"><i data-feather="check"></i> 60분 라이브 진행</li>
-                            <li data-i18n="p1_f2"><i data-feather="check"></i> 모바일 송출 1대 운용</li>
-                            <li data-i18n="p1_f3"><i data-feather="check"></i> 제품 SKU 3개 한정</li>
-                            <li class="f-bold" data-i18n="p1_f4"><i data-feather="plus"></i> VMD 1단 </li>
-                        </ul>
-                    </div>
-
-                    <!-- Rise (Starter) -->
-                    <div class="price-table" id="p-starter">
-                        <div class="p-header">
-                            <h3 class="p-name text-pure" data-i18n="p2_name">스타터 LIVE</h3>
-                        </div>
-                        <div class="p-price">
-                            <div class="p-single text-pure" data-i18n="p2_price">1회 <span>450,000</span>원</div>
-                            <div class="p-multi text-muted" data-i18n="p_opt">기본 옵션 : 스튜디오 제공 + 쇼호스트 1인 <span></span>
-                            </div>
-                        </div>
-                        <ul class="p-features text-pure">
-                            <li data-i18n="p_60m"><i data-feather="check"></i> 60분 라이브 진행</li>
-                            <li class="f-bold" data-i18n="p2_f2"><i data-feather="check"></i> 4K 카메라 1대</li>
-                            <li class="f-bold" data-i18n="p2_f3"><i data-feather="check"></i> PIP 배너5장</li>
-                            <li class="f-bold" data-i18n="p2_f4"><i data-feather="check"></i> 제품 SKU 5개</li>
-                            <li class="f-bold" data-i18n="p2_f5"><i data-feather="plus"></i> VMD 2단 </li>
-                        </ul>
-                    </div>
-
-                    <!-- Premium (Rise) -->
-                    <div class="price-table" id="p-rise">
-                        <div class="p-header">
-                            <h3 class="p-name" data-i18n="p3_name">라이즈 LIVE</h3>
-                        </div>
-                        <div class="p-price">
-                            <div class="p-single" data-i18n="p3_price">1회 <span>750,000</span>원</div>
-                            <div class="p-multi text-muted" data-i18n="p_opt">기본 옵션 : 스튜디오 제공 + 쇼호스트 1인 <span></span>
-                            </div>
-                        </div>
-                        <ul class="p-features">
-                            <li class="f-bold" data-i18n="p3_f1"><i data-feather="check"></i> 70분 라이브 진행</li>
-                            <li class="f-bold" data-i18n="p3_f2"><i data-feather="check"></i> 4K 카메라 2대</li>
-                            <li class="f-bold" data-i18n="p3_f3"><i data-feather="check"></i> PIP 배너10장 / CG 이펙트 </li>
-                            <li class="f-bold" data-i18n="p3_f4"><i data-feather="check"></i> 제품 SKU 10개</li>
-                            <li class="f-bold text-pure" data-i18n="p3_f5"><i data-feather="plus" class="text-pure"></i>
-                                브랜드 맞춤형 VMD
-                            </li>
-                        </ul>
-                    </div>
+                <div class="pricing-display-area mt-5" id="pricingContent">
+                    <!-- Dynamic Pricing Content -->
                 </div>
             </div>
         </section>
@@ -286,79 +227,16 @@
                     <h2 class="section-title">지금도 라이진과 성장하고 있는<br>브랜드사 이야기</h2>
                 </div>
 
-                <div class="brand-story-grid mt-5">
-                    <!-- Card 1 -->
-                    <div class="story-card fade-up">
-                        <div class="story-content">
-                            <p>“제품만 설명하는 방송이 아니라 브랜드 분위기를 잘 만들어주셨어요.”</p>
-                        </div>
-                        <div class="story-footer">
-                            <div class="story-img"
-                                style="background: #333; display: flex; align-items: center; justify-content: center;">
-                                <i data-feather="user" style="color: #888; width: 24px; height: 24px;"></i>
-                            </div>
-                            <div class="story-info">
-                                <h3>백아율</h3>
-                                <span>대표이사</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Card 2 -->
-                    <div class="story-card fade-up" style="transition-delay: 0.1s;">
-                        <div class="story-content">
-                            <p>“라이브 준비할 때 신경 써야 할 게 많았는데 많이 편하게 진행했습니다.”</p>
-                        </div>
-                        <div class="story-footer">
-                            <div class="story-img"
-                                style="background: #333; display: flex; align-items: center; justify-content: center;">
-                                <i data-feather="user" style="color: #888; width: 24px; height: 24px;"></i>
-                            </div>
-                            <div class="story-info">
-                                <h3>풀럽잇</h3>
-                                <span>브랜드 매니저</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Card 3 -->
-                    <div class="story-card fade-up" style="transition-delay: 0.2s;">
-                        <div class="story-content">
-                            <p>“방송 퀄리티가 확실히 달랐어요 PD님이 너무 잘해주셨습니다.”</p>
-                        </div>
-                        <div class="story-footer">
-                            <div class="story-img"
-                                style="background: #333; display: flex; align-items: center; justify-content: center;">
-                                <i data-feather="user" style="color: #888; width: 24px; height: 24px;"></i>
-                            </div>
-                            <div class="story-info">
-                                <h3>쏘랩</h3>
-                                <span>마케팅 팀장</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="brand-story-grid mt-5" id="storyGrid">
+                    <!-- Dynamic Story Content -->
                 </div>
 
                 <!-- Partners Ticker -->
                 <div class="partners-ticker-wrapper mt-5 pt-5 fade-up">
 
                     <div class="partners-ticker">
-                        <div class="partners-track">
-                            <img src="./assets/clients/강릉은정한과.png" alt="강릉은정한과">
-                            <img src="./assets/clients/백아율.png" alt="백아율">
-                            <img src="./assets/clients/YADAH,.png" alt="YADAH">
-                            <img src="./assets/clients/logo1.png" alt="Logo 1">
-                            <img src="./assets/clients/logo2.png" alt="Logo 2">
-                            <img src="./assets/clients/logo4.png" alt="Logo 4">
-                            <img src="./assets/clients/logo7.png" alt="Logo 7">
-                            <img src="./assets/clients/logo8.png" alt="Logo 8">
-                            <!-- Loop for seamless animation -->
-                            <img src="./assets/clients/강릉은정한과.png" alt="강릉은정한과">
-                            <img src="./assets/clients/백아율.png" alt="백아율">
-                            <img src="./assets/clients/YADAH,.png" alt="YADAH">
-                            <img src="./assets/clients/logo1.png" alt="Logo 1">
-                            <img src="./assets/clients/logo2.png" alt="Logo 2">
-                            <img src="./assets/clients/logo4.png" alt="Logo 4">
-                            <img src="./assets/clients/logo7.png" alt="Logo 7">
-                            <img src="./assets/clients/logo8.png" alt="Logo 8">
+                        <div class="partners-track" id="partnersTrack">
+                            <!-- Dynamic Logos Content -->
                         </div>
                     </div>
                 </div>

@@ -45,9 +45,18 @@ const server = http.createServer((req, res) => {
                 if (data.hero) {
                     fs.writeFileSync(path.join(__dirname, 'hero.json'), JSON.stringify(data.hero, null, 2), 'utf8');
                 }
+                if (data.packages) {
+                    fs.writeFileSync(path.join(__dirname, 'packages.json'), JSON.stringify(data.packages, null, 2), 'utf8');
+                }
+                if (data.stories) {
+                    fs.writeFileSync(path.join(__dirname, 'stories.json'), JSON.stringify(data.stories, null, 2), 'utf8');
+                }
+                if (data.logos) {
+                    fs.writeFileSync(path.join(__dirname, 'logos.json'), JSON.stringify(data.logos, null, 2), 'utf8');
+                }
 
                 // Git commands
-                exec('git add portfolio.json hero.json && git commit -m "Update site data via Admin" && git push', (error, stdout, stderr) => {
+                exec('git add portfolio.json hero.json packages.json stories.json logos.json && git commit -m "Update site data via Admin" && git push', (error, stdout, stderr) => {
                     if (error) {
                         console.error(`Git error: ${error.message}`);
                         res.writeHead(500, { 'Content-Type': 'application/json' });

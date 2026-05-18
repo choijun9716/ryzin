@@ -780,11 +780,183 @@ document.addEventListener('DOMContentLoaded', () => {
             container.appendChild(colDiv);
         }
     }
+    // 9. Load Dynamic Pricing Packages
+    async function loadPackages() {
+        const tabsContainer = document.getElementById('pricingTabs');
+        const contentContainer = document.getElementById('pricingContent');
+        if (!tabsContainer || !contentContainer) return;
+
+        try {
+            const res = await fetch('./packages.json?v=' + new Date().getTime());
+            if (!res.ok) return;
+            const packages = await res.json();
+            
+            tabsContainer.innerHTML = '';
+            contentContainer.innerHTML = '';
+            
+            packages.forEach((pkg, index) => {
+                const isActive = index === 0 ? 'active' : '';
+                
+                // Add Tab
+                const tab = document.createElement('button');
+                tab.className = `pricing-tab ${isActive}`;
+                tab.setAttribute('data-target', pkg.id);
+                tab.innerText = pkg.name;
+                tabsContainer.appendChild(tab);
+                
+                // Add Content
+                const content = document.createElement('div');
+                content.className = `price-table ${isActive}`;
+                content.id = pkg.id;
+                
+                const featuresHtml = pkg.features.map((f, i) => {
+                    const isLast = i === pkg.features.length - 1;
+                    const icon = isLast ? 'plus' : 'check';
+                    const fBold = isLast ? 'f-bold text-pure' : '';
+                    return `<li class="${fBold}"><i data-feather="${icon}" ${isLast ? 'class="text-pure"' : ''}></i> ${f}</li>`;
+                }).join('');
+
+                content.innerHTML = `
+                    <div class="p-header">
+                        <h3 class="p-name ${isActive ? '' : 'text-pure'}">${pkg.name}</h3>
+                    </div>
+                    <div class="p-price">
+                        <div class="p-single ${isActive ? '' : 'text-pure'}">1회 <span>${pkg.price}</span>원</div>
+                        <div class="p-multi text-muted">${pkg.options}</div>
+                    </div>
+                    <ul class="p-features ${isActive ? 'text-pure' : ''}">
+                        ${featuresHtml}
+                    </ul>
+                `;
+                contentContainer.appendChild(content);
+            });
+            
+            // Add slider back
+            const slider = document.createElement('div');
+            slider.className = 'tab-slider';
+            tabsContainer.appendChild(slider);
+
+            // Re-bind click events for newly created tabs
+            const pTabs = document.querySelectorAll('.pricing-tab');
+            pTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    pTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tables = document.querySelectorAll('.price-table');
+                    tables.forEach(table => table.classList.remove('active'));
+                    const targetId = tab.getAttribute('data-target');
+                    if (document.getElementById(targetId)) {
+                        document.getElementById(targetId).classList.add('active');
+                    }
+                    
+                    // Trigger slider positioning logic if needed
+                    window.dispatchEvent(new Event('resize'));
+                });
+            });
+            
+            // Re-bind hover interactions
+            const priceCards = document.querySelectorAll('.price-table');
+            priceCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    priceCards.forEach(c => {
+                        c.classList.remove('p-active');
+                        c.querySelector('.p-name').classList.remove('text-pure');
+                        c.querySelector('.p-single').classList.remove('text-pure');
+                    });
+                    card.classList.add('p-active');
+                    card.querySelector('.p-name').classList.add('text-pure');
+                    card.querySelector('.p-single').classList.add('text-pure');
+                });
+            });
+
+            if(window.feather) feather.replace();
+
+        } catch (e) {
+            console.error('Failed to load packages:', e);
+        }
+    }
+
+    // 10. Load Dynamic Brand Stories
+    async function loadStories() {
+        const grid = document.getElementById('storyGrid');
+        if (!grid) return;
+
+        try {
+            const res = await fetch('./stories.json?v=' + new Date().getTime());
+            if (!res.ok) return;
+            const stories = await res.json();
+            
+            grid.innerHTML = '';
+            stories.forEach((story, idx) => {
+                const delay = (idx * 0.1).toFixed(1);
+                
+                const imgHtml = story.image ? 
+                    `<img src="./assets/${story.image}" style="width:100%; height:100%; object-fit:cover;">` : 
+                    `<i data-feather="user" style="color: #888; width: 24px; height: 24px;"></i>`;
+
+                const cardHtml = `
+                    <div class="story-card fade-up" style="transition-delay: ${delay}s;">
+                        <div class="story-content">
+                            <p>${story.quote}</p>
+                        </div>
+                        <div class="story-footer">
+                            <div class="story-img" style="background: #333; display: flex; align-items: center; justify-content: center; overflow:hidden;">
+                                ${imgHtml}
+                            </div>
+                            <div class="story-info">
+                                <h3>${story.company}</h3>
+                                <span>${story.authorRole}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+            
+            if(window.feather) feather.replace();
+            
+            // Re-observe newly added fade-up elements
+            const newFadeUps = document.querySelectorAll('#storyGrid .fade-up');
+            newFadeUps.forEach(el => observer.observe(el));
+
+        } catch (e) {
+            console.error('Failed to load stories:', e);
+        }
+    }
+
+    // 11. Load Dynamic Partner Logos
+    async function loadLogos() {
+        const track = document.getElementById('partnersTrack');
+        if (!track) return;
+
+        try {
+            const res = await fetch('./logos.json?v=' + new Date().getTime());
+            if (!res.ok) return;
+            const logos = await res.json();
+            
+            track.innerHTML = '';
+            
+            // Need to double the logos for seamless scrolling animation
+            const displayLogos = [...logos, ...logos];
+            
+            displayLogos.forEach(logoFilename => {
+                const img = document.createElement('img');
+                img.src = `./assets/clients/${logoFilename}`;
+                img.alt = logoFilename.split('.')[0];
+                track.appendChild(img);
+            });
+            
+        } catch (e) {
+            console.error('Failed to load logos:', e);
+        }
+    }
 
     loadHeroGallery();
+    loadPackages();
+    loadStories();
+    loadLogos();
 });
-
-
 
 /* Project Request Form Handler */
 document.addEventListener('DOMContentLoaded', () => {
