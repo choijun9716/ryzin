@@ -31,12 +31,13 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/sync') {
-        let body = '';
+        let bodyChunks = [];
         req.on('data', chunk => {
-            body += chunk.toString();
+            bodyChunks.push(chunk);
         });
         req.on('end', () => {
             try {
+                const body = Buffer.concat(bodyChunks).toString('utf8');
                 const data = JSON.parse(body);
                 // Save to portfolio.json and hero.json if provided
                 if (data.portfolio) {
@@ -58,18 +59,25 @@ const server = http.createServer((req, res) => {
                 // Git commands
                 exec('git add portfolio.json hero.json packages.json stories.json logos.json && git commit -m "Update site data via Admin" && git push', (error, stdout, stderr) => {
                     if (error) {
+                        const outStr = (stdout + stderr).toLowerCase();
+                        if (outStr.includes('nothing to commit') || outStr.includes('clean') || outStr.includes('커밋할') || outStr.includes('변경 사항 없음')) {
+                            console.log('No changes to commit. Push not needed.');
+                            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                            res.end(JSON.stringify({ success: true, message: '변경된 내용이 없어 저장이 생략되었습니다.' }));
+                            return;
+                        }
                         console.error(`Git error: ${error.message}`);
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
                         res.end(JSON.stringify({ success: false, error: error.message }));
                         return;
                     }
                     console.log('Successfully committed and pushed changes.');
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
                     res.end(JSON.stringify({ success: true, message: 'Successfully committed and pushed.' }));
                 });
             } catch (err) {
                 console.error(err);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
                 res.end(JSON.stringify({ success: false, error: err.message }));
             }
         });
@@ -77,12 +85,13 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/upload') {
-        let body = '';
+        let bodyChunks = [];
         req.on('data', chunk => {
-            body += chunk.toString();
+            bodyChunks.push(chunk);
         });
         req.on('end', () => {
             try {
+                const body = Buffer.concat(bodyChunks).toString('utf8');
                 const data = JSON.parse(body);
                 if (data.filename && data.imageBase64) {
                     const base64Data = data.imageBase64.replace(/^data:image\/\w+;base64,/, "");
@@ -96,15 +105,15 @@ const server = http.createServer((req, res) => {
                         if (error) console.error(`Git add error for image: ${error.message}`);
                     });
                     
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
                     res.end(JSON.stringify({ success: true, filename: data.filename }));
                 } else {
-                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
                     res.end(JSON.stringify({ success: false, error: 'Invalid payload' }));
                 }
             } catch (err) {
                 console.error(err);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
                 res.end(JSON.stringify({ success: false, error: err.message }));
             }
         });

@@ -2579,6 +2579,7 @@ input:checked+.slider:before {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
+    align-items: stretch;
 }
 
 @media (max-width: 991px) {
@@ -2608,13 +2609,13 @@ input:checked+.slider:before {
 }
 
 .story-content p {
-    font-size: 19px;
-    line-height: 1.7;
+    font-size: 17px;
+    line-height: 1.6;
     color: #eee;
     font-weight: 500;
     font-style: normal;
-    margin-bottom: 30px;
-    word-break: keep-all;
+    margin-bottom: 24px;
+    word-break: break-word;
 }
 
 .story-footer {
@@ -2926,7 +2927,7 @@ section:not(#about)
     width: auto;
     opacity: 0.6;
     transition: all 0.3s ease;
-    filter: brightness(1);
+    filter: brightness(0) invert(1);
 }
 
 .partners-track img:hover {
