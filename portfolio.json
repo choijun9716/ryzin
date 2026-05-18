@@ -1,121 +1,128 @@
 [
-  {
-    "title": "쏘랩 (SOLAB)",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/005.jpg",
-    "link": "https://naver.me/GqfsQqds"
-  },
-  {
-    "title": "강릉은정한과",
-    "category": "food",
-    "tagKey": "tag_food",
-    "image": "./assets/001.jpg",
-    "link": "https://view.shoppinglive.naver.com/replays/1836196"
-  },
-  {
-    "title": "Dr.O'Lion",
-    "category": "health",
-    "tagKey": "tag_health",
-    "image": "./assets/003.jpg",
-    "link": "https://naver.me/FmGOvDAj"
-  },
-  {
-    "title": "좋은버릇",
-    "category": "health",
-    "tagKey": "tag_health",
-    "image": "./assets/004.PNG",
-    "link": "https://naver.me/GlR5ZzPy"
-  },
-  {
-    "title": "풀럽잇",
-    "category": "food",
-    "tagKey": "tag_beauty",
-    "image": "./assets/Screenshot 2026-05-06 18-07-01.png",
-    "link": "#"
-  },
-  {
-    "title": "Every Habit",
-    "category": "health",
-    "tagKey": "tag_health",
-    "image": "./assets/01.jpg",
-    "link": "https://naver.me/GP2MIZ2g"
-  },
-  {
-    "title": "백아율",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/002.jpg",
-    "link": "https://naver.me/5B09TjTM"
-  },
-  {
-    "title": "에비수",
-    "category": "fashion",
-    "tagKey": "tag_fashion",
-    "image": "./assets/evisu.jpg",
-    "link": "https://naver.me/FYrhPfac"
-  },
-  {
-    "title": "풀럽잇",
-    "category": "food",
-    "tagKey": "tag_food",
-    "image": "./assets/1777008630387_Screenshot_2026-04-22_18-20-42.jpg",
-    "link": "https://naver.me/G1pUox02"
-  },
-  {
-    "title": "야다",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/yadah.jpg",
-    "link": "https://naver.me/5B09TjTM"
-  },
-  {
-    "title": "미야비스",
-    "category": "food",
-    "tagKey": "tag_food",
-    "image": "./assets/miyabis.jpg",
-    "link": "#"
-  },
-  {
-    "title": "부었냥",
-    "category": "health",
-    "tagKey": "tag_innerbeauty",
-    "image": "./assets/boo.png",
-    "link": "https://naver.me/xvCFx5DD"
-  },
-  {
-    "title": "트러스티푸드",
-    "category": "pet",
-    "tagKey": "tag_pet",
-    "image": "./assets/trusty.jpg",
-    "link": "#"
-  },
-  {
-    "title": "바디사랑",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/bodylove.jpg",
-    "link": "#"
-  },
-  {
-    "title": "네티컬 연구소",
-    "category": "fashion",
-    "tagKey": "tag_fashion",
-    "image": "./assets/natical.jpg",
-    "link": "#"
-  },
-  {
-    "title": "부이",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/booie.jpg",
-    "link": "#"
-  },
-  {
-    "title": "개님의상점",
-    "category": "pet",
-    "tagKey": "tag_pet",
-    "image": "./assets/dogshop.jpg",
-    "link": "#"
-  }
+    {
+        "title": "새 프로젝트",
+        "category": "beauty",
+        "tagKey": "tag_beauty",
+        "image": "./assets/01.jpg",
+        "link": "#"
+    },
+    {
+        "title": "쏘랩 (SOLAB)",
+        "category": "life",
+        "tagKey": "tag_life",
+        "image": "./assets/005.jpg",
+        "link": "https://naver.me/GqfsQqds"
+    },
+    {
+        "title": "강릉은정한과",
+        "category": "food",
+        "tagKey": "tag_food",
+        "image": "./assets/001.jpg",
+        "link": "https://view.shoppinglive.naver.com/replays/1836196"
+    },
+    {
+        "title": "Dr.O'Lion",
+        "category": "health",
+        "tagKey": "tag_health",
+        "image": "./assets/003.jpg",
+        "link": "https://naver.me/FmGOvDAj"
+    },
+    {
+        "title": "좋은버릇",
+        "category": "health",
+        "tagKey": "tag_health",
+        "image": "./assets/004.PNG",
+        "link": "https://naver.me/GlR5ZzPy"
+    },
+    {
+        "title": "풀럽잇",
+        "category": "food",
+        "tagKey": "tag_beauty",
+        "image": "./assets/Screenshot 2026-05-06 18-07-01.png",
+        "link": "#"
+    },
+    {
+        "title": "Every Habit",
+        "category": "health",
+        "tagKey": "tag_health",
+        "image": "./assets/01.jpg",
+        "link": "https://naver.me/GP2MIZ2g"
+    },
+    {
+        "title": "백아율",
+        "category": "beauty",
+        "tagKey": "tag_beauty",
+        "image": "./assets/002.jpg",
+        "link": "https://naver.me/5B09TjTM"
+    },
+    {
+        "title": "에비수",
+        "category": "fashion",
+        "tagKey": "tag_fashion",
+        "image": "./assets/evisu.jpg",
+        "link": "https://naver.me/FYrhPfac"
+    },
+    {
+        "title": "풀럽잇",
+        "category": "food",
+        "tagKey": "tag_food",
+        "image": "./assets/1777008630387_Screenshot_2026-04-22_18-20-42.jpg",
+        "link": "https://naver.me/G1pUox02"
+    },
+    {
+        "title": "야다",
+        "category": "beauty",
+        "tagKey": "tag_beauty",
+        "image": "./assets/yadah.jpg",
+        "link": "https://naver.me/5B09TjTM"
+    },
+    {
+        "title": "미야비스",
+        "category": "food",
+        "tagKey": "tag_food",
+        "image": "./assets/miyabis.jpg",
+        "link": "#"
+    },
+    {
+        "title": "부었냥",
+        "category": "health",
+        "tagKey": "tag_innerbeauty",
+        "image": "./assets/boo.png",
+        "link": "https://naver.me/xvCFx5DD"
+    },
+    {
+        "title": "트러스티푸드",
+        "category": "pet",
+        "tagKey": "tag_pet",
+        "image": "./assets/trusty.jpg",
+        "link": "#"
+    },
+    {
+        "title": "바디사랑",
+        "category": "life",
+        "tagKey": "tag_life",
+        "image": "./assets/bodylove.jpg",
+        "link": "#"
+    },
+    {
+        "title": "네티컬 연구소",
+        "category": "fashion",
+        "tagKey": "tag_fashion",
+        "image": "./assets/natical.jpg",
+        "link": "#"
+    },
+    {
+        "title": "부이",
+        "category": "life",
+        "tagKey": "tag_life",
+        "image": "./assets/booie.jpg",
+        "link": "#"
+    },
+    {
+        "title": "개님의상점",
+        "category": "pet",
+        "tagKey": "tag_pet",
+        "image": "./assets/dogshop.jpg",
+        "link": "#"
+    }
 ]
