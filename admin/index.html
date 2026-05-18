@@ -325,9 +325,8 @@
 
 <body>
 
-    <!-- 1. 보안 로그인 화면 -->
     <div id="loginOverlay"
-        style="display:none !important; position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:100000; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:100000; display:flex; justify-content:center; align-items:center; flex-direction:column;">
         <div
             style="background:#1a1a1a; padding:45px 40px; border-radius:20px; border:1px solid #333; width:360px; box-shadow:0 10px 40px rgba(0,0,0,0.8); text-align:center;">
             <h2
@@ -520,9 +519,10 @@
             const EXPECTED_ID_B64 = 'Y2hvaWp1bg=='; // 'choijun'
             const EXPECTED_PW_B64 = 'd2xkbnM5NzE2'; // 'wldns9716'
 
-            if ((idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) ||
+            if ((idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) || 
                 (idB64 === EXPECTED_ID_B64 && pwB64 === EXPECTED_PW_B64)) {
-                sessionStorage.setItem('admin_logged_in', 'true');
+                // sessionStorage 대신 localStorage를 사용하여 브라우저를 꺼도 유지되는 영구 자동 로그인 지원!
+                localStorage.setItem('admin_logged_in', 'true');
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.body.style.overflow = '';
                 checkGithubConfigAndLoad();
@@ -531,14 +531,19 @@
             }
         }
 
-        // [긴급 조치] 로그인 절차 없이 즉시 깃허브 다이렉트 연동 및 대시보드 로드
-        document.body.style.overflow = '';
-        document.addEventListener("DOMContentLoaded", () => {
-            if (document.getElementById('loginOverlay')) {
-                document.getElementById('loginOverlay').style.display = 'none';
-            }
-            checkGithubConfigAndLoad();
-        });
+        // --- 영구 자동 로그인 (Remember Me) 크로스 체크 ---
+        if (localStorage.getItem('admin_logged_in') === 'true') {
+            document.body.style.overflow = '';
+            document.addEventListener("DOMContentLoaded", () => {
+                if (document.getElementById('loginOverlay')) {
+                    document.getElementById('loginOverlay').style.display = 'none';
+                }
+                checkGithubConfigAndLoad();
+            });
+        } else {
+            // 로그인 이력이 없을 때만 화면 전체 잠금 및 스크롤 방지
+            document.body.style.overflow = 'hidden';
+        }
 
 
         // --- 2. GitHub REST API 연동 부 ---
