@@ -496,9 +496,19 @@
         const EXPECTED_PW_HASH = '863fd2e904ef6dbec7b4cdc541bdb5669a07edad54ba36b1f2db6d836eb0283d'; // 'wldns9716'
 
         async function sha256(str) {
-            const buf = new TextEncoder().encode(str);
-            const hash = await crypto.subtle.digest('SHA-256', buf);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+            try {
+                // HTTP 비보안 대역 접속 등으로 인해 crypto.subtle이 차단된 경우 자바스크립트 엔진의 정지를 완벽히 방어
+                if (!window.crypto || !window.crypto.subtle) {
+                    console.warn("Secure Context가 아니거나 브라우저 보안 규격에 의해 crypto.subtle이 차단되었습니다. 이중 안전망(Base64)으로 로그인 검증을 완벽히 이관합니다.");
+                    return "";
+                }
+                const buf = new TextEncoder().encode(str);
+                const hash = await crypto.subtle.digest('SHA-256', buf);
+                return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (e) {
+                console.error("해시 계산 중 브라우저 예외 방어:", e);
+                return "";
+            }
         }
 
         async function handleLogin() {
