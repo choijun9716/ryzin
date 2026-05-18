@@ -172,7 +172,7 @@
             <h1 id="tabTitle">메인 히어로 관리</h1>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-secondary" onclick="resetAll()">초기화</button>
-                <button class="btn btn-primary" onclick="saveAll()">변경사항 저장</button>
+                <button class="btn btn-primary" onclick="syncToServer()" style="background:#007bff;">변경사항 서버 적용 (Commit & Push)</button>
             </div>
         </div>
 
@@ -183,8 +183,9 @@
 
         <!-- Tab 2: Portfolio -->
         <div id="tab-portfolio" class="hidden">
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn btn-secondary" onclick="addPortfolioItem()">+ 새 포트폴리오 추가</button>
+                <button id="syncBtn2" class="btn btn-primary" onclick="syncToServer()" style="background:#007bff;">실시간 서버 동기화 (Commit & Push)</button>
             </div>
             <div class="portfolio-list" id="portfolioList"></div>
         </div>
@@ -215,19 +216,37 @@
 
     <script>
         // Data State
-        let heroConfig = JSON.parse(localStorage.getItem('hero_config')) || {
+        let heroConfig = {
             col1: ['everyhabit_enzyme.jpg', 'baegayul.jpg'],
             col2: ['bodylove.jpg', 'miyabis.jpg'],
             col3: ['yadah.jpg', 'natical.jpg'],
             col4: ['drolion.jpg', 'trusty.jpg']
         };
 
-        let portData = JSON.parse(localStorage.getItem('portfolio_data')) || [
-            { title: "백아율", category: "beauty", image: "./assets/baegayul.jpg", link: "#" },
-            { title: "에브리해빗", category: "health", image: "./assets/everyhabit_enzyme.jpg", link: "#" },
-            { title: "부었냥", category: "food", image: "./assets/booie.jpg", link: "#" },
-            { title: "야다", category: "beauty", image: "./assets/yadah.jpg", link: "#" }
-        ];
+        let portData = [];
+
+        async function initData() {
+            try {
+                // Portfolio load
+                const resPort = await fetch('./portfolio.json?v=' + new Date().getTime());
+                if(resPort.ok) portData = await resPort.json();
+                
+                // Hero load
+                const resHero = await fetch('./hero.json?v=' + new Date().getTime());
+                if(resHero.ok) heroConfig = await resHero.json();
+                
+                // 렌더링 갱신
+                if (!document.getElementById('tab-portfolio').classList.contains('hidden')) {
+                    renderPortfolio();
+                }
+                if (!document.getElementById('tab-hero').classList.contains('hidden')) {
+                    renderHero();
+                }
+            } catch (err) {
+                console.error('Failed to load data:', err);
+            }
+        }
+        initData();
 
         let library = JSON.parse(localStorage.getItem('asset_library')) || [
             'baegayul.jpg', 'bodylove.jpg', 'miyabis.jpg', 'yadah.jpg', 
@@ -262,10 +281,14 @@
                     <div style="font-weight:800; margin-bottom:15px; color:var(--primary);">COLUMN ${i}</div>
                     <div class="image-list">
                         ${heroConfig[colKey].map((img, idx) => `
-                            <div class="image-item">
+                            <div class="image-item" style="flex-wrap: wrap;">
                                 <img src="./assets/${img}">
                                 <span style="flex:1; overflow:hidden;">${img}</span>
-                                <span style="cursor:pointer; color:red;" onclick="removeHeroImg('${colKey}', ${idx})">✕</span>
+                                <div style="display:flex; gap:5px; margin-left:auto;">
+                                    <button class="btn btn-secondary" style="padding:2px 5px; font-size:10px;" onclick="moveHeroUp('${colKey}', ${idx})">▲</button>
+                                    <button class="btn btn-secondary" style="padding:2px 5px; font-size:10px;" onclick="moveHeroDown('${colKey}', ${idx})">▼</button>
+                                </div>
+                                <span style="cursor:pointer; color:red; margin-left:10px;" onclick="removeHeroImg('${colKey}', ${idx})">✕</span>
                             </div>
                         `).join('')}
                     </div>
@@ -293,6 +316,11 @@
                         </select>
                         <input type="text" value="${item.image}" onchange="updatePort(${idx}, 'image', this.value)" placeholder="이미지 경로">
                         <input type="text" value="${item.link}" onchange="updatePort(${idx}, 'link', this.value)" placeholder="링크 URL">
+                        
+                        <div style="display:flex; gap:5px; margin-bottom:10px;">
+                            <button class="btn btn-secondary" style="flex:1; padding:5px; font-size:12px;" onclick="movePortUp(${idx})">▲ 위로</button>
+                            <button class="btn btn-secondary" style="flex:1; padding:5px; font-size:12px;" onclick="movePortDown(${idx})">▼ 아래로</button>
+                        </div>
                         <button class="btn btn-secondary" style="width:100%; color:#ff4444;" onclick="removePort(${idx})">삭제</button>
                     </div>
                 </div>
@@ -336,22 +364,81 @@
             heroConfig[col].splice(idx, 1);
             renderHero();
         }
+        function moveHeroUp(col, idx) {
+            if(idx > 0) {
+                const temp = heroConfig[col][idx - 1];
+                heroConfig[col][idx - 1] = heroConfig[col][idx];
+                heroConfig[col][idx] = temp;
+                renderHero();
+            }
+        }
+        function moveHeroDown(col, idx) {
+            if(idx < heroConfig[col].length - 1) {
+                const temp = heroConfig[col][idx + 1];
+                heroConfig[col][idx + 1] = heroConfig[col][idx];
+                heroConfig[col][idx] = temp;
+                renderHero();
+            }
+        }
 
         // Port Actions
         function addPortfolioItem() {
-            portData.unshift({ title: "새 프로젝트", category: "beauty", image: "./assets/01.jpg", link: "#" });
+            portData.unshift({ title: "새 프로젝트", category: "beauty", tagKey: "tag_beauty", image: "./assets/01.jpg", link: "#" });
             renderPortfolio();
         }
         function updatePort(idx, key, val) { portData[idx][key] = val; }
         function removePort(idx) { portData.splice(idx, 1); renderPortfolio(); }
+        function movePortUp(idx) {
+            if(idx > 0) {
+                const temp = portData[idx - 1];
+                portData[idx - 1] = portData[idx];
+                portData[idx] = temp;
+                renderPortfolio();
+            }
+        }
+        function movePortDown(idx) {
+            if(idx < portData.length - 1) {
+                const temp = portData[idx + 1];
+                portData[idx + 1] = portData[idx];
+                portData[idx] = temp;
+                renderPortfolio();
+            }
+        }
 
-        // Global Actions
-        function saveAll() {
-            localStorage.setItem('hero_config', JSON.stringify(heroConfig));
-            localStorage.setItem('portfolio_data', JSON.stringify(portData));
-            const notif = document.getElementById('notif');
-            notif.classList.add('show');
-            setTimeout(() => notif.classList.remove('show'), 3000);
+        // Sync to Server (Commit & Push)
+        async function syncToServer() {
+            // 버튼 2개가 있을 수 있으므로 모두 비활성화
+            const btns = document.querySelectorAll('[onclick="syncToServer()"]');
+            btns.forEach(btn => {
+                btn.dataset.originalText = btn.innerText;
+                btn.innerText = '동기화 중...';
+                btn.disabled = true;
+            });
+
+            try {
+                const response = await fetch('/api/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ portfolio: portData, hero: heroConfig })
+                });
+                
+                const result = await response.json();
+                if(result.success) {
+                    const notif = document.getElementById('notif');
+                    notif.classList.add('show');
+                    setTimeout(() => notif.classList.remove('show'), 3000);
+                } else {
+                    alert('오류 발생: ' + result.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('서버 연결 실패! node server.js를 실행하여 로컬 서버를 구동 중인지 확인하세요.');
+            } finally {
+                btns.forEach(btn => {
+                    btn.innerText = btn.dataset.originalText;
+                    btn.disabled = false;
+                });
+            }
         }
 
         function resetAll() {

@@ -723,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 8. Hero Gallery Dynamic Loader
-    function loadHeroGallery() {
+    async function loadHeroGallery() {
         const container = document.getElementById('dynamicHeroGallery');
         if (!container) return;
 
@@ -734,7 +734,15 @@ document.addEventListener('DOMContentLoaded', () => {
             col4: ['drolion.jpg', 'trusty.jpg', 'drolion.jpg', 'trusty.jpg']
         };
 
-        const config = JSON.parse(localStorage.getItem('hero_config')) || defaultConfig;
+        let config = defaultConfig;
+        try {
+            const response = await fetch('./hero.json?v=' + new Date().getTime());
+            if (response.ok) {
+                config = await response.json();
+            }
+        } catch (e) {
+            console.log('Failed to load hero.json, using default config.');
+        }
 
         container.innerHTML = '';
         for (let i = 1; i <= 4; i++) {
