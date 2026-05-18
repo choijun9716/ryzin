@@ -502,32 +502,52 @@
         }
 
         async function handleLogin() {
-            const idInput = document.getElementById('loginId').value.trim();
-            const pwInput = document.getElementById('loginPw').value.trim();
-            const idHash = await sha256(idInput);
-            const pwHash = await sha256(pwInput);
+            try {
+                const idInput = document.getElementById('loginId').value.trim();
+                const pwInput = document.getElementById('loginPw').value.trim();
+                
+                console.log("입력 시도 ID:", idInput);
+                console.log("입력 시도 PW:", pwInput);
 
-            // 디버깅용 콘솔 로그 (오류 파악용)
-            console.log("입력한 ID 해시:", idHash);
-            console.log("기대하는 ID 해시:", EXPECTED_ID_HASH);
-            console.log("입력한 PW 해시:", pwHash);
-            console.log("기대하는 PW 해시:", EXPECTED_PW_HASH);
+                const idHash = await sha256(idInput);
+                const pwHash = await sha256(pwInput);
 
-            // [초강력 이중 안전장치] 캐시 버그나 인코딩 차이 등으로 해시 매칭 실패 시 100% 구출하는 Base64 크로스 체크
-            const idB64 = btoa(idInput);
-            const pwB64 = btoa(pwInput);
-            const EXPECTED_ID_B64 = 'Y2hvaWp1bg=='; // 'choijun'
-            const EXPECTED_PW_B64 = 'd2xkbnM5NzE2'; // 'wldns9716'
+                console.log("입력 ID 해시:", idHash);
+                console.log("기대 ID 해시:", EXPECTED_ID_HASH);
+                console.log("입력 PW 해시:", pwHash);
+                console.log("기대 PW 해시:", EXPECTED_PW_HASH);
 
-            if ((idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) || 
-                (idB64 === EXPECTED_ID_B64 && pwB64 === EXPECTED_PW_B64)) {
-                // sessionStorage 대신 localStorage를 사용하여 브라우저를 꺼도 유지되는 영구 자동 로그인 지원!
-                localStorage.setItem('admin_logged_in', 'true');
-                document.getElementById('loginOverlay').style.display = 'none';
-                document.body.style.overflow = '';
-                checkGithubConfigAndLoad();
-            } else {
-                document.getElementById('loginError').style.display = 'block';
+                // Base64 크로스 검증 시 혹시 모를 브라우저 크래시 예방
+                let idB64 = '';
+                let pwB64 = '';
+                try {
+                    idB64 = btoa(idInput);
+                    pwB64 = btoa(pwInput);
+                } catch (b64Err) {
+                    console.warn("Base64 인코딩 스킵:", b64Err);
+                }
+
+                const EXPECTED_ID_B64 = 'Y2hvaWp1bg=='; // 'choijun'
+                const EXPECTED_PW_B64 = 'd2xkbnM5NzE2'; // 'wldns9716'
+
+                if ((idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) || 
+                    (idB64 !== '' && idB64 === EXPECTED_ID_B64 && pwB64 === EXPECTED_PW_B64)) {
+                    
+                    localStorage.setItem('admin_logged_in', 'true');
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    document.body.style.overflow = '';
+                    checkGithubConfigAndLoad();
+                } else {
+                    const errEl = document.getElementById('loginError');
+                    if (errEl) {
+                        errEl.style.display = 'block';
+                    } else {
+                        alert('아이디 또는 비밀번호가 올바르지 않습니다. 다시 입력해 주세요.');
+                    }
+                }
+            } catch (fatalError) {
+                console.error("로그인 프로세스 오류:", fatalError);
+                alert("죄송합니다. 로그인 처리 도중 기술적 장애가 발생했습니다:\n" + fatalError.toString() + "\n" + fatalError.stack);
             }
         }
 
