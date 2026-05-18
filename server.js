@@ -108,6 +108,17 @@ const server = http.createServer((req, res) => {
     
     // Static file serving
     let filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
+    
+    // 디렉토리 경로 요청 시 내부의 index.html 자동 매칭 (Directory Index)
+    try {
+        const stats = fs.statSync(filePath);
+        if (stats.isDirectory()) {
+            filePath = path.join(filePath, 'index.html');
+        }
+    } catch (e) {
+        // 파일이 존재하지 않는 경우 statSync 에러가 나며, fs.readFile의 에러 핸들러에서 404로 자연스럽게 처리됩니다.
+    }
+    
     const extname = String(path.extname(filePath)).toLowerCase();
     const contentType = mimeTypes[extname] || 'application/octet-stream';
 
