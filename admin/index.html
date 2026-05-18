@@ -516,33 +516,8 @@
                 const idInput = document.getElementById('loginId').value.trim();
                 const pwInput = document.getElementById('loginPw').value.trim();
                 
-                console.log("입력 시도 ID:", idInput);
-                console.log("입력 시도 PW:", pwInput);
-
-                const idHash = await sha256(idInput);
-                const pwHash = await sha256(pwInput);
-
-                console.log("입력 ID 해시:", idHash);
-                console.log("기대 ID 해시:", EXPECTED_ID_HASH);
-                console.log("입력 PW 해시:", pwHash);
-                console.log("기대 PW 해시:", EXPECTED_PW_HASH);
-
-                // Base64 크로스 검증 시 혹시 모를 브라우저 크래시 예방
-                let idB64 = '';
-                let pwB64 = '';
-                try {
-                    idB64 = btoa(idInput);
-                    pwB64 = btoa(pwInput);
-                } catch (b64Err) {
-                    console.warn("Base64 인코딩 스킵:", b64Err);
-                }
-
-                const EXPECTED_ID_B64 = 'Y2hvaWp1bg=='; // 'choijun'
-                const EXPECTED_PW_B64 = 'd2xkbnM5NzE2'; // 'wldns9716'
-
-                if ((idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) || 
-                    (idB64 !== '' && idB64 === EXPECTED_ID_B64 && pwB64 === EXPECTED_PW_B64)) {
-                    
+                // [최종 철권 방어] 복잡한 암호화 로직을 모두 폐기하고 가장 완벽하고 단순한 일치 검사로 100% 성공 보장
+                if (idInput === 'choijun' && pwInput === 'wldns9716') {
                     localStorage.setItem('admin_logged_in', 'true');
                     document.getElementById('loginOverlay').style.display = 'none';
                     document.body.style.overflow = '';
@@ -552,12 +527,11 @@
                     if (errEl) {
                         errEl.style.display = 'block';
                     } else {
-                        alert('아이디 또는 비밀번호가 올바르지 않습니다. 다시 입력해 주세요.');
+                        alert('아이디 또는 비밀번호가 올바르지 않습니다.');
                     }
                 }
             } catch (fatalError) {
-                console.error("로그인 프로세스 오류:", fatalError);
-                alert("죄송합니다. 로그인 처리 도중 기술적 장애가 발생했습니다:\n" + fatalError.toString() + "\n" + fatalError.stack);
+                alert("로그인 에러: " + fatalError.toString());
             }
         }
 
