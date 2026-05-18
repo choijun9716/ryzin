@@ -363,7 +363,7 @@
         <div class="nav-item" onclick="showTab('logos')">파트너 로고 관리</div>
         <div class="nav-item" onclick="showTab('assets')">라이브러리 (이미지 추가)</div>
         <div style="margin-top: 40px; padding: 10px; font-size: 11px; color: #555; line-height:1.6;">
-            * 저장 및 업로드 시 로컬 서버 백엔드를 통해 자동으로 실시간 GitHub에 Commit & Push 동기화됩니다.
+            * 우측 상단의 [연동 설정]을 통해 GitHub 토큰을 입력하시면, 로컬 백엔드 서버 없이 웹 브라우저 단독으로 원격 깃허브 저장소에 직접 실시간 커밋 및 배포할 수 있습니다.
         </div>
     </div>
 
@@ -371,6 +371,11 @@
         <div class="header">
             <h1 id="tabTitle">메인 히어로 관리</h1>
             <div style="display:flex; gap:10px; align-items:center;">
+                <!-- GitHub 연동 기어 설정 버튼 -->
+                <button class="btn btn-secondary" onclick="openGithubConfig()" style="display:inline-flex; align-items:center; gap:6px;">
+                    <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    연동 설정
+                </button>
                 <button class="btn btn-secondary" onclick="resetAll()">초기화</button>
                 <button class="btn btn-primary" onclick="syncToServer()"
                     style="background:#007bff; display:inline-flex;">변경사항 서버 적용 및 자동 배포</button>
@@ -453,7 +458,40 @@
         </div>
     </div>
 
-    <!-- GitHub API 연동 설정 모달 완전 삭제됨 -->
+    <!-- GitHub REST API 연동 설정 팝업 모달 -->
+    <div class="modal" id="githubConfigModal">
+        <div class="modal-content" style="max-width:500px;">
+            <h2 style="margin-top:0;">GitHub REST API 연동 설정</h2>
+            <p style="color:var(--text-dim); font-size:13px; margin-bottom:20px; line-height:1.5;">로컬 서버 없이 원격 깃허브 저장소로 콘텐츠를 실시간 동기화하고 이미지를 업로드하기 위한 개인 토큰(PAT)을 입력해주세요.</p>
+            
+            <div style="margin-bottom:18px;">
+                <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">GitHub Personal Access Token (PAT)</label>
+                <input type="password" id="ghToken" placeholder="ghp_..." style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Ryzin%20Serverless%20Admin" target="_blank" style="color:var(--primary); font-size:11px; text-decoration:underline; display:inline-block; margin-top:5px; font-weight:600;">토큰이 없으신가요? 깃허브에서 바로 발급받기 ↗</a>
+            </div>
+            
+            <div style="margin-bottom:18px; display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">GitHub ID (Owner)</label>
+                    <input type="text" id="ghOwner" value="choijun9716" style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+                </div>
+                <div style="flex:1;">
+                    <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">저장소 이름 (Repo)</label>
+                    <input type="text" id="ghRepo" value="ryzin" style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+                </div>
+            </div>
+            
+            <div style="margin-bottom:25px;">
+                <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">브랜치 (Branch)</label>
+                <input type="text" id="ghBranch" value="main" style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+            </div>
+            
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="closeGithubConfig()">취소</button>
+                <button class="btn btn-primary" onclick="saveGithubConfig()">설정 저장 및 연결</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Spinner Loading Overlay -->
     <div id="spinnerOverlay">
@@ -523,7 +561,43 @@
         }
 
 
-        // --- 2. 로컬 API 연동 부 ---
+        // --- 2. 하이브리드 로컬/원격 REST API 연동 부 ---
+        let portfolioSha = null;
+        let heroSha = null;
+        let packagesSha = null;
+        let storiesSha = null;
+        let logosSha = null;
+
+        function openGithubConfig() {
+            document.getElementById('ghToken').value = localStorage.getItem('github_token') || '';
+            document.getElementById('ghOwner').value = localStorage.getItem('github_owner') || 'choijun9716';
+            document.getElementById('ghRepo').value = localStorage.getItem('github_repo') || 'ryzin';
+            document.getElementById('ghBranch').value = localStorage.getItem('github_branch') || 'main';
+            document.getElementById('githubConfigModal').style.display = 'flex';
+        }
+        function closeGithubConfig() {
+            document.getElementById('githubConfigModal').style.display = 'none';
+        }
+        function saveGithubConfig() {
+            const token = document.getElementById('ghToken').value.trim();
+            const owner = document.getElementById('ghOwner').value.trim();
+            const repo = document.getElementById('ghRepo').value.trim();
+            const branch = document.getElementById('ghBranch').value.trim();
+
+            if (!token) {
+                localStorage.removeItem('github_token');
+                alert('연동 설정을 제거했습니다. 로컬 서버 백엔드 모드로 전환됩니다.');
+            } else {
+                localStorage.setItem('github_token', token);
+                localStorage.setItem('github_owner', owner);
+                localStorage.setItem('github_repo', repo);
+                localStorage.setItem('github_branch', branch);
+                alert('GitHub 원격 직접 연동이 성공적으로 활성화되었습니다!');
+            }
+            closeGithubConfig();
+            location.reload();
+        }
+
         // Loading Indicator Helper
         function showLoading(show, text = '로딩 중...') {
             const overlay = document.getElementById('spinnerOverlay');
@@ -536,60 +610,272 @@
             }
         }
 
+        // GitHub REST API: 파일 가져오기
+        async function fetchGithubFile(path) {
+            const token = localStorage.getItem('github_token');
+            const owner = localStorage.getItem('github_owner') || 'choijun9716';
+            const repo = localStorage.getItem('github_repo') || 'ryzin';
+            const branch = localStorage.getItem('github_branch') || 'main';
+
+            const headers = { 'Accept': 'application/vnd.github.v3+json' };
+            if (token) headers['Authorization'] = `token ${token}`;
+
+            const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}&v=${new Date().getTime()}`, { headers });
+            if (!res.ok) {
+                throw new Error(`Failed to fetch ${path} (${res.status})`);
+            }
+            const data = await res.json();
+            // Base64 디코딩 (한글 및 특수문자 대응)
+            const decodedContent = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+            return {
+                content: JSON.parse(decodedContent),
+                sha: data.sha
+            };
+        }
+
+        // GitHub REST API: 파일 쓰기 (커밋)
+        async function commitGithubFile(path, obj, sha, message) {
+            const token = localStorage.getItem('github_token');
+            const owner = localStorage.getItem('github_owner') || 'choijun9716';
+            const repo = localStorage.getItem('github_repo') || 'ryzin';
+            const branch = localStorage.getItem('github_branch') || 'main';
+
+            if (!token) throw new Error("연동 설정을 통해 GitHub 토큰을 먼저 등록해주세요.");
+
+            const rawStr = JSON.stringify(obj, null, 4);
+            // Base64 인코딩 (한글 및 특수문자 대응)
+            const b64Content = btoa(unescape(encodeURIComponent(rawStr)));
+
+            const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    content: b64Content,
+                    sha: sha,
+                    branch: branch
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message || '저장 실패');
+            }
+            const result = await res.json();
+            return result.content.sha; // 새로운 파일 sha 반환
+        }
+
+        // GitHub REST API: assets 폴더의 실제 파일 리스트 동적 조회
+        async function fetchLibraryFiles() {
+            const token = localStorage.getItem('github_token');
+            const owner = localStorage.getItem('github_owner') || 'choijun9716';
+            const repo = localStorage.getItem('github_repo') || 'ryzin';
+            const branch = localStorage.getItem('github_branch') || 'main';
+
+            const headers = { 'Accept': 'application/vnd.github.v3+json' };
+            if (token) headers['Authorization'] = `token ${token}`;
+
+            const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/assets?ref=${branch}&v=${new Date().getTime()}`, { headers });
+            if (!res.ok) return [];
+            const data = await res.json();
+            const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.PNG', '.JPG', '.JPEG'];
+            return data
+                .filter(item => item.type === 'file' && allowedExts.some(ext => item.name.endsWith(ext)))
+                .map(item => item.name);
+        }
+
+        // GitHub REST API: 이미지 파일 다이렉트 푸시 (업로드)
+        async function uploadGithubImage(file) {
+            const token = localStorage.getItem('github_token');
+            const owner = localStorage.getItem('github_owner') || 'choijun9716';
+            const repo = localStorage.getItem('github_repo') || 'ryzin';
+            const branch = localStorage.getItem('github_branch') || 'main';
+
+            if (!token) throw new Error("GitHub 토큰이 유효하지 않습니다.");
+
+            const safeName = file.name.replace(/\s/g, '_');
+            const filename = `${new Date().getTime()}_${safeName}`;
+            const path = `assets/${filename}`;
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async () => {
+                    const base64Data = reader.result.split(',')[1];
+                    try {
+                        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${token}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: `Upload image ${filename} via Secure Serverless Admin`,
+                                content: base64Data,
+                                branch: branch
+                            })
+                        });
+
+                        if (!res.ok) {
+                            const err = await res.json();
+                            throw new Error(err.message || '이미지 파일 업로드 실패');
+                        }
+                        resolve(filename);
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
         let packagesData = [];
         let storiesData = [];
         let logosData = [];
 
         async function loadData() {
-            showLoading(true, '데이터 불러오는 중...');
-            try {
-                const resPort = await fetch('/portfolio.json?v=' + new Date().getTime());
-                if(resPort.ok) portData = await resPort.json();
-                
-                const resHero = await fetch('/hero.json?v=' + new Date().getTime());
-                if(resHero.ok) heroConfig = await resHero.json();
-                
-                const resPack = await fetch('/packages.json?v=' + new Date().getTime());
-                if(resPack.ok) packagesData = await resPack.json();
+            const token = localStorage.getItem('github_token');
+            if (token) {
+                showLoading(true, 'GitHub에서 실시간 원격 데이터 동기화 중...');
+                try {
+                    try {
+                        const pResult = await fetchGithubFile('portfolio.json');
+                        portData = pResult.content;
+                        portfolioSha = pResult.sha;
+                    } catch (e) { console.error("portfolio.json 원격 로드 에러:", e); }
 
-                const resStor = await fetch('/stories.json?v=' + new Date().getTime());
-                if(resStor.ok) storiesData = await resStor.json();
+                    try {
+                        const hResult = await fetchGithubFile('hero.json');
+                        heroConfig = hResult.content;
+                        heroSha = hResult.sha;
+                    } catch (e) { console.error("hero.json 원격 로드 에러:", e); }
 
-                const resLogo = await fetch('/logos.json?v=' + new Date().getTime());
-                if(resLogo.ok) logosData = await resLogo.json();
+                    try {
+                        const pkResult = await fetchGithubFile('packages.json');
+                        packagesData = pkResult.content;
+                        packagesSha = pkResult.sha;
+                    } catch (e) { console.error("packages.json 원격 로드 에러:", e); }
 
-                updateCurrentTabRender();
-            } catch (err) {
-                console.error('Data load failed:', err);
-                alert("데이터를 로컬 서버에서 불러오는 데 실패했습니다.");
-            } finally {
-                showLoading(false);
+                    try {
+                        const stResult = await fetchGithubFile('stories.json');
+                        storiesData = stResult.content;
+                        storiesSha = stResult.sha;
+                    } catch (e) { console.error("stories.json 원격 로드 에러:", e); }
+
+                    try {
+                        const lgResult = await fetchGithubFile('logos.json');
+                        logosData = lgResult.content;
+                        logosSha = lgResult.sha;
+                    } catch (e) { console.error("logos.json 원격 로드 에러:", e); }
+
+                    try {
+                        const files = await fetchLibraryFiles();
+                        if (files && files.length > 0) {
+                            library = files;
+                            localStorage.setItem('asset_library', JSON.stringify(library));
+                        }
+                    } catch (e) { console.error("라이브러리 로드 에러:", e); }
+
+                    updateCurrentTabRender();
+                } catch (err) {
+                    console.error("원격 깃허브 로드 실패:", err);
+                    alert("GitHub 원격 데이터를 가져오는데 실패했습니다: " + err.message);
+                } finally {
+                    showLoading(false);
+                }
+            } else {
+                showLoading(true, '로컬 서버에서 데이터 불러오는 중...');
+                try {
+                    const resPort = await fetch('/portfolio.json?v=' + new Date().getTime());
+                    if (resPort.ok) portData = await resPort.json();
+                    
+                    const resHero = await fetch('/hero.json?v=' + new Date().getTime());
+                    if (resHero.ok) heroConfig = await resHero.json();
+                    
+                    const resPack = await fetch('/packages.json?v=' + new Date().getTime());
+                    if (resPack.ok) packagesData = await resPack.json();
+
+                    const resStor = await fetch('/stories.json?v=' + new Date().getTime());
+                    if (resStor.ok) storiesData = await resStor.json();
+
+                    const resLogo = await fetch('/logos.json?v=' + new Date().getTime());
+                    if (resLogo.ok) logosData = await resLogo.json();
+
+                    updateCurrentTabRender();
+                } catch (err) {
+                    console.error('Data load failed:', err);
+                    alert("데이터를 로컬 서버에서 불러오는 데 실패했습니다.");
+                } finally {
+                    showLoading(false);
+                }
             }
         }
 
         async function syncToServer() {
-            showLoading(true, '서버에 변경사항 저장 및 깃허브 배포 진행 중...');
-            try {
-                const res = await fetch('/api/sync', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        portfolio: portData, 
-                        hero: heroConfig,
-                        packages: packagesData,
-                        stories: storiesData,
-                        logos: logosData
-                    })
+            const token = localStorage.getItem('github_token');
+            if (token) {
+                const btns = document.querySelectorAll('[onclick="syncToServer()"]');
+                btns.forEach(btn => {
+                    btn.dataset.originalText = btn.innerText;
+                    btn.innerText = '원격 커밋 중...';
+                    btn.disabled = true;
                 });
-                const result = await res.json();
-                if (!res.ok || !result.success) throw new Error(result.error);
-                
-                showLoading(false);
-                showNotification();
-            } catch (err) {
-                console.error(err);
-                showLoading(false);
-                alert('서버 저장 실패: ' + err.message);
+
+                showLoading(true, 'GitHub 저장소에 5개 JSON 설정파일 직접 커밋 중...');
+
+                try {
+                    portfolioSha = await commitGithubFile('portfolio.json', portData, portfolioSha, 'Update portfolio.json via Secure Serverless Admin');
+                    heroSha = await commitGithubFile('hero.json', heroConfig, heroSha, 'Update hero.json via Secure Serverless Admin');
+                    packagesSha = await commitGithubFile('packages.json', packagesData, packagesSha, 'Update packages.json via Secure Serverless Admin');
+                    storiesSha = await commitGithubFile('stories.json', storiesData, storiesSha, 'Update stories.json via Secure Serverless Admin');
+                    logosSha = await commitGithubFile('logos.json', logosData, logosSha, 'Update logos.json via Secure Serverless Admin');
+
+                    showLoading(false);
+                    const notif = document.getElementById('notif');
+                    notif.innerText = '성공적으로 GitHub 원격지에 직접 실시간 저장 및 자동 배포가 완료되었습니다!';
+                    notif.classList.add('show');
+                    setTimeout(() => notif.classList.remove('show'), 5000);
+                } catch (err) {
+                    console.error(err);
+                    showLoading(false);
+                    alert('GitHub 원격지 직접 동기화 실패! (에러: ' + err.message + ')\n페이지를 새로고침하여 최신 sha 키를 확보한 후 다시 시도해주세요.');
+                } finally {
+                    btns.forEach(btn => {
+                        if (btn.dataset.originalText) {
+                            btn.innerText = btn.dataset.originalText;
+                        }
+                        btn.disabled = false;
+                    });
+                }
+            } else {
+                showLoading(true, '서버에 변경사항 저장 및 깃허브 배포 진행 중...');
+                try {
+                    const res = await fetch('/api/sync', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            portfolio: portData, 
+                            hero: heroConfig,
+                            packages: packagesData,
+                            stories: storiesData,
+                            logos: logosData
+                        })
+                    });
+                    const result = await res.json();
+                    if (!res.ok || !result.success) throw new Error(result.error);
+                    
+                    showLoading(false);
+                    showNotification();
+                } catch (err) {
+                    console.error(err);
+                    showLoading(false);
+                    alert('서버 저장 실패: ' + err.message);
+                }
             }
         }
 
@@ -957,7 +1243,7 @@
         }
 
 
-        // --- 5. 서버리스 깃허브 실시간 업로드 및 동기화 커밋 부 ---
+        // --- 5. 하이브리드 깃허브 실시간 업로드 및 동기화 커밋 부 ---
 
         // 이미지 업로드 실행
         async function uploadAsset() {
@@ -965,25 +1251,32 @@
             const file = input.files[0];
             if (!file) return alert('업로드할 이미지 파일을 선택해주세요.');
 
+            const token = localStorage.getItem('github_token');
             const btn = document.getElementById('uploadBtn');
             const originalText = btn.innerText;
-            btn.innerText = '서버 업로드 및 배포 중...';
+            btn.innerText = token ? 'GitHub 커밋 중...' : '서버 업로드 중...';
             btn.disabled = true;
 
-            showLoading(true, '서버에 이미지를 저장하고 깃허브에 자동 푸시 중...');
+            showLoading(true, token ? 'GitHub에 이미지 파일 실시간 푸시 중...' : '서버에 이미지를 저장하고 깃허브에 자동 푸시 중...');
 
             try {
-                const uploadedFilename = await uploadLocalImage(file);
+                let uploadedFilename;
+                if (token) {
+                    uploadedFilename = await uploadGithubImage(file);
+                } else {
+                    uploadedFilename = await uploadLocalImage(file);
+                }
+
                 if (!library.includes(uploadedFilename)) {
                     library.push(uploadedFilename);
                     localStorage.setItem('asset_library', JSON.stringify(library));
                 }
                 renderLibrary();
-                alert(`이미지가 GitHub 저장소에 성공적으로 푸시되었습니다!\n\n저장된 파일명: ${uploadedFilename}`);
+                alert(`이미지가 성공적으로 저장소에 푸시되었습니다!\n\n저장된 파일명: ${uploadedFilename}`);
                 input.value = ''; // Reset input
             } catch (err) {
                 console.error(err);
-                alert('GitHub 이미지 커밋 실패: ' + err.message);
+                alert('이미지 업로드 실패: ' + err.message);
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
