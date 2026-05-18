@@ -1,17 +1,10 @@
 [
   {
-    "title": "풀럽잇",
-    "category": "food",
-    "tagKey": "tag_beauty",
-    "image": "./assets/Screenshot 2026-05-06 18-07-01.png",
-    "link": "#"
-  },
-  {
-    "title": "백아율",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/Screenshot 2026-04-21 20-53-59.png",
-    "link": "#"
+    "title": "쏘랩 (SOLAB)",
+    "category": "life",
+    "tagKey": "tag_life",
+    "image": "./assets/005.jpg",
+    "link": "https://naver.me/GqfsQqds"
   },
   {
     "title": "강릉은정한과",
@@ -19,13 +12,6 @@
     "tagKey": "tag_food",
     "image": "./assets/001.jpg",
     "link": "https://view.shoppinglive.naver.com/replays/1836196"
-  },
-  {
-    "title": "백아율",
-    "category": "beauty",
-    "tagKey": "tag_beauty",
-    "image": "./assets/002.jpg",
-    "link": "https://naver.me/5B09TjTM"
   },
   {
     "title": "Dr.O'Lion",
@@ -42,6 +28,13 @@
     "link": "https://naver.me/GlR5ZzPy"
   },
   {
+    "title": "풀럽잇",
+    "category": "food",
+    "tagKey": "tag_beauty",
+    "image": "./assets/Screenshot 2026-05-06 18-07-01.png",
+    "link": "#"
+  },
+  {
     "title": "Every Habit",
     "category": "health",
     "tagKey": "tag_health",
@@ -49,11 +42,18 @@
     "link": "https://naver.me/GP2MIZ2g"
   },
   {
-    "title": "쏘랩 (SOLAB)",
-    "category": "life",
-    "tagKey": "tag_life",
-    "image": "./assets/005.jpg",
-    "link": "https://naver.me/GqfsQqds"
+    "title": "백아율",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/002.jpg",
+    "link": "https://naver.me/5B09TjTM"
+  },
+  {
+    "title": "에비수",
+    "category": "fashion",
+    "tagKey": "tag_fashion",
+    "image": "./assets/evisu.jpg",
+    "link": "https://naver.me/FYrhPfac"
   },
   {
     "title": "풀럽잇",
@@ -96,13 +96,6 @@
     "tagKey": "tag_life",
     "image": "./assets/bodylove.jpg",
     "link": "#"
-  },
-  {
-    "title": "에비수",
-    "category": "fashion",
-    "tagKey": "tag_fashion",
-    "image": "./assets/evisu.jpg",
-    "link": "https://naver.me/FYrhPfac"
   },
   {
     "title": "네티컬 연구소",
