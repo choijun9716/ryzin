@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RYZIN | 보안 통합 관리자 센터 (Serverless)</title>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v3.2.1/dist/web/static/pretendard.css" />
     <style>
         :root {
             --primary: #ff8730;
@@ -36,7 +38,12 @@
             z-index: 10;
         }
 
-        .logo { font-size: 20px; font-weight: 800; margin-bottom: 40px; color: var(--primary); }
+        .logo {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 40px;
+            color: var(--primary);
+        }
 
         .nav-item {
             padding: 15px 20px;
@@ -87,10 +94,23 @@
             gap: 6px;
         }
 
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-secondary { background: #333; color: white; }
-        .btn-primary:hover { background: #e06d1b; }
-        .btn-secondary:hover { background: #444; }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e06d1b;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
 
         /* Hero Editor Grid */
         .hero-grid {
@@ -106,7 +126,12 @@
             border: 1px solid var(--border);
         }
 
-        .image-list { display: flex; flex-direction: column; gap: 10px; }
+        .image-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .image-item {
             background: #222;
             padding: 10px;
@@ -116,7 +141,13 @@
             gap: 12px;
             font-size: 13px;
         }
-        .image-item img { width: 40px; height: 55px; object-fit: cover; border-radius: 4px; }
+
+        .image-item img {
+            width: 40px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
 
         /* Portfolio Editor */
         .portfolio-list {
@@ -132,9 +163,18 @@
             border: 1px solid var(--border);
         }
 
-        .port-card img { width: 100%; height: 180px; object-fit: cover; }
-        .port-card-body { padding: 20px; }
-        .port-card input, .port-card select {
+        .port-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .port-card-body {
+            padding: 20px;
+        }
+
+        .port-card input,
+        .port-card select {
             width: 100%;
             background: #222;
             border: 1px solid #444;
@@ -148,45 +188,79 @@
         }
 
         /* Utils */
-        .hidden { display: none !important; }
+        .hidden {
+            display: none !important;
+        }
+
         .notification {
-            position: fixed; bottom: 20px; right: 20px;
-            background: var(--primary); color: white;
-            padding: 12px 24px; border-radius: 8px;
-            transform: translateY(100px); transition: 0.3s;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            transform: translateY(100px);
+            transition: 0.3s;
             z-index: 10000;
         }
-        .notification.show { transform: translateY(0); }
+
+        .notification.show {
+            transform: translateY(0);
+        }
 
         /* Modal */
         .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
             backdrop-filter: blur(4px);
         }
-        .modal-content { 
-            background: var(--card-bg); 
-            max-width: 800px; 
-            width: 90%; 
-            padding: 30px; 
-            border-radius: 20px; 
+
+        .modal-content {
+            background: var(--card-bg);
+            max-width: 800px;
+            width: 90%;
+            padding: 30px;
+            border-radius: 20px;
             border: 1px solid var(--border);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
         }
-        .asset-grid { 
-            display: grid; 
-            grid-template-columns: repeat(6, 1fr); 
-            gap: 12px; 
-            margin-top: 20px; 
-            max-height: 400px; 
+
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+            max-height: 400px;
             overflow-y: auto;
             padding-right: 5px;
         }
-        
-        .asset-grid::-webkit-scrollbar { width: 6px; }
-        .asset-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 4px; }
-        .asset-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
-        .asset-grid::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .asset-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .asset-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+        }
+
+        .asset-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .asset-grid::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
 
         .asset-item {
             text-align: center;
@@ -196,20 +270,37 @@
             border: 1px solid #222;
             transition: all 0.2s;
         }
+
         .asset-item:hover {
             transform: translateY(-3px);
             border-color: var(--primary);
         }
-        .asset-item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; cursor: pointer; }
-        
+
+        .asset-item img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
         /* Spinner */
         #spinnerOverlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.7); z-index: 99999;
-            display: none; justify-content: center; align-items: center;
-            flex-direction: column; gap: 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
             backdrop-filter: blur(2px);
         }
+
         .loader {
             border: 4px solid rgba(255, 255, 255, 0.1);
             border-top: 4px solid var(--primary);
@@ -218,28 +309,47 @@
             height: 40px;
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- 1. 보안 로그인 화면 -->
-    <div id="loginOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:100000; display:flex; justify-content:center; align-items:center; flex-direction:column;">
-        <div style="background:#1a1a1a; padding:45px 40px; border-radius:20px; border:1px solid #333; width:360px; box-shadow:0 10px 40px rgba(0,0,0,0.8); text-align:center;">
-            <h2 style="color:#ff8730; margin-top:0; margin-bottom:30px; font-weight:800; letter-spacing:-0.5px; font-size:22px;">RYZIN ADMIN SECURE</h2>
+    <div id="loginOverlay"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; z-index:100000; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <div
+            style="background:#1a1a1a; padding:45px 40px; border-radius:20px; border:1px solid #333; width:360px; box-shadow:0 10px 40px rgba(0,0,0,0.8); text-align:center;">
+            <h2
+                style="color:#ff8730; margin-top:0; margin-bottom:30px; font-weight:800; letter-spacing:-0.5px; font-size:22px;">
+                RYZIN ADMIN SECURE</h2>
             <div style="margin-bottom:15px; text-align:left;">
-                <label style="color:#888; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">ADMIN ID</label>
-                <input type="text" id="loginId" placeholder="아이디 입력" style="width:100%; background:#222; border:1px solid #444; color:white; padding:12px 14px; border-radius:8px; box-sizing:border-box; outline:none; font-family:inherit; font-size:14px;">
+                <label style="color:#888; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">ADMIN
+                    ID</label>
+                <input type="text" id="loginId" placeholder="아이디 입력"
+                    style="width:100%; background:#222; border:1px solid #444; color:white; padding:12px 14px; border-radius:8px; box-sizing:border-box; outline:none; font-family:inherit; font-size:14px;">
             </div>
             <div style="margin-bottom:30px; text-align:left;">
-                <label style="color:#888; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">PASSWORD</label>
-                <input type="password" id="loginPw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter') handleLogin()" style="width:100%; background:#222; border:1px solid #444; color:white; padding:12px 14px; border-radius:8px; box-sizing:border-box; outline:none; font-family:inherit; font-size:14px;">
+                <label
+                    style="color:#888; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">PASSWORD</label>
+                <input type="password" id="loginPw" placeholder="비밀번호 입력"
+                    onkeydown="if(event.key==='Enter') handleLogin()"
+                    style="width:100%; background:#222; border:1px solid #444; color:white; padding:12px 14px; border-radius:8px; box-sizing:border-box; outline:none; font-family:inherit; font-size:14px;">
             </div>
-            <button onclick="handleLogin()" style="width:100%; background:#ff8730; color:white; border:none; padding:14px; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px; transition:0.2s; font-family:inherit;">보안 로그인</button>
-            <div id="loginError" style="color:#ff4444; font-size:12px; margin-top:15px; font-weight:600; display:none;">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+            <button onclick="handleLogin()"
+                style="width:100%; background:#ff8730; color:white; border:none; padding:14px; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px; transition:0.2s; font-family:inherit;">보안
+                로그인</button>
+            <div id="loginError" style="color:#ff4444; font-size:12px; margin-top:15px; font-weight:600; display:none;">
+                아이디 또는 비밀번호가 올바르지 않습니다.</div>
         </div>
     </div>
 
@@ -260,11 +370,18 @@
             <div style="display:flex; gap:10px; align-items:center;">
                 <!-- GitHub 연동 기어 설정 버튼 -->
                 <button class="btn btn-secondary" onclick="openGithubConfig()">
-                    <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
                     연동 설정
                 </button>
                 <button class="btn btn-secondary" onclick="resetAll()">초기화</button>
-                <button class="btn btn-primary" onclick="syncToServer()" style="background:#007bff; display:inline-flex;">변경사항 서버 적용 (Commit & Push)</button>
+                <button class="btn btn-primary" onclick="syncToServer()"
+                    style="background:#007bff; display:inline-flex;">변경사항 서버 적용 (Commit & Push)</button>
             </div>
         </div>
 
@@ -277,7 +394,8 @@
         <div id="tab-portfolio" class="hidden">
             <div style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
                 <button class="btn btn-secondary" onclick="addPortfolioItem()">+ 새 포트폴리오 추가</button>
-                <button class="btn btn-primary" onclick="syncToServer()" style="background:#007bff;">실시간 서버 동기화 (Commit & Push)</button>
+                <button class="btn btn-primary" onclick="syncToServer()" style="background:#007bff;">실시간 서버 동기화 (Commit
+                    & Push)</button>
             </div>
             <div style="margin-bottom: 20px; display:flex; gap:10px; flex-wrap:wrap;" id="adminPortFilters">
                 <button class="btn btn-primary" onclick="filterAdminPort('all')">전체보기</button>
@@ -293,11 +411,14 @@
 
         <!-- Tab 3: Assets -->
         <div id="tab-assets" class="hidden">
-            <div style="background: var(--card-bg); padding: 30px; border-radius: 20px; border: 1px solid var(--border);">
+            <div
+                style="background: var(--card-bg); padding: 30px; border-radius: 20px; border: 1px solid var(--border);">
                 <h3>새 이미지 추가</h3>
-                <p style="color:var(--text-dim); font-size: 13px;">이미지 파일을 선택하여 업로드하세요. 파일은 깃허브 API를 통해 저장소의 `assets/` 디렉토리에 다이렉트로 커밋됩니다.</p>
+                <p style="color:var(--text-dim); font-size: 13px;">이미지 파일을 선택하여 업로드하세요. 파일은 깃허브 API를 통해 저장소의 `assets/`
+                    디렉토리에 다이렉트로 커밋됩니다.</p>
                 <div style="display:flex; gap:10px;">
-                    <input type="file" id="imageUploadInput" accept="image/*" style="flex:1; background:#222; border:1px solid #444; color:white; padding:10px; border-radius:8px; box-sizing:border-box;">
+                    <input type="file" id="imageUploadInput" accept="image/*"
+                        style="flex:1; background:#222; border:1px solid #444; color:white; padding:10px; border-radius:8px; box-sizing:border-box;">
                     <button id="uploadBtn" class="btn btn-primary" onclick="uploadAsset()">이미지 업로드</button>
                 </div>
                 <div class="asset-grid" id="libraryGrid" style="margin-top:40px;"></div>
@@ -318,30 +439,42 @@
     <div class="modal" id="githubConfigModal">
         <div class="modal-content" style="max-width:500px;">
             <h2 style="margin-top:0;">GitHub REST API 연동 설정</h2>
-            <p style="color:var(--text-dim); font-size:13px; margin-bottom:20px; line-height:1.5;">서버 없이 원격 깃허브 저장소로 콘텐츠를 실시간 동기화하고 이미지를 업로드하기 위한 개인 토큰(PAT)을 입력해주세요.</p>
-            
+            <p style="color:var(--text-dim); font-size:13px; margin-bottom:20px; line-height:1.5;">서버 없이 원격 깃허브 저장소로
+                콘텐츠를 실시간 동기화하고 이미지를 업로드하기 위한 개인 토큰(PAT)을 입력해주세요.</p>
+
             <div style="margin-bottom:18px;">
-                <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">GitHub Personal Access Token (PAT)</label>
-                <input type="password" id="ghToken" placeholder="ghp_..." style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
-                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Ryzin%20Serverless%20Admin" target="_blank" style="color:var(--primary); font-size:11px; text-decoration:underline; display:inline-block; margin-top:5px; font-weight:600;">토큰이 없으신가요? 깃허브에서 바로 발급받기 ↗</a>
+                <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">GitHub
+                    Personal Access Token (PAT)</label>
+                <input type="password" id="ghToken" placeholder="ghp_..."
+                    style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+                <a href="https://github.com/settings/tokens/new?scopes=repo&description=Ryzin%20Serverless%20Admin"
+                    target="_blank"
+                    style="color:var(--primary); font-size:11px; text-decoration:underline; display:inline-block; margin-top:5px; font-weight:600;">토큰이
+                    없으신가요? 깃허브에서 바로 발급받기 ↗</a>
             </div>
-            
+
             <div style="margin-bottom:18px; display:flex; gap:10px;">
                 <div style="flex:1;">
-                    <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">GitHub ID (Owner)</label>
-                    <input type="text" id="ghOwner" value="choijun9716" style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+                    <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">GitHub
+                        ID (Owner)</label>
+                    <input type="text" id="ghOwner" value="choijun9716"
+                        style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
                 </div>
                 <div style="flex:1;">
-                    <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">저장소 이름 (Repo)</label>
-                    <input type="text" id="ghRepo" value="ryzin" style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+                    <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">저장소 이름
+                        (Repo)</label>
+                    <input type="text" id="ghRepo" value="ryzin"
+                        style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
                 </div>
             </div>
-            
+
             <div style="margin-bottom:25px;">
-                <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">브랜치 (Branch)</label>
-                <input type="text" id="ghBranch" value="main" style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
+                <label style="color:#aaa; font-size:12px; font-weight:600; display:block; margin-bottom:6px;">브랜치
+                    (Branch)</label>
+                <input type="text" id="ghBranch" value="main"
+                    style="width:100%; background:#222; border:1px solid #444; color:white; padding:11px; border-radius:6px; box-sizing:border-box; outline:none; font-family:inherit;">
             </div>
-            
+
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button class="btn btn-secondary" onclick="closeGithubConfig()">취소</button>
                 <button class="btn btn-primary" onclick="saveGithubConfig()">설정 저장 및 연결</button>
@@ -360,7 +493,7 @@
     <script>
         // --- 1. SHA-256 보안 로그인 인증 부 ---
         const EXPECTED_ID_HASH = '1f114c000fb55663750eb26c7e3f8863b156a004ab0b59b158097b090e544be8'; // 'choijun'
-        const EXPECTED_PW_HASH = '71d5ef373ea7bb3cb4be580f0d9c6125e2b3186fdab770c5c6232da064b6943a'; // '임시 비밀번호'
+        const EXPECTED_PW_HASH = '71d5ef373ea7bb3cb4be580f0d9c6125e2b3186fdab770c5c6232da064b6943a'; // 'dlwnsryzin123!'
 
         async function sha256(str) {
             const buf = new TextEncoder().encode(str);
@@ -374,7 +507,7 @@
             const idHash = await sha256(idInput);
             const pwHash = await sha256(pwInput);
 
-            if(idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) {
+            if (idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) {
                 sessionStorage.setItem('admin_logged_in', 'true');
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.body.style.overflow = '';
@@ -385,7 +518,7 @@
         }
 
         // 세션 로그인 유지 상태 체크
-        if(sessionStorage.getItem('admin_logged_in') === 'true') {
+        if (sessionStorage.getItem('admin_logged_in') === 'true') {
             document.getElementById('loginOverlay').style.display = 'none';
             document.addEventListener("DOMContentLoaded", () => {
                 checkGithubConfigAndLoad();
@@ -415,7 +548,7 @@
             const repo = document.getElementById('ghRepo').value.trim();
             const branch = document.getElementById('ghBranch').value.trim();
 
-            if(!token) {
+            if (!token) {
                 alert('Personal Access Token(PAT)은 필수 입력 항목입니다.');
                 return;
             }
@@ -434,7 +567,7 @@
         function showLoading(show, text = '로딩 중...') {
             const overlay = document.getElementById('spinnerOverlay');
             const txtEl = document.getElementById('spinnerText');
-            if(show) {
+            if (show) {
                 txtEl.innerText = text;
                 overlay.style.display = 'flex';
             } else {
@@ -453,7 +586,7 @@
             if (token) headers['Authorization'] = `token ${token}`;
 
             const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}&v=${new Date().getTime()}`, { headers });
-            if(!res.ok) {
+            if (!res.ok) {
                 throw new Error(`Failed to fetch ${path} (${res.status})`);
             }
             const data = await res.json();
@@ -472,7 +605,7 @@
             const repo = localStorage.getItem('github_repo') || 'ryzin';
             const branch = localStorage.getItem('github_branch') || 'main';
 
-            if(!token) throw new Error("연동 설정을 통해 GitHub 토큰을 먼저 등록해주세요.");
+            if (!token) throw new Error("연동 설정을 통해 GitHub 토큰을 먼저 등록해주세요.");
 
             const rawStr = JSON.stringify(obj, null, 4);
             // Base64 인코딩 (한글 및 특수문자 대응)
@@ -493,7 +626,7 @@
                 })
             });
 
-            if(!res.ok) {
+            if (!res.ok) {
                 const err = await res.json();
                 throw new Error(err.message || '저장 실패');
             }
@@ -512,7 +645,7 @@
             if (token) headers['Authorization'] = `token ${token}`;
 
             const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/assets?ref=${branch}&v=${new Date().getTime()}`, { headers });
-            if(!res.ok) return [];
+            if (!res.ok) return [];
             const data = await res.json();
             const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.PNG', '.JPG', '.JPEG'];
             return data
@@ -527,7 +660,7 @@
             const repo = localStorage.getItem('github_repo') || 'ryzin';
             const branch = localStorage.getItem('github_branch') || 'main';
 
-            if(!token) throw new Error("GitHub 토큰이 유효하지 않습니다.");
+            if (!token) throw new Error("GitHub 토큰이 유효하지 않습니다.");
 
             // 띄어쓰기를 언더바(_)로 안전 치환하여 파일명 충돌 및 URL 인코딩 버그 예방
             const safeName = file.name.replace(/\s/g, '_');
@@ -554,12 +687,12 @@
                             })
                         });
 
-                        if(!res.ok) {
+                        if (!res.ok) {
                             const err = await res.json();
                             throw new Error(err.message || '이미지 파일 업로드 실패');
                         }
                         resolve(filename);
-                    } catch(e) {
+                    } catch (e) {
                         reject(e);
                     }
                 };
@@ -578,7 +711,7 @@
 
         let portData = [];
         let library = [
-            'baegayul.jpg', 'bodylove.jpg', 'miyabis.jpg', 'yadah.jpg', 
+            'baegayul.jpg', 'bodylove.jpg', 'miyabis.jpg', 'yadah.jpg',
             'natical.jpg', 'drolion.jpg', 'trusty.jpg', 'everyhabit_enzyme.jpg',
             'gangneung.jpg', 'dogshop.jpg', 'booie.jpg', '01.jpg', '002.jpg', '003.jpg'
         ];
@@ -595,29 +728,29 @@
                 try {
                     resPort = await fetch('../portfolio.json?v=' + new Date().getTime());
                     resHero = await fetch('../hero.json?v=' + new Date().getTime());
-                } catch(e) {
+                } catch (e) {
                     console.warn("로컬 파일을 긁어오는 데 실패했습니다.");
                 }
 
-                if(resPort && resPort.ok) {
+                if (resPort && resPort.ok) {
                     portData = await resPort.json();
                     localStorage.setItem('portfolio_data', JSON.stringify(portData));
                 } else {
                     const local = localStorage.getItem('portfolio_data');
-                    if(local) portData = JSON.parse(local);
+                    if (local) portData = JSON.parse(local);
                 }
-                
-                if(resHero && resHero.ok) {
+
+                if (resHero && resHero.ok) {
                     heroConfig = await resHero.json();
                     localStorage.setItem('hero_config', JSON.stringify(heroConfig));
                 } else {
                     const localHero = localStorage.getItem('hero_config');
-                    if(localHero) heroConfig = JSON.parse(localHero);
+                    if (localHero) heroConfig = JSON.parse(localHero);
                 }
 
                 const cachedLib = localStorage.getItem('asset_library');
-                if(cachedLib) library = JSON.parse(cachedLib);
-                
+                if (cachedLib) library = JSON.parse(cachedLib);
+
                 updateCurrentTabRender();
             } catch (err) {
                 console.error('Offline load failed:', err);
@@ -627,7 +760,7 @@
         // 실시간 깃허브 동기화 및 렌더링
         async function checkGithubConfigAndLoad() {
             const token = localStorage.getItem('github_token');
-            if(!token) {
+            if (!token) {
                 alert('깃허브 다이렉트 동기화를 시작하려면 우측 상단의 [연동 설정]을 클릭해 주세요.');
                 await initData();
                 return;
@@ -635,7 +768,7 @@
 
             try {
                 showLoading(true, 'GitHub에서 실시간 데이터 동기화 중...');
-                
+
                 // 1. portfolio.json 수집
                 const pResult = await fetchGithubFile('portfolio.json');
                 portData = pResult.content;
@@ -650,7 +783,7 @@
 
                 // 3. assets 폴더 스캔
                 const files = await fetchLibraryFiles();
-                if(files && files.length > 0) {
+                if (files && files.length > 0) {
                     library = files;
                     localStorage.setItem('asset_library', JSON.stringify(library));
                 }
@@ -676,7 +809,7 @@
         let activeCol = null;
         let activePortIdx = null;
         let activeHeroImgIdx = null;
-        let activeModalType = null; 
+        let activeModalType = null;
 
         function showTab(tab) {
             document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
@@ -684,10 +817,10 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById('tabTitle').innerText = event.target.innerText;
-            
-            if(tab === 'hero') renderHero();
-            if(tab === 'portfolio') renderPortfolio();
-            if(tab === 'assets') renderLibrary();
+
+            if (tab === 'hero') renderHero();
+            if (tab === 'portfolio') renderPortfolio();
+            if (tab === 'assets') renderLibrary();
         }
 
         // Hero Render
@@ -737,10 +870,10 @@
             const list = document.getElementById('portfolioList');
             list.innerHTML = portData.map((item, idx) => {
                 if (currentAdminFilter !== 'all' && item.category !== currentAdminFilter) return '';
-                
+
                 // 이미지 경로가 로컬에 잘 보이기 위해 ../assets/ 형태로 체크
                 let displayImg = item.image;
-                if(displayImg.startsWith('./assets/')) displayImg = '../' + displayImg.substring(2);
+                if (displayImg.startsWith('./assets/')) displayImg = '../' + displayImg.substring(2);
 
                 return `
                 <div class="port-card">
@@ -786,12 +919,12 @@
         // Modal for Image Selection
         function openModal(type, targetIdx, extraIdx) {
             activeModalType = type;
-            if(type === 'hero') {
+            if (type === 'hero') {
                 activeCol = targetIdx;
-            } else if(type === 'hero_change') {
+            } else if (type === 'hero_change') {
                 activeCol = targetIdx;
                 activeHeroImgIdx = extraIdx;
-            } else if(type === 'portfolio') {
+            } else if (type === 'portfolio') {
                 activePortIdx = targetIdx;
             }
             document.getElementById('imageModal').style.display = 'flex';
@@ -803,17 +936,17 @@
             `).join('');
         }
         function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
-        
+
         function selectModalImage(img) {
-            if(activeModalType === 'hero') {
+            if (activeModalType === 'hero') {
                 heroConfig[activeCol].push(img);
                 saveLocal();
                 renderHero();
-            } else if(activeModalType === 'hero_change') {
+            } else if (activeModalType === 'hero_change') {
                 heroConfig[activeCol][activeHeroImgIdx] = img;
                 saveLocal();
                 renderHero();
-            } else if(activeModalType === 'portfolio') {
+            } else if (activeModalType === 'portfolio') {
                 portData[activePortIdx].image = `./assets/${img}`;
                 saveLocal();
                 renderPortfolio();
@@ -827,7 +960,7 @@
             renderHero();
         }
         function moveHeroUp(col, idx) {
-            if(idx > 0) {
+            if (idx > 0) {
                 const temp = heroConfig[col][idx - 1];
                 heroConfig[col][idx - 1] = heroConfig[col][idx];
                 heroConfig[col][idx] = temp;
@@ -836,7 +969,7 @@
             }
         }
         function moveHeroDown(col, idx) {
-            if(idx < heroConfig[col].length - 1) {
+            if (idx < heroConfig[col].length - 1) {
                 const temp = heroConfig[col][idx + 1];
                 heroConfig[col][idx + 1] = heroConfig[col][idx];
                 heroConfig[col][idx] = temp;
@@ -851,17 +984,17 @@
             saveLocal();
             renderPortfolio();
         }
-        function updatePort(idx, key, val) { 
-            portData[idx][key] = val; 
+        function updatePort(idx, key, val) {
+            portData[idx][key] = val;
             saveLocal();
         }
-        function removePort(idx) { 
-            portData.splice(idx, 1); 
+        function removePort(idx) {
+            portData.splice(idx, 1);
             saveLocal();
-            renderPortfolio(); 
+            renderPortfolio();
         }
         function movePortUp(idx) {
-            if(idx > 0) {
+            if (idx > 0) {
                 const temp = portData[idx - 1];
                 portData[idx - 1] = portData[idx];
                 portData[idx] = temp;
@@ -870,7 +1003,7 @@
             }
         }
         function movePortDown(idx) {
-            if(idx < portData.length - 1) {
+            if (idx < portData.length - 1) {
                 const temp = portData[idx + 1];
                 portData[idx + 1] = portData[idx];
                 portData[idx] = temp;
@@ -881,15 +1014,15 @@
 
 
         // --- 5. 서버리스 깃허브 실시간 업로드 및 동기화 커밋 부 ---
-        
+
         // 이미지 업로드 실행
         async function uploadAsset() {
             const input = document.getElementById('imageUploadInput');
             const file = input.files[0];
-            if(!file) return alert('업로드할 이미지 파일을 선택해주세요.');
+            if (!file) return alert('업로드할 이미지 파일을 선택해주세요.');
 
             const token = localStorage.getItem('github_token');
-            if(!token) return alert('연동 설정에서 GitHub 토큰을 먼저 등록해주세요.');
+            if (!token) return alert('연동 설정에서 GitHub 토큰을 먼저 등록해주세요.');
 
             const btn = document.getElementById('uploadBtn');
             const originalText = btn.innerText;
@@ -900,7 +1033,7 @@
 
             try {
                 const uploadedFilename = await uploadGithubImage(file);
-                if(!library.includes(uploadedFilename)) {
+                if (!library.includes(uploadedFilename)) {
                     library.push(uploadedFilename);
                     localStorage.setItem('asset_library', JSON.stringify(library));
                 }
@@ -920,7 +1053,7 @@
         // 전체 데이터 GitHub 저장소 동기화 (Commit & Push)
         async function syncToServer() {
             const token = localStorage.getItem('github_token');
-            if(!token) {
+            if (!token) {
                 alert('GitHub 연동 설정(토큰 기입)이 완료되지 않았습니다.');
                 openGithubConfig();
                 return;
@@ -959,11 +1092,12 @@
         }
 
         function resetAll() {
-            if(confirm('모든 데이터를 초기화하시겠습니까?\n브라우저 로컬 저장소가 모두 비워집니다.')) {
+            if (confirm('모든 데이터를 초기화하시겠습니까?\n브라우저 로컬 저장소가 모두 비워집니다.')) {
                 localStorage.clear();
                 location.reload();
             }
         }
     </script>
 </body>
+
 </html>
