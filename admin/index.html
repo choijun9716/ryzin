@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RYZIN | 보안 통합 관리자 센터 (Serverless)</title>
-    <link rel="icon" href="data:;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAnElEQVQ4T2NgGAWjYBSMglEwCkbBSAMgAAAMhAAB4J5X7gAAAABJRU5ErkJggg==">
+    <link rel="icon"
+        href="data:;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAnElEQVQ4T2NgGAWjYBSMglEwCkbBSAMgAAAMhAAB4J5X7gAAAABJRU5ErkJggg==">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         :root {
@@ -493,7 +494,7 @@
     <script>
         // --- 1. SHA-256 보안 로그인 인증 부 ---
         const EXPECTED_ID_HASH = '1f114c000fb55663750eb26c7e3f8863b156a004ab0b59b158097b090e544be8'; // 'choijun'
-        const EXPECTED_PW_HASH = '86d31fd28f7519c90b650dfc3fd5db53f50d9785e57958dd49ad0fab32865084'; // 'dlwnsryzin@'
+        const EXPECTED_PW_HASH = '863fd2e904ef6dbec7b4cdc541bdb5669a07edad54ba36b1f2db6d836eb0283d'; // 'wldns9716'
 
         async function sha256(str) {
             const buf = new TextEncoder().encode(str);
@@ -517,9 +518,9 @@
             const idB64 = btoa(idInput);
             const pwB64 = btoa(pwInput);
             const EXPECTED_ID_B64 = 'Y2hvaWp1bg=='; // 'choijun'
-            const EXPECTED_PW_B64 = 'ZGx3bnNyeXppbkA='; // 'dlwnsryzin@'
+            const EXPECTED_PW_B64 = 'd2xkbnM5NzE2'; // 'wldns9716'
 
-            if ((idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) || 
+            if ((idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) ||
                 (idB64 === EXPECTED_ID_B64 && pwB64 === EXPECTED_PW_B64)) {
                 sessionStorage.setItem('admin_logged_in', 'true');
                 document.getElementById('loginOverlay').style.display = 'none';
