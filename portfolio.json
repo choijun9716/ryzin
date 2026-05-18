@@ -1,5 +1,12 @@
 [
   {
+    "title": "테스트",
+    "category": "beauty",
+    "tagKey": "tag_beauty",
+    "image": "./assets/01.jpg",
+    "link": "#"
+  },
+  {
     "title": "강릉은정한과",
     "category": "food",
     "tagKey": "tag_food",
