@@ -469,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
             f_insta: "인스타그램",
             f_blog: "블로그",
             f_career: "채용",
+            f_apply_showhost: "쇼호스트 지원",
             f_copy: "© 2025 RYZIN Production. All rights reserved.",
             f_terms: "이용약관",
             f_privacy: "개인정보처리방침"
@@ -578,6 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
             f_insta: "Instagram",
             f_blog: "Blog",
             f_career: "Careers",
+            f_apply_showhost: "Apply as Showhost",
             f_copy: "© 2025 RYZIN Production. All rights reserved.",
             f_terms: "Terms of Service",
             f_privacy: "Privacy Policy"
@@ -687,6 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
             f_insta: "Instagram",
             f_blog: "博客",
             f_career: "招聘",
+            f_apply_showhost: "主播招募",
             f_copy: "© 2025 RYZIN Production. All rights reserved.",
             f_terms: "服务条款",
             f_privacy: "隐私政策"
@@ -833,3 +836,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Privacy Policy Modal Open/Close Logic
+window.openPrivacyModal = function(e) {
+    if (e) e.preventDefault();
+    const modal = document.getElementById('privacyModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+    }
+};
+
+window.closePrivacyModal = function() {
+    const modal = document.getElementById('privacyModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore background scroll
+    }
+};
+

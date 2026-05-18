@@ -187,6 +187,15 @@
                 <button class="btn btn-secondary" onclick="addPortfolioItem()">+ 새 포트폴리오 추가</button>
                 <button id="syncBtn2" class="btn btn-primary" onclick="syncToServer()" style="background:#007bff;">실시간 서버 동기화 (Commit & Push)</button>
             </div>
+            <div style="margin-bottom: 20px; display:flex; gap:10px; flex-wrap:wrap;" id="adminPortFilters">
+                <button class="btn btn-primary" onclick="filterAdminPort('all')">전체보기</button>
+                <button class="btn btn-secondary" onclick="filterAdminPort('beauty')">뷰티</button>
+                <button class="btn btn-secondary" onclick="filterAdminPort('health')">건기식</button>
+                <button class="btn btn-secondary" onclick="filterAdminPort('food')">식품</button>
+                <button class="btn btn-secondary" onclick="filterAdminPort('fashion')">패션</button>
+                <button class="btn btn-secondary" onclick="filterAdminPort('life')">라이프</button>
+                <button class="btn btn-secondary" onclick="filterAdminPort('pet')">애견</button>
+            </div>
             <div class="portfolio-list" id="portfolioList"></div>
         </div>
 
@@ -194,10 +203,10 @@
         <div id="tab-assets" class="hidden">
             <div style="background: var(--card-bg); padding: 30px; border-radius: 20px; border: 1px solid var(--border);">
                 <h3>새 이미지 추가</h3>
-                <p style="color:var(--text-dim);">assets 폴더에 이미지를 넣은 후, 파일명을 여기에 입력하세요.</p>
+                <p style="color:var(--text-dim);">이미지 파일을 선택하여 업로드하세요. 파일은 자동으로 assets 폴더에 저장됩니다.</p>
                 <div style="display:flex; gap:10px;">
-                    <input type="text" id="newImgName" placeholder="예: my-new-image.jpg" style="flex:1; background:#222; border:1px solid #444; color:white; padding:12px; border-radius:8px;">
-                    <button class="btn btn-primary" onclick="addNewAsset()">라이브러리에 추가</button>
+                    <input type="file" id="imageUploadInput" accept="image/*" style="flex:1; background:#222; border:1px solid #444; color:white; padding:10px; border-radius:8px;">
+                    <button id="uploadBtn" class="btn btn-primary" onclick="uploadAsset()">이미지 업로드</button>
                 </div>
                 <div class="asset-grid" id="libraryGrid" style="margin-top:40px;"></div>
             </div>
@@ -225,23 +234,40 @@
 
         let portData = [];
 
+        function saveLocal() {
+            localStorage.setItem('portfolio_data', JSON.stringify(portData));
+            localStorage.setItem('hero_config', JSON.stringify(heroConfig));
+        }
+
         async function initData() {
             try {
-                // Portfolio load
-                const resPort = await fetch('./portfolio.json?v=' + new Date().getTime());
-                if(resPort.ok) portData = await resPort.json();
+                let resPort, resHero;
+                try {
+                    resPort = await fetch('http://localhost:3000/portfolio.json?v=' + new Date().getTime());
+                    resHero = await fetch('http://localhost:3000/hero.json?v=' + new Date().getTime());
+                } catch(e) {
+                    console.warn("오프라인 또는 서버 다운 상태입니다. 로컬 캐시를 불러옵니다.");
+                }
+
+                if(resPort && resPort.ok) {
+                    portData = await resPort.json();
+                    localStorage.setItem('portfolio_data', JSON.stringify(portData));
+                } else {
+                    const local = localStorage.getItem('portfolio_data');
+                    if(local) portData = JSON.parse(local);
+                }
                 
-                // Hero load
-                const resHero = await fetch('./hero.json?v=' + new Date().getTime());
-                if(resHero.ok) heroConfig = await resHero.json();
+                if(resHero && resHero.ok) {
+                    heroConfig = await resHero.json();
+                    localStorage.setItem('hero_config', JSON.stringify(heroConfig));
+                } else {
+                    const localHero = localStorage.getItem('hero_config');
+                    if(localHero) heroConfig = JSON.parse(localHero);
+                }
                 
                 // 렌더링 갱신
-                if (!document.getElementById('tab-portfolio').classList.contains('hidden')) {
-                    renderPortfolio();
-                }
-                if (!document.getElementById('tab-hero').classList.contains('hidden')) {
-                    renderHero();
-                }
+                if (!document.getElementById('tab-portfolio').classList.contains('hidden')) renderPortfolio();
+                if (!document.getElementById('tab-hero').classList.contains('hidden')) renderHero();
             } catch (err) {
                 console.error('Failed to load data:', err);
             }
@@ -251,10 +277,12 @@
         let library = JSON.parse(localStorage.getItem('asset_library')) || [
             'baegayul.jpg', 'bodylove.jpg', 'miyabis.jpg', 'yadah.jpg', 
             'natical.jpg', 'drolion.jpg', 'trusty.jpg', 'everyhabit_enzyme.jpg',
-            'gangneung.jpg', 'dogshop.jpg', 'booie.jpg', '01.jpg', '02.jpg', '03.jpg'
+            'gangneung.jpg', 'dogshop.jpg', 'booie.jpg', '01.jpg', '002.jpg', '003.jpg'
         ];
 
         let activeCol = null;
+        let activePortIdx = null;
+        let activeModalType = null; // 'hero' or 'portfolio'
 
         // Tabs
         function showTab(tab) {
@@ -292,16 +320,30 @@
                             </div>
                         `).join('')}
                     </div>
-                    <button class="btn btn-secondary" style="width:100%; margin-top:15px; font-size:12px;" onclick="openModal('${colKey}')">+ 추가</button>
+                    <button class="btn btn-secondary" style="width:100%; margin-top:15px; font-size:12px;" onclick="openModal('hero', '${colKey}')">+ 추가</button>
                 `;
                 grid.appendChild(div);
             }
         }
 
+        let currentAdminFilter = 'all';
+        function filterAdminPort(cat) {
+            currentAdminFilter = cat;
+            document.querySelectorAll('#adminPortFilters .btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-secondary');
+            });
+            event.target.classList.remove('btn-secondary');
+            event.target.classList.add('btn-primary');
+            renderPortfolio();
+        }
+
         // Portfolio Render
         function renderPortfolio() {
             const list = document.getElementById('portfolioList');
-            list.innerHTML = portData.map((item, idx) => `
+            list.innerHTML = portData.map((item, idx) => {
+                if (currentAdminFilter !== 'all' && item.category !== currentAdminFilter) return '';
+                return `
                 <div class="port-card">
                     <img src="${item.image}">
                     <div class="port-card-body">
@@ -314,7 +356,10 @@
                             <option value="life" ${item.category === 'life' ? 'selected' : ''}>라이프</option>
                             <option value="pet" ${item.category === 'pet' ? 'selected' : ''}>애견</option>
                         </select>
-                        <input type="text" value="${item.image}" onchange="updatePort(${idx}, 'image', this.value)" placeholder="이미지 경로">
+                        <div style="display:flex; gap:5px; margin-bottom:10px;">
+                            <input type="text" value="${item.image}" onchange="updatePort(${idx}, 'image', this.value)" placeholder="이미지 경로" style="flex:1; margin-bottom:0;">
+                            <button class="btn btn-secondary" style="padding:0 10px; font-size:12px;" onclick="openModal('portfolio', ${idx})">선택</button>
+                        </div>
                         <input type="text" value="${item.link}" onchange="updatePort(${idx}, 'link', this.value)" placeholder="링크 URL">
                         
                         <div style="display:flex; gap:5px; margin-bottom:10px;">
@@ -324,7 +369,8 @@
                         <button class="btn btn-secondary" style="width:100%; color:#ff4444;" onclick="removePort(${idx})">삭제</button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Library
@@ -333,35 +379,82 @@
             grid.innerHTML = library.map(img => `<div class="asset-item"><img src="./assets/${img}"><p style="font-size:10px; color:#555;">${img}</p></div>`).join('');
         }
 
-        function addNewAsset() {
-            const name = document.getElementById('newImgName').value.trim();
-            if(name) {
-                library.push(name);
-                localStorage.setItem('asset_library', JSON.stringify(library));
-                renderLibrary();
-                document.getElementById('newImgName').value = '';
+        async function uploadAsset() {
+            const input = document.getElementById('imageUploadInput');
+            const file = input.files[0];
+            if(!file) return alert('업로드할 이미지 파일을 선택해주세요.');
+
+            const btn = document.getElementById('uploadBtn');
+            const originalText = btn.innerText;
+            btn.innerText = '업로드 중...';
+            btn.disabled = true;
+
+            try {
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64Data = reader.result;
+                    const response = await fetch('http://localhost:3000/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ filename: file.name, imageBase64: base64Data })
+                    });
+                    const result = await response.json();
+                    if(result.success) {
+                        if(!library.includes(file.name)) {
+                            library.push(file.name);
+                            localStorage.setItem('asset_library', JSON.stringify(library));
+                            renderLibrary();
+                        }
+                        alert('이미지가 성공적으로 업로드되었습니다!');
+                        input.value = ''; // Reset input
+                    } else {
+                        alert('업로드 실패: ' + result.error);
+                    }
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                };
+                reader.readAsDataURL(file);
+            } catch (err) {
+                console.error(err);
+                alert('서버 연결 실패! node server.js가 실행 중인지 확인하세요.');
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         }
 
-        // Modal for Hero
-        function openModal(col) {
-            activeCol = col;
+        // Modal for Hero & Portfolio
+        function openModal(type, targetIdx) {
+            activeModalType = type;
+            if(type === 'hero') {
+                activeCol = targetIdx;
+            } else if(type === 'portfolio') {
+                activePortIdx = targetIdx;
+            }
             document.getElementById('imageModal').style.display = 'flex';
             const grid = document.getElementById('modalAssetGrid');
             grid.innerHTML = library.map(img => `
-                <div class="asset-item" onclick="addHeroImg('${img}')">
+                <div class="asset-item" onclick="selectModalImage('${img}')">
                     <img src="./assets/${img}">
                 </div>
             `).join('');
         }
         function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
-        function addHeroImg(img) {
-            heroConfig[activeCol].push(img);
-            renderHero();
+        
+        function selectModalImage(img) {
+            if(activeModalType === 'hero') {
+                heroConfig[activeCol].push(img);
+                saveLocal();
+                renderHero();
+            } else if(activeModalType === 'portfolio') {
+                portData[activePortIdx].image = `./assets/${img}`;
+                saveLocal();
+                renderPortfolio();
+            }
             closeModal();
         }
         function removeHeroImg(col, idx) {
             heroConfig[col].splice(idx, 1);
+            saveLocal();
             renderHero();
         }
         function moveHeroUp(col, idx) {
@@ -369,6 +462,7 @@
                 const temp = heroConfig[col][idx - 1];
                 heroConfig[col][idx - 1] = heroConfig[col][idx];
                 heroConfig[col][idx] = temp;
+                saveLocal();
                 renderHero();
             }
         }
@@ -377,6 +471,7 @@
                 const temp = heroConfig[col][idx + 1];
                 heroConfig[col][idx + 1] = heroConfig[col][idx];
                 heroConfig[col][idx] = temp;
+                saveLocal();
                 renderHero();
             }
         }
@@ -384,15 +479,24 @@
         // Port Actions
         function addPortfolioItem() {
             portData.unshift({ title: "새 프로젝트", category: "beauty", tagKey: "tag_beauty", image: "./assets/01.jpg", link: "#" });
+            saveLocal();
             renderPortfolio();
         }
-        function updatePort(idx, key, val) { portData[idx][key] = val; }
-        function removePort(idx) { portData.splice(idx, 1); renderPortfolio(); }
+        function updatePort(idx, key, val) { 
+            portData[idx][key] = val; 
+            saveLocal();
+        }
+        function removePort(idx) { 
+            portData.splice(idx, 1); 
+            saveLocal();
+            renderPortfolio(); 
+        }
         function movePortUp(idx) {
             if(idx > 0) {
                 const temp = portData[idx - 1];
                 portData[idx - 1] = portData[idx];
                 portData[idx] = temp;
+                saveLocal();
                 renderPortfolio();
             }
         }
@@ -401,6 +505,7 @@
                 const temp = portData[idx + 1];
                 portData[idx + 1] = portData[idx];
                 portData[idx] = temp;
+                saveLocal();
                 renderPortfolio();
             }
         }
@@ -416,7 +521,7 @@
             });
 
             try {
-                const response = await fetch('/api/sync', {
+                const response = await fetch('http://localhost:3000/api/sync', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ portfolio: portData, hero: heroConfig })
