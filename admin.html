@@ -282,7 +282,8 @@
 
         let activeCol = null;
         let activePortIdx = null;
-        let activeModalType = null; // 'hero' or 'portfolio'
+        let activeHeroImgIdx = null;
+        let activeModalType = null; // 'hero', 'hero_change', or 'portfolio'
 
         // Tabs
         function showTab(tab) {
@@ -309,14 +310,15 @@
                     <div style="font-weight:800; margin-bottom:15px; color:var(--primary);">COLUMN ${i}</div>
                     <div class="image-list">
                         ${heroConfig[colKey].map((img, idx) => `
-                            <div class="image-item" style="flex-wrap: wrap;">
+                            <div class="image-item" style="flex-wrap: wrap; padding: 10px; display: flex; align-items: center; gap: 10px; background: #222; border-radius: 10px;">
                                 <img src="./assets/${img}">
-                                <span style="flex:1; overflow:hidden;">${img}</span>
-                                <div style="display:flex; gap:5px; margin-left:auto;">
+                                <span style="flex:1; overflow:hidden; font-size:12px;">${img}</span>
+                                <div style="display:flex; gap:4px; margin-left:auto; align-items:center;">
+                                    <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;" onclick="openModal('hero_change', '${colKey}', ${idx})">변경</button>
                                     <button class="btn btn-secondary" style="padding:2px 5px; font-size:10px;" onclick="moveHeroUp('${colKey}', ${idx})">▲</button>
                                     <button class="btn btn-secondary" style="padding:2px 5px; font-size:10px;" onclick="moveHeroDown('${colKey}', ${idx})">▼</button>
                                 </div>
-                                <span style="cursor:pointer; color:red; margin-left:10px;" onclick="removeHeroImg('${colKey}', ${idx})">✕</span>
+                                <span style="cursor:pointer; color:#ff4444; margin-left:5px; font-weight:bold; font-size:14px;" onclick="removeHeroImg('${colKey}', ${idx})">✕</span>
                             </div>
                         `).join('')}
                     </div>
@@ -423,10 +425,13 @@
         }
 
         // Modal for Hero & Portfolio
-        function openModal(type, targetIdx) {
+        function openModal(type, targetIdx, extraIdx) {
             activeModalType = type;
             if(type === 'hero') {
                 activeCol = targetIdx;
+            } else if(type === 'hero_change') {
+                activeCol = targetIdx;
+                activeHeroImgIdx = extraIdx;
             } else if(type === 'portfolio') {
                 activePortIdx = targetIdx;
             }
@@ -443,6 +448,10 @@
         function selectModalImage(img) {
             if(activeModalType === 'hero') {
                 heroConfig[activeCol].push(img);
+                saveLocal();
+                renderHero();
+            } else if(activeModalType === 'hero_change') {
+                heroConfig[activeCol][activeHeroImgIdx] = img;
                 saveLocal();
                 renderHero();
             } else if(activeModalType === 'portfolio') {
