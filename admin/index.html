@@ -503,9 +503,15 @@
 
         async function handleLogin() {
             const idInput = document.getElementById('loginId').value.trim();
-            const pwInput = document.getElementById('loginPw').value;
+            const pwInput = document.getElementById('loginPw').value.trim();
             const idHash = await sha256(idInput);
             const pwHash = await sha256(pwInput);
+
+            // 디버깅용 콘솔 로그 (오류 파악용)
+            console.log("입력한 ID 해시:", idHash);
+            console.log("기대하는 ID 해시:", EXPECTED_ID_HASH);
+            console.log("입력한 PW 해시:", pwHash);
+            console.log("기대하는 PW 해시:", EXPECTED_PW_HASH);
 
             if (idHash === EXPECTED_ID_HASH && pwHash === EXPECTED_PW_HASH) {
                 sessionStorage.setItem('admin_logged_in', 'true');
