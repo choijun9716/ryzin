@@ -57,7 +57,7 @@ const server = http.createServer((req, res) => {
                 }
 
                 // Git commands
-                exec('git add portfolio.json hero.json packages.json stories.json logos.json && git commit -m "Update site data via Admin" && git push', (error, stdout, stderr) => {
+                exec('git add portfolio.json hero.json packages.json stories.json logos.json && git commit -m "Update site data via Admin" && git push', { cwd: __dirname }, (error, stdout, stderr) => {
                     if (error) {
                         const outStr = (stdout + stderr).toLowerCase();
                         if (outStr.includes('nothing to commit') || outStr.includes('clean') || outStr.includes('커밋할') || outStr.includes('변경 사항 없음')) {
@@ -101,7 +101,7 @@ const server = http.createServer((req, res) => {
                     fs.writeFileSync(filePath, buffer);
                     
                     // Add to git so next sync will commit it
-                    exec(`git add "assets/${data.filename}"`, (error) => {
+                    exec(`git add "assets/${data.filename}"`, { cwd: __dirname }, (error) => {
                         if (error) console.error(`Git add error for image: ${error.message}`);
                     });
                     

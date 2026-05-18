@@ -255,45 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPortfolio();
 
     // 5. Pricing Toggle Logic
-    const pricingTabs = document.querySelectorAll('.pricing-tab');
-    const priceTables = document.querySelectorAll('.pricing-display-area .price-table');
-    const tabSlider = document.querySelector('.tab-slider');
-
     function updateTabSlider() {
         const activeTab = document.querySelector('.pricing-tab.active');
+        const tabSlider = document.querySelector('.tab-slider');
         if (activeTab && tabSlider) {
             tabSlider.style.width = activeTab.offsetWidth + 'px';
-            // Parent has 5px padding, slider has left: 5px. 
-            // activeTab.offsetLeft is already relative to the parent because .pricing-tabs is relative.
             tabSlider.style.transform = `translateX(${activeTab.offsetLeft - 5}px)`;
         }
     }
-
-    if (pricingTabs.length > 0) {
-        pricingTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const targetId = tab.getAttribute('data-target');
-
-                // Update Tabs
-                pricingTabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
-                // Update Tables
-                priceTables.forEach(table => {
-                    table.classList.remove('active');
-                    if (table.id === targetId) {
-                        table.classList.add('active');
-                    }
-                });
-
-                updateTabSlider();
-            });
-        });
-
-        // Initial setup
-        setTimeout(updateTabSlider, 100);
-        window.addEventListener('resize', updateTabSlider);
-    }
+    window.addEventListener('resize', updateTabSlider);
 
     // 6. Scroll Text Reveal Effect
     const scrollRevealContainer = document.getElementById('scrollRevealContainer');
@@ -850,8 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.getElementById(targetId).classList.add('active');
                     }
                     
-                    // Trigger slider positioning logic if needed
-                    window.dispatchEvent(new Event('resize'));
+                    updateTabSlider();
                 });
             });
             
@@ -869,6 +838,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.querySelector('.p-single').classList.add('text-pure');
                 });
             });
+
+            // Initial setup of slider position
+            setTimeout(updateTabSlider, 150);
 
             if(window.feather) feather.replace();
 
