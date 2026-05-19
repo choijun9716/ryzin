@@ -249,6 +249,11 @@
                 <div class="text-center mb-5">
                     <p style="font-size: 14px; color: #888; margin-bottom: 10px;">프로젝트 의뢰하기</p>
                     <h2 class="project-request-title">Project Request<span style="color: #ff3333;">.</span></h2>
+                    <div style="margin-top: 18px;">
+                        <button type="button" onclick="openIntroModal()" class="btn-company-intro">
+                            <i data-feather="download" style="width: 14px; height: 14px; margin-right: 6px; vertical-align: middle;"></i>회사소개서 다운로드
+                        </button>
+                    </div>
                 </div>
 
                 <form id="projectRequestForm" class="request-form mt-5">
@@ -405,6 +410,54 @@
             </div>
         </div>
     </div>
+
+    <!-- 회사소개서 다운로드 패스워드 입력 모달 -->
+    <div class="modal" id="companyIntroModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+        <div style="background:#111; padding:35px 30px; border-radius:16px; border:1px solid rgba(255,255,255,0.1); width:340px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+            <h3 style="color:#fff; margin-top:0; margin-bottom:10px; font-weight:800; font-size:18px; font-family:'Pretendard', sans-serif;">회사소개서 다운로드</h3>
+            <p style="color:#aaa; font-size:13px; margin-bottom:20px; line-height:1.4; font-family:'Pretendard', sans-serif;">회사소개서를 다운로드하려면 비밀번호를 입력해주세요.</p>
+            <div style="margin-bottom:20px;">
+                <input type="password" id="introPassword" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter') checkIntroPassword()" style="width:100%; background:#222; border:1px solid #444; color:white; padding:12px 14px; border-radius:8px; box-sizing:border-box; outline:none; font-size:14px; text-align:center; font-family:inherit;">
+                <p id="introPasswordError" style="color:#ff4444; font-size:12px; margin-top:8px; display:none; font-weight:600; font-family:'Pretendard', sans-serif;">비밀번호가 올바르지 않습니다.</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeIntroModal()" style="flex:1; background:#333; color:#aaa; border:none; padding:12px; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; font-family:inherit; transition: 0.2s;">취소</button>
+                <button onclick="checkIntroPassword()" style="flex:1; background:#ff8730; color:white; border:none; padding:12px; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; font-family:inherit; transition: 0.2s;">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회사소개서 모달 스크립트 -->
+    <script>
+        function openIntroModal() {
+            document.getElementById('companyIntroModal').style.display = 'flex';
+            document.getElementById('introPassword').value = '';
+            document.getElementById('introPasswordError').style.display = 'none';
+            setTimeout(function() {
+                document.getElementById('introPassword').focus();
+            }, 100);
+        }
+
+        function closeIntroModal() {
+            document.getElementById('companyIntroModal').style.display = 'none';
+        }
+
+        function checkIntroPassword() {
+            const password = document.getElementById('introPassword').value.trim();
+            if (password === 'dlwns9716') {
+                closeIntroModal();
+                // 다운로드 실행
+                const link = document.createElement('a');
+                link.href = './assets/RYZIN_Company_Profile.pdf';
+                link.download = 'RYZIN_Company_Profile.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                document.getElementById('introPasswordError').style.display = 'block';
+            }
+        }
+    </script>
 
     <!-- Initialize Feather Icons -->
     <script>

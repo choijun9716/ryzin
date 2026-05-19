@@ -2950,3 +2950,35 @@ section:not(#about)
         animation-duration: 25s;
     }
 }
+
+/* 회사소개서 다운로드 버튼 스타일 */
+.btn-company-intro {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ccc;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Pretendard', sans-serif;
+}
+
+.btn-company-intro:hover {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+}
+
+.btn-company-intro svg {
+    transition: transform 0.3s ease;
+}
+
+.btn-company-intro:hover svg {
+    transform: translateY(1px);
+}
