@@ -3144,3 +3144,79 @@ footer {
         width: min(280px, 80vw);
     }
 }
+
+/* ── Shorts Horizontal Slider ── */
+.shorts-slider-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.shorts-slider-track {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    padding: 20px 40px 30px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    cursor: grab;
+    flex: 1;
+}
+
+.shorts-slider-track:active {
+    cursor: grabbing;
+}
+
+.shorts-slider-track::-webkit-scrollbar {
+    display: none;
+}
+
+.shorts-slider-track .short-clip-card {
+    flex: 0 0 260px;
+    scroll-snap-align: start;
+}
+
+/* 화살표 버튼 */
+.shorts-arrow {
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(20,20,20,0.8);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin: 0 8px;
+    backdrop-filter: blur(6px);
+}
+
+.shorts-arrow:hover {
+    background: #ff8730;
+    border-color: #ff8730;
+    transform: scale(1.08);
+}
+
+.shorts-arrow:disabled {
+    opacity: 0.25;
+    cursor: default;
+    transform: none;
+}
+
+@media (max-width: 768px) {
+    .shorts-arrow { display: none; }
+    .shorts-slider-track {
+        padding: 16px 20px 24px;
+    }
+    .shorts-slider-track .short-clip-card {
+        flex: 0 0 220px;
+    }
+}

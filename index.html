@@ -195,72 +195,67 @@
         </section>
 
         <!-- 5. Live Short Clips Section -->
-        <section class="section-padding" id="short-clips" style="border-top: 1px solid rgba(255,255,255,0.05); background: #050505;">
-            <div class="container container-lg">
-                <div class="text-center mb-5 fade-up">
-                    <p style="font-size: 14px; color: #888; margin-bottom: 10px; letter-spacing: 0.05em;">RYZIN SHORT CLIPS</p>
-                    <h2 class="section-title">Live Shorts<span style="color:#ff8730;">.</span></h2>
-                    <p class="text-muted mt-2" style="font-size: 15px;">현장의 생동감을 그대로 담은 라이브 숏클립.</p>
-                </div>
+        <section class="section-padding" id="short-clips" style="border-top: 1px solid rgba(255,255,255,0.05); background: #050505; overflow: hidden;">
+            <div class="text-center mb-5 fade-up" style="padding: 0 20px;">
+                <p style="font-size: 14px; color: #888; margin-bottom: 10px; letter-spacing: 0.05em;">RYZIN SHORT CLIPS</p>
+                <h2 class="section-title">Live Shorts<span style="color:#ff8730;">.</span></h2>
+                <p class="text-muted mt-2" style="font-size: 15px;">현장의 생동감을 그대로 담은 라이브 숏클립.</p>
+            </div>
 
-                <div class="short-clips-grid fade-up" id="shortClipsGrid">
+            <!-- 슬라이더 영역 -->
+            <div class="shorts-slider-wrapper fade-up">
+                <!-- 왼쪽 화살표 -->
+                <button class="shorts-arrow shorts-arrow-left" id="shortsArrowLeft" aria-label="이전">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+
+                <!-- 슬라이드 트랙 -->
+                <div class="shorts-slider-track" id="shortClipsTrack">
 
                     <div class="short-clip-card">
                         <div class="short-clip-video-wrap">
-                            <iframe
-                                src="https://www.youtube.com/embed/VIDEO_ID_1?autoplay=0&loop=1&mute=1&controls=1&rel=0&modestbranding=1"
-                                title="RYZIN Live Short Clip 1"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen>
-                            </iframe>
+                            <video
+                                src="https://kr.object.ncloudstorage.com/ryzin-docs/%EB%AA%85%EB%9E%91%ED%95%AB%EB%8F%84%EA%B7%B8%20%ED%8E%AB%EB%9D%B5.mp4"
+                                playsinline
+                                muted
+                                loop
+                                controls>
+                            </video>
                         </div>
-                        <p class="short-clip-label">라이브 쇼 하이라이트 #1</p>
+                        <p class="short-clip-label">명랑핫도그 펫띵</p>
                     </div>
 
                     <div class="short-clip-card">
                         <div class="short-clip-video-wrap">
-                            <iframe
-                                src="https://www.youtube.com/embed/VIDEO_ID_2?autoplay=0&loop=1&mute=1&controls=1&rel=0&modestbranding=1"
-                                title="RYZIN Live Short Clip 2"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen>
-                            </iframe>
+                            <iframe src="https://www.youtube.com/embed/VIDEO_ID_2?autoplay=0&loop=1&mute=1&controls=1&rel=0&modestbranding=1" title="RYZIN Live Short Clip 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                         <p class="short-clip-label">라이브 쇼 하이라이트 #2</p>
                     </div>
 
                     <div class="short-clip-card">
                         <div class="short-clip-video-wrap">
-                            <iframe
-                                src="https://www.youtube.com/embed/VIDEO_ID_3?autoplay=0&loop=1&mute=1&controls=1&rel=0&modestbranding=1"
-                                title="RYZIN Live Short Clip 3"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen>
-                            </iframe>
+                            <iframe src="https://www.youtube.com/embed/VIDEO_ID_3?autoplay=0&loop=1&mute=1&controls=1&rel=0&modestbranding=1" title="RYZIN Live Short Clip 3" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                         <p class="short-clip-label">라이브 쇼 하이라이트 #3</p>
                     </div>
 
                     <div class="short-clip-card">
                         <div class="short-clip-video-wrap">
-                            <iframe
-                                src="https://www.youtube.com/embed/VIDEO_ID_4?autoplay=0&loop=1&mute=1&controls=1&rel=0&modestbranding=1"
-                                title="RYZIN Live Short Clip 4"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen>
-                            </iframe>
+                            <iframe src="https://www.youtube.com/embed/VIDEO_ID_4?autoplay=0&loop=1&mute=1&controls=1&rel=0&modestbranding=1" title="RYZIN Live Short Clip 4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                         <p class="short-clip-label">라이브 쇼 하이라이트 #4</p>
                     </div>
 
                 </div>
-                <!-- VIDEO_ID_1 ~ VIDEO_ID_4 를 실제 유튜브 숏츠 영상 ID로 교체하세요 -->
+
+                <!-- 오른쪽 화살표 -->
+                <button class="shorts-arrow shorts-arrow-right" id="shortsArrowRight" aria-label="다음">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
             </div>
+            <!-- VIDEO_ID_1 ~ VIDEO_ID_4 를 실제 유튜브 숏츠 영상 ID로 교체하세요 -->
         </section>
+
 
         <!-- 6. Pricing Section (제작 패키지 안내) -->
         <section class="section-padding" id="pricing" style="border-top: 1px solid rgba(255,255,255,0.05);">

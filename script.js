@@ -999,3 +999,33 @@ window.closePrivacyModal = function() {
     }
 };
 
+
+// ── Shorts Horizontal Slider ──
+(function() {
+    const track = document.getElementById('shortClipsTrack');
+    const btnLeft = document.getElementById('shortsArrowLeft');
+    const btnRight = document.getElementById('shortsArrowRight');
+    if (!track || !btnLeft || !btnRight) return;
+
+    const SCROLL_AMOUNT = 290;
+
+    btnLeft.addEventListener('click', () => track.scrollBy({ left: -SCROLL_AMOUNT, behavior: 'smooth' }));
+    btnRight.addEventListener('click', () => track.scrollBy({ left: SCROLL_AMOUNT, behavior: 'smooth' }));
+
+    // 드래그 스크롤
+    let isDown = false, startX, scrollLeft;
+    track.addEventListener('mousedown', e => {
+        isDown = true;
+        track.style.cursor = 'grabbing';
+        startX = e.pageX - track.offsetLeft;
+        scrollLeft = track.scrollLeft;
+    });
+    track.addEventListener('mouseleave', () => { isDown = false; track.style.cursor = 'grab'; });
+    track.addEventListener('mouseup', () => { isDown = false; track.style.cursor = 'grab'; });
+    track.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - track.offsetLeft;
+        track.scrollLeft = scrollLeft - (x - startX);
+    });
+})();
