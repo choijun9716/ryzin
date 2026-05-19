@@ -3151,19 +3151,22 @@ footer {
     display: flex;
     align-items: center;
     gap: 0;
+    max-width: 1300px;
+    margin: 0 auto;
 }
 
 .shorts-slider-track {
     display: flex;
-    gap: 20px;
+    gap: 24px;
     overflow-x: auto;
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
-    padding: 20px 40px 30px;
+    padding: 20px 60px 30px;
     -ms-overflow-style: none;
     scrollbar-width: none;
     cursor: grab;
     flex: 1;
+    justify-content: safe center;
 }
 
 .shorts-slider-track:active {
