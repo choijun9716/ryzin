@@ -9,13 +9,12 @@
     #password-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     #password-input { padding: 10px; font-size: 16px; margin-bottom: 10px; }
     #password-btn { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-    .job-list { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .job-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
-    .job-item:last-child { border-bottom: none; }
-    .btn { padding: 8px 15px; cursor: pointer; border: none; border-radius: 4px; color: #fff; }
+    
+    .btn { padding: 8px 15px; cursor: pointer; border: none; border-radius: 4px; color: #fff; font-size: 14px; }
+    .btn-secondary { background: #555; }
     .btn-edit { background: #2196F3; margin-right: 5px; }
     .btn-delete { background: #F44336; }
-    .btn-add { background: #4CAF50; margin-bottom: 20px; font-size: 16px; }
+    .btn-add { background: #4CAF50; }
     .btn-save { background: #ff8730; font-size: 16px; margin-top: 20px; width: 100%; padding: 15px; }
     
     /* Modal */
@@ -36,10 +35,14 @@
   </div>
 
   <div id="admin-content" style="display:none; max-width: 800px; margin: 0 auto;">
-    <h1>채용 공고 관리</h1>
-    <button class="btn btn-add" onclick="openAddModal()">+ 새 공고 추가</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <h1 style="margin:0;">채용 공고 관리</h1>
+        <button class="btn btn-secondary" onclick="openGithubConfig()" style="background:#444;">⚙️ GitHub 연동 설정</button>
+    </div>
+    
+    <button class="btn btn-add" style="margin-bottom: 20px; font-size: 16px;" onclick="openAddModal()">+ 새 공고 추가</button>
     <div class="job-list" id="jobs-container"></div>
-    <button class="btn btn-save" onclick="saveData()">서버에 저장 및 라이브 적용</button>
+    <button class="btn btn-save" onclick="saveData()">서버에 저장 및 라이브 자동 배포</button>
   </div>
 
   <!-- Edit/Add Modal -->
@@ -98,6 +101,38 @@
     </div>
   </div>
 
+  <!-- GitHub Config Modal -->
+  <div id="githubConfigModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="modal-content" style="max-width:500px;">
+        <h2 style="margin-top:0;">GitHub 연동 설정</h2>
+        <p style="color:#666; font-size:13px; margin-bottom:20px;">로컬 서버 없이 라이브 사이트에 실시간 배포하려면 GitHub 토큰(PAT)을 설정해주세요.</p>
+        
+        <div class="form-group">
+            <label>GitHub Personal Access Token (PAT)</label>
+            <input type="password" id="ghToken" placeholder="ghp_...">
+        </div>
+        <div style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1;">
+                <label>GitHub ID (Owner)</label>
+                <input type="text" id="ghOwner" value="choijun9716">
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label>저장소 이름 (Repo)</label>
+                <input type="text" id="ghRepo" value="ryzin">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>브랜치 (Branch)</label>
+            <input type="text" id="ghBranch" value="main">
+        </div>
+        
+        <div style="text-align: right; margin-top: 20px;">
+            <button class="btn btn-secondary" onclick="closeGithubConfig()">취소</button>
+            <button class="btn" style="background:#ff8730;" onclick="saveGithubConfig()">설정 저장 및 새로고침</button>
+        </div>
+    </div>
+  </div>
+
   <script>
     function checkPassword() {
       if(document.getElementById('password-input').value === '971456') {
@@ -111,6 +146,34 @@
     
     let jobs = [];
     let jobsSha = null;
+
+    function openGithubConfig() {
+      document.getElementById('ghToken').value = localStorage.getItem('github_token') || '';
+      document.getElementById('ghOwner').value = localStorage.getItem('github_owner') || 'choijun9716';
+      document.getElementById('ghRepo').value = localStorage.getItem('github_repo') || 'ryzin';
+      document.getElementById('ghBranch').value = localStorage.getItem('github_branch') || 'main';
+      document.getElementById('githubConfigModal').style.display = 'flex';
+    }
+
+    function closeGithubConfig() {
+      document.getElementById('githubConfigModal').style.display = 'none';
+    }
+
+    function saveGithubConfig() {
+      const token = document.getElementById('ghToken').value.trim();
+      if (!token) {
+          localStorage.removeItem('github_token');
+          alert('연동 설정을 제거했습니다.');
+      } else {
+          localStorage.setItem('github_token', token);
+          localStorage.setItem('github_owner', document.getElementById('ghOwner').value.trim());
+          localStorage.setItem('github_repo', document.getElementById('ghRepo').value.trim());
+          localStorage.setItem('github_branch', document.getElementById('ghBranch').value.trim());
+          alert('GitHub 연동이 설정되었습니다!');
+      }
+      closeGithubConfig();
+      location.reload();
+    }
 
     // GitHub API Helper
     async function fetchGithubFile(path) {
