@@ -366,19 +366,33 @@ document.getElementById('applyForm').addEventListener('submit', async function(e
 
   try {
     const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
     // Add job context dynamically
     const jobTitleText = document.getElementById('applySubtitle').textContent;
-    formData.append('ApplyFor', jobTitleText);
-    formData.append('Consent_Required', checked['c1'] ? '동의' : '미동의');
-    formData.append('Consent_Optional_Privacy', checked['c2'] ? '동의' : '미동의');
-    formData.append('Consent_Sensitive', checked['c3'] ? '동의' : '미동의');
-    formData.append('Consent_Position_Offer', checked['c4'] ? '동의' : '미동의');
-    formData.append('Consent_Recruit_Info', checked['c5'] ? '동의' : '미동의');
+    data['ApplyFor'] = jobTitleText;
+    data['Consent_Required'] = checked['c1'] ? '동의' : '미동의';
+    data['Consent_Optional_Privacy'] = checked['c2'] ? '동의' : '미동의';
+    data['Consent_Sensitive'] = checked['c3'] ? '동의' : '미동의';
+    data['Consent_Position_Offer'] = checked['c4'] ? '동의' : '미동의';
+    data['Consent_Recruit_Info'] = checked['c5'] ? '동의' : '미동의';
+
+    // File objects cannot be serialized to JSON, so we remove them or extract names
+    for (let key in data) {
+      if (data[key] instanceof File) {
+        if (data[key].name && data[key].size > 0) {
+          data[key] = `[첨부파일 시도됨: ${data[key].name}] - 주의: 현재 무료 폼에서는 파일이 전송되지 않습니다.`;
+        } else {
+          delete data[key];
+        }
+      }
+    }
 
     const response = await fetch('https://formspree.io/f/maqprbzv', {
         method: 'POST',
-        body: formData,
+        body: JSON.stringify(data),
         headers: {
+            'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
     });
