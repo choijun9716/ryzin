@@ -2,6 +2,13 @@
     {
         "title": "쏘랩 (SOLAB)",
         "category": "life",
+        "tagKey": "tag_beauty",
+        "image": "./assets/1779278961975_Screenshot_2026-05-20_17-33-25.png",
+        "link": "#"
+    },
+    {
+        "title": "쏘랩 (SOLAB)",
+        "category": "life",
         "tagKey": "tag_life",
         "image": "./assets/005.jpg",
         "link": "https://naver.me/GqfsQqds"
