@@ -55,9 +55,12 @@ const server = http.createServer((req, res) => {
                 if (data.logos) {
                     fs.writeFileSync(path.join(__dirname, 'logos.json'), JSON.stringify(data.logos, null, 2), 'utf8');
                 }
+                if (data.jobs) {
+                    fs.writeFileSync(path.join(__dirname, 'career', 'jobs', 'jobs.json'), JSON.stringify(data.jobs, null, 2), 'utf8');
+                }
 
                 // Git commands
-                exec('git add portfolio.json hero.json packages.json stories.json logos.json && git commit -m "Update site data via Admin" && git push', { cwd: __dirname }, (error, stdout, stderr) => {
+                exec('git add portfolio.json hero.json packages.json stories.json logos.json career/jobs/jobs.json && git commit -m "Update site data via Admin" && git push', { cwd: __dirname }, (error, stdout, stderr) => {
                     if (error) {
                         const outStr = (stdout + stderr).toLowerCase();
                         if (outStr.includes('nothing to commit') || outStr.includes('clean') || outStr.includes('커밋할') || outStr.includes('변경 사항 없음')) {

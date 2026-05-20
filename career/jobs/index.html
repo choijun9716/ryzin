@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>라이진 채용 | RYZIN Careers</title>
+  <meta name="description" content="라이진(RYZIN)과 함께 브랜드 성장의 새로운 기준을 만들어갈 팀원을 찾습니다.">
+  <link rel="canonical" href="https://ryzincorp.com/career/jobs">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fff;
+      --text: #191919;
+      --muted: #888;
+      --border: #e8e8e8;
+      --accent: #246bfd;
+      --accent-hover: #1a55d4;
+      --orange: #ff8730;
+      --tag-bg: #f2f2f2;
+      --tag-text: #555;
+      --nav-h: 64px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--nav-h);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .nav-logo img {
+      height: 32px;
+      width: auto;
+      display: block;
+      filter: brightness(0);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--text);
+    }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-back:hover {
+      color: var(--text);
+    }
+
+    .nav-back svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* HERO */
+    .hero {
+      margin-top: var(--nav-h);
+      padding: 80px 32px 60px;
+      text-align: center;
+      background: linear-gradient(180deg, #f7f9ff 0%, #fff 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span {
+      color: var(--accent);
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* FILTER BAR */
+    .filter-bar {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 32px 0;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-select-wrap {
+      position: relative;
+    }
+
+    .filter-select-wrap svg {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .filter-select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding: 11px 40px 11px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      min-width: 160px;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .result-count {
+      margin-left: auto;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .result-count strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* SEARCH */
+    .search-wrap {
+      max-width: 1100px;
+      margin: 16px auto 0;
+      padding: 0 32px;
+      position: relative;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--muted);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 13px 16px 13px 48px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* JOB LIST */
+    .job-list {
+      max-width: 1100px;
+      margin: 28px auto 80px;
+      padding: 0 32px;
+    }
+
+    .job-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-radius: 4px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .job-item:first-child {
+      border-top: 1px solid var(--border);
+    }
+
+    .job-item:hover .job-title {
+      color: var(--accent);
+    }
+
+    .job-left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .job-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      transition: color 0.2s;
+    }
+
+    .job-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .job-tag {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .job-tag:not(:last-child)::after {
+      content: '·';
+      margin-left: 6px;
+    }
+
+    .job-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-left: 24px;
+    }
+
+    .dept-badge {
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .dept-badge.multi {
+      background: #fff0e5;
+      color: #c45f00;
+    }
+
+    .arrow-icon {
+      width: 18px;
+      height: 18px;
+      color: #ccc;
+    }
+
+    .no-result {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    /* FOOTER */
+    footer {
+      background: #f7f7f7;
+      border-top: 1px solid var(--border);
+      padding: 48px 32px;
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-logo img {
+      height: 28px;
+      width: auto;
+      opacity: 0.6;
+      margin-bottom: 12px;
+    }
+
+    .footer-info {
+      font-size: 0.8rem;
+      color: #aaa;
+      line-height: 1.8;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      font-size: 0.82rem;
+      color: #aaa;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    /* CATEGORY TABS */
+    .category-tabs {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 32px 0;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cat-tab {
+      padding: 8px 18px;
+      border-radius: 50px;
+      border: 1.5px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cat-tab.active,
+    .cat-tab:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #f0f4ff;
+    }
+
+    .cat-tab.active {
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .hero {
+        padding: 60px 20px 40px;
+      }
+
+      .filter-bar,
+      .search-wrap,
+      .job-list,
+      .category-tabs {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .nav-inner {
+        padding: 0 20px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .job-right {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="https://ryzincorp.com" class="nav-logo">
+        <img src="../../assets/logo.png" alt="RYZIN">
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-eyebrow">RYZIN Careers</p>
+    <h1>지금 <span>합류</span>하세요</h1>
+    <p>라이진과 함께 브랜드 경험의 새로운 기준을<br>만들어갈 팀원을 찾습니다.</p>
+  </section>
+
+  <!-- CATEGORY TABS -->
+  <div class="category-tabs" id="categoryTabs">
+    <button class="cat-tab active" data-cat="all">전체</button>
+    <button class="cat-tab" data-cat="production">프로덕션</button>
+    <button class="cat-tab" data-cat="planning">마케팅</button>
+    <button class="cat-tab" data-cat="design">영업</button>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-select-wrap">
+      <select class="filter-select" id="deptFilter">
+        <option value="all">모든 부서</option>
+        <option value="라이브">라이브팀</option>
+        <option value="콘텐츠">콘텐츠팀</option>
+        <option value="디자인">디자인팀</option>
+        <option value="개발">개발팀</option>
+        <option value="마케팅">마케팅팀</option>
+        <option value="경영">경영지원</option>
+      </select>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+    <div class="filter-select-wrap">
+      <select class="filter-select" id="typeFilter">
+        <option value="all">모든 고용형태</option>
+        <option value="정규직">정규직</option>
+        <option value="계약직">계약직</option>
+        <option value="인턴">인턴</option>
+        <option value="프리랜서">프리랜서</option>
+      </select>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </div>
+    <p class="result-count" id="resultCount"><strong>0</strong>개의 포지션이 열려있어요.</p>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input type="text" class="search-input" id="searchInput" placeholder="직무, 키워드로 검색하세요">
+  </div>
+
+  <!-- JOB LIST -->
+  <div class="job-list" id="jobList"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-logo"><img src="../../assets/logo.png" alt="RYZIN" style="filter:brightness(0);opacity:0.5;"></div>
+        <p class="footer-info">
+          대표 : 채이준 &nbsp;|&nbsp; 사업자 등록번호 : 821-29-011-97<br>
+          경기도 하남시 미사강변동로 100-1 미사역 파라곤스퀘어 2064-2<br>
+          채용문의 : choijun@ryzincorp.com
+        </p>
+      </div>
+      <div class="footer-links">
+        <a href="https://ryzincorp.com">메인 사이트</a>
+        <a href="https://www.instagram.com/ryzin_live">인스타그램</a>
+        <a href="https://blog.naver.com/ryzin_live">블로그</a>
+        <a href="admin.html" style="color:#bbb;">관리자</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let JOBS = [];
+    let activeCategory = 'all';
+
+    async function initJobs() {
+      try {
+        const res = await fetch('jobs.json?t=' + Date.now());
+        if(res.ok) {
+          JOBS = await res.json();
+          renderJobs();
+        }
+      } catch(e) {
+        console.error("Failed to load jobs", e);
+      }
+    }
+
+    function renderJobs() {
+      const dept = document.getElementById('deptFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      const q = document.getElementById('searchInput').value.toLowerCase();
+
+      const filtered = JOBS.filter(j => {
+        const catOk = activeCategory === 'all' || j.cat === activeCategory;
+        const deptOk = dept === 'all' || j.dept === dept;
+        const typeOk = type === 'all' || j.type === type;
+        const qOk = !q || j.title.toLowerCase().includes(q) || j.tags.some(t => t.toLowerCase().includes(q));
+        return catOk && deptOk && typeOk && qOk;
+      });
+
+      const list = document.getElementById('jobList');
+      document.getElementById('resultCount').innerHTML = `<strong>${filtered.length}</strong>개의 포지션이 열려있어요.`;
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<p class="no-result">조건에 맞는 포지션이 없습니다.</p>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(j => `
+    <a class="job-item" href="detail.html?id=${j.id}" id="job-${j.id}">
+      <div class="job-left">
+        <p class="job-title">${j.title}</p>
+        <div class="job-tags">${j.tags.map(t => `<span class="job-tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="job-right">
+        <span class="dept-badge">${j.dept}팀</span>
+        <span class="dept-badge" style="background:#f0f4ff;color:var(--accent)">${j.type}</span>
+        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
+  `).join('');
+    }
+
+    // Category tabs
+    document.querySelectorAll('.cat-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeCategory = tab.dataset.cat;
+        renderJobs();
+      });
+    });
+
+    document.getElementById('deptFilter').addEventListener('change', renderJobs);
+    document.getElementById('typeFilter').addEventListener('change', renderJobs);
+    document.getElementById('searchInput').addEventListener('input', renderJobs);
+
+    initJobs();
+  </script>
+</body>
+
+</html>

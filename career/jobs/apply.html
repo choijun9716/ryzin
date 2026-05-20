@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지원서 작성하기 | RYZIN Careers</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    :root{--bg:#fff;--text:#191919;--muted:#888;--border:#e2e2e2;--accent:#246bfd;--red:#f04438;--nav-h:64px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Pretendard',sans-serif;background:#f5f6f8;color:var(--text);-webkit-font-smoothing:antialiased;}
+    a{text-decoration:none;color:inherit;}
+
+    .nav{position:fixed;top:0;left:0;width:100%;height:var(--nav-h);background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:100;display:flex;align-items:center;}
+    .nav-inner{max-width:800px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;width:100%;}
+    .nav-logo img{height:30px;width:auto;filter:brightness(0);}
+    .nav-back{display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--muted);font-weight:500;transition:color .2s;}
+    .nav-back:hover{color:var(--text);}
+    .nav-back svg{width:16px;height:16px;}
+
+    .page{max-width:800px;margin:0 auto;padding:calc(var(--nav-h)+48px) 32px 100px;}
+
+    h1{font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:8px;}
+    .apply-subtitle{font-size:1rem;color:var(--muted);margin-bottom:48px;}
+
+    .form-card{background:#fff;border-radius:16px;border:1px solid var(--border);padding:32px;margin-bottom:24px;}
+    .card-title{font-size:1rem;font-weight:800;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+
+    .form-group{margin-bottom:24px;}
+    .form-group:last-child{margin-bottom:0;}
+    label.field-label{display:block;font-size:0.9rem;font-weight:600;margin-bottom:8px;}
+    label.field-label .req{color:var(--red);margin-left:2px;}
+    .field-hint{font-size:0.8rem;color:var(--muted);margin-top:6px;line-height:1.5;}
+    .field-hint a{color:var(--accent);}
+
+    .input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    input[type=text],input[type=email],input[type=tel],input[type=number],select,textarea{
+      width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;
+      font-family:inherit;font-size:0.9rem;color:var(--text);background:#fff;
+      transition:border-color .2s;appearance:none;-webkit-appearance:none;
+    }
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+    textarea{resize:vertical;min-height:100px;}
+    .input-suffix{position:relative;}
+    .input-suffix input{padding-right:36px;}
+    .input-suffix span{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;}
+    select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+
+    /* Radio */
+    .radio-group{display:flex;gap:24px;flex-wrap:wrap;}
+    .radio-item{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9rem;}
+    .radio-item input[type=radio]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;}
+
+    /* File upload */
+    .file-upload{border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .2s;}
+    .file-upload:hover{border-color:var(--accent);}
+    .file-upload svg{width:18px;height:18px;color:var(--muted);flex-shrink:0;}
+    .file-upload span{font-size:0.88rem;color:var(--muted);}
+    .file-upload input{display:none;}
+
+    /* Work experience card */
+    .exp-card{border:1.5px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;position:relative;}
+    .exp-card-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px;line-height:1;}
+    .exp-card-close:hover{background:#f5f6f8;}
+    .exp-date-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;}
+    .exp-date-sep{text-align:center;color:var(--muted);font-size:0.9rem;}
+    .add-btn{display:flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid var(--accent);border-radius:8px;color:var(--accent);font-family:inherit;font-size:0.85rem;font-weight:700;background:#fff;cursor:pointer;transition:background .2s;}
+    .add-btn:hover{background:#f0f4ff;}
+
+    /* Consent */
+    .consent-all{display:flex;align-items:center;gap:10px;padding:16px 0;border-bottom:1.5px solid var(--border);margin-bottom:4px;cursor:pointer;}
+    .consent-all span{font-size:0.95rem;font-weight:700;}
+    .consent-all .desc{font-size:0.82rem;color:var(--muted);font-weight:400;margin-left:4px;}
+    .consent-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #f0f0f0;}
+    .consent-left{display:flex;align-items:center;gap:10px;}
+    .consent-badge{font-size:0.75rem;font-weight:700;padding:2px 8px;border-radius:4px;background:#f2f2f2;color:#555;}
+    .consent-badge.required{background:#fff0f0;color:var(--red);}
+    .consent-text{font-size:0.88rem;color:var(--text);}
+    .consent-view{font-size:0.8rem;color:var(--accent);cursor:pointer;white-space:nowrap;background:none;border:none;font-family:inherit;}
+    .custom-check{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+    .custom-check.checked{background:var(--accent);border-color:var(--accent);}
+    .custom-check.checked::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
+
+    /* Submit */
+    .submit-area{margin-top:32px;}
+    .btn-submit{width:100%;padding:18px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1.05rem;font-weight:700;cursor:pointer;transition:background .2s;}
+    .btn-submit:hover{background:#1a55d4;}
+    .submit-notice{text-align:center;font-size:0.78rem;color:var(--muted);margin-top:12px;line-height:1.6;}
+    .submit-notice a{color:var(--text);text-decoration:underline;}
+
+    /* Toast */
+    .toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:#fff;padding:12px 24px;border-radius:50px;font-size:0.88rem;font-weight:500;opacity:0;transition:all .3s;z-index:9999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    @media(max-width:640px){
+      .page{padding:calc(var(--nav-h)+24px) 16px 80px;}
+      .form-card{padding:20px;}
+      h1{font-size:1.5rem;}
+      .input-row{grid-template-columns:1fr;}
+      .nav-inner{padding:0 16px;}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="https://ryzincorp.com" class="nav-logo"><img src="../../assets/logo.png" alt="RYZIN"></a>
+    <a class="nav-back" id="backLink" href="detail.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      공고로 돌아가기
+    </a>
+  </div>
+</nav>
+
+<div class="page">
+  <h1>지원서 작성하기</h1>
+  <p class="apply-subtitle" id="applySubtitle">RYZIN</p>
+
+  <form id="applyForm" novalidate>
+
+    <!-- 기본 정보 -->
+    <div class="form-card">
+      <p class="card-title">기본 정보</p>
+      <div class="form-group">
+        <label class="field-label">이름 <span class="req">*</span></label>
+        <div class="input-row">
+          <input type="text" placeholder="성" required>
+          <input type="text" placeholder="이름" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="field-label">이메일 <span class="req">*</span></label>
+        <input type="email" placeholder="example@email.com" required>
+      </div>
+      <div class="form-group">
+        <label class="field-label">전화번호 <span class="req">*</span></label>
+        <input type="tel" placeholder="010-0000-0000" required>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;font-size:0.85rem;color:var(--muted)">
+          <input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent)"> 해외에 거주중이에요
+        </label>
+      </div>
+    </div>
+
+    <!-- 서류 첨부 -->
+    <div class="form-card">
+      <p class="card-title">서류 첨부</p>
+      <div class="form-group">
+        <label class="field-label">이력서 및 경력기술서 <span class="req">*</span></label>
+        <label class="file-upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <span id="resumeFileName">파일 첨부 (최대 50MB)</span>
+          <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" onchange="updateFileName('resumeFile','resumeFileName')">
+        </label>
+        <p class="field-hint">· 이력서 및 경력기술서는 자유양식이며, 한 개의 파일로 통합해 제출해주세요.<br>· <a href="#">오류가 있을 때는 파일 용량이 50MB가 넘었는지 확인해주세요.</a></p>
+      </div>
+      <div class="form-group">
+        <label class="field-label">포트폴리오 (선택사항)</label>
+        <label class="file-upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <span id="portfolioFileName">파일 첨부 (최대 50MB)</span>
+          <input type="file" id="portfolioFile" accept=".pdf,.zip,.pptx" onchange="updateFileName('portfolioFile','portfolioFileName')">
+        </label>
+        <p class="field-hint"><a href="#">노션, 피그마 링크인 경우 권한이 '전체 공개'인지 다시 한번 확인해주세요.</a></p>
+      </div>
+      <div class="form-group">
+        <label class="field-label">채용 공고를 접한 경로 <span class="req">*</span></label>
+        <select required>
+          <option value="" disabled selected></option>
+          <option>라이진 공식 웹사이트</option>
+          <option>인스타그램</option>
+          <option>네이버 블로그</option>
+          <option>잡코리아</option>
+          <option>사람인</option>
+          <option>링크드인</option>
+          <option>지인 추천</option>
+          <option>기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="field-label">장애인 증빙 서류</label>
+        <label class="file-upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <span id="disabledFileName">파일 첨부 (최대 50MB)</span>
+          <input type="file" id="disabledFile" onchange="updateFileName('disabledFile','disabledFileName')">
+        </label>
+        <p class="field-hint"><a href="#">장애인은 관련 법률에 의거 우대합니다. 해당하실 경우, 증빙 서류를 첨부해주세요.</a></p>
+      </div>
+      <div class="form-group">
+        <label class="field-label">국가보훈대상자 증빙 서류</label>
+        <label class="file-upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          <span id="veteranFileName">파일 첨부 (최대 50MB)</span>
+          <input type="file" id="veteranFile" onchange="updateFileName('veteranFile','veteranFileName')">
+        </label>
+        <p class="field-hint"><a href="#">국가보훈해당자는 관련 법률에 의거 우대합니다. 해당하실 경우, 증빙 서류를 첨부해주세요.</a></p>
+      </div>
+    </div>
+
+    <!-- 경력 -->
+    <div class="form-card">
+      <p class="card-title">경력 사항</p>
+      <div class="form-group">
+        <label class="field-label">경력</label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="career" value="경력" checked> 경력</label>
+          <label class="radio-item"><input type="radio" name="career" value="신입"> 신입 (경력 없음)</label>
+        </div>
+      </div>
+      <div class="form-group" id="careerYearsWrap">
+        <label class="field-label">총 경력 기간 <span class="req">*</span></label>
+        <div class="input-suffix">
+          <input type="number" min="0" max="50" placeholder="">
+          <span>년</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div>
+            <label class="field-label" style="margin-bottom:4px;">업무 경험</label>
+            <p style="font-size:0.8rem;color:var(--muted);">최근 재직 기준으로 5개까지 작성할 수 있어요.</p>
+          </div>
+          <button type="button" class="add-btn" id="addExpBtn" onclick="addExpCard()">+ 추가</button>
+        </div>
+        <div id="expList"></div>
+      </div>
+    </div>
+
+    <!-- 동의 -->
+    <div class="form-card">
+      <p class="card-title">개인정보 동의</p>
+      <div class="consent-all" onclick="toggleAll()">
+        <div class="custom-check" id="checkAll"></div>
+        <span>전체 동의</span>
+        <span class="desc">아래의 필수와 선택 동의 항목에 모두 동의할게요.</span>
+      </div>
+      <div id="consentList"></div>
+      <p style="font-size:0.78rem;color:var(--muted);margin-top:16px;">* <a href="#" style="color:var(--text);text-decoration:underline;">이 사항</a>에 해당할 경우, 채용 전형의 진행이 중지되거나 채용이 취소될 수 있습니다.</p>
+    </div>
+
+    <div class="submit-area">
+      <button type="submit" class="btn-submit">지원서 제출하기</button>
+      <p class="submit-notice">제출 후 수정이 어려울 수 있으니 다시 한번 확인해주세요.<br><a href="#">개인정보처리방침</a>에 따라 안전하게 처리됩니다.</p>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// URL params
+const p = new URLSearchParams(location.search);
+const jobId = p.get('id') || '1';
+const jobTitle = p.get('title') || 'RYZIN';
+document.getElementById('applySubtitle').textContent = `라이진 ${jobTitle}`;
+document.getElementById('backLink').href = `detail.html?id=${jobId}`;
+document.title = `${jobTitle} 지원하기 | RYZIN Careers`;
+
+// File name update
+function updateFileName(inputId, spanId) {
+  const f = document.getElementById(inputId).files[0];
+  document.getElementById(spanId).textContent = f ? f.name : '파일 첨부 (최대 50MB)';
+}
+
+// Experience cards
+let expCount = 0;
+function addExpCard() {
+  if (expCount >= 5) { showToast('최대 5개까지 추가할 수 있어요.'); return; }
+  expCount++;
+  const div = document.createElement('div');
+  div.className = 'exp-card';
+  div.id = `exp-${expCount}`;
+  div.innerHTML = `
+    <button type="button" class="exp-card-close" onclick="removeExp(${expCount})">×</button>
+    <div class="form-group">
+      <label class="field-label">회사명 <span class="req">*</span></label>
+      <input type="text" placeholder="회사명을 검색해주세요.">
+    </div>
+    <div class="form-group">
+      <label class="field-label">담당 직무명 <span class="req">*</span></label>
+      <input type="text" placeholder="(예시) Frontend Developer">
+    </div>
+    <div class="form-group">
+      <label class="field-label">재직 기간 <span class="req">*</span></label>
+      <div class="exp-date-row">
+        <input type="text" placeholder="년.월.일">
+        <span class="exp-date-sep">~</span>
+        <input type="text" placeholder="년.월.일">
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;font-size:0.85rem;color:var(--muted)">
+        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent)"> 재직 중
+      </label>
+    </div>
+  `;
+  document.getElementById('expList').appendChild(div);
+}
+function removeExp(id) {
+  const el = document.getElementById(`exp-${id}`);
+  if (el) { el.remove(); expCount = Math.max(0, expCount - 1); }
+}
+
+// Radio for career
+document.querySelectorAll('input[name="career"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('careerYearsWrap').style.display = r.value === '신입' ? 'none' : 'block';
+  });
+});
+
+// Consent
+const CONSENTS = [
+  { id:'c1', type:'필수', text:'개인정보 수집 및 이용 동의' },
+  { id:'c2', type:'선택', text:'개인정보 수집 및 이용 동의' },
+  { id:'c3', type:'선택', text:'민감정보 수집 및 이용 동의' },
+  { id:'c4', type:'선택', text:'추후 적합한 포지션 제안을 위한 개인정보 수집 및 이용에 동의합니다' },
+  { id:'c5', type:'선택', text:'추후 공개채용 등이 오픈되었을 때 채용정보를 수신하는 것에 동의합니다' },
+];
+const checked = {};
+CONSENTS.forEach(c => checked[c.id] = false);
+
+function renderConsents() {
+  document.getElementById('consentList').innerHTML = CONSENTS.map(c => `
+    <div class="consent-item">
+      <div class="consent-left">
+        <div class="custom-check ${checked[c.id]?'checked':''}" onclick="toggleConsent('${c.id}')"></div>
+        <span class="consent-badge ${c.type==='필수'?'required':''}">${c.type}</span>
+        <span class="consent-text">${c.text}</span>
+      </div>
+      <button type="button" class="consent-view" onclick="showToast('준비 중입니다.')">보기</button>
+    </div>
+  `).join('');
+  const all = CONSENTS.every(c => checked[c.id]);
+  const el = document.getElementById('checkAll');
+  el.className = `custom-check ${all?'checked':''}`;
+}
+
+function toggleConsent(id) {
+  checked[id] = !checked[id];
+  renderConsents();
+}
+
+function toggleAll() {
+  const all = CONSENTS.every(c => checked[c.id]);
+  CONSENTS.forEach(c => checked[c.id] = !all);
+  renderConsents();
+}
+
+renderConsents();
+
+// Toast
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Form submit
+document.getElementById('applyForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!checked['c1']) { showToast('필수 동의 항목을 체크해주세요.'); return; }
+  showToast('지원서가 제출되었습니다! 검토 후 연락드리겠습니다.');
+  setTimeout(() => { location.href = 'index.html'; }, 2000);
+});
+
+// Init one exp card
+addExpCard();
+</script>
+</body>
+</html>

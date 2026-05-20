@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>채용 공고 상세 | RYZIN Careers</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    :root {
+      --bg: #fff; --text: #191919; --muted: #888;
+      --border: #e8e8e8; --accent: #246bfd; --orange: #ff8730;
+      --tag-bg: #f2f2f2; --nav-h: 64px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Pretendard',sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+    a { text-decoration:none; color:inherit; }
+
+    /* NAV */
+    .nav { position:fixed; top:0; left:0; width:100%; height:var(--nav-h); background:rgba(255,255,255,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); z-index:100; display:flex; align-items:center; }
+    .nav-inner { max-width:1100px; margin:0 auto; padding:0 32px; display:flex; align-items:center; justify-content:space-between; width:100%; }
+    .nav-logo img { height:32px; width:auto; display:block; filter:brightness(0); }
+    .nav-back { display:flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--muted); font-weight:500; transition:color 0.2s; }
+    .nav-back:hover { color:var(--text); }
+    .nav-back svg { width:16px; height:16px; }
+
+    /* LAYOUT */
+    .page-wrap { max-width:1100px; margin:0 auto; padding:calc(var(--nav-h) + 56px) 32px 80px; display:grid; grid-template-columns:1fr 300px; gap:56px; align-items:start; }
+
+    /* MAIN CONTENT */
+    .job-header { margin-bottom: 40px; }
+    .job-meta { display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+    .meta-chip { font-size:0.78rem; font-weight:600; color:var(--accent); background:#f0f4ff; padding:4px 10px; border-radius:6px; }
+    .meta-chip.orange { color:#c45f00; background:#fff0e5; }
+    .job-title { font-size:2rem; font-weight:800; letter-spacing:-0.03em; line-height:1.2; margin-bottom:8px; }
+    .divider { height:1px; background:var(--border); margin:32px 0; }
+
+    .section-title { font-size:1rem; font-weight:800; margin-bottom:16px; color:var(--text); }
+    .body-text { font-size:0.95rem; color:#444; line-height:1.8; }
+    .bullet-list { list-style:none; padding:0; }
+    .bullet-list li { font-size:0.95rem; color:#444; line-height:1.8; padding-left:16px; position:relative; margin-bottom:4px; }
+    .bullet-list li::before { content:'·'; position:absolute; left:0; color:var(--muted); }
+    .sub-list { margin-top:4px; }
+    .sub-list li { padding-left:28px; font-size:0.88rem; color:#777; }
+    .sub-list li::before { left:16px; }
+    .content-block { margin-bottom:40px; }
+
+    /* SIDEBAR */
+    .sidebar { position:sticky; top:calc(var(--nav-h) + 32px); }
+    .apply-card { background:#f7f9ff; border:1.5px solid #d6e2ff; border-radius:16px; padding:28px; }
+    .apply-card .job-name { font-size:0.9rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .apply-card .job-sub { font-size:0.8rem; color:var(--muted); margin-bottom:24px; }
+    .btn-apply { display:block; width:100%; padding:16px; background:var(--accent); color:#fff; border:none; border-radius:12px; font-family:inherit; font-size:1rem; font-weight:700; cursor:pointer; text-align:center; transition:background 0.2s; }
+    .btn-apply:hover { background:#1a55d4; }
+    .apply-notice { margin-top:16px; font-size:0.78rem; color:var(--muted); line-height:1.6; }
+    .apply-notice a { color:var(--accent); text-decoration:underline; }
+    .info-list { margin-top:24px; border-top:1px solid var(--border); padding-top:20px; }
+    .info-row { display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:10px; }
+    .info-row .label { color:var(--muted); }
+    .info-row .val { font-weight:600; color:var(--text); }
+
+    /* SHARE */
+    .share-btn { display:flex; align-items:center; gap:8px; padding:12px 16px; border:1.5px solid var(--border); border-radius:10px; font-size:0.85rem; font-weight:500; color:var(--muted); cursor:pointer; margin-top:12px; width:100%; background:#fff; font-family:inherit; transition:all 0.2s; justify-content:center; }
+    .share-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .share-btn svg { width:16px; height:16px; }
+
+    /* BACK BTN MOBILE */
+    .mobile-back { display:none; align-items:center; gap:6px; font-size:0.85rem; color:var(--muted); margin-bottom:24px; }
+    .mobile-apply { display:none; position:fixed; bottom:0; left:0; width:100%; background:#fff; border-top:1px solid var(--border); padding:16px 20px; z-index:50; }
+    .mobile-apply .btn-apply { border-radius:50px; }
+
+    @media (max-width:768px) {
+      .page-wrap { grid-template-columns:1fr; padding:calc(var(--nav-h)+32px) 20px 100px; gap:32px; }
+      .sidebar { display:none; }
+      .mobile-back { display:flex; }
+      .mobile-apply { display:block; }
+      .job-title { font-size:1.5rem; }
+      .nav-inner { padding:0 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="https://ryzincorp.com" class="nav-logo"><img src="../../assets/logo.png" alt="RYZIN"></a>
+    <a href="index.html" class="nav-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      채용 공고 목록
+    </a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <!-- MAIN -->
+  <main>
+    <a href="index.html" class="mobile-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      목록으로
+    </a>
+
+    <div class="job-header">
+      <div class="job-meta" id="jobMeta"></div>
+      <h1 class="job-title" id="jobTitle">로딩 중...</h1>
+    </div>
+
+    <div class="divider"></div>
+    <div id="jobBody"></div>
+  </main>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="apply-card">
+      <p class="job-name" id="sidebarTitle"></p>
+      <p class="job-sub" id="sidebarMeta"></p>
+      <a class="btn-apply" id="applyBtn" href="apply.html">지원하기</a>
+      <p class="apply-notice">지원 전 <a href="#">개인정보처리방침</a>을 확인해주세요.</p>
+      <div class="info-list" id="infoList"></div>
+      <button class="share-btn" onclick="copyLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        링크 복사
+      </button>
+    </div>
+  </aside>
+</div>
+
+<!-- MOBILE APPLY BTN -->
+<div class="mobile-apply">
+  <a class="btn-apply" id="mobileApplyBtn" href="apply.html">지원하기</a>
+</div>
+
+<script>
+// Fallback job data for unspecified IDs
+const DEFAULT_JOB = {
+  title:"채용 공고", dept:"라이진", type:"정규직", location:"경기도 하남", deadline:"상시채용",
+  intro:["라이진과 함께 성장할 팀원을 찾습니다."],
+  works:["직무 관련 업무 수행","팀 협업 및 커뮤니케이션"],
+  requirements:["해당 직무 경험 보유자","적극적인 자세"],
+  preferred:["관련 업계 경험자"],
+  process:["서류 → 면접 → 최종 합격"]
+};
+
+async function initJobDetail() {
+  let JOBS = [];
+  try {
+    const res = await fetch('jobs.json?t=' + Date.now());
+    if(res.ok) {
+      JOBS = await res.json();
+    }
+  } catch(e) {
+    console.error("Failed to load jobs", e);
+  }
+
+  const params = new URLSearchParams(location.search);
+  const id = parseInt(params.get('id')) || 1;
+  const job = JOBS.find(j => j.id === id) || { ...DEFAULT_JOB };
+
+  document.title = `${job.title} | RYZIN Careers`;
+
+  document.getElementById('jobTitle').textContent = job.title;
+  document.getElementById('jobMeta').innerHTML = `
+    <span class="meta-chip">${job.dept}</span>
+    <span class="meta-chip orange">${job.type}</span>
+  `;
+  document.getElementById('sidebarTitle').textContent = job.title;
+  document.getElementById('sidebarMeta').textContent = `${job.dept} · ${job.type}`;
+  document.getElementById('infoList').innerHTML = `
+    <div class="info-row"><span class="label">근무지</span><span class="val">${job.location || '경기도 하남'}</span></div>
+    <div class="info-row"><span class="label">고용형태</span><span class="val">${job.type}</span></div>
+    <div class="info-row"><span class="label">지원 마감</span><span class="val">${job.deadline || '상시채용'}</span></div>
+  `;
+
+  // Update apply links with job id
+  const applyUrl = `apply.html?id=${id}&title=${encodeURIComponent(job.title)}`;
+  document.getElementById('applyBtn').href = applyUrl;
+  document.getElementById('mobileApplyBtn').href = applyUrl;
+
+  const introHTML = job.intro ? job.intro.map(i=>`<li>${i}</li>`).join('') : '';
+  const worksHTML = job.works ? job.works.map(w=>`<li>${w}</li>`).join('') : '';
+  const reqHTML = job.requirements ? job.requirements.map(r=>`<li>${r}</li>`).join('') : '';
+  const prefHTML = job.preferred ? job.preferred.map(p=>`<li>${p}</li>`).join('') : '';
+  const processHTML = job.process ? job.process.map(p=>`<li>${p}</li>`).join('') : '';
+
+  document.getElementById('jobBody').innerHTML = `
+    <div class="content-block">
+      <p class="section-title">합류하게 될 팀에 대해 알려드려요</p>
+      <ul class="bullet-list">${introHTML}</ul>
+    </div>
+    <div class="divider"></div>
+    <div class="content-block">
+      <p class="section-title">합류하면 함께 할 업무에요</p>
+      <ul class="bullet-list">${worksHTML}</ul>
+    </div>
+    <div class="divider"></div>
+    <div class="content-block">
+      <p class="section-title">이런 분과 함께하고 싶어요</p>
+      <ul class="bullet-list">${reqHTML}</ul>
+    </div>
+    <div class="divider"></div>
+    <div class="content-block">
+      <p class="section-title">이런 분이라면 더욱 환영해요</p>
+      <ul class="bullet-list">${prefHTML}</ul>
+    </div>
+    <div class="divider"></div>
+    <div class="content-block">
+      <p class="section-title">채용 전형 안내</p>
+      <ul class="bullet-list">${processHTML}</ul>
+      <p class="body-text" style="margin-top:16px;font-size:0.85rem;color:var(--muted)">* 모든 전형은 개별 연락 드립니다. 서류 검토 후 2주 이내 결과를 안내해드립니다.</p>
+    </div>
+  `;
+}
+
+initJobDetail();
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(() => alert('링크가 복사되었습니다!'));
+}
+</script>
+</body>
+</html>

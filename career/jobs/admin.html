@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>채용 관리자 페이지 | RYZIN</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+    h1 { margin-top: 0; }
+    #password-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #password-input { padding: 10px; font-size: 16px; margin-bottom: 10px; }
+    #password-btn { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    .job-list { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .job-item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+    .job-item:last-child { border-bottom: none; }
+    .btn { padding: 8px 15px; cursor: pointer; border: none; border-radius: 4px; color: #fff; }
+    .btn-edit { background: #2196F3; margin-right: 5px; }
+    .btn-delete { background: #F44336; }
+    .btn-add { background: #4CAF50; margin-bottom: 20px; font-size: 16px; }
+    .btn-save { background: #ff8730; font-size: 16px; margin-top: 20px; width: 100%; padding: 15px; }
+    
+    /* Modal */
+    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; }
+    .form-group textarea { height: 80px; }
+  </style>
+</head>
+<body>
+
+  <div id="password-screen">
+    <h2>관리자 비밀번호</h2>
+    <input type="password" id="password-input" placeholder="비밀번호 입력">
+    <button id="password-btn" onclick="checkPassword()">확인</button>
+  </div>
+
+  <div id="admin-content" style="display:none; max-width: 800px; margin: 0 auto;">
+    <h1>채용 공고 관리</h1>
+    <button class="btn btn-add" onclick="openAddModal()">+ 새 공고 추가</button>
+    <div class="job-list" id="jobs-container"></div>
+    <button class="btn btn-save" onclick="saveData()">서버에 저장 및 라이브 적용</button>
+  </div>
+
+  <!-- Edit/Add Modal -->
+  <div id="modal">
+    <div class="modal-content">
+      <h2 id="modal-title">공고 수정</h2>
+      <input type="hidden" id="job-id">
+      
+      <div class="form-group">
+        <label>공고 제목</label>
+        <input type="text" id="job-title">
+      </div>
+      <div class="form-group">
+        <label>부서</label>
+        <select id="job-dept">
+          <option>라이브</option><option>콘텐츠</option><option>마케팅</option><option>디자인</option><option>개발</option><option>경영</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>카테고리</label>
+        <select id="job-cat">
+          <option value="production">프로덕션</option><option value="planning">기획·마케팅</option><option value="design">디자인</option><option value="tech">개발·테크</option><option value="operation">운영·영업</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>고용형태</label>
+        <select id="job-type">
+          <option>정규직</option><option>계약직</option><option>인턴</option><option>프리랜서</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>태그 (쉼표로 구분)</label>
+        <input type="text" id="job-tags" placeholder="예: 라이브 기획, 연출">
+      </div>
+      <div class="form-group">
+        <label>소개 (엔터로 구분)</label>
+        <textarea id="job-intro"></textarea>
+      </div>
+      <div class="form-group">
+        <label>주요 업무 (엔터로 구분)</label>
+        <textarea id="job-works"></textarea>
+      </div>
+      <div class="form-group">
+        <label>자격 요건 (엔터로 구분)</label>
+        <textarea id="job-req"></textarea>
+      </div>
+      <div class="form-group">
+        <label>우대 사항 (엔터로 구분)</label>
+        <textarea id="job-pref"></textarea>
+      </div>
+      
+      <div style="text-align: right; margin-top: 20px;">
+        <button class="btn" style="background:#aaa;" onclick="closeModal()">취소</button>
+        <button class="btn" style="background:#ff8730;" onclick="saveModal()">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function checkPassword() {
+      if(document.getElementById('password-input').value === '971456') {
+        document.getElementById('password-screen').style.display = 'none';
+        document.getElementById('admin-content').style.display = 'block';
+        loadData();
+      } else {
+        alert('비밀번호가 틀렸습니다.');
+      }
+    }
+    
+    let jobs = [];
+
+    async function loadData() {
+      try {
+        const res = await fetch('jobs.json?t=' + Date.now());
+        if(res.ok) {
+          jobs = await res.json();
+        } else {
+          // If file doesn't exist yet, we start with empty array
+          jobs = [];
+        }
+        renderJobs();
+      } catch(e) {
+        console.error(e);
+        jobs = [];
+        renderJobs();
+      }
+    }
+
+    function renderJobs() {
+      const container = document.getElementById('jobs-container');
+      container.innerHTML = jobs.map((job, index) => `
+        <div class="job-item">
+          <div>
+            <strong>${job.title}</strong> (${job.dept} / ${job.type})
+          </div>
+          <div>
+            <button class="btn btn-edit" onclick="openEditModal(${index})">수정</button>
+            <button class="btn btn-delete" onclick="deleteJob(${index})">삭제</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteJob(index) {
+      if(confirm('정말 삭제하시겠습니까?')) {
+        jobs.splice(index, 1);
+        renderJobs();
+      }
+    }
+
+    function openAddModal() {
+      document.getElementById('modal-title').textContent = '새 공고 추가';
+      document.getElementById('job-id').value = '';
+      document.getElementById('job-title').value = '';
+      document.getElementById('job-tags').value = '';
+      document.getElementById('job-intro').value = '';
+      document.getElementById('job-works').value = '';
+      document.getElementById('job-req').value = '';
+      document.getElementById('job-pref').value = '';
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function openEditModal(index) {
+      const job = jobs[index];
+      document.getElementById('modal-title').textContent = '공고 수정';
+      document.getElementById('job-id').value = job.id;
+      document.getElementById('job-title').value = job.title;
+      document.getElementById('job-dept').value = job.dept;
+      document.getElementById('job-cat').value = job.cat;
+      document.getElementById('job-type').value = job.type;
+      document.getElementById('job-tags').value = job.tags ? job.tags.join(', ') : '';
+      document.getElementById('job-intro').value = job.intro ? job.intro.join('\\n') : '';
+      document.getElementById('job-works').value = job.works ? job.works.join('\\n') : '';
+      document.getElementById('job-req').value = job.requirements ? job.requirements.join('\\n') : '';
+      document.getElementById('job-pref').value = job.preferred ? job.preferred.join('\\n') : '';
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function saveModal() {
+      const idVal = document.getElementById('job-id').value;
+      const job = {
+        id: idVal ? parseInt(idVal) : Date.now(),
+        title: document.getElementById('job-title').value,
+        dept: document.getElementById('job-dept').value,
+        cat: document.getElementById('job-cat').value,
+        type: document.getElementById('job-type').value,
+        location: "경기도 하남",
+        deadline: "상시채용",
+        tags: document.getElementById('job-tags').value.split(',').map(s=>s.trim()).filter(s=>s),
+        intro: document.getElementById('job-intro').value.split('\\n').map(s=>s.trim()).filter(s=>s),
+        works: document.getElementById('job-works').value.split('\\n').map(s=>s.trim()).filter(s=>s),
+        requirements: document.getElementById('job-req').value.split('\\n').map(s=>s.trim()).filter(s=>s),
+        preferred: document.getElementById('job-pref').value.split('\\n').map(s=>s.trim()).filter(s=>s),
+        process: ["서류 검토 → 면접 → 최종 합격"]
+      };
+
+      if(idVal) {
+        const index = jobs.findIndex(j => j.id == idVal);
+        if(index > -1) jobs[index] = job;
+      } else {
+        jobs.push(job);
+      }
+      
+      closeModal();
+      renderJobs();
+    }
+
+    async function saveData() {
+      try {
+        const btn = document.querySelector('.btn-save');
+        btn.textContent = '저장 중...';
+        
+        const response = await fetch('/api/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobs: jobs })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          alert('성공적으로 저장되고 깃허브에 커밋되었습니다!');
+        } else {
+          alert('저장 실패: ' + result.error);
+        }
+      } catch (e) {
+        alert('저장 중 오류 발생: ' + e);
+      } finally {
+        document.querySelector('.btn-save').textContent = '서버에 저장 및 라이브 적용';
+      }
+    }
+  </script>
+</body>
+</html>
