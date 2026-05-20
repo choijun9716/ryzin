@@ -110,22 +110,86 @@
     }
     
     let jobs = [];
+    let jobsSha = null;
+
+    // GitHub API Helper
+    async function fetchGithubFile(path) {
+      const token = localStorage.getItem('github_token');
+      const owner = localStorage.getItem('github_owner') || 'choijun9716';
+      const repo = localStorage.getItem('github_repo') || 'ryzin';
+      const branch = localStorage.getItem('github_branch') || 'main';
+
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (token) headers['Authorization'] = `token ${token}`;
+
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}&v=${new Date().getTime()}`, { headers });
+      if (!res.ok) {
+          throw new Error(`Failed to fetch ${path} (${res.status})`);
+      }
+      const data = await res.json();
+      const decodedContent = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+      return {
+          content: JSON.parse(decodedContent),
+          sha: data.sha
+      };
+    }
+
+    async function commitGithubFile(path, obj, sha, message) {
+      const token = localStorage.getItem('github_token');
+      const owner = localStorage.getItem('github_owner') || 'choijun9716';
+      const repo = localStorage.getItem('github_repo') || 'ryzin';
+      const branch = localStorage.getItem('github_branch') || 'main';
+
+      if (!token) throw new Error("연동 설정을 통해 GitHub 토큰을 먼저 등록해주세요. (메인 관리자 페이지에서 설정 가능)");
+
+      const rawStr = JSON.stringify(obj, null, 4);
+      const b64Content = btoa(unescape(encodeURIComponent(rawStr)));
+
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+          method: 'PUT',
+          headers: {
+              'Authorization': `token ${token}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+              message: message,
+              content: b64Content,
+              sha: sha,
+              branch: branch
+          })
+      });
+
+      if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || '저장 실패');
+      }
+      const result = await res.json();
+      return result.content.sha;
+    }
 
     async function loadData() {
+      const token = localStorage.getItem('github_token');
       try {
-        const res = await fetch('jobs.json?t=' + Date.now());
-        if(res.ok) {
-          jobs = await res.json();
+        if (token) {
+          // GitHub에서 로드
+          const result = await fetchGithubFile('career/jobs/jobs.json');
+          jobs = result.content;
+          jobsSha = result.sha;
         } else {
-          // If file doesn't exist yet, we start with empty array
-          jobs = [];
+          // 로컬 서버에서 로드
+          const res = await fetch('jobs.json?t=' + Date.now());
+          if(res.ok) {
+            jobs = await res.json();
+          } else {
+            jobs = [];
+          }
         }
-        renderJobs();
       } catch(e) {
         console.error(e);
         jobs = [];
-        renderJobs();
       }
+      renderJobs();
     }
 
     function renderJobs() {
@@ -212,24 +276,47 @@
     }
 
     async function saveData() {
+      const token = localStorage.getItem('github_token');
       try {
         const btn = document.querySelector('.btn-save');
         btn.textContent = '저장 중...';
         
-        const response = await fetch('/api/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobs: jobs })
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-          alert('성공적으로 저장되고 깃허브에 커밋되었습니다!');
+        if (token) {
+          // GitHub로 직접 저장
+          jobsSha = await commitGithubFile('career/jobs/jobs.json', jobs, jobsSha, 'Update jobs.json via Admin');
+          alert('성공적으로 저장되고 깃허브에 배포되었습니다!');
         } else {
-          alert('저장 실패: ' + result.error);
+          // 로컬 API로 저장
+          const response = await fetch('/api/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jobs: jobs })
+          });
+          
+          if (!response.ok) {
+              // 404 등 HTML 페이지가 올 수 있으므로 텍스트로 확인
+              const text = await response.text();
+              try {
+                  const result = JSON.parse(text);
+                  if (result.success) {
+                      alert('성공적으로 저장되고 깃허브에 커밋되었습니다!');
+                  } else {
+                      alert('저장 실패: ' + result.error);
+                  }
+              } catch(e) {
+                  throw new Error("서버 연동을 지원하지 않는 환경이거나, 메인 관리자에서 GitHub 토큰을 먼저 설정해야 합니다.");
+              }
+          } else {
+              const result = await response.json();
+              if (result.success) {
+                  alert('성공적으로 저장되고 깃허브에 커밋되었습니다!');
+              } else {
+                  alert('저장 실패: ' + result.error);
+              }
+          }
         }
       } catch (e) {
-        alert('저장 중 오류 발생: ' + e);
+        alert('저장 중 오류 발생: ' + e.message);
       } finally {
         document.querySelector('.btn-save').textContent = '서버에 저장 및 라이브 적용';
       }
