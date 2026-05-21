@@ -520,7 +520,9 @@ ul {
 }
 
 .btn-orange {
-    background: #ff8730;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     color: #fff;
     padding: 15px 45px;
     border-radius: 100px;
@@ -528,7 +530,6 @@ ul {
     font-weight: 600;
     border: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(255, 135, 48, 0.25);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -551,10 +552,10 @@ ul {
 }
 
 .btn-orange:hover {
-    background: #f2751b;
+    background: rgba(255, 255, 255, 0.18);
     color: #fff;
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 135, 48, 0.45);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
 }
 
 .btn-translucent:hover {
