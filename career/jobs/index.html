@@ -40,6 +40,8 @@
       color: var(--text);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      word-break: keep-all;
+      word-wrap: break-word;
     }
 
     a {
@@ -291,17 +293,23 @@
     .job-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      column-gap: 8px;
+      row-gap: 4px;
+      align-items: center;
     }
 
     .job-tag {
       font-size: 0.78rem;
       color: var(--muted);
+      display: inline-flex;
+      align-items: center;
     }
 
     .job-tag:not(:last-child)::after {
       content: '·';
-      margin-left: 6px;
+      margin-left: 8px;
+      color: #ccc;
+      font-weight: bold;
     }
 
     .job-right {
@@ -418,7 +426,7 @@
       font-weight: 700;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .hero h1 {
         font-size: 32px;
       }
@@ -443,8 +451,60 @@
         display: none;
       }
 
-      .job-right {
+      /* Prevent iOS auto-zoom and fix font sizes */
+      .search-input, .filter-select {
+        font-size: 16px;
+      }
+
+      /* Scrollable category tabs instead of wrapping */
+      .category-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 12px;
+        margin-bottom: -12px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .category-tabs::-webkit-scrollbar {
         display: none;
+      }
+      .cat-tab {
+        flex-shrink: 0;
+      }
+
+      /* Responsive Filter Bar */
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .filter-select-wrap {
+        width: 100%;
+      }
+      .filter-select {
+        width: 100%;
+      }
+      .result-count {
+        margin-left: 0;
+        margin-top: 4px;
+      }
+
+      /* Keep job details visible on mobile with stacked layout */
+      .job-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 20px 0;
+      }
+      .job-right {
+        margin-left: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+      }
+      .arrow-icon {
+        margin-left: auto;
       }
     }
   </style>
