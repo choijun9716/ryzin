@@ -192,8 +192,14 @@ document.addEventListener('DOMContentLoaded', () => {
             portfolioGrid.innerHTML = '';
         }
 
-        const startIndex = isAppend ? visibleCount - 6 : 0;
-        const toShow = filtered.slice(startIndex, visibleCount);
+        const isMobileView = window.innerWidth <= 768;
+        let toShow;
+        if (isMobileView) {
+            toShow = filtered;
+        } else {
+            const startIndex = isAppend ? visibleCount - 6 : 0;
+            toShow = filtered.slice(startIndex, visibleCount);
+        }
 
         let newItemsHtml = '';
         toShow.forEach(item => {
@@ -218,7 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Toggle Load More button
         if (loadMoreBtn) {
-            loadMoreBtn.style.display = (filtered.length > visibleCount) ? 'inline-block' : 'none';
+            if (isMobileView) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = (filtered.length > visibleCount) ? 'inline-block' : 'none';
+            }
         }
 
         // Faster reveal for new items
@@ -263,7 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
             tabSlider.style.transform = `translateX(${activeTab.offsetLeft - 5}px)`;
         }
     }
-    window.addEventListener('resize', updateTabSlider);
+    window.addEventListener('resize', () => {
+        updateTabSlider();
+        renderPortfolio();
+    });
 
     // 6. Scroll Text Reveal Effect
     const scrollRevealContainer = document.getElementById('scrollRevealContainer');
