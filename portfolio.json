@@ -7,13 +7,6 @@
         "link": "#"
     },
     {
-        "title": "쏘랩 (SOLAB)",
-        "category": "life",
-        "tagKey": "tag_life",
-        "image": "./assets/005.jpg",
-        "link": "https://naver.me/GqfsQqds"
-    },
-    {
         "title": "강릉은정한과",
         "category": "food",
         "tagKey": "tag_food",
@@ -33,6 +26,13 @@
         "tagKey": "tag_health",
         "image": "./assets/004.PNG",
         "link": "https://naver.me/GlR5ZzPy"
+    },
+    {
+        "title": "쏘랩 (SOLAB)",
+        "category": "life",
+        "tagKey": "tag_life",
+        "image": "./assets/005.jpg",
+        "link": "https://naver.me/GqfsQqds"
     },
     {
         "title": "풀럽잇",
