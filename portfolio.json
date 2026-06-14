@@ -1,5 +1,12 @@
 [
     {
+        "title": "트루쿡",
+        "category": "life",
+        "tagKey": "tag_beauty",
+        "image": "./assets/1781435269355_KakaoTalk_Photo_2026-06-14-20-07-32_003.png",
+        "link": "#"
+    },
+    {
         "title": "쏘랩 (SOLAB)",
         "category": "life",
         "tagKey": "tag_beauty",
