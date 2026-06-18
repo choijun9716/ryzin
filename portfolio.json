@@ -35,6 +35,13 @@
         "link": "https://naver.me/GlR5ZzPy"
     },
     {
+        "title": "부이",
+        "category": "beauty",
+        "tagKey": "tag_beauty",
+        "image": "./assets/1781754117759_KakaoTalk_Photo_2026-06-09-20-46-25.png",
+        "link": "#"
+    },
+    {
         "title": "쏘랩 (SOLAB)",
         "category": "life",
         "tagKey": "tag_life",
