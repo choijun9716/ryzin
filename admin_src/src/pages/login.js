@@ -265,8 +265,8 @@ export function renderLogin() {
         const secretToUse = savedSecret || newSecret;
         
         try {
-          const isValid = verifySync({ token, secret: secretToUse });
-          if (isValid) {
+          const verifyResult = verifySync({ token, secret: secretToUse });
+          if (verifyResult && verifyResult.valid) {
             if (!savedSecret && newSecret) {
               localStorage.setItem(`ryzin_otp_${pendingUser.id}`, newSecret);
             }
