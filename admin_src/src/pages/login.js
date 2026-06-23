@@ -195,6 +195,7 @@ export function renderLogin() {
                 <input type="text" id="login-otp" class="login-input" placeholder="6자리 숫자를 입력하세요" required maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="text-align: center; font-size: 24px; letter-spacing: 4px; font-weight: bold;">
               </div>
               <button type="submit" class="login-btn">인증 및 로그인</button>
+              <button type="button" class="btn btn-ghost" id="btn-reset-otp" style="width: 100%; margin-top: 8px; color: #ef4444;">OTP 재설정 (기기 변경 시)</button>
               <button type="button" class="btn btn-ghost" id="btn-back" style="width: 100%; margin-top: 8px; color: var(--text-tertiary);">뒤로 가기</button>
             </form>
           </div>
@@ -209,6 +210,7 @@ export function renderLogin() {
     const otpForm = document.getElementById('otp-form');
     const slider = document.getElementById('login-slider');
     const btnBack = document.getElementById('btn-back');
+    const btnResetOtp = document.getElementById('btn-reset-otp');
     const setupContainer = document.getElementById('otp-setup-container');
     const qrcodeBox = document.getElementById('qrcode-box');
     const otpInput = document.getElementById('login-otp');
@@ -302,6 +304,20 @@ export function renderLogin() {
           }
         } catch (err) {
           showError('인증 과정에 문제가 발생했습니다.');
+        }
+      });
+    }
+
+    if (btnResetOtp) {
+      btnResetOtp.addEventListener('click', () => {
+        if (pendingUser) {
+          if (confirm('OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.')) {
+            localStorage.removeItem(`ryzin_otp_${pendingUser.id}`);
+            alert('OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.');
+            slider.style.transform = 'translateX(0)';
+            pendingUser = null;
+            otpInput.value = '';
+          }
         }
       });
     }

@@ -579,7 +579,55 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>u.navigate(`/brands`)),t.querySelector(`#btn-edit-brand`)?.addEventListener(`click`,()=>Qe(n.id)),t.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),t}function et(){let e=document.createElement(`div`),t=``,n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},r={basic:!0,host:!0,result:!1,finance:!1};function i(){let a=V.getAll(`projects`),o=V.getAll(`brands`);if(V.getAll(`hosts`),t){let e=t.toLowerCase();a=a.filter(t=>{let n=V.getById(`brands`,t.brandId);return n&&n.name.toLowerCase().includes(e)||t.pd&&t.pd.toLowerCase().includes(e)})}n.status&&(a=a.filter(e=>e.broadcastStatus===n.status)),n.brand&&(a=a.filter(e=>e.brandId===n.brand)),n.platform&&(a=a.filter(e=>e.platform===n.platform)),n.month&&(a=a.filter(e=>e.broadcastMonth===n.month||e.broadcastDate&&e.broadcastDate.startsWith(n.month.replace(`-`,`.`))||e.broadcastDate&&e.broadcastDate.startsWith(n.month)?!0:e.broadcastMonth&&e.broadcastMonth.length<=2?parseInt(e.broadcastMonth,10)===parseInt(n.month.split(`-`)[1],10):!1)),n.category&&(a=a.filter(e=>e.category===n.category)),a.sort((e,t)=>(t.broadcastDate||``).localeCompare(e.broadcastDate||``));let s=a.map(e=>{let t=V.getById(`brands`,e.brandId),n=V.query(`liveHosts`,t=>t.liveId===e.id),r=V.getAll(`results`).find(t=>t.liveId===e.id),i=V.getAll(`finances`).find(t=>t.liveId===e.id),a=n[0]?V.getById(`hosts`,n[0].hostId):null,o=n[1]?V.getById(`hosts`,n[1].hostId):null,s=n.reduce((e,t)=>e+(t.fee||0),0),c=n.length>0&&n.every(e=>e.settleStatus===`done`)?`완료`:n.some(e=>e.settleStatus===`done`)?`일부완료`:`대기`;return{...e,brand:t,matchings:n,result:r,finance:i,hostA:a,hostB:o,totalHostFee:s,settleLabel:c,hostAFee:n[0]?.fee||0,hostBFee:n[1]?.fee||0}});[...new Set(V.getAll(`projects`).map(e=>e.broadcastMonth).filter(Boolean))].sort().reverse(),e.innerHTML=`
+  `,setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>u.navigate(`/brands`)),t.querySelector(`#btn-edit-brand`)?.addEventListener(`click`,()=>Qe(n.id)),t.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),t}function et(){let e=document.createElement(`div`),t=``,n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},r={basic:!0,host:!0,result:!1,finance:!1},i=`list`,a=new Date;function o(){let s=V.getAll(`projects`),c=V.getAll(`brands`);if(V.getAll(`hosts`),t){let e=t.toLowerCase();s=s.filter(t=>{let n=V.getById(`brands`,t.brandId);return n&&n.name.toLowerCase().includes(e)||t.pd&&t.pd.toLowerCase().includes(e)})}n.status&&(s=s.filter(e=>e.broadcastStatus===n.status)),n.brand&&(s=s.filter(e=>e.brandId===n.brand)),n.platform&&(s=s.filter(e=>e.platform===n.platform)),n.month&&(s=s.filter(e=>e.broadcastMonth===n.month||e.broadcastDate&&e.broadcastDate.startsWith(n.month.replace(`-`,`.`))||e.broadcastDate&&e.broadcastDate.startsWith(n.month)?!0:e.broadcastMonth&&e.broadcastMonth.length<=2?parseInt(e.broadcastMonth,10)===parseInt(n.month.split(`-`)[1],10):!1)),n.category&&(s=s.filter(e=>e.category===n.category)),s.sort((e,t)=>(t.broadcastDate||``).localeCompare(e.broadcastDate||``));let l=s.map(e=>{let t=V.getById(`brands`,e.brandId),n=V.query(`liveHosts`,t=>t.liveId===e.id),r=V.getAll(`results`).find(t=>t.liveId===e.id),i=V.getAll(`finances`).find(t=>t.liveId===e.id),a=n[0]?V.getById(`hosts`,n[0].hostId):null,o=n[1]?V.getById(`hosts`,n[1].hostId):null,s=n.reduce((e,t)=>e+(t.fee||0),0),c=n.length>0&&n.every(e=>e.settleStatus===`done`)?`완료`:n.some(e=>e.settleStatus===`done`)?`일부완료`:`대기`;return{...e,brand:t,matchings:n,result:r,finance:i,hostA:a,hostB:o,totalHostFee:s,settleLabel:c,hostAFee:n[0]?.fee||0,hostBFee:n[1]?.fee||0}});[...new Set(V.getAll(`projects`).map(e=>e.broadcastMonth).filter(Boolean))].sort().reverse();function f(e){let t=a.getFullYear(),n=a.getMonth(),r=new Date(t,n,1).getDay(),i=new Date(t,n+1,0).getDate(),o=new Date,s=o.getFullYear()===t&&o.getMonth()===n,c=``;for(let e=0;e<r;e++)c+=`<div class="calendar-day empty"></div>`;for(let r=1;r<=i;r++){let i=`${t}-${String(n+1).padStart(2,`0`)}-${String(r).padStart(2,`0`)}`,a=e.filter(e=>e.broadcastDate===i),l=s&&o.getDate()===r,u=a.map(e=>{let t=`#e2e8f0`,n=`#475569`;return e.broadcastStatus===`ready`?(t=`#dbeafe`,n=`#2563eb`):e.broadcastStatus===`live`?(t=`#fee2e2`,n=`#dc2626`):e.broadcastStatus===`done`?(t=`#dcfce3`,n=`#16a34a`):e.broadcastStatus===`cancel`&&(t=`#f1f5f9`,n=`#64748b`),`
+            <div class="calendar-project-block clickable" data-id="${e.id}" style="background-color: ${t}; color: ${n}; border-left: 3px solid ${n};">
+              <div class="cp-time">${e.broadcastTime||`-`}</div>
+              <div class="cp-brand">${e.brandName||(e.brand?e.brand.name:`-`)}</div>
+            </div>`}).join(``);c+=`
+          <div class="calendar-day ${l?`today`:``}">
+            <div class="calendar-date">${r}</div>
+            <div class="calendar-projects">${u}</div>
+          </div>`}return`
+        <style>
+          .calendar-wrapper { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+          .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border-color); background: #f8fafc; }
+          .calendar-title { font-size: 18px; font-weight: bold; color: var(--text-primary); }
+          .calendar-nav { display: flex; gap: var(--space-2); }
+          .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+          .calendar-dow { text-align: center; font-weight: bold; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-secondary); background: #fff; }
+          .calendar-day { min-height: 120px; padding: var(--space-2); border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; gap: var(--space-1); background: #fff; }
+          .calendar-day:nth-child(7n) { border-right: none; }
+          .calendar-day.empty { background: #f8fafc; }
+          .calendar-date { font-size: 14px; font-weight: 500; color: var(--text-secondary); padding: 2px 6px; align-self: flex-start; border-radius: 4px; }
+          .calendar-day.today .calendar-date { background: #3b82f6; color: white; }
+          .calendar-projects { display: flex; flex-direction: column; gap: 4px; flex: 1; overflow-y: auto; }
+          .calendar-project-block { padding: 4px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: transform 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; flex-direction: column; gap: 2px; }
+          .calendar-project-block:hover { transform: translateY(-1px); filter: brightness(0.95); }
+          .cp-time { font-weight: bold; opacity: 0.8; font-size: 10px; }
+          .cp-brand { font-weight: bold; overflow: hidden; text-overflow: ellipsis; }
+        </style>
+        <div class="calendar-wrapper">
+          <div class="calendar-header">
+            <button class="btn btn-secondary btn-icon" id="btn-prev-month">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div class="calendar-title">${t}년 ${n+1}월</div>
+            <button class="btn btn-secondary btn-icon" id="btn-next-month">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="calendar-grid">
+            <div class="calendar-dow" style="color: #ef4444;">일</div>
+            <div class="calendar-dow">월</div>
+            <div class="calendar-dow">화</div>
+            <div class="calendar-dow">수</div>
+            <div class="calendar-dow">목</div>
+            <div class="calendar-dow">금</div>
+            <div class="calendar-dow" style="color: #3b82f6;">토</div>
+            ${c}
+          </div>
+        </div>
+      `}let h=`
       <div class="page-header">
         <div class="page-header-left">
           <div>
@@ -588,13 +636,16 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           </div>
         </div>
         <div class="page-header-right">
+          <div style="display: flex; gap: 8px; margin-right: 16px;">
+            <button class="btn btn-sm ${i===`list`?`btn-primary`:`btn-secondary`}" id="btn-view-list">리스트</button>
+            <button class="btn btn-sm ${i===`calendar`?`btn-primary`:`btn-secondary`}" id="btn-view-calendar">캘린더</button>
+          </div>
           <button class="btn btn-primary" id="btn-new-project">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             신규 등록
           </button>
         </div>
-      </div>
-      <div class="page-body">
+      </div>`,g=``;g=i===`list`?`
         <!-- 필터바 -->
         <div class="filter-bar">
           <select class="filter-select ${n.status?`active`:``}" id="filter-status">
@@ -603,7 +654,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           </select>
           <select class="filter-select ${n.brand?`active`:``}" id="filter-brand">
             <option value="">브랜드</option>
-            ${o.map(e=>`<option value="${e.id}" ${n.brand===e.id?`selected`:``}>${e.name}</option>`).join(``)}
+            ${c.map(e=>`<option value="${e.id}" ${n.brand===e.id?`selected`:``}>${e.name}</option>`).join(``)}
           </select>
           <select class="filter-select ${n.platform?`active`:``}" id="filter-platform">
             <option value="">플랫폼</option>
@@ -626,7 +677,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input type="text" placeholder="브랜드, PD 검색..." id="project-search" value="${t}">
                 </div>
-                <span class="table-count">총 <strong>${s.length}</strong>건</span>
+                <span class="table-count">총 <strong>${l.length}</strong>건</span>
               </div>
               <div style="display: flex; gap: var(--space-3); align-items: center; font-size: var(--text-sm); margin-left: var(--space-2);">
                 <span style="color: var(--text-tertiary); font-weight: var(--weight-medium);">표시 항목:</span>
@@ -681,7 +732,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                 </tr>
               </thead>
               <tbody>
-                ${s.length>0?s.map(e=>`
+                ${l.length>0?l.map(e=>`
                   <tr class="clickable" data-id="${e.id}">
                     ${r.basic?`
                     <td>${je(e.broadcastStatus)}</td>
@@ -718,8 +769,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             </table>
           </div>
         </div>
-      </div>
-    `,setTimeout(()=>{e.querySelector(`#project-search`)?.addEventListener(`input`,e=>{t=e.target.value,i();let n=document.getElementById(`project-search`);if(n){n.focus();let e=n.value.length;n.setSelectionRange(e,e)}}),[`status`,`brand`,`platform`,`month`,`category`].forEach(t=>{e.querySelector(`#filter-${t}`)?.addEventListener(`change`,e=>{n[t]=e.target.value,i()})}),[`basic`,`host`,`result`,`finance`].forEach(t=>{e.querySelector(`#toggle-col-${t}`)?.addEventListener(`change`,e=>{r[t]=e.target.checked,i()})}),e.querySelector(`#filter-reset`)?.addEventListener(`click`,()=>{n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},t=``,i()}),e.querySelector(`#btn-new-project`)?.addEventListener(`click`,()=>{tt(()=>i())}),e.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),t.stopPropagation(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0)}return i(),V.on(`projects:changed`,i),e}function tt(e){let t=V.getAll(`brands`),n=`
+      `:f(l),e.innerHTML=h+`<div class="page-body">`+g+`</div>`,setTimeout(()=>{e.querySelector(`#btn-view-list`)?.addEventListener(`click`,()=>{i!==`list`&&(i=`list`,o())}),e.querySelector(`#btn-view-calendar`)?.addEventListener(`click`,()=>{i!==`calendar`&&(i=`calendar`,o())}),e.querySelector(`#btn-prev-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()-1),o()}),e.querySelector(`#btn-next-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()+1),o()}),e.querySelectorAll(`.calendar-project-block`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelector(`#project-search`)?.addEventListener(`input`,e=>{t=e.target.value,o();let n=document.getElementById(`project-search`);if(n){n.focus();let e=n.value.length;n.setSelectionRange(e,e)}}),[`status`,`brand`,`platform`,`month`,`category`].forEach(t=>{e.querySelector(`#filter-${t}`)?.addEventListener(`change`,e=>{n[t]=e.target.value,o()})}),[`basic`,`host`,`result`,`finance`].forEach(t=>{e.querySelector(`#toggle-col-${t}`)?.addEventListener(`change`,e=>{r[t]=e.target.checked,o()})}),e.querySelector(`#filter-reset`)?.addEventListener(`click`,()=>{n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},t=``,o()}),e.querySelector(`#btn-new-project`)?.addEventListener(`click`,()=>{tt(()=>o())}),e.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),t.stopPropagation(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0)}return o(),V.on(`projects:changed`,o),e}function tt(e){let t=V.getAll(`brands`),n=`
     <div class="form-grid">
       <div class="input-group">
         <label class="required">방송 제목(브랜드)</label>
@@ -2110,6 +2160,7 @@ Minimum version required to store current data is: `+c+`.
                 <input type="text" id="login-otp" class="login-input" placeholder="6자리 숫자를 입력하세요" required maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="text-align: center; font-size: 24px; letter-spacing: 4px; font-weight: bold;">
               </div>
               <button type="submit" class="login-btn">인증 및 로그인</button>
+              <button type="button" class="btn btn-ghost" id="btn-reset-otp" style="width: 100%; margin-top: 8px; color: #ef4444;">OTP 재설정 (기기 변경 시)</button>
               <button type="button" class="btn btn-ghost" id="btn-back" style="width: 100%; margin-top: 8px; color: var(--text-tertiary);">뒤로 가기</button>
             </form>
           </div>
@@ -2117,13 +2168,13 @@ Minimum version required to store current data is: `+c+`.
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`otp-setup-container`),a=document.getElementById(`qrcode-box`),o=document.getElementById(`login-otp`),s=null,c=null;e&&e.addEventListener(`submit`,async e=>{e.preventDefault();let t=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value,l=V.verifyPassword(t,r);if(l){if(s=l,localStorage.getItem(`ryzin_otp_${t}`))i.style.display=`none`;else{c=new Cr({size:20}).base32;let e=new Er({issuer:`Ryzin Admin`,label:t,algorithm:`SHA1`,digits:6,period:30,secret:Cr.fromBase32(c)}).toString();i.style.display=`block`;try{a.innerHTML=`
+  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`),a=document.getElementById(`otp-setup-container`),o=document.getElementById(`qrcode-box`),s=document.getElementById(`login-otp`),c=null,l=null;e&&e.addEventListener(`submit`,async e=>{e.preventDefault();let t=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value,i=V.verifyPassword(t,r);if(i){if(c=i,localStorage.getItem(`ryzin_otp_${t}`))a.style.display=`none`;else{l=new Cr({size:20}).base32;let e=new Er({issuer:`Ryzin Admin`,label:t,algorithm:`SHA1`,digits:6,period:30,secret:Cr.fromBase32(l)}).toString();a.style.display=`block`;try{o.innerHTML=`
                 <div style="margin-bottom: 8px;">
                   <img src="${await ei.toDataURL(e,{margin:1,width:150})}" alt="QR Code" style="width: 150px; height: 150px; border-radius: 8px;">
                 </div>
                 <div style="font-size: 12px; color: var(--text-tertiary);">QR 스캔이 안된다면 아래 키를 입력하세요:</div>
-                <div style="margin-top: 4px; font-size: 16px; color: var(--primary); font-weight: bold; user-select: all; letter-spacing: 1px;">${c}</div>
-              `}catch{a.innerHTML=`설정 키<br><span style="color: var(--primary); user-select: all;">${c}</span>`}}n.style.transform=`translateX(-50%)`,setTimeout(()=>o.focus(),400)}else X(`로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.`)}),t&&t.addEventListener(`submit`,e=>{if(e.preventDefault(),!s)return;let t=o.value.trim(),n=localStorage.getItem(`ryzin_otp_${s.id}`),r=n||c;try{new Er({issuer:`Ryzin Admin`,label:s.id,algorithm:`SHA1`,digits:6,period:30,secret:Cr.fromBase32(r)}).validate({token:t,window:1})===null?(X(`인증번호가 올바르지 않습니다.`),o.value=``,o.focus()):(!n&&c&&localStorage.setItem(`ryzin_otp_${s.id}`,c),V.completeLogin(s),Y(`OTP 인증 성공! 환영합니다.`),u.navigate(`/`))}catch{X(`인증 과정에 문제가 발생했습니다.`)}}),r&&r.addEventListener(`click`,()=>{n.style.transform=`translateX(0)`,s=null,o.value=``})},0),e}async function ni(){let e=document.getElementById(`app`);if(e.innerHTML=`
+                <div style="margin-top: 4px; font-size: 16px; color: var(--primary); font-weight: bold; user-select: all; letter-spacing: 1px;">${l}</div>
+              `}catch{o.innerHTML=`설정 키<br><span style="color: var(--primary); user-select: all;">${l}</span>`}}n.style.transform=`translateX(-50%)`,setTimeout(()=>s.focus(),400)}else X(`로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.`)}),t&&t.addEventListener(`submit`,e=>{if(e.preventDefault(),!c)return;let t=s.value.trim(),n=localStorage.getItem(`ryzin_otp_${c.id}`),r=n||l;try{new Er({issuer:`Ryzin Admin`,label:c.id,algorithm:`SHA1`,digits:6,period:30,secret:Cr.fromBase32(r)}).validate({token:t,window:1})===null?(X(`인증번호가 올바르지 않습니다.`),s.value=``,s.focus()):(!n&&l&&localStorage.setItem(`ryzin_otp_${c.id}`,l),V.completeLogin(c),Y(`OTP 인증 성공! 환영합니다.`),u.navigate(`/`))}catch{X(`인증 과정에 문제가 발생했습니다.`)}}),i&&i.addEventListener(`click`,()=>{c&&confirm(`OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.`)&&(localStorage.removeItem(`ryzin_otp_${c.id}`),alert(`OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.`),n.style.transform=`translateX(0)`,c=null,s.value=``)}),r&&r.addEventListener(`click`,()=>{n.style.transform=`translateX(0)`,c=null,s.value=``})},0),e}async function ni(){let e=document.getElementById(`app`);if(e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
