@@ -458,6 +458,20 @@ class DataStore {
     return false;
   }
 
+  verifyPassword(id, password) {
+    const user = (this._data.users || []).find(u => u.id === id && u.password === password);
+    return user || null;
+  }
+
+  completeLogin(user) {
+    if (!user) return false;
+    this._data.currentUser = user;
+    this._data.currentRole = user.role;
+    this._save();
+    this._emit('auth:login', user);
+    return true;
+  }
+
   logout() {
     this._data.currentUser = null;
     this._data.currentRole = 'admin'; // 안전을 위해 초기화하지만, 어차피 로그인 튕김

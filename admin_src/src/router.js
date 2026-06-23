@@ -31,17 +31,31 @@ class Router {
   // 네비게이션
   navigate(path, replace = false) {
     if (path === this._currentRoute) return;
+    
+    let fullPath = path;
+    if (!fullPath.startsWith('/admin')) {
+      fullPath = '/admin' + (fullPath === '/' ? '' : fullPath);
+      if (fullPath === '/admin') fullPath = '/admin/';
+    }
+    
     if (replace) {
-      history.replaceState(null, '', path);
+      history.replaceState(null, '', fullPath);
     } else {
-      history.pushState(null, '', path);
+      history.pushState(null, '', fullPath);
     }
     this._handleRoute();
   }
 
   // 현재 경로
   getCurrentPath() {
-    return window.location.pathname || '/';
+    let path = window.location.pathname || '/';
+    if (path.startsWith('/admin')) {
+      path = path.slice('/admin'.length);
+    }
+    if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    return path;
   }
 
   // 라우트 처리
