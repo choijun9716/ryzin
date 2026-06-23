@@ -2,11 +2,8 @@ import { store } from '../data/store.js';
 import { router } from '../router.js';
 import { showSuccess, showError } from '../components/toast.js';
 import ryzinLogo from '../assets/Ryzin.png';
-import { TOTP, generateSecret, generateURI, verifySync } from 'otplib';
+import * as OTPAuth from 'otpauth';
 import QRCode from 'qrcode';
-
-const authenticator = new TOTP();
-authenticator.options = { window: 1 };
 
 export function renderLogin() {
   const container = document.createElement('div');
@@ -233,15 +230,30 @@ export function renderLogin() {
           const savedSecret = localStorage.getItem(`ryzin_otp_${id}`);
           
           if (!savedSecret) {
-            newSecret = generateSecret();
-            const otpauth = generateURI({ issuer: 'Ryzin Admin', accountName: id, secret: newSecret });
+            newSecret = new OTPAuth.Secret({ size: 20 }).base32;
+            let totp = new OTPAuth.TOTP({
+              issuer: 'Ryzin Admin',
+              label: id,
+              algorithm: 'SHA1',
+              digits: 6,
+              period: 30,
+              secret: OTPAuth.Secret.fromBase32(newSecret)
+            });
+            const otpauthUri = totp.toString();
+            
             setupContainer.style.display = 'block';
             
             try {
-              const url = await QRCode.toDataURL(otpauth, { margin: 1, width: 150 });
-              qrcodeBox.innerHTML = `<img src="${url}" alt="QR Code">`;
+              const url = await QRCode.toDataURL(otpauthUri, { margin: 1, width: 150 });
+              qrcodeBox.innerHTML = `
+                <div style="margin-bottom: 8px;">
+                  <img src="${url}" alt="QR Code" style="width: 150px; height: 150px; border-radius: 8px;">
+                </div>
+                <div style="font-size: 12px; color: var(--text-tertiary);">QR 스캔이 안된다면 아래 키를 입력하세요:</div>
+                <div style="margin-top: 4px; font-size: 16px; color: var(--primary); font-weight: bold; user-select: all; letter-spacing: 1px;">${newSecret}</div>
+              `;
             } catch (err) {
-              console.error('QR 생성이 실패했습니다.', err);
+              qrcodeBox.innerHTML = `설정 키<br><span style="color: var(--primary); user-select: all;">${newSecret}</span>`;
             }
           } else {
             setupContainer.style.display = 'none';
@@ -265,15 +277,17 @@ export function renderLogin() {
         const secretToUse = savedSecret || newSecret;
         
         try {
-          const res = verifySync({ token, secret: secretToUse });
-          let isValid = false;
-          if (res === true) {
-            isValid = true;
-          } else if (res && res.valid === true) {
-            isValid = true;
-          }
-
-          if (isValid) {
+          let totpValidate = new OTPAuth.TOTP({
+            issuer: 'Ryzin Admin',
+            label: pendingUser.id,
+            algorithm: 'SHA1',
+            digits: 6,
+            period: 30,
+            secret: OTPAuth.Secret.fromBase32(secretToUse)
+          });
+          
+          const delta = totpValidate.validate({ token: token, window: 1 });
+          if (delta !== null) {
             if (!savedSecret && newSecret) {
               localStorage.setItem(`ryzin_otp_${pendingUser.id}`, newSecret);
             }
