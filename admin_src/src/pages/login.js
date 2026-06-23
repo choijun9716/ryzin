@@ -19,7 +19,7 @@ export function renderLogin() {
         justify-content: center;
         height: 100vh;
         width: 100vw;
-        background: linear-gradient(135deg, #f6f8fd 0%, #f1f5f9 100%);
+        background: linear-gradient(135deg, #111111 0%, #000000 100%);
         position: relative;
         overflow: hidden;
       }
@@ -31,16 +31,16 @@ export function renderLogin() {
         border-radius: 50%;
         filter: blur(80px);
         z-index: 0;
-        opacity: 0.5;
+        opacity: 0.3;
         animation: float 10s infinite ease-in-out alternate;
       }
       .login-wrapper::before {
-        background: rgba(59, 130, 246, 0.15);
+        background: rgba(59, 130, 246, 0.2);
         top: -100px;
         left: -100px;
       }
       .login-wrapper::after {
-        background: rgba(139, 92, 246, 0.15);
+        background: rgba(139, 92, 246, 0.2);
         bottom: -150px;
         right: -100px;
         animation-delay: -5s;
@@ -56,11 +56,11 @@ export function renderLogin() {
         position: relative;
         overflow: hidden;
         border-radius: 24px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.05);
-        background: rgba(255, 255, 255, 0.7);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0,0,0,0.3);
+        background: rgba(30, 30, 30, 0.8);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
       .slide-container {
         display: flex;
@@ -77,13 +77,14 @@ export function renderLogin() {
         display: flex;
         justify-content: center;
         margin-bottom: 8px;
+        filter: brightness(0) invert(1);
       }
       .login-logo img {
         height: 48px;
         object-fit: contain;
       }
       .login-subtitle {
-        color: var(--text-secondary);
+        color: #a1a1aa;
         font-size: 15px;
         margin-bottom: 32px;
       }
@@ -99,27 +100,27 @@ export function renderLogin() {
       .login-input {
         width: 100%;
         padding: 14px 16px;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         font-size: 15px;
-        color: var(--text-primary);
+        color: #ffffff;
         transition: all 0.2s ease;
       }
       .login-input::placeholder {
-        color: var(--text-tertiary);
+        color: rgba(255, 255, 255, 0.4);
       }
       .login-input:focus {
         outline: none;
-        background: #fff;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.15);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
       }
       .login-label {
         display: block;
         margin-bottom: 8px;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: #d4d4d8;
         font-size: 13px;
         letter-spacing: 0.02em;
       }
@@ -232,8 +233,8 @@ export function renderLogin() {
           const savedSecret = localStorage.getItem(`ryzin_otp_${id}`);
           
           if (!savedSecret) {
-            newSecret = authenticator.generateSecret();
-            const otpauth = authenticator.generateURI ? authenticator.generateURI(id, 'Ryzin Admin', newSecret) : generateURI({ issuer: 'Ryzin Admin', accountName: id, secret: newSecret });
+            newSecret = generateSecret();
+            const otpauth = generateURI({ issuer: 'Ryzin Admin', accountName: id, secret: newSecret });
             setupContainer.style.display = 'block';
             
             try {
@@ -264,7 +265,7 @@ export function renderLogin() {
         const secretToUse = savedSecret || newSecret;
         
         try {
-          const isValid = authenticator.check(token, secretToUse);
+          const isValid = verifySync({ token, secret: secretToUse });
           if (isValid) {
             if (!savedSecret && newSecret) {
               localStorage.setItem(`ryzin_otp_${pendingUser.id}`, newSecret);
