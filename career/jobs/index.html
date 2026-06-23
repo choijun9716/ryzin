@@ -16,8 +16,8 @@
       --text: #191919;
       --muted: #888;
       --border: #e8e8e8;
-      --accent: #246bfd;
-      --accent-hover: #1a55d4;
+      --accent: #000000;
+      --accent-hover: #0e0e0e;
       --orange: #ff8730;
       --tag-bg: #f2f2f2;
       --tag-text: #555;
@@ -452,7 +452,8 @@
       }
 
       /* Prevent iOS auto-zoom and fix font sizes */
-      .search-input, .filter-select {
+      .search-input,
+      .filter-select {
         font-size: 16px;
       }
 
@@ -465,9 +466,11 @@
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
       }
+
       .category-tabs::-webkit-scrollbar {
         display: none;
       }
+
       .cat-tab {
         flex-shrink: 0;
       }
@@ -478,12 +481,15 @@
         align-items: stretch;
         gap: 12px;
       }
+
       .filter-select-wrap {
         width: 100%;
       }
+
       .filter-select {
         width: 100%;
       }
+
       .result-count {
         margin-left: 0;
         margin-top: 4px;
@@ -496,6 +502,7 @@
         gap: 10px;
         padding: 20px 0;
       }
+
       .job-right {
         margin-left: 0;
         display: flex;
@@ -503,6 +510,7 @@
         gap: 8px;
         width: 100%;
       }
+
       .arrow-icon {
         margin-left: auto;
       }
@@ -583,7 +591,8 @@
   <footer>
     <div class="footer-inner">
       <div>
-        <div class="footer-logo"><img src="../../assets/logo.png" alt="RYZIN" style="filter:brightness(0);opacity:0.5;"></div>
+        <div class="footer-logo"><img src="../../assets/logo.png" alt="RYZIN" style="filter:brightness(0);opacity:0.5;">
+        </div>
         <p class="footer-info">
           대표 : 채이준 &nbsp;|&nbsp; 사업자 등록번호 : 821-29-011-97<br>
           경기도 하남시 미사강변동로 100-1 미사역 파라곤스퀘어 2064-2<br>
@@ -606,11 +615,11 @@
     async function initJobs() {
       try {
         const res = await fetch('jobs.json?t=' + Date.now());
-        if(res.ok) {
+        if (res.ok) {
           JOBS = await res.json();
           renderJobs();
         }
-      } catch(e) {
+      } catch (e) {
         console.error("Failed to load jobs", e);
       }
     }

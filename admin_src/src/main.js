@@ -1,0 +1,111 @@
+// ===== 라이브커머스 ERP - 메인 진입점 =====
+import './styles/index.css';
+import './styles/components.css';
+import './styles/sidebar.css';
+import './styles/table.css';
+import './styles/form.css';
+import './styles/dashboard.css';
+
+import { router } from './router.js';
+import { store } from './data/store.js';
+import { renderSidebar } from './components/sidebar.js';
+
+// 페이지 import
+import { renderDashboard } from './pages/dashboard.js';
+import { renderHosts, renderHostDetail } from './pages/hosts.js';
+import { renderBrands, renderBrandDetail } from './pages/brands.js';
+import { renderProjects, renderProjectDetail } from './pages/projects.js';
+import { renderFinance } from './pages/finance.js';
+import { renderSettlement } from './pages/settlement.js';
+import { renderContracts } from './pages/contracts.js';
+import { renderMarketing } from './pages/marketing.js';
+import { renderSettings } from './pages/settings.js';
+import { renderLogin } from './pages/login.js';
+
+
+// 앱 레이아웃 생성
+async function initApp() {
+  const app = document.getElementById('app');
+  
+  app.innerHTML = `
+    <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
+      <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
+      <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+    </div>
+  `;
+
+  // SheetDB 연동 및 로드
+  const success = await store.init();
+  if (!success) {
+    app.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:16px;">
+        <div style="color:var(--danger); font-weight:600; font-size:var(--text-lg);">구글 시트 연동에 실패했습니다.</div>
+        <div style="color:var(--text-secondary);">SheetDB API 주소나 네트워크 상태를 확인해주세요.</div>
+      </div>
+    `;
+    return;
+  }
+
+  // 로그인되지 않은 경우 레이아웃(사이드바)을 그리지 않고 전체화면 처리
+  const renderLayout = () => {
+    if (app.querySelector('.sidebar')) return; // 이미 그려져있음
+    app.innerHTML = '';
+    app.className = 'app-layout';
+    app.appendChild(renderSidebar());
+    const main = document.createElement('main');
+    main.className = 'main-content';
+    main.id = 'page-content';
+    app.appendChild(main);
+    router.setContainer(main);
+  };
+
+  // 라우터 권한 체크
+  router.beforeEach((to) => {
+    const isLoggedIn = !!store.getCurrentUser();
+    if (!isLoggedIn && to !== '/login') {
+      return '/login';
+    }
+    if (isLoggedIn && to === '/login') {
+      return '/';
+    }
+
+    if (to === '/login') {
+      app.innerHTML = '';
+      app.className = '';
+      router.setContainer(app);
+    } else {
+      renderLayout();
+    }
+    return true;
+  });
+
+  router.register('/login', () => renderLogin());
+
+  router.register('/', () => renderDashboard());
+  router.register('/projects', () => renderProjects());
+  router.register('/projects/new', () => renderProjects());
+  router.register('/projects/:id', (params) => renderProjectDetail(params));
+  router.register('/hosts', () => renderHosts());
+  router.register('/hosts/:id', (params) => renderHostDetail(params));
+  router.register('/brands', () => renderBrands());
+  router.register('/brands/:id', (params) => renderBrandDetail(params));
+  router.register('/finance', () => renderFinance());
+  router.register('/settlement', () => renderSettlement());
+  router.register('/contracts', () => renderContracts());
+  router.register('/marketing', () => renderMarketing());
+  router.register('/settings', () => renderSettings());
+
+  router.start();
+
+  // 모든 앵커 클릭 인터셉트 (SPA 네비게이션)
+  document.addEventListener('click', (e) => {
+    const anchor = e.target.closest('a[href]');
+    if (anchor && anchor.getAttribute('href').startsWith('/') && !anchor.getAttribute('target')) {
+      e.preventDefault();
+      router.navigate(anchor.getAttribute('href'));
+    }
+  });
+}
+
+// 앱 시작
+initApp();
