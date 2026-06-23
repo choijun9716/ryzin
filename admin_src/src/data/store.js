@@ -1,8 +1,10 @@
 // ===== 중앙 데이터 스토어 (Observer 패턴 + LocalStorage + SheetDB) =====
 import { getBroadcastStatus, getSettleStatus, getBroadcastStatusLabel, getSettleStatusLabel } from './models.js';
+import CryptoJS from 'crypto-js';
 
 const STORAGE_KEY = 'livecommerce_erp_data';
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
+const SECRET_SALT = 'ryzin_super_secret_salt_2026';
 
 class DataStore {
   constructor() {
@@ -442,39 +444,50 @@ class DataStore {
   hasSeedData() { return this._data.projects && this._data.projects.length > 0; }
   
   // 로그인 및 세션
-  getCurrentUser() { return this._data.currentUser || null; }
+  getCurrentUser() {
+    const user = this._data.currentUser;
+    const sig = this._data.authSignature;
+    if (user && sig) {
+      // 로컬 스토리지 데이터 임의 변조(Spoofing) 방지 서명 검증
+      const expectedSig = CryptoJS.SHA256(user.id + SECRET_SALT).toString();
+      if (sig === expectedSig) {
+        return user;
+      }
+    }
+    return null;
+  }
+  
   getCurrentRole() { return this._data.currentRole || 'admin'; }
   setCurrentRole(role) { this._data.currentRole = role; this._save(); this._emit('role:changed', role); }
   
   login(id, password) {
-    const user = (this._data.users || []).find(u => u.id === id && u.password === password);
+    const user = this.verifyPassword(id, password);
     if (user) {
-      this._data.currentUser = user;
-      this._data.currentRole = user.role;
-      this._save();
-      this._emit('auth:login', user);
+      this.completeLogin(user);
       return true;
     }
     return false;
   }
 
   verifyPassword(id, password) {
-    const user = (this._data.users || []).find(u => u.id === id && u.password === password);
-    return user || null;
+    // 비밀번호 해싱 후 비교
+    const hashedInput = CryptoJS.SHA256(password).toString();
+    return (this._data.users || []).find(u => u.id === id && u.password === hashedInput) || null;
   }
 
   completeLogin(user) {
-    if (!user) return false;
     this._data.currentUser = user;
     this._data.currentRole = user.role;
+    // 세션 서명 생성 및 저장
+    this._data.authSignature = CryptoJS.SHA256(user.id + SECRET_SALT).toString();
     this._save();
     this._emit('auth:login', user);
-    return true;
   }
 
   logout() {
     this._data.currentUser = null;
     this._data.currentRole = 'admin'; // 안전을 위해 초기화하지만, 어차피 로그인 튕김
+    this._data.authSignature = null;
     this._save();
     this._emit('auth:logout');
   }
