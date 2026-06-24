@@ -26,7 +26,17 @@ function getDeadlineText(broadcastDate, statusKey) {
   
   const mm = String(dDate.getMonth() + 1).padStart(2, '0');
   const dd = String(dDate.getDate()).padStart(2, '0');
-  return `<br><span style="font-size: 9px; opacity: 0.8; font-weight: normal;">(${mm}/${dd} 까지)</span>`;
+  
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diffTime = dDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  let ddayText = '';
+  if (diffDays === 0) ddayText = 'D-Day';
+  else if (diffDays > 0) ddayText = `D-${diffDays}`;
+  else ddayText = `D+${Math.abs(diffDays)}`;
+  
+  return `<br><span style="font-size: 10px; opacity: 0.8; font-weight: normal;">(${mm}/${dd} 까지 / <strong style="color:var(--status-error);">${ddayText}</strong>)</span>`;
 }
 
 
