@@ -60,7 +60,29 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       
       <div class="section-header" style="margin-top: var(--space-6);">
         <div>
-          <h2 class="section-title">PD 해야 할 업무 (마감 임박)</h2>
+          <h2 class="section-title">라이브 프로젝트</h2>
+          <p class="section-subtitle">상태별 프로젝트 모아보기</p>
+        </div>
+        <div style="display: flex; gap: var(--space-3); align-items: center;">
+          <select id="dashboard-filter" class="input" style="padding: 6px 12px; width: auto; font-size: 14px;">
+            <option value="in_progress" ${Re===`in_progress`?`selected`:``}>진행 중 (기본)</option>
+            <option value="ended" ${Re===`ended`?`selected`:``}>방송 종료</option>
+            <option value="all" ${Re===`all`?`selected`:``}>전체 보기</option>
+          </select>
+          <button class="btn btn-primary" id="btn-new-project">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            신규 등록
+          </button>
+        </div>
+      </div>
+
+      <div class="project-grid" id="project-grid">
+        ${r.length>0?r.sort((e,t)=>(e.broadcastDate||``).localeCompare(t.broadcastDate||``)).map(e=>Ve(e)).join(``):He()}
+      </div>
+
+      <div class="section-header" style="margin-top: var(--space-6);">
+        <div>
+          <h2 class="section-title">우선 처리 업무</h2>
           <p class="section-subtitle">현재 단계의 마감 기한이 얼마 남지 않은 프로젝트</p>
         </div>
       </div>
@@ -80,28 +102,6 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div class="section-header">
-        <div>
-          <h2 class="section-title">라이브 프로젝트</h2>
-          <p class="section-subtitle">상태별 프로젝트 모아보기</p>
-        </div>
-        <div style="display: flex; gap: var(--space-3); align-items: center;">
-          <select id="dashboard-filter" class="input" style="padding: 6px 12px; width: auto; font-size: 14px;">
-            <option value="in_progress" ${Re===`in_progress`?`selected`:``}>진행 중 (기본)</option>
-            <option value="ended" ${Re===`ended`?`selected`:``}>방송 종료</option>
-            <option value="all" ${Re===`all`?`selected`:``}>전체 보기</option>
-          </select>
-          <button class="btn btn-primary" id="btn-new-project">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            신규 등록
-          </button>
-        </div>
-      </div>
-
-      <div class="project-grid" id="project-grid">
-        ${r.length>0?r.sort((e,t)=>(e.broadcastDate||``).localeCompare(t.broadcastDate||``)).map(e=>Ve(e)).join(``):He()}
       </div>
     </div>
   `,setTimeout(()=>{e.querySelectorAll(`.kpi-card[data-route]`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(e.getAttribute(`data-route`))})}),e.querySelectorAll(`.project-card`).forEach(e=>{e.addEventListener(`click`,()=>{We(e.getAttribute(`data-id`))})}),e.querySelectorAll(`.pd-task-row`).forEach(e=>{e.addEventListener(`click`,()=>{We(e.getAttribute(`data-id`))})});let t=e.querySelector(`#btn-new-project`);t&&t.addEventListener(`click`,()=>{u.navigate(`/projects/new`)});let n=e.querySelector(`#dashboard-filter`);n&&n.addEventListener(`change`,e=>{Re=e.target.value;let t=document.getElementById(`page-content`);t&&(t.innerHTML=``,t.appendChild(ze()))})},0),e}function Be(e,t,n=null){return`

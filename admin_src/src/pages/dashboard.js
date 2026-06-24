@@ -76,30 +76,6 @@ export function renderDashboard() {
       
       <div class="section-header" style="margin-top: var(--space-6);">
         <div>
-          <h2 class="section-title">PD 해야 할 업무 (마감 임박)</h2>
-          <p class="section-subtitle">현재 단계의 마감 기한이 얼마 남지 않은 프로젝트</p>
-        </div>
-      </div>
-      <div class="card" style="margin-bottom: var(--space-6);">
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead><tr><th>브랜드</th><th>방송일</th><th>업무 단계</th><th class="text-right">남은 기한</th></tr></thead>
-            <tbody>
-              ${pdTasks.length > 0 ? pdTasks.map(t => `
-                <tr style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background=''" class="pd-task-row" data-id="${t.project.id}">
-                  <td><span style="font-weight: var(--weight-medium);">${t.brandName}</span></td>
-                  <td>${t.project.broadcastDate}</td>
-                  <td>${renderBroadcastBadge(t.project.broadcastStatus)}</td>
-                  <td class="text-right"><span style="color: ${t.diffDays <= 1 ? 'var(--status-error)' : 'var(--text-secondary)'}; font-weight: 600;">${t.ddayText}</span></td>
-                </tr>
-              `).join('') : '<tr><td colspan="4" class="text-center" style="padding: var(--space-6); color: var(--text-tertiary);">현재 마감 기한이 있는 업무가 없습니다.</td></tr>'}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="section-header">
-        <div>
           <h2 class="section-title">라이브 프로젝트</h2>
           <p class="section-subtitle">상태별 프로젝트 모아보기</p>
         </div>
@@ -123,6 +99,30 @@ export function renderDashboard() {
               .map(p => renderProjectCard(p)).join('')
           : renderEmptyState()
         }
+      </div>
+
+      <div class="section-header" style="margin-top: var(--space-6);">
+        <div>
+          <h2 class="section-title">우선 처리 업무</h2>
+          <p class="section-subtitle">현재 단계의 마감 기한이 얼마 남지 않은 프로젝트</p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom: var(--space-6);">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>브랜드</th><th>방송일</th><th>업무 단계</th><th class="text-right">남은 기한</th></tr></thead>
+            <tbody>
+              ${pdTasks.length > 0 ? pdTasks.map(t => `
+                <tr style="cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background=''" class="pd-task-row" data-id="${t.project.id}">
+                  <td><span style="font-weight: var(--weight-medium);">${t.brandName}</span></td>
+                  <td>${t.project.broadcastDate}</td>
+                  <td>${renderBroadcastBadge(t.project.broadcastStatus)}</td>
+                  <td class="text-right"><span style="color: ${t.diffDays <= 1 ? 'var(--status-error)' : 'var(--text-secondary)'}; font-weight: 600;">${t.ddayText}</span></td>
+                </tr>
+              `).join('') : '<tr><td colspan="4" class="text-center" style="padding: var(--space-6); color: var(--text-tertiary);">현재 마감 기한이 있는 업무가 없습니다.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `;
