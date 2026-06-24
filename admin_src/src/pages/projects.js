@@ -213,11 +213,29 @@ export function renderProjects() {
         </div>
       </div>`;
 
+    
+    const availableMonths = [...new Set(projects.map(p => {
+      if (p.broadcastDate) {
+        const d = new Date(p.broadcastDate.replace(/\./g, '-'));
+        if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+      if (p.broadcastMonth) {
+        let m = String(p.broadcastMonth);
+        if (!m.includes('-') && m.length <= 2) m = `2026-${m.padStart(2, '0')}`;
+        return m;
+      }
+      return null;
+    }).filter(Boolean))].sort().reverse();
+
     let bodyHtml = '';
     if (currentView === 'list') {
       bodyHtml = `
         <!-- 필터바 -->
         <div class="filter-bar">
+          <select class="filter-select ${filters.month ? 'active' : ''}" id="filter-month">
+            <option value="">전체 월</option>
+            ${availableMonths.map(m => `<option value="${m}" ${filters.month === m ? 'selected' : ''}>${m}</option>`).join('')}
+          </select>
           <select class="filter-select ${filters.status ? 'active' : ''}" id="filter-status">
             <option value="">진행상태</option>
             ${BROADCAST_STATUSES.map(s => `<option value="${s.key}" ${filters.status === s.key ? 'selected' : ''}>${s.label}</option>`).join('')}
@@ -1205,9 +1223,9 @@ function renderFinanceTab(project) {
       </div>
       <div class="card-body">
         <div class="stats-grid" style="margin-bottom: var(--space-6);">
-          <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${formatCurrency(finance.adCost)}</div></div>
           <div class="stat-card"><div class="stat-label">제작비</div><div class="stat-value">${formatCurrency(finance.productionCost)}</div></div>
-          <div class="stat-card"><div class="stat-label">쇼호스트비 (자동계산)</div><div class="stat-value">${formatCurrency(hostCost)}</div></div>
+          <div class="stat-card"><div class="stat-label">쇼호스트비</div><div class="stat-value">${formatCurrency(hostCost)}</div></div>
+          <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${formatCurrency(finance.adCost)}</div></div>
           <div class="stat-card"><div class="stat-label">기타비용</div><div class="stat-value">${formatCurrency(finance.otherCost)}</div></div>
         </div>
         <div style="border-top: 1px solid var(--border-light); padding-top: var(--space-5);">
@@ -1220,13 +1238,13 @@ function renderFinanceTab(project) {
               <div class="stat-label">영업이익</div>
               <div class="stat-value" style="color: ${(finance.operatingProfit || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(finance.operatingProfit)}</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">부가세 (10%)</div>
-              <div class="stat-value">${formatCurrency(finance.vat)}</div>
-            </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
               <div class="stat-label">순마진</div>
               <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(finance.netMargin)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">마진율</div>
+              <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${finance.salesRevenue ? ((finance.netMargin || 0) / finance.salesRevenue * 100).toFixed(1) : 0}%</div>
             </div>
           </div>
         </div>

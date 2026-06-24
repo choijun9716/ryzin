@@ -1091,9 +1091,9 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       </div>
       <div class="card-body">
         <div class="stats-grid" style="margin-bottom: var(--space-6);">
-          <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${H(n.adCost)}</div></div>
           <div class="stat-card"><div class="stat-label">제작비</div><div class="stat-value">${H(n.productionCost)}</div></div>
-          <div class="stat-card"><div class="stat-label">쇼호스트비 (자동계산)</div><div class="stat-value">${H(r)}</div></div>
+          <div class="stat-card"><div class="stat-label">쇼호스트비</div><div class="stat-value">${H(r)}</div></div>
+          <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${H(n.adCost)}</div></div>
           <div class="stat-card"><div class="stat-label">기타비용</div><div class="stat-value">${H(n.otherCost)}</div></div>
         </div>
         <div style="border-top: 1px solid var(--border-light); padding-top: var(--space-5);">
@@ -1106,13 +1106,13 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <div class="stat-label">영업이익</div>
               <div class="stat-value" style="color: ${(n.operatingProfit||0)>=0?`var(--status-success)`:`var(--status-error)`};">${H(n.operatingProfit)}</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-label">부가세 (10%)</div>
-              <div class="stat-value">${H(n.vat)}</div>
-            </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
               <div class="stat-label">순마진</div>
               <div class="stat-value" style="color: ${(n.netMargin||0)>=0?`var(--status-success)`:`var(--status-error)`};">${H(n.netMargin)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">마진율</div>
+              <div class="stat-value" style="color: ${(n.netMargin||0)>=0?`var(--status-success)`:`var(--status-error)`};">${n.salesRevenue?((n.netMargin||0)/n.salesRevenue*100).toFixed(1):0}%</div>
             </div>
           </div>
         </div>
