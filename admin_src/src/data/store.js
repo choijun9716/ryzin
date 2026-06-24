@@ -467,7 +467,7 @@ class DataStore {
 
   calcProjectFinance(liveId) {
     const matchings = this.query('liveHosts', m => m.liveId === liveId);
-    const hostCost = matchings.reduce((sum, m) => sum + (m.fee || 0), 0);
+    const hostCost = matchings.reduce((sum, m) => sum + (m.brandPays ? 0 : (m.fee || 0)), 0);
     const finance = this.getById('finances', liveId) || {};
     const adCost = finance.adCost || 0;
     const productionCost = finance.productionCost || 0;

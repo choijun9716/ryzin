@@ -867,7 +867,7 @@ function renderHostsTab(project) {
                 <tr>
                   <td>${host ? host.name : '-'}</td>
                   <td>${HOST_ROLES.find(r => r.key === m.role)?.label || '-'}</td>
-                  <td class="text-right">${formatCurrency(m.fee)}</td>
+                  <td class="text-right">${m.brandPays ? `<span class="badge" style="background: var(--bg-secondary); color: var(--text-tertiary); margin-right: 4px;">브랜드 부담</span><span style="text-decoration: line-through; color: var(--text-tertiary);">${formatCurrency(m.fee)}</span>` : formatCurrency(m.fee)}</td>
                   <td>${renderSettleBadge(m.settleStatus)}</td>
                   <td style="font-size: var(--text-xs); color: var(--text-tertiary);">${m.memo || '-'}</td>
                   <td class="col-actions">
@@ -939,6 +939,12 @@ function openHostMatchModal(liveId, matchId, onSave) {
         <label>메모</label>
         <input class="input" id="match-memo" value="${match.memo || ''}">
       </div>
+      <div class="input-group full-width" style="margin-top: 4px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; color: var(--text-primary);">
+          <input type="checkbox" id="match-brand-pays" ${match.brandPays ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: var(--primary-color);">
+          브랜드 자체 부담 (자사 집행비용에서 제외)
+        </label>
+      </div>
     </div>
   `;
 
@@ -969,6 +975,7 @@ function openHostMatchModal(liveId, matchId, onSave) {
       fee: parseInt(document.getElementById('match-fee').value) || 0,
       settleStatus: document.getElementById('match-settle').value,
       memo: document.getElementById('match-memo').value.trim(),
+      brandPays: document.getElementById('match-brand-pays').checked,
     };
     if (isEdit) { store.update('liveHosts', matchId, data); showSuccess('수정되었습니다.'); }
     else { data.id = generateId('lh'); store.create('liveHosts', data); showSuccess('쇼호스트가 매칭되었습니다.'); }
