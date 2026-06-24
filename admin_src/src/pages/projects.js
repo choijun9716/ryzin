@@ -649,11 +649,10 @@ function renderInfoTab(project, brand) {
       </div>
       <div class="card-body">
         <div class="detail-grid">
-          <div class="detail-field"><span class="detail-field-label">등록일</span><span class="detail-field-value">${formatDate(project.createdAt)}</span></div>
+          <div class="detail-field"><span class="detail-field-label">브랜드</span><span class="detail-field-value">${project.brandName || (brand ? brand.name : '-')}</span></div>
           <div class="detail-field"><span class="detail-field-label">진행월</span><span class="detail-field-value">${project.broadcastMonth || '-'}</span></div>
           <div class="detail-field"><span class="detail-field-label">방송일</span><span class="detail-field-value">${formatDate(project.broadcastDate)}</span></div>
           <div class="detail-field"><span class="detail-field-label">방송시간</span><span class="detail-field-value">${project.broadcastTime || '-'}</span></div>
-          <div class="detail-field"><span class="detail-field-label">브랜드</span><span class="detail-field-value">${project.brandName || (brand ? brand.name : '-')}</span></div>
           <div class="detail-field"><span class="detail-field-label">카테고리</span><span class="detail-field-value">${project.category || '-'}</span></div>
           <div class="detail-field"><span class="detail-field-label">플랫폼</span><span class="detail-field-value">${project.platform || '-'}</span></div>
           <div class="detail-field"><span class="detail-field-label">담당 PD</span><span class="detail-field-value">${project.pd || '-'}</span></div>
