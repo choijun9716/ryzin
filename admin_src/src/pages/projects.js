@@ -961,11 +961,9 @@ function openHostMatchModal(liveId, matchId, onSave) {
     if (searchInput && selectEl) {
       searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        Array.from(selectEl.options).forEach(opt => {
-          if (opt.value === '') return;
-          const name = opt.getAttribute('data-name').toLowerCase();
-          opt.style.display = name.includes(term) ? '' : 'none';
-        });
+        const filtered = hosts.filter(h => h.name.toLowerCase().includes(term));
+        selectEl.innerHTML = '<option value="">선택</option>' + 
+          filtered.map(h => `<option value="${h.id}" data-name="${h.name}" ${match.hostId === h.id ? 'selected' : ''}>${h.name}</option>`).join('');
       });
     }
   }, 0);

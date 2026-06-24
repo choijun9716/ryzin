@@ -980,7 +980,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </table>
       </div>
     </div>
-  `,setTimeout(()=>{t.querySelector(`#btn-add-host-match`)?.addEventListener(`click`,()=>{at(e.id,null,()=>{let n=it(e);t.replaceWith(n)})}),t.querySelectorAll(`.btn-edit-match`).forEach(n=>{n.addEventListener(`click`,()=>{at(e.id,n.getAttribute(`data-id`),()=>{let n=it(e);t.replaceWith(n)})})})},0),t}function at(e,t,n){let r=!!t,i=r?V.getById(`liveHosts`,t):{},a=`
+  `,setTimeout(()=>{t.querySelector(`#btn-add-host-match`)?.addEventListener(`click`,()=>{at(e.id,null,()=>{let n=it(e);t.replaceWith(n)})}),t.querySelectorAll(`.btn-edit-match`).forEach(n=>{n.addEventListener(`click`,()=>{at(e.id,n.getAttribute(`data-id`),()=>{let n=it(e);t.replaceWith(n)})})})},0),t}function at(e,t,n){let r=!!t,i=r?V.getById(`liveHosts`,t):{},a=V.getAll(`hosts`),o=`
     <div class="form-grid">
       <div class="input-group" style="position: relative;">
         <label class="required">쇼호스트</label>
@@ -989,7 +989,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
         <select class="input" id="match-host" size="5" style="height: auto; min-height: 120px;">
           <option value="">선택</option>
-          ${V.getAll(`hosts`).map(e=>`<option value="${e.id}" data-name="${e.name}" ${i.hostId===e.id?`selected`:``}>${e.name}</option>`).join(``)}
+          ${a.map(e=>`<option value="${e.id}" data-name="${e.name}" ${i.hostId===e.id?`selected`:``}>${e.name}</option>`).join(``)}
         </select>
       </div>
       <div class="input-group">
@@ -1015,7 +1015,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <input class="input" id="match-memo" value="${i.memo||``}">
       </div>
     </div>
-  `,o=document.createElement(`div`);if(o.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,r){let e=document.createElement(`button`);e.className=`btn btn-danger`,e.textContent=`삭제`,e.style.marginRight=`auto`,e.addEventListener(`click`,()=>{V.delete(`liveHosts`,t),Y(),X(`삭제되었습니다.`),n&&n()}),o.appendChild(e)}let s=document.createElement(`button`);s.className=`btn btn-secondary`,s.textContent=`취소`,s.addEventListener(`click`,Y);let c=document.createElement(`button`);c.className=`btn btn-primary`,c.textContent=r?`수정`:`추가`,c.addEventListener(`click`,()=>{let i=document.getElementById(`match-host`).value;if(!i){Z(`쇼호스트를 선택해주세요.`);return}let a={liveId:e,hostId:i,role:document.getElementById(`match-role`).value,fee:parseInt(document.getElementById(`match-fee`).value)||0,settleStatus:document.getElementById(`match-settle`).value,memo:document.getElementById(`match-memo`).value.trim()};r?(V.update(`liveHosts`,t,a),X(`수정되었습니다.`)):(a.id=y(`lh`),V.create(`liveHosts`,a),X(`쇼호스트가 매칭되었습니다.`)),Y(),n&&n()}),o.appendChild(s),o.appendChild(c),J({title:r?`쇼호스트 매칭 수정`:`쇼호스트 추가`,size:`md`,content:a,footer:o}),setTimeout(()=>{let e=document.getElementById(`match-host-search`),t=document.getElementById(`match-host`);e&&t&&e.addEventListener(`input`,e=>{let n=e.target.value.toLowerCase();Array.from(t.options).forEach(e=>{if(e.value===``)return;let t=e.getAttribute(`data-name`).toLowerCase();e.style.display=t.includes(n)?``:`none`})})},0)}function ot(e){let t=document.createElement(`div`),n=V.query(`designs`,t=>t.liveId===e.id),{renderDesignBadge:r}=st();return t.innerHTML=`
+  `,s=document.createElement(`div`);if(s.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,r){let e=document.createElement(`button`);e.className=`btn btn-danger`,e.textContent=`삭제`,e.style.marginRight=`auto`,e.addEventListener(`click`,()=>{V.delete(`liveHosts`,t),Y(),X(`삭제되었습니다.`),n&&n()}),s.appendChild(e)}let c=document.createElement(`button`);c.className=`btn btn-secondary`,c.textContent=`취소`,c.addEventListener(`click`,Y);let l=document.createElement(`button`);l.className=`btn btn-primary`,l.textContent=r?`수정`:`추가`,l.addEventListener(`click`,()=>{let i=document.getElementById(`match-host`).value;if(!i){Z(`쇼호스트를 선택해주세요.`);return}let a={liveId:e,hostId:i,role:document.getElementById(`match-role`).value,fee:parseInt(document.getElementById(`match-fee`).value)||0,settleStatus:document.getElementById(`match-settle`).value,memo:document.getElementById(`match-memo`).value.trim()};r?(V.update(`liveHosts`,t,a),X(`수정되었습니다.`)):(a.id=y(`lh`),V.create(`liveHosts`,a),X(`쇼호스트가 매칭되었습니다.`)),Y(),n&&n()}),s.appendChild(c),s.appendChild(l),J({title:r?`쇼호스트 매칭 수정`:`쇼호스트 추가`,size:`md`,content:o,footer:s}),setTimeout(()=>{let e=document.getElementById(`match-host-search`),t=document.getElementById(`match-host`);e&&t&&e.addEventListener(`input`,e=>{let n=e.target.value.toLowerCase();t.innerHTML=`<option value="">선택</option>`+a.filter(e=>e.name.toLowerCase().includes(n)).map(e=>`<option value="${e.id}" data-name="${e.name}" ${i.hostId===e.id?`selected`:``}>${e.name}</option>`).join(``)})},0)}function ot(e){let t=document.createElement(`div`),n=V.query(`designs`,t=>t.liveId===e.id),{renderDesignBadge:r}=st();return t.innerHTML=`
     <div class="card">
       <div class="card-header">
         <h3>디자인 요청</h3>
