@@ -647,9 +647,13 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             신규 등록
           </button>
         </div>
-      </div>`,h=``;h=i===`list`?`
+      </div>`,h=[...new Set(s.map(e=>{if(e.broadcastDate){let t=new Date(e.broadcastDate.replace(/\./g,`-`));if(!isNaN(t.getTime()))return`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,`0`)}`}if(e.broadcastMonth){let t=String(e.broadcastMonth);return!t.includes(`-`)&&t.length<=2&&(t=`2026-${t.padStart(2,`0`)}`),t}return null}).filter(Boolean))].sort().reverse(),g=``;g=i===`list`?`
         <!-- 필터바 -->
         <div class="filter-bar">
+          <select class="filter-select ${n.month?`active`:``}" id="filter-month">
+            <option value="">전체 월</option>
+            ${h.map(e=>`<option value="${e}" ${n.month===e?`selected`:``}>${e}</option>`).join(``)}
+          </select>
           <select class="filter-select ${n.status?`active`:``}" id="filter-status">
             <option value="">진행상태</option>
             ${d.map(e=>`<option value="${e.key}" ${n.status===e.key?`selected`:``}>${e.label}</option>`).join(``)}
@@ -754,7 +758,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             </table>
           </div>
         </div>
-      `:l(c),e.innerHTML=f+`<div class="page-body">`+h+`</div>`,setTimeout(()=>{e.querySelector(`#btn-view-list`)?.addEventListener(`click`,()=>{i!==`list`&&(i=`list`,o())}),e.querySelector(`#btn-view-calendar`)?.addEventListener(`click`,()=>{i!==`calendar`&&(i=`calendar`,o())}),e.querySelector(`#btn-prev-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()-1),o()}),e.querySelector(`#btn-next-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()+1),o()}),e.querySelectorAll(`.calendar-project-block`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})});let s=!1,c=e.querySelector(`#project-search`);c&&(c.addEventListener(`compositionstart`,()=>{s=!0}),c.addEventListener(`compositionend`,e=>{s=!1,t=e.target.value,o();let n=document.getElementById(`project-search`);n&&(n.focus(),n.setSelectionRange(n.value.length,n.value.length))}),c.addEventListener(`input`,e=>{if(s)return;t=e.target.value,o();let n=document.getElementById(`project-search`);if(n){n.focus();let e=n.value.length;n.setSelectionRange(e,e)}})),[`status`,`brand`,`platform`,`month`,`category`].forEach(t=>{e.querySelector(`#filter-${t}`)?.addEventListener(`change`,e=>{n[t]=e.target.value,o()})}),[`basic`,`host`,`result`,`finance`].forEach(t=>{e.querySelector(`#toggle-col-${t}`)?.addEventListener(`change`,e=>{r[t]=e.target.checked,o()})}),e.querySelector(`#filter-reset`)?.addEventListener(`click`,()=>{n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},t=``,o()}),e.querySelector(`#btn-new-project`)?.addEventListener(`click`,()=>{nt(()=>o())}),e.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),t.stopPropagation(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0)}return o(),V.on(`projects:changed`,o),e}function nt(e){let t=V.getAll(`brands`),n=`
+      `:l(c),e.innerHTML=f+`<div class="page-body">`+g+`</div>`,setTimeout(()=>{e.querySelector(`#btn-view-list`)?.addEventListener(`click`,()=>{i!==`list`&&(i=`list`,o())}),e.querySelector(`#btn-view-calendar`)?.addEventListener(`click`,()=>{i!==`calendar`&&(i=`calendar`,o())}),e.querySelector(`#btn-prev-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()-1),o()}),e.querySelector(`#btn-next-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()+1),o()}),e.querySelectorAll(`.calendar-project-block`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})});let s=!1,c=e.querySelector(`#project-search`);c&&(c.addEventListener(`compositionstart`,()=>{s=!0}),c.addEventListener(`compositionend`,e=>{s=!1,t=e.target.value,o();let n=document.getElementById(`project-search`);n&&(n.focus(),n.setSelectionRange(n.value.length,n.value.length))}),c.addEventListener(`input`,e=>{if(s)return;t=e.target.value,o();let n=document.getElementById(`project-search`);if(n){n.focus();let e=n.value.length;n.setSelectionRange(e,e)}})),[`status`,`brand`,`platform`,`month`,`category`].forEach(t=>{e.querySelector(`#filter-${t}`)?.addEventListener(`change`,e=>{n[t]=e.target.value,o()})}),[`basic`,`host`,`result`,`finance`].forEach(t=>{e.querySelector(`#toggle-col-${t}`)?.addEventListener(`change`,e=>{r[t]=e.target.checked,o()})}),e.querySelector(`#filter-reset`)?.addEventListener(`click`,()=>{n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},t=``,o()}),e.querySelector(`#btn-new-project`)?.addEventListener(`click`,()=>{nt(()=>o())}),e.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),t.stopPropagation(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0)}return o(),V.on(`projects:changed`,o),e}function nt(e){let t=V.getAll(`brands`),n=`
     <div class="form-grid">
       <div class="input-group">
         <label class="required">방송 제목(브랜드)</label>
@@ -1124,92 +1128,98 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <div style="margin-top: var(--space-4); padding: var(--space-3); background: var(--bg-secondary); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-tertiary);">
           쇼호스트비는 쇼호스트 매칭 탭에서 설정한 금액의 합계로 자동 계산됩니다. (현재: ${H(r)})
         </div>
-      `,a=document.createElement(`div`);a.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let o=document.createElement(`button`);o.className=`btn btn-secondary`,o.textContent=`취소`,o.addEventListener(`click`,J);let s=document.createElement(`button`);s.className=`btn btn-primary`,s.textContent=`저장`,s.addEventListener(`click`,()=>{let n=parseInt(document.getElementById(`fin-ad`).value)||0,i=parseInt(document.getElementById(`fin-prod`).value)||0,a=parseInt(document.getElementById(`fin-other`).value)||0,o=parseInt(document.getElementById(`fin-sales`).value)||0,s=o-n-i-r-a,c=Math.round(o*.1),l=s-c,u={liveId:e.id,adCost:n,productionCost:i,hostCost:r,otherCost:a,salesRevenue:o,operatingProfit:s,vat:c,netMargin:l},d=V.getAll(`finances`).find(t=>t.liveId===e.id);d?V.update(`finances`,d.id,u):(u.id=e.id,V.create(`finances`,u)),J(),Y(`정산 정보가 저장되었습니다.`);let f=ft(e);t.replaceWith(f)}),a.appendChild(o),a.appendChild(s),q({title:`정산 정보 수정`,size:`md`,content:i,footer:a})})},0),t}function pt(){let e=document.createElement(`div`),t=V.getAll(`projects`),n=V.getAll(`results`),r=V.getAll(`finances`),i={};t.forEach(e=>{let t=e.broadcastMonth;if(e.broadcastDate){let n=new Date(e.broadcastDate.replace(/\./g,`-`));isNaN(n.getTime())||(t=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,`0`)}`)}if(!t)return;!t.includes(`-`)&&t.length<=2&&(t=`2026-${String(t).padStart(2,`0`)}`),i[t]||(i[t]={month:t,revenue:0,profit:0,margin:0,count:0}),i[t].count++;let n=r.find(t=>t.liveId===e.id);n&&(i[t].revenue+=parseInt(n.salesRevenue)||0,i[t].profit+=parseInt(n.operatingProfit)||0,i[t].margin+=parseInt(n.netMargin)||0)});let a=Object.values(i).sort((e,t)=>t.month.localeCompare(e.month)),o=r.reduce((e,t)=>e+(t.salesRevenue||0),0),s=r.reduce((e,t)=>e+(t.operatingProfit||0),0),c=r.reduce((e,t)=>e+(t.netMargin||0),0),l=r.reduce((e,t)=>e+(t.adCost||0),0),u=r.reduce((e,t)=>e+(t.productionCost||0),0),d=r.reduce((e,t)=>e+(t.hostCost||0),0),f={};t.forEach(e=>{let t=V.getById(`brands`,e.brandId);if(!t)return;f[t.id]||(f[t.id]={name:t.name,revenue:0,count:0}),f[t.id].count++;let r=n.find(t=>t.liveId===e.id);r&&(f[t.id].revenue+=r.liveRevenue||0)});let p=Object.values(f).sort((e,t)=>t.revenue-e.revenue),m={};V.getAll(`liveHosts`).forEach(e=>{let t=V.getById(`hosts`,e.hostId);if(!t)return;m[t.id]||(m[t.id]={name:t.name,revenue:0,count:0,fee:0}),m[t.id].count++,m[t.id].fee+=e.fee||0;let r=n.find(t=>t.liveId===e.liveId);r&&(m[t.id].revenue+=r.liveRevenue||0)});let h=Object.values(m).sort((e,t)=>t.revenue-e.revenue),g=t.filter(e=>e.status===`settle_wait`).length,_=t.filter(e=>e.status===`settle_done`).length;return e.innerHTML=`
-    <div class="page-header">
-      <div class="page-header-left">
-        <div>
-          <h1 class="page-title">매출/손익</h1>
-          <p class="page-description">전체 매출 및 손익 현황</p>
-        </div>
-      </div>
-    </div>
-    <div class="page-body">
-      <!-- 핵심 KPI -->
-      <div class="stats-grid" style="margin-bottom: var(--space-6);">
-        <div class="stat-card"><div class="stat-label">총 영업매출</div><div class="stat-value">${U(o)}</div></div>
-        <div class="stat-card"><div class="stat-label">총 영업이익</div><div class="stat-value" style="color: ${s>=0?`var(--status-success)`:`var(--status-error)`};">${U(s)}</div></div>
-        <div class="stat-card"><div class="stat-label">총 순마진</div><div class="stat-value" style="color: ${c>=0?`var(--status-success)`:`var(--status-error)`};">${U(c)}</div></div>
-        <div class="stat-card"><div class="stat-label">총 광고비</div><div class="stat-value">${U(l)}</div></div>
-        <div class="stat-card"><div class="stat-label">총 제작비</div><div class="stat-value">${U(u)}</div></div>
-        <div class="stat-card"><div class="stat-label">총 쇼호스트비</div><div class="stat-value">${U(d)}</div></div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-bottom: var(--space-6);">
-        <!-- 월별 손익 -->
-        <div class="card">
-          <div class="card-header"><h3>월별 손익</h3></div>
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead><tr><th>월</th><th class="text-right">방송수</th><th class="text-right">영업매출</th><th class="text-right">영업이익</th><th class="text-right">순마진</th></tr></thead>
-              <tbody>
-                ${a.length>0?a.map(e=>`
-                  <tr>
-                    <td style="font-weight: var(--weight-medium);">${e.month}</td>
-                    <td class="text-right">${e.count}건</td>
-                    <td class="text-right">${U(e.revenue)}</td>
-                    <td class="text-right" style="color: ${e.profit>=0?`var(--status-success)`:`var(--status-error)`};">${U(e.profit)}</td>
-                    <td class="text-right" style="color: ${e.margin>=0?`var(--status-success)`:`var(--status-error)`};">${U(e.margin)}</td>
-                  </tr>
-                `).join(``):`<tr><td colspan="5" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">데이터가 없습니다.</td></tr>`}
-              </tbody>
-            </table>
+      `,a=document.createElement(`div`);a.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let o=document.createElement(`button`);o.className=`btn btn-secondary`,o.textContent=`취소`,o.addEventListener(`click`,J);let s=document.createElement(`button`);s.className=`btn btn-primary`,s.textContent=`저장`,s.addEventListener(`click`,()=>{let n=parseInt(document.getElementById(`fin-ad`).value)||0,i=parseInt(document.getElementById(`fin-prod`).value)||0,a=parseInt(document.getElementById(`fin-other`).value)||0,o=parseInt(document.getElementById(`fin-sales`).value)||0,s=o-n-i-r-a,c=Math.round(o*.1),l=s-c,u={liveId:e.id,adCost:n,productionCost:i,hostCost:r,otherCost:a,salesRevenue:o,operatingProfit:s,vat:c,netMargin:l},d=V.getAll(`finances`).find(t=>t.liveId===e.id);d?V.update(`finances`,d.id,u):(u.id=e.id,V.create(`finances`,u)),J(),Y(`정산 정보가 저장되었습니다.`);let f=ft(e);t.replaceWith(f)}),a.appendChild(o),a.appendChild(s),q({title:`정산 정보 수정`,size:`md`,content:i,footer:a})})},0),t}function pt(){let e=document.createElement(`div`),t=``;function n(){let r=V.getAll(`projects`),i=V.getAll(`finances`),a=V.getAll(`results`),o=[...new Set(r.map(e=>{let t=e.broadcastMonth;if(e.broadcastDate){let n=new Date(e.broadcastDate.replace(/\./g,`-`));isNaN(n.getTime())||(t=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,`0`)}`)}return t&&!t.includes(`-`)&&t.length<=2&&(t=`2026-${String(t).padStart(2,`0`)}`),t}).filter(Boolean))].sort().reverse(),s=r,c=i,l=a;if(t){s=r.filter(e=>{let n=e.broadcastMonth;if(e.broadcastDate){let t=new Date(e.broadcastDate.replace(/\./g,`-`));isNaN(t.getTime())||(n=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,`0`)}`)}return n&&!n.includes(`-`)&&n.length<=2&&(n=`2026-${String(n).padStart(2,`0`)}`),n===t});let e=s.map(e=>e.id);c=i.filter(t=>e.includes(t.liveId)),l=a.filter(t=>e.includes(t.liveId))}let u={};s.forEach(e=>{let t=e.broadcastMonth;if(e.broadcastDate){let n=new Date(e.broadcastDate.replace(/\./g,`-`));isNaN(n.getTime())||(t=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,`0`)}`)}if(!t)return;!t.includes(`-`)&&t.length<=2&&(t=`2026-${String(t).padStart(2,`0`)}`),u[t]||(u[t]={month:t,revenue:0,profit:0,margin:0,count:0}),u[t].count++;let n=c.find(t=>t.liveId===e.id);n&&(u[t].revenue+=parseInt(n.salesRevenue)||0,u[t].profit+=parseInt(n.operatingProfit)||0,u[t].margin+=parseInt(n.netMargin)||0)});let d=Object.values(u).sort((e,t)=>t.month.localeCompare(e.month)),f=c.reduce((e,t)=>e+(parseInt(t.salesRevenue)||0),0),p=c.reduce((e,t)=>e+(parseInt(t.operatingProfit)||0),0),m=c.reduce((e,t)=>e+(parseInt(t.netMargin)||0),0),h=c.reduce((e,t)=>e+(parseInt(t.adCost)||0),0),g=c.reduce((e,t)=>e+(parseInt(t.productionCost)||0),0),_=c.reduce((e,t)=>e+(parseInt(t.hostCost)||0),0),v={};s.forEach(e=>{let t=V.getById(`brands`,e.brandId);if(!t)return;v[t.id]||(v[t.id]={name:t.name,revenue:0,count:0}),v[t.id].count++;let n=l.find(t=>t.liveId===e.id);n&&(v[t.id].revenue+=parseInt(n.liveRevenue)||0)});let y=Object.values(v).sort((e,t)=>t.revenue-e.revenue),b={};V.getAll(`liveHosts`).forEach(e=>{if(t&&!s.some(t=>t.id===e.liveId))return;let n=V.getById(`hosts`,e.hostId);if(!n)return;b[n.id]||(b[n.id]={name:n.name,revenue:0,count:0,fee:0}),b[n.id].count++,b[n.id].fee+=parseInt(e.fee)||0;let r=l.find(t=>t.liveId===e.liveId);r&&(b[n.id].revenue+=parseInt(r.liveRevenue)||0)});let x=Object.values(b).sort((e,t)=>t.revenue-e.revenue),S=s.filter(e=>e.status===`settle_wait`).length,C=s.filter(e=>e.status===`settle_done`).length;e.innerHTML=`
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="page-header-left">
+          <div>
+            <h1 class="page-title">매출/손익</h1>
+            <p class="page-description">전체 매출 및 손익 현황</p>
           </div>
         </div>
+        <div class="page-header-right">
+          <select class="filter-select" id="finance-month-filter" style="padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border-color);">
+            <option value="">전체 월</option>
+            ${o.map(e=>`<option value="${e}" ${t===e?`selected`:``}>${e}</option>`).join(``)}
+          </select>
+        </div>
+      </div>
+      <div class="page-body">
+        <!-- 핵심 KPI -->
+        <div class="stats-grid" style="margin-bottom: var(--space-6);">
+          <div class="stat-card"><div class="stat-label">총 영업매출</div><div class="stat-value">${U(f)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 영업이익</div><div class="stat-value" style="color: ${p>=0?`var(--status-success)`:`var(--status-error)`};">${U(p)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 순마진</div><div class="stat-value" style="color: ${m>=0?`var(--status-success)`:`var(--status-error)`};">${U(m)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 광고비</div><div class="stat-value">${U(h)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 제작비</div><div class="stat-value">${U(g)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 쇼호스트비</div><div class="stat-value">${U(_)}</div></div>
+        </div>
 
-        <!-- 정산 현황 -->
-        <div>
-          <div class="card" style="margin-bottom: var(--space-5);">
-            <div class="card-header"><h3>정산 현황</h3></div>
-            <div class="card-body">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
-                <div class="stat-card"><div class="stat-label">정산 대기</div><div class="stat-value">${g}건</div></div>
-                <div class="stat-card"><div class="stat-label">정산 완료</div><div class="stat-value">${_}건</div></div>
-              </div>
-            </div>
-          </div>
-          <!-- 브랜드별 매출 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-bottom: var(--space-6);">
+          <!-- 월별 손익 -->
           <div class="card">
-            <div class="card-header"><h3>브랜드별 라이브매출 순위</h3></div>
+            <div class="card-header"><h3>월별 손익</h3></div>
             <div class="table-scroll">
               <table class="data-table">
-                <thead><tr><th>브랜드</th><th class="text-right">방송수</th><th class="text-right">라이브매출</th></tr></thead>
+                <thead><tr><th>월</th><th class="text-right">방송수</th><th class="text-right">영업매출</th><th class="text-right">영업이익</th><th class="text-right">순마진</th></tr></thead>
                 <tbody>
-                  ${p.map((e,t)=>`
-                    <tr><td><span style="color: var(--text-tertiary); margin-right: var(--space-2);">${t+1}</span> ${e.name}</td><td class="text-right">${e.count}회</td><td class="text-right">${U(e.revenue)}</td></tr>
-                  `).join(``)||`<tr><td colspan="3" class="text-center" style="padding: var(--space-6); color: var(--text-tertiary);">데이터 없음</td></tr>`}
+                  ${d.length>0?d.map(e=>`
+                    <tr>
+                      <td style="font-weight: var(--weight-medium);">${e.month}</td>
+                      <td class="text-right">${e.count}건</td>
+                      <td class="text-right">${U(e.revenue)}</td>
+                      <td class="text-right" style="color: ${e.profit>=0?`var(--status-success)`:`var(--status-error)`};">${U(e.profit)}</td>
+                      <td class="text-right" style="color: ${e.margin>=0?`var(--status-success)`:`var(--status-error)`};">${U(e.margin)}</td>
+                    </tr>
+                  `).join(``):`<tr><td colspan="5" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">데이터가 없습니다.</td></tr>`}
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- 쇼호스트별 실적 -->
-      <div class="card">
-        <div class="card-header"><h3>쇼호스트별 실적</h3></div>
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead><tr><th>쇼호스트</th><th class="text-right">방송횟수</th><th class="text-right">누적 라이브매출</th><th class="text-right">누적 정산금액</th></tr></thead>
-            <tbody>
-              ${h.map((e,t)=>`
-                <tr><td><span style="color: var(--text-tertiary); margin-right: var(--space-2);">${t+1}</span> ${e.name}</td><td class="text-right">${e.count}회</td><td class="text-right">${U(e.revenue)}</td><td class="text-right">${H(e.fee)}</td></tr>
-              `).join(``)||`<tr><td colspan="4" class="text-center" style="padding: var(--space-6); color: var(--text-tertiary);">데이터 없음</td></tr>`}
-            </tbody>
-          </table>
+          <!-- 정산 현황 -->
+          <div>
+            <div class="card" style="margin-bottom: var(--space-5);">
+              <div class="card-header"><h3>정산 현황</h3></div>
+              <div class="card-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                  <div class="stat-card"><div class="stat-label">정산 대기</div><div class="stat-value">${S}건</div></div>
+                  <div class="stat-card"><div class="stat-label">정산 완료</div><div class="stat-value">${C}건</div></div>
+                </div>
+              </div>
+            </div>
+            <!-- 브랜드별 매출 -->
+            <div class="card">
+              <div class="card-header"><h3>브랜드별 라이브매출 순위</h3></div>
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead><tr><th>브랜드</th><th class="text-right">방송수</th><th class="text-right">라이브매출</th></tr></thead>
+                  <tbody>
+                    ${y.map((e,t)=>`
+                      <tr><td><span style="color: var(--text-tertiary); margin-right: var(--space-2);">${t+1}</span> ${e.name}</td><td class="text-right">${e.count}회</td><td class="text-right">${U(e.revenue)}</td></tr>
+                    `).join(``)||`<tr><td colspan="3" class="text-center" style="padding: var(--space-6); color: var(--text-tertiary);">데이터 없음</td></tr>`}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 쇼호스트별 실적 -->
+        <div class="card">
+          <div class="card-header"><h3>쇼호스트별 실적</h3></div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>쇼호스트</th><th class="text-right">방송횟수</th><th class="text-right">누적 라이브매출</th><th class="text-right">누적 정산금액</th></tr></thead>
+              <tbody>
+                ${x.map((e,t)=>`
+                  <tr><td><span style="color: var(--text-tertiary); margin-right: var(--space-2);">${t+1}</span> ${e.name}</td><td class="text-right">${e.count}회</td><td class="text-right">${U(e.revenue)}</td><td class="text-right">${H(e.fee)}</td></tr>
+                `).join(``)||`<tr><td colspan="4" class="text-center" style="padding: var(--space-6); color: var(--text-tertiary);">데이터 없음</td></tr>`}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
-  `,e}function mt(){let e=document.createElement(`div`);function t(){let t=V.getAll(`projects`),n=V.getAll(`finances`),r=V.getAll(`liveHosts`);V.getAll(`brands`),V.getAll(`hosts`);let i={};t.filter(e=>e.settleStatus!==`done`).forEach(e=>{let t=e.brandName||V.getById(`brands`,e.brandId)?.name||`알 수 없음`,r=e.brandId||t;i[r]||(i[r]={brandName:t,count:0,amount:0,projects:[]});let a=n.find(t=>t.liveId===e.id),o=a&&a.salesRevenue||0;i[r].count++,i[r].amount+=o,i[r].projects.push({...e,revenue:o})});let a=Object.values(i).sort((e,t)=>t.amount-e.amount),o={};r.filter(e=>e.settleStatus!==`done`).forEach(e=>{let t=V.getById(`hosts`,e.hostId);t&&(o[t.id]||(o[t.id]={hostName:t.name,hostId:t.id,count:0,amount:0,matchings:[]}),o[t.id].count++,o[t.id].amount+=e.fee||0,o[t.id].matchings.push(e))});let s=Object.values(o).sort((e,t)=>t.amount-e.amount),c=a.reduce((e,t)=>e+t.amount,0),l=s.reduce((e,t)=>e+t.amount,0);e.innerHTML=`
+    `;let w=e.querySelector(`#finance-month-filter`);w&&w.addEventListener(`change`,e=>{t=e.target.value,n()})}return n(),e}function mt(){let e=document.createElement(`div`);function t(){let t=V.getAll(`projects`),n=V.getAll(`finances`),r=V.getAll(`liveHosts`);V.getAll(`brands`),V.getAll(`hosts`);let i={};t.filter(e=>e.settleStatus!==`done`).forEach(e=>{let t=e.brandName||V.getById(`brands`,e.brandId)?.name||`알 수 없음`,r=e.brandId||t;i[r]||(i[r]={brandName:t,count:0,amount:0,projects:[]});let a=n.find(t=>t.liveId===e.id),o=a&&a.salesRevenue||0;i[r].count++,i[r].amount+=o,i[r].projects.push({...e,revenue:o})});let a=Object.values(i).sort((e,t)=>t.amount-e.amount),o={};r.filter(e=>e.settleStatus!==`done`).forEach(e=>{let t=V.getById(`hosts`,e.hostId);t&&(o[t.id]||(o[t.id]={hostName:t.name,hostId:t.id,count:0,amount:0,matchings:[]}),o[t.id].count++,o[t.id].amount+=e.fee||0,o[t.id].matchings.push(e))});let s=Object.values(o).sort((e,t)=>t.amount-e.amount),c=a.reduce((e,t)=>e+t.amount,0),l=s.reduce((e,t)=>e+t.amount,0);e.innerHTML=`
     <div class="page-header">
       <div class="page-header-left">
         <div>
