@@ -120,10 +120,13 @@ function renderKPI(label, value) {
 function renderProjectCard(project) {
   const brand = store.getById('brands', project.brandId);
   const brandName = project.brandName || (brand ? brand.name : '-');
-  const tasks = store.query('tasks', t => t.liveId === project.id);
-  const doneTasks = tasks.filter(t => t.done).length;
-  const totalTasks = tasks.length;
-  const progress = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+  let progress = 0;
+  if (project.broadcastStatus === 'scheduled') progress = 20;
+  else if (project.broadcastStatus === 'host_cast') progress = 40;
+  else if (project.broadcastStatus === 'tech_request') progress = 60;
+  else if (project.broadcastStatus === 'design') progress = 80;
+  else if (project.broadcastStatus === 'cue_sheet') progress = 90;
+  else if (project.broadcastStatus === 'done') progress = 100;
 
   // 쇼호스트
   const matchings = store.query('liveHosts', m => m.liveId === project.id);

@@ -86,7 +86,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="kpi-label">${e}</div>
       <div class="kpi-value">${t}</div>
     </div>
-  `}function Ve(e){let t=V.getById(`brands`,e.brandId),n=e.brandName||(t?t.name:`-`),r=V.query(`tasks`,t=>t.liveId===e.id),i=r.filter(e=>e.done).length,a=r.length,o=a>0?Math.round(i/a*100):0,s=V.query(`liveHosts`,t=>t.liveId===e.id).map(e=>{let t=V.getById(`hosts`,e.hostId);return t?t.name:`-`}).join(`, `);return`
+  `}function Ve(e){let t=V.getById(`brands`,e.brandId),n=e.brandName||(t?t.name:`-`),r=0;e.broadcastStatus===`scheduled`?r=20:e.broadcastStatus===`host_cast`?r=40:e.broadcastStatus===`tech_request`?r=60:e.broadcastStatus===`design`?r=80:e.broadcastStatus===`cue_sheet`?r=90:e.broadcastStatus===`done`&&(r=100);let i=V.query(`liveHosts`,t=>t.liveId===e.id).map(e=>{let t=V.getById(`hosts`,e.hostId);return t?t.name:`-`}).join(`, `);return`
     <div class="project-card" data-id="${e.id}">
       <div class="project-card-header">
         <div>
@@ -111,18 +111,18 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <span class="project-card-meta-label">플랫폼</span>
           <span>${e.platform||`-`}</span>
         </div>
-        ${s?`
+        ${i?`
         <div class="project-card-meta-item">
           <span class="project-card-meta-label">쇼호스트</span>
-          <span>${s}</span>
+          <span>${i}</span>
         </div>
         `:``}
       </div>
       <div class="project-card-footer">
         <div class="project-card-progress">
-          <div class="project-card-progress-text">${o}%</div>
+          <div class="project-card-progress-text">${r}%</div>
           <div class="progress-bar progress-bar-sm">
-            <div class="progress-bar-fill" style="width: ${o}%"></div>
+            <div class="progress-bar-fill" style="width: ${r}%"></div>
           </div>
         </div>
         <div class="project-card-pd">${e.pd||`-`}</div>
