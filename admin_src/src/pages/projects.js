@@ -244,9 +244,6 @@ export function renderProjects() {
                   ` : ''}
                   ${colGroups.finance ? `
                   <th>정산</th>
-                  <th class="text-right">영업매출</th>
-                  <th class="text-right">영업이익</th>
-                  <th class="text-right">순마진</th>
                   ` : ''}
                   ${colGroups.basic ? `
                   <th>PD</th>
@@ -275,9 +272,6 @@ export function renderProjects() {
                     ` : ''}
                     ${colGroups.finance ? `
                     <td><span class="badge ${p.settleLabel === '완료' ? 'badge-success' : p.settleLabel === '일부완료' ? 'badge-warning' : 'badge-default'}">${p.settleLabel}</span></td>
-                    <td class="text-right">${p.finance ? formatCurrencyShort(p.finance.salesRevenue) : '-'}</td>
-                    <td class="text-right">${p.finance ? formatCurrencyShort(p.finance.operatingProfit) : '-'}</td>
-                    <td class="text-right">${p.finance ? formatCurrencyShort(p.finance.netMargin) : '-'}</td>
                     ` : ''}
                     ${colGroups.basic ? `
                     <td>${p.pd || '-'}</td>

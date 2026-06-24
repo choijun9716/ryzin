@@ -721,9 +721,6 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   `:``}
                   ${r.finance?`
                   <th>정산</th>
-                  <th class="text-right">영업매출</th>
-                  <th class="text-right">영업이익</th>
-                  <th class="text-right">순마진</th>
                   `:``}
                   ${r.basic?`
                   <th>PD</th>
@@ -752,9 +749,6 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                     `:``}
                     ${r.finance?`
                     <td><span class="badge ${e.settleLabel===`완료`?`badge-success`:e.settleLabel===`일부완료`?`badge-warning`:`badge-default`}">${e.settleLabel}</span></td>
-                    <td class="text-right">${e.finance?U(e.finance.salesRevenue):`-`}</td>
-                    <td class="text-right">${e.finance?U(e.finance.operatingProfit):`-`}</td>
-                    <td class="text-right">${e.finance?U(e.finance.netMargin):`-`}</td>
                     `:``}
                     ${r.basic?`
                     <td>${e.pd||`-`}</td>
