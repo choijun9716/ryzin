@@ -51,8 +51,22 @@ async function initApp() {
     if (app.querySelector('.sidebar')) return; // 이미 그려져있음
     app.innerHTML = '';
     app.className = 'app-layout';
+    
     app.appendChild(renderSidebar());
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'mobile-overlay';
+    overlay.onclick = () => document.querySelector('.sidebar').classList.remove('open');
+    app.appendChild(overlay);
+
+    const mobileMenuBtn = document.createElement('button');
+    mobileMenuBtn.className = 'mobile-menu-btn';
+    mobileMenuBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+    mobileMenuBtn.onclick = () => document.querySelector('.sidebar').classList.toggle('open');
+    app.appendChild(mobileMenuBtn);
+
     const main = document.createElement('main');
+
     main.className = 'main-content';
     main.id = 'page-content';
     app.appendChild(main);

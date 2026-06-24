@@ -277,3 +277,55 @@ img {
 .animate-slide-up { animation: slideUp var(--transition-slow) forwards; }
 .animate-slide-down { animation: slideDown var(--transition-slow) forwards; }
 .animate-scale-in { animation: scaleIn var(--transition-slow) forwards; }
+
+
+/* ===== Mobile Global Styles ===== */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-dark);
+  color: white;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+@media (max-width: 1024px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+  .sidebar.open ~ .mobile-overlay {
+    display: block;
+    opacity: 1;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .page-header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
