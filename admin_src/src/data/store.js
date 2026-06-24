@@ -544,19 +544,37 @@ class DataStore {
 
   // 시드 리셋 (이제 사용 안 할 수 있음)
   toggleDemoMode(enable) {
+    const currentSession = this.getCurrentUser();
+    const currentSig = this._data.authSignature;
+    const currentRole = this._data.currentRole;
+
     localStorage.setItem('ryzin_is_demo_mode', enable ? 'true' : 'false');
-    if (enable) {
-      // Initialize demo data if empty
-      if (!localStorage.getItem('livecommerce_erp_demo_data')) {
-         const emptyData = {
-           users: [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' }], 
-           currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
-           products: [], designs: [], results: [], finances: [], currentRole: 'admin'
-         };
-         localStorage.setItem('livecommerce_erp_demo_data', JSON.stringify(emptyData));
+    
+    const targetKey = enable ? 'livecommerce_erp_demo_data' : 'livecommerce_erp_data';
+    let targetData = JSON.parse(localStorage.getItem(targetKey) || 'null');
+    
+    if (!targetData) {
+      targetData = {
+        users: [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' }], 
+        currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
+        products: [], designs: [], results: [], finances: [], currentRole: 'admin'
+      };
+    }
+
+    if (currentSession) {
+      targetData.currentUser = currentSession;
+      targetData.authSignature = currentSig;
+      targetData.currentRole = currentRole;
+      
+      const userExists = targetData.users.find(u => u.id === currentSession.id);
+      if (!userExists) {
+        targetData.users.push(currentSession);
       }
     }
-    window.location.href = '/'; // Reload completely
+
+    localStorage.setItem(targetKey, JSON.stringify(targetData));
+    
+    window.location.reload();
   }
 
   resetAll() {
