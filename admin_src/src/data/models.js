@@ -14,7 +14,7 @@ export const SETTLE_STATUSES = [
   { key: 'done', label: '완료', color: 'green' },
 ];
 
-export const PLATFORMS = ['네이버', '쿠팡', '카카오', '11번가', '롯데ON', '그립', 'SSG', '기타'];
+export const PLATFORMS = ['네이버', '카카오', '쿠팡', '그립', '자사몰', '유튜브', '틱톡'];
 
 export const CATEGORIES = ['뷰티', '패션', '식품', '가전', '생활', '건강', '유아', '반려동물', '기타'];
 
