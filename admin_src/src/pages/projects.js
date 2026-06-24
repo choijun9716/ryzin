@@ -239,11 +239,8 @@ export function renderProjects() {
                   <th>플랫폼</th>
                   ` : ''}
                   ${colGroups.host ? `
-                  <th>쇼호스트A</th>
-                  <th class="text-right">금액A</th>
-                  <th>쇼호스트B</th>
-                  <th class="text-right">금액B</th>
-                  <th class="text-right">쇼호스트 총액</th>
+                  <th class="text-center">쇼호스트A</th>
+                  <th class="text-center">쇼호스트B</th>
                   ` : ''}
                   ${colGroups.result ? `
                   <th class="text-right">시청뷰</th>
@@ -273,11 +270,8 @@ export function renderProjects() {
                     <td>${p.platform || '-'}</td>
                     ` : ''}
                     ${colGroups.host ? `
-                    <td>${p.hostA ? p.hostA.name : '-'}</td>
-                    <td class="text-right">${p.hostAFee ? formatCurrencyShort(p.hostAFee) : '-'}</td>
-                    <td>${p.hostB ? p.hostB.name : '-'}</td>
-                    <td class="text-right">${p.hostBFee ? formatCurrencyShort(p.hostBFee) : '-'}</td>
-                    <td class="text-right">${p.totalHostFee ? formatCurrencyShort(p.totalHostFee) : '-'}</td>
+                    <td class="text-center">${p.hostA ? p.hostA.name : '-'}</td>
+                    <td class="text-center">${p.hostB ? p.hostB.name : '-'}</td>
                     ` : ''}
                     ${colGroups.result ? `
                     <td class="text-right">${p.result ? formatNumber(p.result.views) : '-'}</td>

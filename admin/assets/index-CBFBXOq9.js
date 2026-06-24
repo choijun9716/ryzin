@@ -709,11 +709,8 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   <th>플랫폼</th>
                   `:``}
                   ${r.host?`
-                  <th>쇼호스트A</th>
-                  <th class="text-right">금액A</th>
-                  <th>쇼호스트B</th>
-                  <th class="text-right">금액B</th>
-                  <th class="text-right">쇼호스트 총액</th>
+                  <th class="text-center">쇼호스트A</th>
+                  <th class="text-center">쇼호스트B</th>
                   `:``}
                   ${r.result?`
                   <th class="text-right">시청뷰</th>
@@ -743,11 +740,8 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                     <td>${e.platform||`-`}</td>
                     `:``}
                     ${r.host?`
-                    <td>${e.hostA?e.hostA.name:`-`}</td>
-                    <td class="text-right">${e.hostAFee?U(e.hostAFee):`-`}</td>
-                    <td>${e.hostB?e.hostB.name:`-`}</td>
-                    <td class="text-right">${e.hostBFee?U(e.hostBFee):`-`}</td>
-                    <td class="text-right">${e.totalHostFee?U(e.totalHostFee):`-`}</td>
+                    <td class="text-center">${e.hostA?e.hostA.name:`-`}</td>
+                    <td class="text-center">${e.hostB?e.hostB.name:`-`}</td>
                     `:``}
                     ${r.result?`
                     <td class="text-right">${e.result?W(e.result.views):`-`}</td>
