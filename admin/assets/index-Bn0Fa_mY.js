@@ -51,10 +51,10 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
     </div>
     <div class="page-body">
       <div class="dashboard-kpi-grid" id="kpi-grid">
-        ${Ve(`이번주 방송`,W(t.thisWeekBroadcasts)+`건`)}
-        ${Ve(`이번달 방송`,W(t.monthBroadcasts)+`건`)}
-        ${Ve(`이번달 매출`,U(t.monthRevenue))}
-        ${Ve(`정산 대기`,U(t.settleWaitAmount))}
+        ${Ve(`이번주 방송`,W(t.thisWeekBroadcasts)+`건`,`/projects`)}
+        ${Ve(`이번달 방송`,W(t.monthBroadcasts)+`건`,`/projects`)}
+        ${Ve(`이번달 매출`,U(t.monthRevenue),`/finance`)}
+        ${Ve(`정산 대기`,U(t.settleWaitAmount),`/settlement`)}
       </div>
 
       <div class="section-header">
@@ -79,8 +79,8 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         ${r.length>0?r.sort((e,t)=>(e.broadcastDate||``).localeCompare(t.broadcastDate||``)).map(e=>He(e)).join(``):Ue()}
       </div>
     </div>
-  `,setTimeout(()=>{e.querySelectorAll(`.project-card`).forEach(e=>{e.addEventListener(`click`,()=>{Ge(e.getAttribute(`data-id`))})});let t=e.querySelector(`#btn-new-project`);t&&t.addEventListener(`click`,()=>{u.navigate(`/projects/new`)});let n=e.querySelector(`#dashboard-filter`);n&&n.addEventListener(`change`,e=>{ze=e.target.value;let t=document.getElementById(`page-content`);t&&(t.innerHTML=``,t.appendChild(Be()))})},0),e}function Ve(e,t){return`
-    <div class="kpi-card">
+  `,setTimeout(()=>{e.querySelectorAll(`.kpi-card[data-route]`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(e.getAttribute(`data-route`))})}),e.querySelectorAll(`.project-card`).forEach(e=>{e.addEventListener(`click`,()=>{Ge(e.getAttribute(`data-id`))})});let t=e.querySelector(`#btn-new-project`);t&&t.addEventListener(`click`,()=>{u.navigate(`/projects/new`)});let n=e.querySelector(`#dashboard-filter`);n&&n.addEventListener(`change`,e=>{ze=e.target.value;let t=document.getElementById(`page-content`);t&&(t.innerHTML=``,t.appendChild(Be()))})},0),e}function Ve(e,t,n=null){return`
+    <div class="kpi-card" ${n?`data-route="${n}" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"`:``}>
       <div class="kpi-label">${e}</div>
       <div class="kpi-value">${t}</div>
     </div>

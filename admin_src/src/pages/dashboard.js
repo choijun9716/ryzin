@@ -36,10 +36,10 @@ export function renderDashboard() {
     </div>
     <div class="page-body">
       <div class="dashboard-kpi-grid" id="kpi-grid">
-        ${renderKPI('이번주 방송', formatNumber(kpi.thisWeekBroadcasts) + '건')}
-        ${renderKPI('이번달 방송', formatNumber(kpi.monthBroadcasts) + '건')}
-        ${renderKPI('이번달 매출', formatCurrencyShort(kpi.monthRevenue))}
-        ${renderKPI('정산 대기', formatCurrencyShort(kpi.settleWaitAmount))}
+        ${renderKPI('이번주 방송', formatNumber(kpi.thisWeekBroadcasts) + '건', '/projects')}
+        ${renderKPI('이번달 방송', formatNumber(kpi.monthBroadcasts) + '건', '/projects')}
+        ${renderKPI('이번달 매출', formatCurrencyShort(kpi.monthRevenue), '/finance')}
+        ${renderKPI('정산 대기', formatCurrencyShort(kpi.settleWaitAmount), '/settlement')}
       </div>
 
       <div class="section-header">
@@ -73,6 +73,13 @@ export function renderDashboard() {
 
   // 이벤트 바인딩
   setTimeout(() => {
+    // KPI 카드 클릭
+    container.querySelectorAll('.kpi-card[data-route]').forEach(card => {
+      card.addEventListener('click', () => {
+        router.navigate(card.getAttribute('data-route'));
+      });
+    });
+
     // 프로젝트 카드 클릭 → 상태 변경 모달
     container.querySelectorAll('.project-card').forEach(card => {
       card.addEventListener('click', () => {
@@ -106,9 +113,9 @@ export function renderDashboard() {
   return container;
 }
 
-function renderKPI(label, value) {
+function renderKPI(label, value, route = null) {
   return `
-    <div class="kpi-card">
+    <div class="kpi-card" ${route ? `data-route="${route}" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"` : ''}>
       <div class="kpi-label">${label}</div>
       <div class="kpi-value">${value}</div>
     </div>
