@@ -53,7 +53,7 @@ export function formatPhone(phone) {
 // ROI 포맷
 export function formatROI(roi) {
   if (roi === null || roi === undefined || isNaN(roi)) return '-';
-  return roi.toFixed(2);
+  return new Intl.NumberFormat('ko-KR').format(Math.round(roi * 100)) + '%';
 }
 
 // 퍼센트 포맷
