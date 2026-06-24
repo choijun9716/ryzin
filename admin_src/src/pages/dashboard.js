@@ -36,11 +36,9 @@ export function renderDashboard() {
     </div>
     <div class="page-body">
       <div class="dashboard-kpi-grid" id="kpi-grid">
-        ${renderKPI('오늘 예정 방송', formatNumber(kpi.todayBroadcasts) + '건')}
-        ${renderKPI('이번달 방송 수', formatNumber(kpi.monthBroadcasts) + '건')}
+        ${renderKPI('이번주 방송', formatNumber(kpi.thisWeekBroadcasts) + '건')}
+        ${renderKPI('이번달 방송', formatNumber(kpi.monthBroadcasts) + '건')}
         ${renderKPI('이번달 매출', formatCurrencyShort(kpi.monthRevenue))}
-        ${renderKPI('이번달 영업이익', formatCurrencyShort(kpi.monthProfit))}
-        ${renderKPI('이번달 ROI', formatROI(kpi.monthROI))}
         ${renderKPI('정산 대기', formatCurrencyShort(kpi.settleWaitAmount))}
       </div>
 

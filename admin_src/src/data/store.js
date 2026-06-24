@@ -403,28 +403,57 @@ class DataStore {
     const finances = this.getAll('finances');
     
     const now = new Date();
-    const todayStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
     const currentMonthNum = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    
+    // 이번주 날짜 계산
+    const dayOfWeek = now.getDay(); // 0(일) ~ 6(토)
+    const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); 
+    const monday = new Date(now.setDate(diffToMonday));
+    monday.setHours(0,0,0,0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23,59,59,999);
 
-    const todayBroadcasts = projects.filter(p => p.broadcastDate && p.broadcastDate.replace(/[^0-9]/g, '') === todayStr).length;
-    const monthProjects = projects.filter(p => parseInt(p.broadcastMonth, 10) === currentMonthNum);
-    const monthProjectIds = monthProjects.map(p => p.id);
-    const monthBroadcasts = monthProjects.length;
+    // 복구 (now 객체 변조 방지)
+    const trueNow = new Date();
 
+    let thisWeekBroadcasts = 0;
+    let monthProjectIds = [];
+
+    projects.forEach(p => {
+      if (!p.broadcastDate) return;
+      const bDate = new Date(p.broadcastDate.replace(/\./g, '-'));
+      if (isNaN(bDate.getTime())) return;
+      
+      // 이번달 방송 체크
+      if (bDate.getFullYear() === currentYear && (bDate.getMonth() + 1) === currentMonthNum) {
+        monthProjectIds.push(p.id);
+      }
+      
+      // 이번주 방송 체크
+      if (bDate >= monday && bDate <= sunday) {
+        thisWeekBroadcasts++;
+      }
+    });
+
+    const monthBroadcasts = monthProjectIds.length;
+
+    // 이번달 매출
     const monthResults = results.filter(r => monthProjectIds.includes(r.liveId));
-    const monthRevenue = monthResults.reduce((sum, r) => sum + (r.liveRevenue || 0), 0);
+    const monthRevenue = monthResults.reduce((sum, r) => sum + (parseInt(r.liveRevenue) || 0), 0);
 
-    const monthFinances = finances.filter(f => monthProjectIds.includes(f.liveId));
-    const monthProfit = monthFinances.reduce((sum, f) => sum + (f.operatingProfit || 0), 0);
+    // 정산대기 (settleStatus === 'wait' or 'processing')
+    // 또는 프로젝트의 상태에 따라.
+    const settleWaitIds = projects.filter(p => p.settleStatus === 'pending' || p.settleStatus === 'wait').map(p => p.id);
+    const settleWaitAmount = finances.filter(f => settleWaitIds.includes(f.liveId)).reduce((sum, f) => sum + (parseInt(f.salesRevenue) || 0), 0);
 
-    const settleWaitProjects = projects.filter(p => p.settleStatus === 'wait');
-    const settleWaitIds = settleWaitProjects.map(p => p.id);
-    const settleWaitAmount = finances.filter(f => settleWaitIds.includes(f.liveId)).reduce((sum, f) => sum + (f.salesRevenue || 0), 0);
-
-    const monthCost = monthFinances.reduce((sum, f) => sum + (f.adCost || 0) + (f.productionCost || 0) + (f.hostCost || 0) + (f.otherCost || 0), 0);
-    const monthROI = monthCost > 0 ? (monthRevenue / monthCost) : 0;
-
-    return { todayBroadcasts, monthBroadcasts, monthRevenue, monthProfit, settleWaitAmount, monthROI };
+    return {
+      thisWeekBroadcasts,
+      monthBroadcasts,
+      monthRevenue,
+      settleWaitAmount
+    };
   }
 
   calcProjectFinance(liveId) {
