@@ -28,7 +28,6 @@ export function renderSettings() {
             <h3 style="display: flex; align-items: center; gap: 8px;">
               SaaS 구독 관리
             </h3>
-            <span class="badge" style="background: ${store.isDemoMode ? 'var(--status-error)' : 'var(--text-tertiary)'}; color: white;">${store.isDemoMode ? '데모 모드 활성' : '운영 모드'}</span>
           </div>
         </div>
         <div class="card-body">
@@ -48,17 +47,6 @@ export function renderSettings() {
               <div style="font-size: var(--text-xl); font-weight: 700; color: var(--text-primary);">2026.12.31</div>
               <div style="font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--space-2);">자동 결제 설정됨</div>
             </div>
-          </div>
-          
-          <div style="display: flex; gap: var(--space-3); justify-content: space-between; align-items: center; padding-top: var(--space-4); border-top: 1px solid var(--border-color);">
-            <div style="flex: 1;">
-              <div style="font-weight: 600; font-size: var(--text-md); margin-bottom: 4px;">데모 모드 활성화 상태</div>
-              <div style="font-size: var(--text-xs); color: var(--text-tertiary);">토글 시 화면이 새로고침 되며 실제 데이터와 격리된 데모용 데이터베이스로 전환됩니다.</div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="toggle-demo-mode" ${store.isDemoMode ? 'checked' : ''}>
-              <span class="toggle-slider"></span>
-            </label>
           </div>
         </div>
       </div>
