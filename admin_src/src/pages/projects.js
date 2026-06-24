@@ -227,7 +227,7 @@ export function renderProjects() {
                 <tr>
                   ${colGroups.basic ? `
                   <th>방송 상태</th>
-                  <th>방송 제목(브랜드)</th>
+                  <th>브랜드</th>
                   <th>카테고리</th>
                   <th>방송일</th>
                   <th>시간</th>

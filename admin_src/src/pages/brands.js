@@ -58,6 +58,7 @@ export function renderBrands() {
               <thead>
                 <tr>
                   <th>브랜드명</th>
+                  <th>사업자명</th>
                   <th>카테고리</th>
                   <th>담당자</th>
                   <th>연락처</th>
@@ -73,6 +74,7 @@ export function renderBrands() {
                 ${brandsWithStats.length > 0 ? brandsWithStats.map(b => `
                   <tr class="clickable" data-id="${b.id}">
                     <td><a href="javascript:void(0)" class="brand-link" data-id="${b.id}">${b.name}</a></td>
+                    <td>${b.companyName || '-'}</td>
                     <td><span class="badge badge-default">${b.category || '-'}</span></td>
                     <td>${b.manager || '-'}</td>
                     <td>${b.phone || '-'}</td>
@@ -139,6 +141,10 @@ function openBrandModal(brandId = null) {
       <div class="input-group">
         <label class="required">브랜드명</label>
         <input class="input" id="brand-name" value="${brand.name || ''}" placeholder="브랜드명">
+      </div>
+      <div class="input-group">
+        <label>사업자명(법인명)</label>
+        <input class="input" id="brand-company" value="${brand.companyName || ''}" placeholder="사업자명">
       </div>
       <div class="input-group">
         <label>카테고리</label>
@@ -215,6 +221,7 @@ function openBrandModal(brandId = null) {
 
     const data = {
       name,
+      companyName: document.getElementById('brand-company').value.trim(),
       category: document.getElementById('brand-category').value,
       manager: document.getElementById('brand-manager').value.trim(),
       phone: document.getElementById('brand-phone').value.trim(),
@@ -286,6 +293,7 @@ export function renderBrandDetail(params) {
         <div class="card-header"><h3>기본 정보</h3></div>
         <div class="card-body">
           <div class="detail-grid">
+            <div class="detail-field"><span class="detail-field-label">사업자명</span><span class="detail-field-value">${brand.companyName || '-'}</span></div>
             <div class="detail-field"><span class="detail-field-label">카테고리</span><span class="detail-field-value">${brand.category || '-'}</span></div>
             <div class="detail-field"><span class="detail-field-label">담당자</span><span class="detail-field-value">${brand.manager || '-'}</span></div>
             <div class="detail-field"><span class="detail-field-label">연락처</span><span class="detail-field-value">${brand.phone || '-'}</span></div>

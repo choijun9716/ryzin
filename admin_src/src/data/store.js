@@ -122,6 +122,7 @@ class DataStore {
       brands.push({
         id: 'b_' + row['브랜드명'],
         name: row['브랜드명'],
+        companyName: row['사업자명'] || '',
         category: row['카테고리'] || '',
         taxInvoice: row['세금계산서여부'] === 'O' || row['세금계산서'] === '완료',
         manager: row['담당자명'] || '',
