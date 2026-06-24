@@ -52,11 +52,11 @@ export async function sendKakaoMessage(payload) {
   // 무조건 로컬 프록시 서버를 경유하도록 모의(Mock) 로직 제거됨
   
 try {
-    const sendRes = await fetch('https://good-facts-shake.loca.lt/api/popbill/send', {
+    const sendRes = await fetch('http://localhost:3001/api/popbill/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Bypass-Tunnel-Reminder': 'true'
+        
       },
       body: JSON.stringify({
         linkId: config.linkId,
