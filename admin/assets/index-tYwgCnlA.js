@@ -1862,7 +1862,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <!-- 자동 알림 대시보드 -->
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-bottom: var(--space-6);">
           
-          <div class="card" style="border-left: 4px solid var(--status-error);">
+          <div class="card">
             <div style="padding: var(--space-4);">
               <h3 style="font-size: var(--text-base); margin-bottom: 8px; color: var(--status-error);">마지막 연락 7일 경과</h3>
               <p style="font-size: var(--text-2xl); font-weight: bold; margin-bottom: 8px;">${c.length}건</p>
@@ -1872,7 +1872,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             </div>
           </div>
 
-          <div class="card" style="border-left: 4px solid var(--status-warning);">
+          <div class="card">
             <div style="padding: var(--space-4);">
               <h3 style="font-size: var(--text-base); margin-bottom: 8px; color: var(--status-warning);">견적 발송 3일 경과</h3>
               <p style="font-size: var(--text-2xl); font-weight: bold; margin-bottom: 8px;">${l.length}건</p>
@@ -1882,7 +1882,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             </div>
           </div>
 
-          <div class="card" style="border-left: 4px solid var(--status-success);">
+          <div class="card">
             <div style="padding: var(--space-4);">
               <h3 style="font-size: var(--text-base); margin-bottom: 8px; color: var(--status-success);">방송 종료 30일 경과 (재컨택)</h3>
               <p style="font-size: var(--text-2xl); font-weight: bold; margin-bottom: 8px;">${u.length}곳</p>
