@@ -7,6 +7,29 @@ import { showSuccess, showError } from '../components/toast.js';
 import { generateId, BROADCAST_STATUSES, SETTLE_STATUSES, PLATFORMS, CATEGORIES, CHECKLIST_ITEMS, getBroadcastStatusLabel, getSettleStatusLabel, HOST_ROLES, DESIGN_STATUSES } from '../data/models.js';
 import { router } from '../router.js';
 
+// Helper: Calculate deadline based on broadcast date
+function getDeadlineText(broadcastDate, statusKey) {
+  if (!broadcastDate) return '';
+  const dateStr = broadcastDate.replace(/\./g, '-');
+  const bDate = new Date(dateStr);
+  if (isNaN(bDate.getTime())) return '';
+
+  let offset = 0;
+  if (statusKey === 'design') offset = -4;
+  else if (statusKey === 'cue_sheet') offset = -5;
+  else if (statusKey === 'host_cast') offset = -7;
+  
+  if (offset === 0) return '';
+  
+  const dDate = new Date(bDate);
+  dDate.setDate(dDate.getDate() + offset);
+  
+  const mm = String(dDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(dDate.getDate()).padStart(2, '0');
+  return `<br><span style="font-size: 9px; opacity: 0.8; font-weight: normal;">(${mm}/${dd} 까지)</span>`;
+}
+
+
 export function renderProjects() {
   const container = document.createElement('div');
   let searchTerm = '';
@@ -641,8 +664,8 @@ function renderInfoTab(project, brand) {
       <div class="card-body">
         <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2);">
           ${BROADCAST_STATUSES.map(s => `
-            <button class="btn ${project.broadcastStatus === s.key ? 'btn-primary' : 'btn-secondary'} btn-sm status-change-btn" data-status="${s.key}" style="font-size: 11px;">
-              ${s.label}
+            <button class="btn ${project.broadcastStatus === s.key ? 'btn-primary' : 'btn-secondary'} btn-sm status-change-btn" data-status="${s.key}" style="font-size: 11px; padding: var(--space-1); line-height: 1.2;">
+              ${s.label}${getDeadlineText(project.broadcastDate, s.key)}
             </button>
           `).join('')}
         </div>
