@@ -578,7 +578,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   <td><a href="javascript:void(0)" class="project-link" data-id="${e.id}">${G(e.broadcastDate)||`상세보기`}</a></td>
                   <td>${e.platform||`-`}</td>
                   <td class="text-right">${t?W(t.views):`-`}</td>
-                  <td class="text-right">${t?formatCurrencyShort(t.liveRevenue):`-`}</td>
+                  <td class="text-right">${t?U(t.liveRevenue):`-`}</td>
                   <td class="text-right">${t?K(t.roi):`-`}</td>
                 </tr>`}).join(``):`<tr><td colspan="6" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">방송 이력이 없습니다.</td></tr>`}
             </tbody>

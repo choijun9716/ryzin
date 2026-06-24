@@ -1,6 +1,6 @@
 // ===== 브랜드 관리 페이지 =====
 import { store } from '../data/store.js';
-import { formatCurrency, formatNumber, formatDate, formatROI } from '../utils/format.js';
+import { formatCurrency, formatNumber, formatDate, formatROI, formatCurrencyShort } from '../utils/format.js';
 import { openModal, closeModal, confirmDialog } from '../components/modal.js';
 import { showSuccess, showError } from '../components/toast.js';
 import { generateId, CATEGORIES } from '../data/models.js';
