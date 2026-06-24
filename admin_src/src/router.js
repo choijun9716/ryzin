@@ -8,6 +8,7 @@ class Router {
     this._beforeHooks = [];
 
     window.addEventListener('popstate', () => this._handleRoute());
+    window.addEventListener('hashchange', () => this._handleRoute());
   }
 
   // 라우트 등록
@@ -28,30 +29,23 @@ class Router {
     return this;
   }
 
-  // 네비게이션
+  // 네비게이션 (해시 라우터로 변경)
   navigate(path, replace = false) {
     if (path === this._currentRoute) return;
     
-    let fullPath = path;
-    if (!fullPath.startsWith('/admin')) {
-      fullPath = '/admin' + (fullPath === '/' ? '' : fullPath);
-      if (fullPath === '/admin') fullPath = '/admin/';
-    }
+    const hashPath = '#' + path;
     
     if (replace) {
-      history.replaceState(null, '', fullPath);
+      window.location.replace(hashPath);
     } else {
-      history.pushState(null, '', fullPath);
+      window.location.hash = hashPath;
     }
     this._handleRoute();
   }
 
-  // 현재 경로
+  // 현재 경로 (해시 기준)
   getCurrentPath() {
-    let path = window.location.pathname || '/';
-    if (path.startsWith('/admin')) {
-      path = path.slice('/admin'.length);
-    }
+    let path = window.location.hash.slice(1) || '/';
     if (!path.startsWith('/')) {
       path = '/' + path;
     }
