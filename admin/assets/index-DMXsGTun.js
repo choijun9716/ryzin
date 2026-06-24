@@ -1851,13 +1851,13 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       
       <!-- SaaS 데모 (구독 관리) -->
       ${t===`admin`?`
-      <div class="card" style="margin-bottom: var(--space-5);">
-        <div class="card-header" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-light);">
+      <div class="card" style="margin-bottom: var(--space-5); ${V.isDemoMode?`border: 2px solid var(--status-error);`:``}">
+        <div class="card-header" style="${V.isDemoMode?`background: rgba(239,68,68,0.1); border-bottom: 1px solid var(--status-error);`:`background: var(--bg-secondary); border-bottom: 1px solid var(--border-light);`}">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 style="display: flex; align-items: center; gap: 8px;">
               SaaS 구독 관리 (데모)
             </h3>
-            <span class="badge" style="background: var(--text-tertiary); color: white;">Premium Plan</span>
+            <span class="badge" style="background: ${V.isDemoMode?`var(--status-error)`:`var(--text-tertiary)`}; color: white;">${V.isDemoMode?`데모 모드 활성`:`운영 모드`}</span>
           </div>
         </div>
         <div class="card-body">
@@ -1879,40 +1879,10 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             </div>
           </div>
           
-          <div style="display: flex; gap: var(--space-3); justify-content: space-between;">
-            <div>
-              <button class="btn btn-primary" onclick="alert('데모: 결제 수단 변경 창이 뜹니다.')">결제 수단 관리</button>
-              <button class="btn btn-secondary" onclick="alert('데모: 청구서 및 결제 내역 화면으로 이동합니다.')">청구서 내역</button>
-            </div>
-            <button class="btn btn-secondary" style="color: var(--status-error);" onclick="alert('데모: 구독 해지 확인 창이 뜹니다.')">구독 해지</button>
-          </div>
-        </div>
-      </div>
-      `:``}
-
-      <!-- SaaS 데모 모드 스위치 -->
-      ${t===`admin`?`
-      <div class="card" style="margin-bottom: var(--space-5); border: 2px solid ${V.isDemoMode?`var(--status-error)`:`var(--primary-color)`};">
-        <div class="card-header" style="background: ${V.isDemoMode?`rgba(239,68,68,0.1)`:`var(--bg-secondary)`}; border-bottom: 1px solid ${V.isDemoMode?`var(--status-error)`:`var(--border-light)`};">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="display: flex; align-items: center; gap: 8px;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${V.isDemoMode?`var(--status-error)`:`var(--primary-color)`}" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-              세일즈 데모 모드 설정
-            </h3>
-            <span class="badge" style="background: ${V.isDemoMode?`var(--status-error)`:`var(--text-tertiary)`}; color: white;">
-              ${V.isDemoMode?`데모 모드 활성`:`운영 모드`}
-            </span>
-          </div>
-        </div>
-        <div class="card-body">
-          <p style="font-size: var(--text-sm); color: var(--text-secondary); margin-bottom: var(--space-4); line-height: 1.5;">
-            솔루션 시연(세일즈)을 위해 <strong>실제 운영 데이터와 완전히 분리된 샌드박스 환경</strong>으로 진입합니다.<br>
-            데모 모드를 켜면 텅 빈 데이터에서 시작하며, 이곳에서 입력한 내용은 실제 구글 시트나 운영 DB에 동기화되지 않습니다.
-          </p>
-          <div style="display: flex; gap: var(--space-3); align-items: center; background: var(--bg-primary); padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+          <div style="display: flex; gap: var(--space-3); justify-content: space-between; align-items: center; padding-top: var(--space-4); border-top: 1px solid var(--border-color);">
             <div style="flex: 1;">
               <div style="font-weight: 600; font-size: var(--text-md); margin-bottom: 4px;">데모 모드 활성화 상태</div>
-              <div style="font-size: var(--text-xs); color: var(--text-tertiary);">토글 시 화면이 새로고침 되며 데이터 베이스가 전환됩니다.</div>
+              <div style="font-size: var(--text-xs); color: var(--text-tertiary);">토글 시 화면이 새로고침 되며 실제 데이터와 격리된 데모용 데이터베이스로 전환됩니다.</div>
             </div>
             <label class="toggle-switch">
               <input type="checkbox" id="toggle-demo-mode" ${V.isDemoMode?`checked`:``}>
@@ -2256,7 +2226,7 @@ Minimum version required to store current data is: `+c+`.
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`),a=document.getElementById(`otp-setup-container`),o=document.getElementById(`qrcode-box`),s=document.getElementById(`login-otp`),c=null,l=null;e&&e.addEventListener(`submit`,async e=>{e.preventDefault();let t=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value,i=V.verifyPassword(t,r);if(i){if(localStorage.getItem(`ryzin_otp_trusted_${i.id}`)===`true`){V.completeLogin(i),Y(`환영합니다.`),u.navigate(`/`);return}if(c=i,i.otpSecret||localStorage.getItem(`ryzin_otp_${t}`))a.style.display=`none`;else{l=new Sr({size:20}).base32;let e=new Tr({issuer:`Ryzin Admin`,label:t,algorithm:`SHA1`,digits:6,period:30,secret:Sr.fromBase32(l)}).toString();a.style.display=`block`;try{o.innerHTML=`
+  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`),a=document.getElementById(`otp-setup-container`),o=document.getElementById(`qrcode-box`),s=document.getElementById(`login-otp`),c=null,l=null;e&&e.addEventListener(`submit`,async e=>{e.preventDefault();let t=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value,i=V.verifyPassword(t,r);if(i){if(V.isDemoMode){V.completeLogin(i),Y(`데모 모드로 접속되었습니다.`),u.navigate(`/`);return}if(localStorage.getItem(`ryzin_otp_trusted_${i.id}`)===`true`){V.completeLogin(i),Y(`환영합니다.`),u.navigate(`/`);return}if(c=i,i.otpSecret||localStorage.getItem(`ryzin_otp_${t}`))a.style.display=`none`;else{l=new Sr({size:20}).base32;let e=new Tr({issuer:`Ryzin Admin`,label:t,algorithm:`SHA1`,digits:6,period:30,secret:Sr.fromBase32(l)}).toString();a.style.display=`block`;try{o.innerHTML=`
                 <div style="margin-bottom: 8px;">
                   <img src="${await $r.toDataURL(e,{margin:1,width:150})}" alt="QR Code" style="width: 150px; height: 150px; border-radius: 8px;">
                 </div>

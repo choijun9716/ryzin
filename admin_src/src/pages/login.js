@@ -233,6 +233,13 @@ export function renderLogin() {
         const user = store.verifyPassword(id, pw);
 
         if (user) {
+          if (store.isDemoMode) {
+            // 데모 모드에서는 OTP 생략
+            store.completeLogin(user);
+            showSuccess('데모 모드로 접속되었습니다.');
+            router.navigate('/');
+            return;
+          }
           const isTrusted = localStorage.getItem(`ryzin_otp_trusted_${user.id}`) === 'true';
           if (isTrusted) {
             store.completeLogin(user);
