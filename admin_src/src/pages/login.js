@@ -190,10 +190,7 @@ export function renderLogin() {
             <div class="login-subtitle" style="margin-bottom: 16px;">보안 강화를 위해 2단계 인증을 완료해주세요.</div>
             
             <div id="otp-setup-container" style="display: none; text-align: center; margin-bottom: 20px;">
-              <div style="font-size: 13px; color: var(--text-tertiary); background: #f1f5f9; padding: 12px; border-radius: 8px; text-align: left; line-height: 1.5;">
-                <strong>최초 1회 등록 안내</strong><br>
-                스마트폰의 Google OTP 앱을 실행하고 아래 QR 코드를 스캔하여 계정을 추가해주세요.
-              </div>
+
               <div class="otp-qrcode" id="qrcode-box"></div>
             </div>
 
@@ -203,7 +200,7 @@ export function renderLogin() {
                 <input type="text" id="login-otp" class="login-input" placeholder="6자리 숫자를 입력하세요" required maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="text-align: center; font-size: 24px; letter-spacing: 4px; font-weight: bold;">
               </div>
               <button type="submit" class="login-btn">인증 및 로그인</button>
-              <button type="button" class="btn btn-ghost" id="btn-reset-otp" style="width: 100%; margin-top: 8px; color: #ef4444;">OTP 재설정 (기기 변경 시)</button>
+
               <button type="button" class="btn btn-ghost" id="btn-back" style="width: 100%; margin-top: 8px; color: var(--text-tertiary);">뒤로 가기</button>
             </form>
           </div>
