@@ -1244,7 +1244,7 @@ function renderFinanceTab(project) {
             </div>
             <div class="stat-card">
               <div class="stat-label">마진율</div>
-              <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${finance.salesRevenue ? ((finance.netMargin || 0) / finance.salesRevenue * 100).toFixed(1) : 0}%</div>
+              <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${finance.productionCost ? ((finance.netMargin || 0) / finance.productionCost * 100).toFixed(1) : 0}%</div>
             </div>
           </div>
         </div>
@@ -1274,9 +1274,9 @@ function renderFinanceTab(project) {
         const productionCost = parseInt(document.getElementById('fin-prod').value) || 0;
         const otherCost = parseInt(document.getElementById('fin-other').value) || 0;
         const salesRevenue = parseInt(document.getElementById('fin-sales').value) || 0;
-        const operatingProfit = salesRevenue - adCost - productionCost - hostCost - otherCost;
+        const operatingProfit = salesRevenue - adCost - hostCost - otherCost;
         const vat = Math.round(salesRevenue * 0.1);
-        const netMargin = operatingProfit - vat;
+        const netMargin = operatingProfit;
 
         const data = { liveId: project.id, adCost, productionCost, hostCost, otherCost, salesRevenue, operatingProfit, vat, netMargin };
         const existing = store.getAll('finances').find(f => f.liveId === project.id);
