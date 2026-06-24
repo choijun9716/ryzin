@@ -13,18 +13,30 @@ export function renderFinance() {
   // 월별 집계
   const monthlyMap = {};
   projects.forEach(p => {
-    const m = p.broadcastMonth;
+    let m = p.broadcastMonth;
+    if (p.broadcastDate) {
+      const bDate = new Date(p.broadcastDate.replace(/\./g, '-'));
+      if (!isNaN(bDate.getTime())) {
+        m = `${bDate.getFullYear()}-${String(bDate.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
     if (!m) return;
+    
+    // Normalize old mock data without year
+    if (!m.includes('-') && m.length <= 2) {
+      m = `2026-${String(m).padStart(2, '0')}`; 
+    }
+    
     if (!monthlyMap[m]) monthlyMap[m] = { month: m, revenue: 0, profit: 0, margin: 0, count: 0 };
     monthlyMap[m].count++;
     const f = finances.find(fi => fi.liveId === p.id);
     if (f) {
-      monthlyMap[m].revenue += f.salesRevenue || 0;
-      monthlyMap[m].profit += f.operatingProfit || 0;
-      monthlyMap[m].margin += f.netMargin || 0;
+      monthlyMap[m].revenue += parseInt(f.salesRevenue) || 0;
+      monthlyMap[m].profit += parseInt(f.operatingProfit) || 0;
+      monthlyMap[m].margin += parseInt(f.netMargin) || 0;
     }
   });
-  const monthlyData = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month));
+  const monthlyData = Object.values(monthlyMap).sort((a, b) => b.month.localeCompare(a.month));
 
   // 전체 합계
   const totalRevenue = finances.reduce((s, f) => s + (f.salesRevenue || 0), 0);
