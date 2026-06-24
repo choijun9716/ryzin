@@ -26,7 +26,7 @@ export function renderSettings() {
         <div class="card-header" style="${store.isDemoMode ? 'background: rgba(239,68,68,0.1); border-bottom: 1px solid var(--status-error);' : 'background: var(--bg-secondary); border-bottom: 1px solid var(--border-light);'}">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 style="display: flex; align-items: center; gap: 8px;">
-              SaaS 구독 관리 (데모)
+              SaaS 구독 관리
             </h3>
             <span class="badge" style="background: ${store.isDemoMode ? 'var(--status-error)' : 'var(--text-tertiary)'}; color: white;">${store.isDemoMode ? '데모 모드 활성' : '운영 모드'}</span>
           </div>
