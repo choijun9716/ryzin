@@ -555,7 +555,10 @@ class DataStore {
     
     if (!targetData) {
       targetData = {
-        users: [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' }], 
+        users: [
+          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' },
+          { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'admin' }
+        ], 
         currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
         products: [], designs: [], results: [], finances: [], currentRole: 'admin'
       };
