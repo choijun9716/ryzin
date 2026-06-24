@@ -82,6 +82,7 @@ export function getAccessibleMenus() {
 
   return allMenus.filter(menu => {
     return roleConfig.permissions.some(p => {
+      if (p === '*') return true;
       if (p === menu.key) return true;
       if (p.startsWith(menu.key + '.')) return true;
       return false;
