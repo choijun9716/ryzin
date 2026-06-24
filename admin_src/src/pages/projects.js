@@ -25,8 +25,15 @@ export function renderProjects() {
       const term = searchTerm.toLowerCase();
       projects = projects.filter(p => {
         const brand = store.getById('brands', p.brandId);
-        return (brand && brand.name.toLowerCase().includes(term)) ||
-          (p.pd && p.pd.toLowerCase().includes(term));
+        
+        // Get showhosts for this project
+        const mappedHosts = store.query('liveHosts', lh => lh.liveId === p.id);
+        const hasHostMatch = mappedHosts.some(lh => {
+           const host = store.getById('hosts', lh.hostId);
+           return host && host.name.toLowerCase().includes(term);
+        });
+
+        return (brand && brand.name.toLowerCase().includes(term)) || hasHostMatch;
       });
     }
 
@@ -192,7 +199,7 @@ export function renderProjects() {
           </select>
           <div class="table-search" style="margin-left: 4px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="방송제목 (자연어) 검색..." id="project-search" value="${searchTerm}" style="background: white;">
+            <input type="text" placeholder="검색" id="project-search" value="${searchTerm}" style="background: white;">
           </div>
           ${(Object.values(filters).some(v => v) || searchTerm) ? '<button class="filter-reset" id="filter-reset">초기화</button>' : ''}
         </div>
