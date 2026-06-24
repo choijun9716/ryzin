@@ -1,16 +1,12 @@
 // ===== 데이터 모델 정의 =====
 
 export const BROADCAST_STATUSES = [
-  { key: 'new', label: '신규등록', color: 'blue' },
   { key: 'scheduled', label: '일정부킹', color: 'indigo' },
-  { key: 'pd_assigned', label: 'PD배정', color: 'purple' },
-  { key: 'product_reg', label: '상품등록', color: 'pink' },
-  { key: 'host_cast', label: '쇼호스트섭외', color: 'rose' },
+  { key: 'host_cast', label: '쇼호스트 선정', color: 'rose' },
+  { key: 'tech_request', label: '기술서요청', color: 'purple' },
   { key: 'design', label: '디자인진행', color: 'orange' },
   { key: 'cue_sheet', label: '큐시트작성', color: 'yellow' },
-  { key: 'standby', label: '방송대기', color: 'teal' },
-  { key: 'on_air', label: '온에어', color: 'red' },
-  { key: 'done', label: '방송종료', color: 'gray' },
+  { key: 'done', label: '방송종료', color: 'gray' }
 ];
 
 export const SETTLE_STATUSES = [
