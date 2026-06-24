@@ -230,12 +230,6 @@ export function renderLogin() {
         const id = document.getElementById('login-id').value.trim();
         const pw = document.getElementById('login-pw').value;
 
-        // 특별 데모 계정 하드코딩 패스
-        if (id === 'demo' && pw === 'demo') {
-          store.loginAsDemo();
-          return;
-        }
-
         const user = store.verifyPassword(id, pw);
 
         if (user) {
