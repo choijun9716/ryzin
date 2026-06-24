@@ -502,18 +502,7 @@ function openProjectCreateModal(onSave) {
 
     store.create('projects', project);
 
-    // 기본 체크리스트 생성
-    CHECKLIST_ITEMS.forEach(item => {
-      store.create('tasks', {
-        id: generateId('task'),
-        liveId: id,
-        name: item,
-        assignee: '',
-        done: false,
-        completedAt: null,
-        memo: '',
-      });
-    });
+
 
     closeModal();
     showSuccess('프로젝트가 등록되었습니다.');
@@ -578,8 +567,7 @@ export function renderProjectDetail(params) {
         <!-- 탭 -->
         <div class="tabs" style="margin-bottom: var(--space-5);">
           <div class="tab ${activeTab === 'info' ? 'active' : ''}" data-tab="info">기본정보</div>
-          <div class="tab ${activeTab === 'checklist' ? 'active' : ''}" data-tab="checklist">체크리스트</div>
-          <div class="tab ${activeTab === 'hosts' ? 'active' : ''}" data-tab="hosts">쇼호스트</div>
+                    <div class="tab ${activeTab === 'hosts' ? 'active' : ''}" data-tab="hosts">쇼호스트</div>
           <div class="tab ${activeTab === 'design' ? 'active' : ''}" data-tab="design">디자인</div>
           <div class="tab ${activeTab === 'result' ? 'active' : ''}" data-tab="result">성과</div>
           <div class="tab ${activeTab === 'finance' ? 'active' : ''}" data-tab="finance">정산</div>
@@ -593,8 +581,7 @@ export function renderProjectDetail(params) {
     const tabContent = container.querySelector('#tab-content');
     switch (activeTab) {
       case 'info': tabContent.appendChild(renderInfoTab(project, brand)); break;
-      case 'checklist': tabContent.appendChild(renderChecklistTab(project)); break;
-      case 'hosts': tabContent.appendChild(renderHostsTab(project)); break;
+            case 'hosts': tabContent.appendChild(renderHostsTab(project)); break;
       case 'design': tabContent.appendChild(renderDesignTab(project)); break;
       case 'result': tabContent.appendChild(renderResultTab(project)); break;
       case 'finance': tabContent.appendChild(renderFinanceTab(project)); break;
@@ -812,50 +799,6 @@ function openEditInfoModal(project) {
   footer.appendChild(cancelBtn);
   footer.appendChild(saveBtn);
   openModal({ title: '기본 정보 수정', size: 'lg', content, footer });
-}
-
-// ===== 탭: 체크리스트 =====
-function renderChecklistTab(project) {
-  const el = document.createElement('div');
-  const tasks = store.query('tasks', t => t.liveId === project.id);
-
-  el.innerHTML = `
-    <div class="card">
-      <div class="card-header"><h3>방송 체크리스트</h3></div>
-      <div class="card-body">
-        <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-          ${tasks.map(t => `
-            <div style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); transition: background var(--transition-fast);" class="checklist-row">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" class="task-check" data-id="${t.id}" ${t.done ? 'checked' : ''}>
-                <span style="font-size: var(--text-sm); ${t.done ? 'text-decoration: line-through; color: var(--text-disabled);' : ''}">${t.name}</span>
-              </label>
-              <span style="margin-left: auto; font-size: var(--text-xs); color: var(--text-disabled);">${t.completedAt ? formatDate(t.completedAt) : ''}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-
-  setTimeout(() => {
-    el.querySelectorAll('.task-check').forEach(check => {
-      check.addEventListener('change', () => {
-        const taskId = check.getAttribute('data-id');
-        const done = check.checked;
-        store.update('tasks', taskId, {
-          done,
-          completedAt: done ? new Date().toISOString().split('T')[0] : null,
-        });
-        showSuccess(done ? '완료 처리되었습니다.' : '미완료로 변경되었습니다.');
-        // Re-render checklist
-        const newEl = renderChecklistTab(project);
-        el.replaceWith(newEl);
-      });
-    });
-  }, 0);
-
-  return el;
 }
 
 // ===== 탭: 쇼호스트 =====
