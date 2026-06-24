@@ -55,20 +55,26 @@ class DataStore {
       const shEnc = encodeURIComponent('쇼호스트');
       const brEnc = encodeURIComponent('브랜드');
       const liveEnc = encodeURIComponent('라이브방송');
-      const [userRes, shRes, brRes, liveRes] = await Promise.all([
+      const crmClientEnc = encodeURIComponent('CRM고객');
+      const crmActEnc = encodeURIComponent('CRM활동');
+      const [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes] = await Promise.all([
         fetch(`${SHEETDB_URL}?sheet=${userEnc}`).catch(() => null),
         fetch(`${SHEETDB_URL}?sheet=${shEnc}`).catch(() => null),
         fetch(`${SHEETDB_URL}?sheet=${brEnc}`).catch(() => null),
-        fetch(`${SHEETDB_URL}?sheet=${liveEnc}`).catch(() => null)
+        fetch(`${SHEETDB_URL}?sheet=${liveEnc}`).catch(() => null),
+        fetch(`${SHEETDB_URL}?sheet=${crmClientEnc}`).catch(() => null),
+        fetch(`${SHEETDB_URL}?sheet=${crmActEnc}`).catch(() => null)
       ]);
       
       const userData = userRes && userRes.ok ? await userRes.json() : [];
       const shData = shRes && shRes.ok ? await shRes.json() : [];
       const brData = brRes && brRes.ok ? await brRes.json() : [];
       const liveData = liveRes && liveRes.ok ? await liveRes.json() : [];
+      const crmClientData = crmClientRes && crmClientRes.ok ? await crmClientRes.json() : [];
+      const crmActData = crmActRes && crmActRes.ok ? await crmActRes.json() : [];
 
-      if (userData.length || shData.length || brData.length || liveData.length) {
-        this._parseSheetData(userData, shData, brData, liveData);
+      if (userData.length || shData.length || brData.length || liveData.length || crmClientData.length || crmActData.length) {
+        this._parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData);
         this._sheetDBReady = true;
       }
       return true;
@@ -83,7 +89,7 @@ class DataStore {
     return parseInt(str.toString().replace(/,/g, ''), 10) || 0;
   }
 
-  _parseSheetData(userData, shData, brData, liveData) {
+  _parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData) {
     const users = [];
     const hosts = [];
     const brands = [];
@@ -91,6 +97,8 @@ class DataStore {
     const liveHosts = [];
     const results = [];
     const finances = [];
+    const crmClients = [];
+    const crmActivities = [];
     let lhCounter = 1;
 
     // 배열인지 확인 (SheetDB 에러 응답 방어)
@@ -98,6 +106,8 @@ class DataStore {
     const validShData = Array.isArray(shData) ? shData : [];
     const validBrData = Array.isArray(brData) ? brData : [];
     const validLiveData = Array.isArray(liveData) ? liveData : [];
+    const validCrmClientData = Array.isArray(crmClientData) ? crmClientData : [];
+    const validCrmActData = Array.isArray(crmActData) ? crmActData : [];
 
     // 사용자 파싱
     validUserData.forEach(row => {
@@ -143,6 +153,38 @@ class DataStore {
         address: row['주소'] || '',
         memo: row['메모'] || '',
         createdAt: '2025-01-01'
+      });
+    });
+
+    
+    validCrmClientData.forEach(row => {
+      if (!row['아이디']) return;
+      crmClients.push({
+        id: row['아이디'],
+        companyName: row['회사명'] || '',
+        contactName: row['담당자명'] || '',
+        phone: row['연락처'] || '',
+        email: row['이메일'] || '',
+        status: row['상태'] || '',
+        category: row['고객분류'] || '',
+        interestedService: row['관심서비스'] || '',
+        source: row['유입경로'] || '',
+        memo: row['메모'] || '',
+        lastContactDate: row['마지막연락일'] || '',
+        createdAt: row['생성일'] || ''
+      });
+    });
+
+    validCrmActData.forEach(row => {
+      if (!row['아이디']) return;
+      crmActivities.push({
+        id: row['아이디'],
+        clientId: row['고객아이디'] || '',
+        date: row['날짜'] || '',
+        type: row['유형'] || '',
+        content: row['내용'] || '',
+        followUpDate: row['팔로업예정일'] || '',
+        createdAt: row['생성일'] || ''
       });
     });
 
@@ -206,6 +248,8 @@ class DataStore {
     this._data.liveHosts = liveHosts;
     this._data.results = results;
     this._data.finances = finances;
+    this._data.crmClients = crmClients;
+    this._data.crmActivities = crmActivities;
     this._save();
   }
 
