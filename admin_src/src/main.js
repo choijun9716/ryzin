@@ -19,6 +19,7 @@ import { renderFinance } from './pages/finance.js';
 import { renderSettlement } from './pages/settlement.js';
 import { renderContracts } from './pages/contracts.js';
 import { renderMarketing } from './pages/marketing.js';
+import { renderCRM } from './pages/crm.js';
 import { renderSettings } from './pages/settings.js';
 import { renderLogin } from './pages/login.js';
 
@@ -107,6 +108,7 @@ async function initApp() {
   router.register('/settlement', () => renderSettlement());
   router.register('/contracts', () => renderContracts());
   router.register('/marketing', () => renderMarketing());
+  router.register('/crm', () => renderCRM());
   router.register('/settings', () => renderSettings());
 
   router.start();

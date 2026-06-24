@@ -13,7 +13,9 @@ class DataStore {
     this._data = {
       users: [], currentUser: null,
       hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
-      products: [], designs: [], results: [], finances: [], currentRole: 'admin',
+      products: [], designs: [], results: [], finances: [],
+      crmClients: [],
+      crmActivities: [], currentRole: 'admin',
     };
     this._listeners = {};
     this._sheetDBReady = false;
