@@ -543,6 +543,27 @@ class DataStore {
   }
 
   // 시드 리셋 (이제 사용 안 할 수 있음)
+  loginAsDemo() {
+    localStorage.setItem('ryzin_is_demo_mode', 'true');
+    let targetData = JSON.parse(localStorage.getItem('livecommerce_erp_demo_data') || 'null');
+    if (!targetData) {
+      targetData = {
+        users: [
+          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' },
+          { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'admin' }
+        ], 
+        currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
+        products: [], designs: [], results: [], finances: [], currentRole: 'admin'
+      };
+    }
+    const demoUser = targetData.users.find(u => u.id === 'demo');
+    targetData.currentUser = demoUser;
+    targetData.authSignature = CryptoJS.SHA256(demoUser.id + SECRET_SALT).toString();
+    targetData.currentRole = 'admin';
+    localStorage.setItem('livecommerce_erp_demo_data', JSON.stringify(targetData));
+    window.location.reload();
+  }
+
   toggleDemoMode(enable) {
     const currentSession = this.getCurrentUser();
     const currentSig = this._data.authSignature;
