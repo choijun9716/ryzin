@@ -43,7 +43,7 @@ class DataStore {
   async init() {
     if (this.isDemoMode) {
       if (this._data.users.length === 0) {
-        this._data.users = [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' }];
+        this._data.users = [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' }];
         this._save();
       }
       return true; // 데모 모드일 경우 시트 동기화 스킵
@@ -549,14 +549,14 @@ class DataStore {
     if (!targetData) {
       targetData = {
         users: [
-          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' },
+          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' },
           { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'admin' }
         ], 
         currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
         products: [], designs: [], results: [], finances: [], currentRole: 'admin'
       };
     }
-    const demoUser = targetData.users.find(u => u.id === 'demo');
+    const demoUser = targetData.users.find(u => u.id === 'admin');
     targetData.currentUser = demoUser;
     targetData.authSignature = CryptoJS.SHA256(demoUser.id + SECRET_SALT).toString();
     targetData.currentRole = 'admin';
@@ -577,7 +577,7 @@ class DataStore {
     if (!targetData) {
       targetData = {
         users: [
-          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' },
+          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' },
           { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'admin' }
         ], 
         currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],

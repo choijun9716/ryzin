@@ -164,7 +164,7 @@ export function renderLogin() {
             ${store.isDemoMode ? `
             <div style="background: rgba(239,68,68,0.1); color: var(--status-error); padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; text-align: center; border: 1px solid rgba(239,68,68,0.2);">
               <strong>데모 모드 접속 안내</strong><br>
-              아이디: <strong>demo</strong> / 비밀번호: <strong>demo</strong>
+              아이디: <strong>admin</strong> / 비밀번호: <strong>1234</strong>
             </div>
             ` : ''}
             <form class="login-form" id="login-form">
@@ -229,6 +229,12 @@ export function renderLogin() {
         e.preventDefault();
         const id = document.getElementById('login-id').value.trim();
         const pw = document.getElementById('login-pw').value;
+
+        // 데모 환경 다이렉트 패스
+        if (id === 'admin' && pw === '1234') {
+          store.loginAsDemo();
+          return;
+        }
 
         const user = store.verifyPassword(id, pw);
 
