@@ -2,12 +2,14 @@
 import { getBroadcastStatus, getSettleStatus, getBroadcastStatusLabel, getSettleStatusLabel } from './models.js';
 import CryptoJS from 'crypto-js';
 
-const STORAGE_KEY = 'livecommerce_erp_data';
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
 const SECRET_SALT = 'ryzin_super_secret_salt_2026';
 
 class DataStore {
   constructor() {
+    this.isDemoMode = localStorage.getItem('ryzin_is_demo_mode') === 'true';
+    this.STORAGE_KEY = this.isDemoMode ? 'livecommerce_erp_demo_data' : 'livecommerce_erp_data';
+
     this._data = {
       users: [], currentUser: null,
       hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
@@ -20,7 +22,7 @@ class DataStore {
 
   _load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(this.STORAGE_KEY);
       if (raw) {
         this._data = { ...this._data, ...JSON.parse(raw) };
       }
@@ -31,7 +33,7 @@ class DataStore {
 
   _save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this._data));
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this._data));
     } catch (e) {
       console.warn('데이터 저장 실패:', e);
     }
@@ -39,6 +41,13 @@ class DataStore {
 
   // --- SheetDB 초기 로딩 ---
   async init() {
+    if (this.isDemoMode) {
+      if (this._data.users.length === 0) {
+        this._data.users = [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' }];
+        this._save();
+      }
+      return true; // 데모 모드일 경우 시트 동기화 스킵
+    }
     try {
       const userEnc = encodeURIComponent('사용자');
       const shEnc = encodeURIComponent('쇼호스트');
@@ -521,7 +530,7 @@ class DataStore {
     this._data.authSignature = null;
     this._save();
     this._emit('auth:logout');
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(this.STORAGE_KEY);
   }
 
   updateUser(user) {
@@ -534,8 +543,24 @@ class DataStore {
   }
 
   // 시드 리셋 (이제 사용 안 할 수 있음)
+  toggleDemoMode(enable) {
+    localStorage.setItem('ryzin_is_demo_mode', enable ? 'true' : 'false');
+    if (enable) {
+      // Initialize demo data if empty
+      if (!localStorage.getItem('livecommerce_erp_demo_data')) {
+         const emptyData = {
+           users: [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('admin').toString(), role: 'admin' }], 
+           currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
+           products: [], designs: [], results: [], finances: [], currentRole: 'admin'
+         };
+         localStorage.setItem('livecommerce_erp_demo_data', JSON.stringify(emptyData));
+      }
+    }
+    window.location.href = '/'; // Reload completely
+  }
+
   resetAll() {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(this.STORAGE_KEY);
     this._data = { users: [], currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], products: [], designs: [], results: [], finances: [], currentRole: 'admin' };
     this._emit('data:reset');
     this.init(); // 다시 패치 시도
