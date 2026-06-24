@@ -71,6 +71,7 @@ export function getAccessibleMenus() {
     { key: 'settlement', label: '정산 관리' },
     { key: 'contracts', label: '계약 관리' },
     { key: 'marketing', label: '마케팅 메시지' },
+    { key: 'crm', label: '영업 CRM' },
     { key: 'settings', label: '설정' },
   ];
 
