@@ -91,7 +91,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="project-card-header">
         <div>
           <div class="project-card-header">
-            <span class="project-card-brand">${n} <span style="font-weight:normal; font-size: 12px; color: var(--text-secondary);">| ${e.title||`제목없음`}</span></span>
+            <span class="project-card-brand">${n}</span>
             <div style="display:flex; gap: 4px;">
               ${je(e.broadcastStatus)}
             </div>
@@ -139,7 +139,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
     </div>
   `}function Ge(e){let t=V.getById(`projects`,e);if(!t)return;let n=V.getById(`brands`,t.brandId),r=t.brandName||(n?n.name:`-`),i=document.createElement(`div`);i.innerHTML=`
     <div style="margin-bottom: var(--space-5);">
-      <div style="font-size: var(--text-md); font-weight: var(--weight-semibold); margin-bottom: var(--space-1);">${r} <span style="font-weight:normal; font-size: 14px; color: var(--text-secondary);">| ${t.title||`제목없음`}</span></div>
+      <div style="font-size: var(--text-md); font-weight: var(--weight-semibold); margin-bottom: var(--space-1);">${r}</div>
       <div style="font-size: var(--text-sm); color: var(--text-tertiary);">${G(t.broadcastDate)}</div>
     </div>
     <div style="margin-bottom: var(--space-4);">
