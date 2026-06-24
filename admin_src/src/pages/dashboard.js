@@ -128,6 +128,21 @@ function renderProjectCard(project) {
   else if (project.broadcastStatus === 'cue_sheet') progress = 90;
   else if (project.broadcastStatus === 'done') progress = 100;
 
+    let ddayText = '';
+  if (project.broadcastStatus === 'done') {
+    ddayText = 'D-0';
+  } else if (project.broadcastDate) {
+    const bDate = new Date(project.broadcastDate.replace(/\./g, '-'));
+    if (!isNaN(bDate.getTime())) {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const diffDays = Math.ceil((bDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) ddayText = 'D-Day';
+      else if (diffDays > 0) ddayText = `D-${diffDays}`;
+      else ddayText = `D+${Math.abs(diffDays)}`;
+    }
+  }
+
   // 쇼호스트
   const matchings = store.query('liveHosts', m => m.liveId === project.id);
   const hostNames = matchings.map(m => {
@@ -137,15 +152,12 @@ function renderProjectCard(project) {
 
   return `
     <div class="project-card" data-id="${project.id}">
-      <div class="project-card-header">
-        <div>
-          <div class="project-card-header">
-            <span class="project-card-brand">${brandName}</span>
-            <div style="display:flex; gap: 4px;">
-              ${renderBroadcastBadge(project.broadcastStatus)}
-            </div>
-          </div>
+      <div class="project-card-header" style="justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+        <div style="display:flex; align-items:center; gap: 8px;">
+          <span class="project-card-brand">${brandName}</span>
+          ${renderBroadcastBadge(project.broadcastStatus)}
         </div>
+        ${ddayText ? `<div style="font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.05); color: var(--text-secondary);">${ddayText}</div>` : ''}
       </div>
       <div class="project-card-meta">
         <div class="project-card-meta-item">

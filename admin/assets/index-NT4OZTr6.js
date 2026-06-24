@@ -86,17 +86,14 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="kpi-label">${e}</div>
       <div class="kpi-value">${t}</div>
     </div>
-  `}function Ve(e){let t=V.getById(`brands`,e.brandId),n=e.brandName||(t?t.name:`-`),r=0;e.broadcastStatus===`scheduled`?r=20:e.broadcastStatus===`host_cast`?r=40:e.broadcastStatus===`tech_request`?r=60:e.broadcastStatus===`design`?r=80:e.broadcastStatus===`cue_sheet`?r=90:e.broadcastStatus===`done`&&(r=100);let i=V.query(`liveHosts`,t=>t.liveId===e.id).map(e=>{let t=V.getById(`hosts`,e.hostId);return t?t.name:`-`}).join(`, `);return`
+  `}function Ve(e){let t=V.getById(`brands`,e.brandId),n=e.brandName||(t?t.name:`-`),r=0;e.broadcastStatus===`scheduled`?r=20:e.broadcastStatus===`host_cast`?r=40:e.broadcastStatus===`tech_request`?r=60:e.broadcastStatus===`design`?r=80:e.broadcastStatus===`cue_sheet`?r=90:e.broadcastStatus===`done`&&(r=100);let i=``;if(e.broadcastStatus===`done`)i=`D-0`;else if(e.broadcastDate){let t=new Date(e.broadcastDate.replace(/\./g,`-`));if(!isNaN(t.getTime())){let e=new Date;e.setHours(0,0,0,0);let n=Math.ceil((t.getTime()-e.getTime())/(1e3*60*60*24));i=n===0?`D-Day`:n>0?`D-${n}`:`D+${Math.abs(n)}`}}let a=V.query(`liveHosts`,t=>t.liveId===e.id).map(e=>{let t=V.getById(`hosts`,e.hostId);return t?t.name:`-`}).join(`, `);return`
     <div class="project-card" data-id="${e.id}">
-      <div class="project-card-header">
-        <div>
-          <div class="project-card-header">
-            <span class="project-card-brand">${n}</span>
-            <div style="display:flex; gap: 4px;">
-              ${ke(e.broadcastStatus)}
-            </div>
-          </div>
+      <div class="project-card-header" style="justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+        <div style="display:flex; align-items:center; gap: 8px;">
+          <span class="project-card-brand">${n}</span>
+          ${ke(e.broadcastStatus)}
         </div>
+        ${i?`<div style="font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.05); color: var(--text-secondary);">${i}</div>`:``}
       </div>
       <div class="project-card-meta">
         <div class="project-card-meta-item">
@@ -111,10 +108,10 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <span class="project-card-meta-label">플랫폼</span>
           <span>${e.platform||`-`}</span>
         </div>
-        ${i?`
+        ${a?`
         <div class="project-card-meta-item">
           <span class="project-card-meta-label">쇼호스트</span>
-          <span>${i}</span>
+          <span>${a}</span>
         </div>
         `:``}
       </div>
