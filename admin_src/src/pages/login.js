@@ -225,7 +225,7 @@ export function renderLogin() {
         const pw = document.getElementById('login-pw').value;
 
         // 데모 환경 다이렉트 패스
-        if (id === 'admin' && pw === '1234') {
+        if (id.toLowerCase() === 'admin' && pw.trim() === '1234') {
           store.loginAsDemo();
           return;
         }
