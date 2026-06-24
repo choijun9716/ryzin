@@ -55,7 +55,8 @@ try {
     const sendRes = await fetch('https://good-facts-shake.loca.lt/api/popbill/send', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Bypass-Tunnel-Reminder': 'true'
       },
       body: JSON.stringify({
         linkId: config.linkId,
