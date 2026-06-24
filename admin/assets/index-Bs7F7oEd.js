@@ -572,9 +572,9 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <tr><th>진행상태</th><th>방송일</th><th>플랫폼</th><th class="text-right">시청뷰</th><th class="text-right">매출</th><th class="text-right">ROI</th></tr>
             </thead>
             <tbody>
-              ${i.length>0?i.map(e=>{let t=V.getProjectResult(e.id);return`
+              ${i.length>0?i.map(e=>{let t=V.getAll(`results`).find(t=>t.liveId===e.id);return`
                 <tr class="clickable" data-id="${e.id}">
-                  <td>${Ne(e.status)}</td>
+                  <td>${Ne(e.broadcastStatus)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${e.id}">${G(e.broadcastDate)||`상세보기`}</a></td>
                   <td>${e.platform||`-`}</td>
                   <td class="text-right">${t?W(t.views):`-`}</td>

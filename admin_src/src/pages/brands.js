@@ -315,10 +315,10 @@ export function renderBrandDetail(params) {
             </thead>
             <tbody>
               ${projects.length > 0 ? projects.map(p => {
-                const result = store.getProjectResult(p.id);
+                const result = store.getAll('results').find(r => r.liveId === p.id);
                 return `
                 <tr class="clickable" data-id="${p.id}">
-                  <td>${renderStatusBadge(p.status)}</td>
+                  <td>${renderStatusBadge(p.broadcastStatus)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${p.id}">${formatDate(p.broadcastDate) || '상세보기'}</a></td>
                   <td>${p.platform || '-'}</td>
                   <td class="text-right">${result ? formatNumber(result.views) : '-'}</td>
