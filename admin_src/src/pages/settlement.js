@@ -22,7 +22,8 @@ export function renderSettlement() {
       brandReceivablesMap[brandId] = { brandName, count: 0, amount: 0, projects: [] };
     }
     const finance = finances.find(f => f.liveId === p.id);
-    const revenue = finance ? (finance.salesRevenue || 0) : 0;
+    const salesRev = finance ? (finance.salesRevenue || 0) : 0;
+    const revenue = salesRev + Math.round(salesRev * 0.1); // 영업매출액 + 부가세(10%)
     
     brandReceivablesMap[brandId].count++;
     brandReceivablesMap[brandId].amount += revenue;
