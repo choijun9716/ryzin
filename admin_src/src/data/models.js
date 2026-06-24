@@ -33,11 +33,11 @@ export const CRM_CATEGORIES = [
 ];
 
 export const ACTIVITY_TYPES = [
-  { key: 'kakao', label: '카카오톡', icon: '💬' },
-  { key: 'phone', label: '전화', icon: '📞' },
-  { key: 'sms', label: '문자', icon: '📱' },
-  { key: 'email', label: '이메일', icon: '✉️' },
-  { key: 'meeting', label: '미팅', icon: '🤝' },
+  { key: 'kakao', label: '카카오톡', icon: '' },
+  { key: 'phone', label: '전화', icon: '' },
+  { key: 'sms', label: '문자', icon: '' },
+  { key: 'email', label: '이메일', icon: '' },
+  { key: 'meeting', label: '미팅', icon: '' },
 ];
 
 export const CATEGORIES = ['뷰티', '패션', '식품', '가전', '생활', '건강', '유아', '반려동물', '기타'];
