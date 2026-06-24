@@ -60,6 +60,11 @@ export function renderSidebar() {
       </div>
     </nav>
     <div class="sidebar-footer">
+      ${store.isDemoMode ? `
+      <div style="font-size: 11px; color: var(--status-error); text-align: center; margin-bottom: var(--space-3); font-weight: 600; background: rgba(239,68,68,0.1); padding: 6px; border-radius: var(--radius-sm); border: 1px dashed rgba(239,68,68,0.3);">
+        데모 샌드박스 활성화됨
+      </div>
+      ` : ''}
       <div class="sidebar-user">
         <div class="sidebar-user-avatar">${userName[0]}</div>
         <div class="sidebar-user-info">
