@@ -227,9 +227,16 @@ export function renderLogin() {
         const user = store.verifyPassword(id, pw);
 
         if (user) {
+          const isTrusted = localStorage.getItem(`ryzin_otp_trusted_${user.id}`) === 'true';
+          if (isTrusted) {
+            store.completeLogin(user);
+            showSuccess('환영합니다.');
+            router.navigate('/');
+            return;
+          }
           pendingUser = user;
           
-          const savedSecret = localStorage.getItem(`ryzin_otp_${id}`);
+          const savedSecret = user.otpSecret || localStorage.getItem(`ryzin_otp_${id}`);
           
           if (!savedSecret) {
             newSecret = new OTPAuth.Secret({ size: 20 }).base32;
@@ -275,7 +282,7 @@ export function renderLogin() {
         if (!pendingUser) return;
         
         const token = otpInput.value.trim();
-        const savedSecret = localStorage.getItem(`ryzin_otp_${pendingUser.id}`);
+        const savedSecret = pendingUser.otpSecret || localStorage.getItem(`ryzin_otp_${pendingUser.id}`);
         const secretToUse = savedSecret || newSecret;
         
         try {
@@ -292,7 +299,10 @@ export function renderLogin() {
           if (delta !== null) {
             if (!savedSecret && newSecret) {
               localStorage.setItem(`ryzin_otp_${pendingUser.id}`, newSecret);
+              pendingUser.otpSecret = newSecret;
+              store.updateUser(pendingUser);
             }
+            localStorage.setItem(`ryzin_otp_trusted_${pendingUser.id}`, 'true');
             
             store.completeLogin(pendingUser);
             showSuccess('OTP 인증 성공! 환영합니다.');

@@ -49,49 +49,37 @@ export async function getTemplates() {
 export async function sendKakaoMessage(payload) {
   const config = getPopbillConfig();
   
-  // 연동 정보가 없으면 모의(Mock)로 성공 처리
-  if (!config.linkId || !config.secretKey) {
-    console.warn('팝빌 API 정보가 설정되지 않아 모의(Mock) 발송으로 처리됩니다.');
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          isMock: true,
-          receiptNum: 'mock_receipt_' + Date.now(),
-          message: `${payload.receivers.length}건 발송 요청 완료 (모의)`
-        });
-      }, 1000);
-    });
-  }
-
-  // 실제 팝빌 API 연동부 (CORS 및 인증 처리 필요)
-  // 프론트엔드 직접 호출은 권장되지 않으나 구조를 위해 뼈대를 잡아둡니다.
-  try {
-    /* 
-    const response = await fetch(`${POPBILL_API_URL}/KakaoTalk/Send`, {
+  // 무조건 로컬 프록시 서버를 경유하도록 모의(Mock) 로직 제거됨
+  
+try {
+    const sendRes = await fetch('http://localhost:3001/api/popbill/send', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer [팝빌 토큰]` // 별도 토큰 발급 과정 필요
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        Sender: config.senderNumber,
-        Messages: payload.receivers.map(r => ({
-          Receiver: r.number,
-          ReceiverName: r.name,
-          Message: payload.content
-        Message: payload.msgType === 'alimtalk' ? '[알림톡 모의전송]' : payload.content
+        linkId: config.linkId,
+        secretKey: config.secretKey,
+        senderNumber: config.senderNumber,
+        payload: payload
       })
     });
-    return await response.json();
-    */
 
-    console.log('팝빌 전송 페이로드:', payload);
+    if (!sendRes.ok) {
+      const errData = await sendRes.json().catch(()=>({}));
+      throw new Error(errData.message || '메시지 전송 실패');
+    }
 
-    // 임시로 성공 처리
+    const sendData = await sendRes.json();
+    if (!sendData.success) {
+      throw new Error(sendData.message || '메시지 전송 실패');
+    }
+
+    console.log('팝빌 전송 결과:', sendData);
+
     return {
       success: true,
-      receiptNum: 'live_receipt_' + Date.now(),
+      receiptNum: sendData.receiptNum,
       message: '발송 완료'
     };
 

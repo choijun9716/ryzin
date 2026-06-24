@@ -12,9 +12,12 @@
     "vite": "^8.0.12"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "crypto-js": "^4.2.0",
+    "express": "^5.2.1",
     "otpauth": "^9.5.1",
     "otplib": "^13.4.1",
+    "popbill": "^1.64.2",
     "qrcode": "^1.5.4"
   }
 }

@@ -96,6 +96,7 @@ class DataStore {
         password: row['비밀번호'] || '',
         name: row['이름'] || '',
         role: row['권한'] || 'pd',
+        otpSecret: row['OTP키'] || ''
       });
     });
 
@@ -206,7 +207,7 @@ class DataStore {
 
       const userEnc = encodeURIComponent('사용자');
       if (collection === 'users') {
-        const row = { '아이디': item.id, '비밀번호': item.password, '이름': item.name, '권한': item.role };
+        const row = { '아이디': item.id, '비밀번호': item.password, '이름': item.name, '권한': item.role, 'OTP키': item.otpSecret || '' };
         endpoint = `?sheet=${userEnc}`;
         if (action === 'update') { method = 'PUT'; endpoint = `/아이디/${item.id}?sheet=${userEnc}`; }
         if (action === 'delete') { method = 'DELETE'; endpoint = `/아이디/${item.id}?sheet=${userEnc}`; }
@@ -490,6 +491,16 @@ class DataStore {
     this._data.authSignature = null;
     this._save();
     this._emit('auth:logout');
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  updateUser(user) {
+    const idx = (this._data.users || []).findIndex(u => u.id === user.id);
+    if (idx !== -1) {
+      this._data.users[idx] = user;
+      this._save();
+      this._syncToSheetDB('users', 'update', user);
+    }
   }
 
   // 시드 리셋 (이제 사용 안 할 수 있음)
