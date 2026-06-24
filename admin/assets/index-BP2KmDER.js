@@ -579,7 +579,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>u.navigate(`/brands`)),t.querySelector(`#btn-edit-brand`)?.addEventListener(`click`,()=>Qe(n.id)),t.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),t}function et(){let e=document.createElement(`div`),t=``,n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},r={basic:!0,host:!0,result:!1,finance:!1},i=`list`,a=new Date;function o(){let s=V.getAll(`projects`),c=V.getAll(`brands`);if(V.getAll(`hosts`),t){let e=t.toLowerCase();s=s.filter(t=>{let n=V.getById(`brands`,t.brandId);return n&&n.name.toLowerCase().includes(e)||t.pd&&t.pd.toLowerCase().includes(e)})}n.status&&(s=s.filter(e=>e.broadcastStatus===n.status)),n.brand&&(s=s.filter(e=>e.brandId===n.brand)),n.platform&&(s=s.filter(e=>e.platform===n.platform)),n.month&&(s=s.filter(e=>e.broadcastMonth===n.month||e.broadcastDate&&e.broadcastDate.startsWith(n.month.replace(`-`,`.`))||e.broadcastDate&&e.broadcastDate.startsWith(n.month)?!0:e.broadcastMonth&&e.broadcastMonth.length<=2?parseInt(e.broadcastMonth,10)===parseInt(n.month.split(`-`)[1],10):!1)),n.category&&(s=s.filter(e=>e.category===n.category)),s.sort((e,t)=>(t.broadcastDate||``).localeCompare(e.broadcastDate||``));let l=s.map(e=>{let t=V.getById(`brands`,e.brandId),n=V.query(`liveHosts`,t=>t.liveId===e.id),r=V.getAll(`results`).find(t=>t.liveId===e.id),i=V.getAll(`finances`).find(t=>t.liveId===e.id),a=n[0]?V.getById(`hosts`,n[0].hostId):null,o=n[1]?V.getById(`hosts`,n[1].hostId):null,s=n.reduce((e,t)=>e+(t.fee||0),0),c=n.length>0&&n.every(e=>e.settleStatus===`done`)?`완료`:n.some(e=>e.settleStatus===`done`)?`일부완료`:`대기`;return{...e,brand:t,matchings:n,result:r,finance:i,hostA:a,hostB:o,totalHostFee:s,settleLabel:c,hostAFee:n[0]?.fee||0,hostBFee:n[1]?.fee||0}});[...new Set(V.getAll(`projects`).map(e=>e.broadcastMonth).filter(Boolean))].sort().reverse();function f(e){let t=a.getFullYear(),n=a.getMonth(),r=new Date(t,n,1).getDay(),i=new Date(t,n+1,0).getDate(),o=new Date,s=o.getFullYear()===t&&o.getMonth()===n,c=``;for(let e=0;e<r;e++)c+=`<div class="calendar-day empty"></div>`;for(let r=1;r<=i;r++){let i=`${t}-${String(n+1).padStart(2,`0`)}-${String(r).padStart(2,`0`)}`,a=e.filter(e=>e.broadcastDate===i),l=s&&o.getDate()===r,u=a.map(e=>{let t=`#e2e8f0`,n=`#475569`;return e.broadcastStatus===`ready`?(t=`#dbeafe`,n=`#2563eb`):e.broadcastStatus===`live`?(t=`#fee2e2`,n=`#dc2626`):e.broadcastStatus===`done`?(t=`#dcfce3`,n=`#16a34a`):e.broadcastStatus===`cancel`&&(t=`#f1f5f9`,n=`#64748b`),`
+  `,setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>u.navigate(`/brands`)),t.querySelector(`#btn-edit-brand`)?.addEventListener(`click`,()=>Qe(n.id)),t.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),t}function et(){let e=document.createElement(`div`),t=``,n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},r={basic:!0,host:!0,result:!1,finance:!1},i=`list`,a=new Date;function o(){let s=V.getAll(`projects`);if(V.getAll(`brands`),V.getAll(`hosts`),t){let e=t.toLowerCase();s=s.filter(t=>{let n=V.getById(`brands`,t.brandId);return n&&n.name.toLowerCase().includes(e)||t.pd&&t.pd.toLowerCase().includes(e)})}n.status&&(s=s.filter(e=>e.broadcastStatus===n.status)),n.brand&&(s=s.filter(e=>e.brandId===n.brand)),n.platform&&(s=s.filter(e=>e.platform===n.platform)),n.month&&(s=s.filter(e=>e.broadcastMonth===n.month||e.broadcastDate&&e.broadcastDate.startsWith(n.month.replace(`-`,`.`))||e.broadcastDate&&e.broadcastDate.startsWith(n.month)?!0:e.broadcastMonth&&e.broadcastMonth.length<=2?parseInt(e.broadcastMonth,10)===parseInt(n.month.split(`-`)[1],10):!1)),n.category&&(s=s.filter(e=>e.category===n.category)),s.sort((e,t)=>(t.broadcastDate||``).localeCompare(e.broadcastDate||``));let c=s.map(e=>{let t=V.getById(`brands`,e.brandId),n=V.query(`liveHosts`,t=>t.liveId===e.id),r=V.getAll(`results`).find(t=>t.liveId===e.id),i=V.getAll(`finances`).find(t=>t.liveId===e.id),a=n[0]?V.getById(`hosts`,n[0].hostId):null,o=n[1]?V.getById(`hosts`,n[1].hostId):null,s=n.reduce((e,t)=>e+(t.fee||0),0),c=n.length>0&&n.every(e=>e.settleStatus===`done`)?`완료`:n.some(e=>e.settleStatus===`done`)?`일부완료`:`대기`;return{...e,brand:t,matchings:n,result:r,finance:i,hostA:a,hostB:o,totalHostFee:s,settleLabel:c,hostAFee:n[0]?.fee||0,hostBFee:n[1]?.fee||0}});[...new Set(V.getAll(`projects`).map(e=>e.broadcastMonth).filter(Boolean))].sort().reverse();function l(e){let t=a.getFullYear(),n=a.getMonth(),r=new Date(t,n,1).getDay(),i=new Date(t,n+1,0).getDate(),o=new Date,s=o.getFullYear()===t&&o.getMonth()===n,c=``;for(let e=0;e<r;e++)c+=`<div class="calendar-day empty"></div>`;for(let r=1;r<=i;r++){let i=`${t}-${String(n+1).padStart(2,`0`)}-${String(r).padStart(2,`0`)}`,a=e.filter(e=>e.broadcastDate===i),l=s&&o.getDate()===r,u=a.map(e=>{let t=`#e2e8f0`,n=`#475569`;return e.broadcastStatus===`ready`?(t=`#dbeafe`,n=`#2563eb`):e.broadcastStatus===`live`?(t=`#fee2e2`,n=`#dc2626`):e.broadcastStatus===`done`?(t=`#dcfce3`,n=`#16a34a`):e.broadcastStatus===`cancel`&&(t=`#f1f5f9`,n=`#64748b`),`
             <div class="calendar-project-block clickable" data-id="${e.id}" style="background-color: ${t}; color: ${n}; border-left: 3px solid ${n};">
               <div class="cp-time">${e.broadcastTime||`-`}</div>
               <div class="cp-brand">${e.brandName||(e.brand?e.brand.name:`-`)}</div>
@@ -627,7 +627,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             ${c}
           </div>
         </div>
-      `}let h=`
+      `}let f=`
       <div class="page-header">
         <div class="page-header-left">
           <div>
@@ -645,27 +645,26 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             신규 등록
           </button>
         </div>
-      </div>`,g=``;g=i===`list`?`
+      </div>`,h=``;h=i===`list`?`
         <!-- 필터바 -->
         <div class="filter-bar">
           <select class="filter-select ${n.status?`active`:``}" id="filter-status">
             <option value="">진행상태</option>
             ${d.map(e=>`<option value="${e.key}" ${n.status===e.key?`selected`:``}>${e.label}</option>`).join(``)}
           </select>
-          <select class="filter-select ${n.brand?`active`:``}" id="filter-brand">
-            <option value="">브랜드</option>
-            ${c.map(e=>`<option value="${e.id}" ${n.brand===e.id?`selected`:``}>${e.name}</option>`).join(``)}
+          <select class="filter-select ${n.category?`active`:``}" id="filter-category">
+            <option value="">카테고리</option>
+            ${m.map(e=>`<option value="${e}" ${n.category===e?`selected`:``}>${e}</option>`).join(``)}
           </select>
           <select class="filter-select ${n.platform?`active`:``}" id="filter-platform">
             <option value="">플랫폼</option>
             ${p.map(e=>`<option value="${e}" ${n.platform===e?`selected`:``}>${e}</option>`).join(``)}
           </select>
-          <input type="month" class="filter-select ${n.month?`active`:``}" id="filter-month" value="${n.month||``}" style="width: auto;">
-          <select class="filter-select ${n.category?`active`:``}" id="filter-category">
-            <option value="">카테고리</option>
-            ${m.map(e=>`<option value="${e}" ${n.category===e?`selected`:``}>${e}</option>`).join(``)}
-          </select>
-          ${Object.values(n).some(e=>e)?`<button class="filter-reset" id="filter-reset">초기화</button>`:``}
+          <div class="table-search" style="margin-left: 4px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="방송제목 (자연어) 검색..." id="project-search" value="${t}" style="background: white;">
+          </div>
+          ${Object.values(n).some(e=>e)||t?`<button class="filter-reset" id="filter-reset">초기화</button>`:``}
         </div>
 
         <!-- 테이블 -->
@@ -673,11 +672,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <div class="table-toolbar">
             <div class="table-toolbar-left" style="display: flex; align-items: center; gap: var(--space-4);">
               <div style="display: flex; align-items: center; gap: var(--space-2);">
-                <div class="table-search">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input type="text" placeholder="브랜드, PD 검색..." id="project-search" value="${t}">
-                </div>
-                <span class="table-count">총 <strong>${l.length}</strong>건</span>
+                <span class="table-count" style="margin-right: 8px;">총 <strong>${c.length}</strong>건</span>
               </div>
               <div style="display: flex; gap: var(--space-3); align-items: center; font-size: var(--text-sm); margin-left: var(--space-2);">
                 <span style="color: var(--text-tertiary); font-weight: var(--weight-medium);">표시 항목:</span>
@@ -709,8 +704,8 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   <th>플랫폼</th>
                   `:``}
                   ${r.host?`
-                  <th class="text-center">쇼호스트A</th>
-                  <th class="text-center">쇼호스트B</th>
+                  <th class="text-center" style="text-align: center;">쇼호스트A</th>
+                  <th class="text-center" style="text-align: center;">쇼호스트B</th>
                   `:``}
                   ${r.result?`
                   <th class="text-right">시청뷰</th>
@@ -729,7 +724,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                 </tr>
               </thead>
               <tbody>
-                ${l.length>0?l.map(e=>`
+                ${c.length>0?c.map(e=>`
                   <tr class="clickable" data-id="${e.id}">
                     ${r.basic?`
                     <td>${je(e.broadcastStatus)}</td>
@@ -740,8 +735,8 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                     <td>${e.platform||`-`}</td>
                     `:``}
                     ${r.host?`
-                    <td class="text-center">${e.hostA?e.hostA.name:`-`}</td>
-                    <td class="text-center">${e.hostB?e.hostB.name:`-`}</td>
+                    <td class="text-center" style="text-align: center;">${e.hostA?e.hostA.name:`-`}</td>
+                    <td class="text-center" style="text-align: center;">${e.hostB?e.hostB.name:`-`}</td>
                     `:``}
                     ${r.result?`
                     <td class="text-right">${e.result?W(e.result.views):`-`}</td>
@@ -763,7 +758,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             </table>
           </div>
         </div>
-      `:f(l),e.innerHTML=h+`<div class="page-body">`+g+`</div>`,setTimeout(()=>{e.querySelector(`#btn-view-list`)?.addEventListener(`click`,()=>{i!==`list`&&(i=`list`,o())}),e.querySelector(`#btn-view-calendar`)?.addEventListener(`click`,()=>{i!==`calendar`&&(i=`calendar`,o())}),e.querySelector(`#btn-prev-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()-1),o()}),e.querySelector(`#btn-next-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()+1),o()}),e.querySelectorAll(`.calendar-project-block`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelector(`#project-search`)?.addEventListener(`input`,e=>{t=e.target.value,o();let n=document.getElementById(`project-search`);if(n){n.focus();let e=n.value.length;n.setSelectionRange(e,e)}}),[`status`,`brand`,`platform`,`month`,`category`].forEach(t=>{e.querySelector(`#filter-${t}`)?.addEventListener(`change`,e=>{n[t]=e.target.value,o()})}),[`basic`,`host`,`result`,`finance`].forEach(t=>{e.querySelector(`#toggle-col-${t}`)?.addEventListener(`change`,e=>{r[t]=e.target.checked,o()})}),e.querySelector(`#filter-reset`)?.addEventListener(`click`,()=>{n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},t=``,o()}),e.querySelector(`#btn-new-project`)?.addEventListener(`click`,()=>{tt(()=>o())}),e.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),t.stopPropagation(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0)}return o(),V.on(`projects:changed`,o),e}function tt(e){let t=V.getAll(`brands`),n=`
+      `:l(c),e.innerHTML=f+`<div class="page-body">`+h+`</div>`,setTimeout(()=>{e.querySelector(`#btn-view-list`)?.addEventListener(`click`,()=>{i!==`list`&&(i=`list`,o())}),e.querySelector(`#btn-view-calendar`)?.addEventListener(`click`,()=>{i!==`calendar`&&(i=`calendar`,o())}),e.querySelector(`#btn-prev-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()-1),o()}),e.querySelector(`#btn-next-month`)?.addEventListener(`click`,()=>{a.setMonth(a.getMonth()+1),o()}),e.querySelectorAll(`.calendar-project-block`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})});let s=!1,c=e.querySelector(`#project-search`);c&&(c.addEventListener(`compositionstart`,()=>{s=!0}),c.addEventListener(`compositionend`,e=>{s=!1,t=e.target.value,o();let n=document.getElementById(`project-search`);n&&(n.focus(),n.setSelectionRange(n.value.length,n.value.length))}),c.addEventListener(`input`,e=>{if(s)return;t=e.target.value,o();let n=document.getElementById(`project-search`);if(n){n.focus();let e=n.value.length;n.setSelectionRange(e,e)}})),[`status`,`brand`,`platform`,`month`,`category`].forEach(t=>{e.querySelector(`#filter-${t}`)?.addEventListener(`change`,e=>{n[t]=e.target.value,o()})}),[`basic`,`host`,`result`,`finance`].forEach(t=>{e.querySelector(`#toggle-col-${t}`)?.addEventListener(`change`,e=>{r[t]=e.target.checked,o()})}),e.querySelector(`#filter-reset`)?.addEventListener(`click`,()=>{n={status:``,brand:``,platform:``,month:``,category:``,settleStatus:``},t=``,o()}),e.querySelector(`#btn-new-project`)?.addEventListener(`click`,()=>{tt(()=>o())}),e.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),t.stopPropagation(),u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{u.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0)}return o(),V.on(`projects:changed`,o),e}function tt(e){let t=V.getAll(`brands`),n=`
     <div class="form-grid">
       <div class="input-group">
         <label class="required">방송 제목(브랜드)</label>

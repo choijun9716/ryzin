@@ -182,20 +182,19 @@ export function renderProjects() {
             <option value="">진행상태</option>
             ${BROADCAST_STATUSES.map(s => `<option value="${s.key}" ${filters.status === s.key ? 'selected' : ''}>${s.label}</option>`).join('')}
           </select>
-          <select class="filter-select ${filters.brand ? 'active' : ''}" id="filter-brand">
-            <option value="">브랜드</option>
-            ${brands.map(b => `<option value="${b.id}" ${filters.brand === b.id ? 'selected' : ''}>${b.name}</option>`).join('')}
+          <select class="filter-select ${filters.category ? 'active' : ''}" id="filter-category">
+            <option value="">카테고리</option>
+            ${CATEGORIES.map(c => `<option value="${c}" ${filters.category === c ? 'selected' : ''}>${c}</option>`).join('')}
           </select>
           <select class="filter-select ${filters.platform ? 'active' : ''}" id="filter-platform">
             <option value="">플랫폼</option>
             ${PLATFORMS.map(p => `<option value="${p}" ${filters.platform === p ? 'selected' : ''}>${p}</option>`).join('')}
           </select>
-          <input type="month" class="filter-select ${filters.month ? 'active' : ''}" id="filter-month" value="${filters.month || ''}" style="width: auto;">
-          <select class="filter-select ${filters.category ? 'active' : ''}" id="filter-category">
-            <option value="">카테고리</option>
-            ${CATEGORIES.map(c => `<option value="${c}" ${filters.category === c ? 'selected' : ''}>${c}</option>`).join('')}
-          </select>
-          ${Object.values(filters).some(v => v) ? '<button class="filter-reset" id="filter-reset">초기화</button>' : ''}
+          <div class="table-search" style="margin-left: 4px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="방송제목 (자연어) 검색..." id="project-search" value="${searchTerm}" style="background: white;">
+          </div>
+          ${(Object.values(filters).some(v => v) || searchTerm) ? '<button class="filter-reset" id="filter-reset">초기화</button>' : ''}
         </div>
 
         <!-- 테이블 -->
@@ -203,11 +202,7 @@ export function renderProjects() {
           <div class="table-toolbar">
             <div class="table-toolbar-left" style="display: flex; align-items: center; gap: var(--space-4);">
               <div style="display: flex; align-items: center; gap: var(--space-2);">
-                <div class="table-search">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input type="text" placeholder="브랜드, PD 검색..." id="project-search" value="${searchTerm}">
-                </div>
-                <span class="table-count">총 <strong>${enriched.length}</strong>건</span>
+                <span class="table-count" style="margin-right: 8px;">총 <strong>${enriched.length}</strong>건</span>
               </div>
               <div style="display: flex; gap: var(--space-3); align-items: center; font-size: var(--text-sm); margin-left: var(--space-2);">
                 <span style="color: var(--text-tertiary); font-weight: var(--weight-medium);">표시 항목:</span>
@@ -239,8 +234,8 @@ export function renderProjects() {
                   <th>플랫폼</th>
                   ` : ''}
                   ${colGroups.host ? `
-                  <th class="text-center">쇼호스트A</th>
-                  <th class="text-center">쇼호스트B</th>
+                  <th class="text-center" style="text-align: center;">쇼호스트A</th>
+                  <th class="text-center" style="text-align: center;">쇼호스트B</th>
                   ` : ''}
                   ${colGroups.result ? `
                   <th class="text-right">시청뷰</th>
@@ -270,8 +265,8 @@ export function renderProjects() {
                     <td>${p.platform || '-'}</td>
                     ` : ''}
                     ${colGroups.host ? `
-                    <td class="text-center">${p.hostA ? p.hostA.name : '-'}</td>
-                    <td class="text-center">${p.hostB ? p.hostB.name : '-'}</td>
+                    <td class="text-center" style="text-align: center;">${p.hostA ? p.hostA.name : '-'}</td>
+                    <td class="text-center" style="text-align: center;">${p.hostB ? p.hostB.name : '-'}</td>
                     ` : ''}
                     ${colGroups.result ? `
                     <td class="text-right">${p.result ? formatNumber(p.result.views) : '-'}</td>
@@ -319,16 +314,32 @@ export function renderProjects() {
           router.navigate(`/projects/${el.getAttribute('data-id')}`);
         });
       });
-      container.querySelector('#project-search')?.addEventListener('input', (e) => {
-        searchTerm = e.target.value;
-        render();
-        const input = document.getElementById('project-search');
-        if (input) {
-          input.focus();
-          const len = input.value.length;
-          input.setSelectionRange(len, len);
-        }
-      });
+      let isComposing = false;
+      const searchInput = container.querySelector('#project-search');
+      if (searchInput) {
+        searchInput.addEventListener('compositionstart', () => { isComposing = true; });
+        searchInput.addEventListener('compositionend', (e) => {
+          isComposing = false;
+          searchTerm = e.target.value;
+          render();
+          const input = document.getElementById('project-search');
+          if (input) {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+          }
+        });
+        searchInput.addEventListener('input', (e) => {
+          if (isComposing) return;
+          searchTerm = e.target.value;
+          render();
+          const input = document.getElementById('project-search');
+          if (input) {
+            input.focus();
+            const len = input.value.length;
+            input.setSelectionRange(len, len);
+          }
+        });
+      }
 
       ['status', 'brand', 'platform', 'month', 'category'].forEach(key => {
         container.querySelector(`#filter-${key}`)?.addEventListener('change', (e) => {

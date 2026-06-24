@@ -141,6 +141,7 @@
   font-size: var(--text-xs);
 }
 
+.data-table th.text-center,
 .data-table td.text-center {
   text-align: center;
 }
