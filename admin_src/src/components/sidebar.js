@@ -44,7 +44,7 @@ export function renderSidebar() {
 
   sidebar.innerHTML = `
     <div class="sidebar-header" style="padding: var(--space-4) var(--space-4); margin-bottom: var(--space-2);">
-      <div style="display: flex; align-items: center; justify-content: flex-start; width: 100%;">
+      <div id="sidebar-logo-container" style="display: flex; align-items: center; justify-content: flex-start; width: 100%; cursor: pointer;">
         <img src="${ryzinLogo}" alt="Ryzin Logo" style="height: 32px; object-fit: contain; margin-bottom: 4px; filter: brightness(0) invert(1);" />
       </div>
     </div>
@@ -76,6 +76,14 @@ export function renderSidebar() {
       <button class="btn btn-secondary btn-sm" id="btn-logout" style="width: 100%; margin-top: var(--space-3);">로그아웃</button>
     </div>
   `;
+
+  // 로고 클릭 이벤트 (대시보드로 이동)
+  const logoContainer = sidebar.querySelector('#sidebar-logo-container');
+  if (logoContainer) {
+    logoContainer.addEventListener('click', () => {
+      router.navigate('/');
+    });
+  }
 
   // 메뉴 클릭 이벤트
   sidebar.querySelectorAll('.sidebar-item').forEach(item => {
