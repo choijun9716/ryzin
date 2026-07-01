@@ -406,7 +406,7 @@ function renderLiveEditView(container, liveId, showView) {
       <div style="display:flex; gap:12px;">
         <button id="btn-save-config" class="action-btn btn-primary-solid" style="flex:1; justify-content:center; padding:14px; font-size:15px;">설정 저장 (SheetDB 적용)</button>
         <button id="btn-toggle-live" class="action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}" style="flex:1; justify-content:center; padding:14px; font-size:15px;">
-          ${config.isLive ? '🔴 라이브 종료' : '🟢 라이브 시작'}
+          ${config.isLive ? '라이브 종료' : '라이브 시작'}
         </button>
       </div>
     `;
@@ -429,7 +429,7 @@ function renderLiveEditView(container, liveId, showView) {
 
     document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
       config.isLive = !config.isLive;
-      e.target.textContent = config.isLive ? '🔴 라이브 종료' : '🟢 라이브 시작';
+      e.target.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
       e.target.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
       e.target.style.cssText = 'flex:1; justify-content:center; padding:14px; font-size:15px;';
       saveConfig();
