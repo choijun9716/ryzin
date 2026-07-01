@@ -53,6 +53,7 @@ export function renderLiveStream() {
         '하트수': stats.hearts,
         '상품수': products.length,
         '첫상품명': products.length > 0 ? products[0].name : '',
+        '상품목록': JSON.stringify(products),
         '시청자수노출': config.showViewers ? 'O' : 'X'
       };
       fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
@@ -150,7 +151,10 @@ export function renderLiveStream() {
   const renderProductList = () => {
     return products.map((p, idx) => `
       <div style="display:flex; gap:12px; align-items:center; background:#f9fafb; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #e5e7eb;">
-        <img src="${p.image}" style="width:48px; height:48px; border-radius:4px; object-fit:cover;">
+        <div style="position:relative; width:48px; height:48px; flex-shrink:0;">
+          <img src="${p.image}" id="img-preview-${idx}" style="width:100%; height:100%; border-radius:4px; object-fit:cover; border:1px solid #ccc; cursor:pointer;" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 업로드">
+          <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
+        </div>
         <div style="flex:1;">
           <input type="text" class="form-control" style="font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.name}" data-idx="${idx}" data-field="name" placeholder="상품명">
           <input type="text" class="form-control" style="font-size:12px; padding:4px 8px;" value="${p.url}" data-idx="${idx}" data-field="url" placeholder="상품 이동 URL">
@@ -303,6 +307,37 @@ export function renderLiveStream() {
           const field = e.target.dataset.field;
           products[idx][field] = e.target.value;
           saveProducts();
+        });
+      });
+      container.querySelectorAll('.prod-img-upload').forEach(input => {
+        input.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const idx = parseInt(e.target.dataset.idx);
+          
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const previewImg = document.getElementById(`img-preview-${idx}`);
+          previewImg.style.opacity = '0.5';
+          
+          try {
+            const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: formData });
+            const json = await res.json();
+            if (json.status === 'success') {
+              const url = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+              products[idx].image = url;
+              previewImg.src = url;
+              saveProducts();
+            } else {
+              alert('상품 이미지 업로드 실패');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('상품 이미지 업로드 에러');
+          } finally {
+            previewImg.style.opacity = '1';
+          }
         });
       });
       container.querySelectorAll('.btn-del-product').forEach(btn => {

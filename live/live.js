@@ -27,6 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('ryzin_live_config', JSON.stringify(config));
           localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
           
+          if (latest['상품목록']) {
+             try {
+                const parsed = JSON.parse(latest['상품목록']);
+                localStorage.setItem('ryzin_live_products', JSON.stringify(parsed));
+                loadLiveProducts();
+             } catch(e){}
+          }
+          
           loadLiveConfig();
           loadLiveStats();
         }
@@ -78,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(s) {
         document.getElementById('view-count').textContent = s.viewers.toLocaleString() + '명 시청중';
         likeCount = s.hearts;
-        document.getElementById('like-count').textContent = (likeCount >= 1000 ? (likeCount / 1000).toFixed(1) + 'K' : likeCount);
+        document.getElementById('like-count').textContent = (likeCount >= 1000 ? (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : likeCount);
       }
     }catch(e){}
   }
