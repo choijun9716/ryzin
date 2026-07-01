@@ -428,6 +428,19 @@ function renderLiveEditView(container, liveId, showView) {
     });
 
     document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
+      // 라이브 시작 전 스트리밍 URL 필수 확인
+      const currentStreamUrl = document.getElementById('cfg-stream').value.trim();
+      if (!config.isLive && !currentStreamUrl) {
+        alert('⚠️ 스트리밍 URL을 먼저 입력해주세요.\n설정을 저장한 후 라이브를 시작할 수 있습니다.');
+        document.getElementById('cfg-stream').focus();
+        document.getElementById('cfg-stream').style.borderColor = '#ef4444';
+        document.getElementById('cfg-stream').style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+        setTimeout(() => {
+          document.getElementById('cfg-stream').style.borderColor = '';
+          document.getElementById('cfg-stream').style.boxShadow = '';
+        }, 3000);
+        return;
+      }
       config.isLive = !config.isLive;
       e.target.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
       e.target.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
