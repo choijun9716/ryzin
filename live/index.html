@@ -17,7 +17,7 @@
       <video id="live-video" autoplay muted playsinline></video>
       <div class="video-overlay">
         <div class="live-badge">LIVE</div>
-        <div class="view-count"><span class="icon">👁️</span> <span id="view-count">1,204</span></div>
+        <div class="view-count"><span id="view-count">1,204명 시청중</span></div>
       </div>
       
       <!-- 하단 그라데이션 오버레이 (텍스트 가독성) -->
@@ -55,12 +55,22 @@
         </div>
       </div>
 
-      <!-- 입력 영역 -->
+      <!-- 사이드 액션 버튼 (우측 하단 플로팅) -->
+      <div class="side-actions">
+        <button class="action-btn" id="btn-shop">
+          <span class="icon">🛍️</span>
+          <span class="label">상품</span>
+        </button>
+        <button class="action-btn" id="btn-like">
+          <span class="icon">❤️</span>
+          <span class="label" id="like-count">12K</span>
+        </button>
+      </div>
+
+      <!-- 입력 영역 (최하단) -->
       <div class="input-section">
-        <button class="btn-shop" id="btn-shop">🛍️ 상품</button>
-        <button class="btn-like" id="btn-like">❤️ <span class="like-count" id="like-count">12K</span></button>
         <div class="input-wrapper">
-          <input type="text" id="chat-input" placeholder="실시간 채팅..." autocomplete="off">
+          <input type="text" id="chat-input" placeholder="실시간 채팅에 참여하세요..." autocomplete="off">
           <button id="btn-send">전송</button>
         </div>
       </div>
