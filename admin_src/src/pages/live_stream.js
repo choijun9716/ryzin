@@ -117,8 +117,8 @@ export function renderLiveStream() {
     </div>
     <div style="display:flex; gap:12px; margin-bottom:12px;">
       <div class="form-group" style="flex:1;">
-        <label class="form-label">방송 시작 일시 (텍스트)</label>
-        <input type="text" class="form-control" id="config-liveStartTime" placeholder="예: 오늘 밤 9시 시작" value="${config.liveStartTime || ''}">
+        <label class="form-label">방송 시작 일시 (카운트다운용)</label>
+        <input type="datetime-local" class="form-control" id="config-liveStartTime" value="${config.liveStartTime || ''}">
       </div>
     </div>
     <div style="display:flex; gap:12px; margin-bottom:12px; align-items:flex-end;">
