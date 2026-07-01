@@ -65,11 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // 음소거 제어 로직
   const btnMute = document.getElementById('btn-mute');
   btnMute.addEventListener('click', () => {
-    if (video.muted) {
+    if (video.muted || video.volume === 0) {
       video.muted = false;
+      video.volume = 1.0;
       btnMute.textContent = '🔊';
+      // 혹시라도 멈췄을 경우를 대비해 다시 재생 명령
+      video.play().catch(e => console.warn(e));
     } else {
       video.muted = true;
+      video.volume = 0;
       btnMute.textContent = '🔇';
     }
   });
