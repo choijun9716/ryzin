@@ -62,6 +62,18 @@ document.addEventListener('DOMContentLoaded', () => {
     modalProductsList.appendChild(el);
   });
 
+  // 음소거 제어 로직
+  const btnMute = document.getElementById('btn-mute');
+  btnMute.addEventListener('click', () => {
+    if (video.muted) {
+      video.muted = false;
+      btnMute.textContent = '🔊';
+    } else {
+      video.muted = true;
+      btnMute.textContent = '🔇';
+    }
+  });
+
   // 모달 제어 로직
   const btnShop = document.getElementById('btn-shop');
   const productModal = document.getElementById('product-modal');
