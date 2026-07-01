@@ -190,8 +190,8 @@ export function renderLiveStream() {
           <input type="text" class="form-control" style="font-size:12px; padding:4px 8px;" value="${p.url}" data-idx="${idx}" data-field="url" placeholder="상품 이동 URL">
         </div>
         <div>
-           <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.price}" data-idx="${idx}" data-field="price" placeholder="가격">
-           <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.normalPrice || ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
+           <input type="number" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${(p.price||'').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="가격(숫자)">
+           <input type="number" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${(p.normalPrice||'').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가(숫자)">
            <input type="number" min="0" max="100" class="form-control" style="width:70px; font-size:13px; margin-bottom:4px; padding:4px 8px; background-color:#e9ecef;" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="할인율%" readonly>
           <button class="btn btn-danger btn-sm btn-del-product" data-idx="${idx}" style="width:100%; padding:4px;">삭제</button>
         </div>

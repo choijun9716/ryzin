@@ -239,7 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             priceHtml = `<span class="discounted-price" style="font-weight:bold; color:#333; font-size:16px; margin-right:4px;">${current.toLocaleString()}원</span><span class="original-price" style="text-decoration:line-through; color:#aaa; margin-right:4px; font-size:12px;">${normal.toLocaleString()}원</span><span style="color:#e50914; font-weight:bold; font-size:14px;">${rate}%</span>`;
           } else {
-            priceHtml = `${item.price}`;
+            const current = currentPriceStr ? Number(currentPriceStr) : 0;
+            priceHtml = currentPriceStr ? `${current.toLocaleString()}원` : '';
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', (e) => {
