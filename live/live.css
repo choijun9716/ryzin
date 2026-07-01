@@ -322,10 +322,10 @@ body {
 .side-actions {
   position: absolute;
   right: 16px;
-  bottom: 80px;
+  bottom: 110px; /* 조금 더 위로 */
   display: flex;
   flex-direction: column;
-  gap: 28px; /* 버튼 사이 간격 띄움 */
+  gap: 36px; /* 간격 더 벌림 */
   pointer-events: auto;
   z-index: 5;
 }
@@ -431,4 +431,16 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     position: relative;
   }
+}
+
+
+/* 채팅창 토글 숨김용 클래스 */
+.chat-section, .input-section {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.chat-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(20px);
 }
