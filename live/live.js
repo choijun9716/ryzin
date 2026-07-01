@@ -294,19 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
       if(s) {
         document.getElementById('view-count').textContent = s.viewers.toLocaleString() + '명 시청중';
-
-        // 누적 시청자 수 실시간 표시
-        const cumEl = document.getElementById('cum-view-count');
-        const cumWrapper = document.getElementById('cum-viewers-wrapper');
-        if (cumEl && cumWrapper) {
-          const cumViewers = s.cumViewers || 0;
-          if (cumViewers > 0) {
-            cumEl.textContent = '누적 ' + cumViewers.toLocaleString() + '명';
-            cumWrapper.style.display = 'block';
-          } else {
-            cumWrapper.style.display = 'none';
-          }
-        }
       }
     }catch(e){}
   }
