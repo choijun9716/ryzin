@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
   
   let lastChatTime = Date.now() - 3000; // 최근 3초 전 메시지부터만 수신
+  const mySentTexts = []; // 내가 방금 보낸 채팅 텍스트 보관용
   async function pollSheetDB() {
     try {
       const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
@@ -48,8 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chats && Array.isArray(chats)) {
           chats.forEach(c => {
              if (c['시간'] && parseInt(c['시간']) > lastChatTime) {
-                // 자신이 보낸 건 이미 로컬에 표시되었으므로 닉네임과 내용이 같으면 패스 (완벽하진 않지만 데모용)
-                if (c['닉네임'] !== userNickname || c['시간'] > lastChatTime + 5000) {
+                // 자신이 보낸 건 이미 로컬에 표시되었으므로 닉네임과 내용이 같으면 패스
+                if (c['닉네임'] === userNickname) {
+                  const idx = mySentTexts.indexOf(c['내용']);
+                  if (idx !== -1) {
+                    // 방금 로컬에서 띄운 내 메시지면 스킵하고 배열에서 지움
+                    mySentTexts.splice(idx, 1);
+                  } else {
+                    addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자');
+                  }
+                } else {
                    addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자');
                 }
                 lastChatTime = parseInt(c['시간']);
@@ -284,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isChatSending = true;
       // 로컬에 먼저 보여주기
       addMessage(userNickname, text);
+      mySentTexts.push(text);
       chatInput.value = '';
       
       // 더미 챗봇 자동 응답
