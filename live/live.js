@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const normal = Number(normalPriceStr);
             const rate = Number(item.discountRate);
             const current = currentPriceStr ? Number(currentPriceStr) : Math.round(normal * (1 - rate / 100));
-            priceHtml = `<span style="color:#e50914; font-weight:bold; margin-right:4px;">${rate}%</span><span class="original-price" style="text-decoration:line-through; color:#aaa; margin-right:4px; font-size:12px;">${normal.toLocaleString()}원</span><span class="discounted-price" style="font-weight:bold; color:#333; font-size:16px;">${current.toLocaleString()}원</span>`;
+            priceHtml = `<span class="discounted-price" style="font-weight:bold; color:#333; font-size:16px; margin-right:4px;">${current.toLocaleString()}원</span><span class="original-price" style="text-decoration:line-through; color:#aaa; margin-right:4px; font-size:12px;">${normal.toLocaleString()}원</span><span style="color:#e50914; font-weight:bold; font-size:14px;">${rate}%</span>`;
           } else {
             priceHtml = `${item.price}`;
           }
