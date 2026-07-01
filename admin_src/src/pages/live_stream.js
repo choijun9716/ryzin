@@ -12,7 +12,8 @@ export function renderLiveStream() {
     title: '단독 특가 라이브 방송 중!',
     streamUrl: 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8',
     logoUrl: 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
-    botEnabled: true
+    botEnabled: true,
+    showViewers: true
   };
 
   const defaultStats = {
@@ -35,12 +36,33 @@ export function renderLiveStream() {
   let stats = JSON.parse(localStorage.getItem('ryzin_live_stats'));
   let products = JSON.parse(localStorage.getItem('ryzin_live_products'));
 
+  const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
+
+  const syncToSheetDB = (sheetName, data) => {
+    // 백그라운드 시트DB 연동
+    fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent(sheetName)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: [data] })
+    }).catch(e => console.warn('SheetDB 연동 실패 (시트가 없을 수 있습니다)', e));
+  };
+
   const saveConfig = () => {
     localStorage.setItem('ryzin_live_config', JSON.stringify(config));
-    window.dispatchEvent(new Event('storage')); // 같은 탭 내 이벤트를 강제 발생시킬 수도 있음 (필요 시)
+    window.dispatchEvent(new Event('storage')); 
+    syncToSheetDB('라이브설정', { '업데이트시간': new Date().toISOString(), '제목': config.title, 'URL': config.streamUrl });
   };
-  const saveStats = () => localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
-  const saveProducts = () => localStorage.setItem('ryzin_live_products', JSON.stringify(products));
+  const saveStats = () => {
+    localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
+    syncToSheetDB('라이브통계', { '업데이트시간': new Date().toISOString(), '시청자수': stats.viewers, '하트수': stats.hearts });
+  };
+  const saveProducts = () => {
+    localStorage.setItem('ryzin_live_products', JSON.stringify(products));
+    // 상품 변경 시 전체 리스트를 전송하려면 복잡하므로 로그 형태로 남김
+    if (products.length > 0) {
+      syncToSheetDB('라이브상품', { '업데이트시간': new Date().toISOString(), '상품수': products.length, '첫상품명': products[0].name });
+    }
+  };
 
   // 왼쪽 (컨트롤 패널)
   const leftPanel = document.createElement('div');
@@ -58,43 +80,49 @@ export function renderLiveStream() {
     <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px;">📺 라이브 기본 설정</h3>
     <div class="form-group" style="margin-bottom:12px;">
       <label class="form-label">방송 제목</label>
-      <input type="text" class="form-control" id="config-title" value="\${config.title}">
+      <input type="text" class="form-control" id="config-title" value="${config.title}">
     </div>
     <div class="form-group" style="margin-bottom:12px;">
       <label class="form-label">스트리밍 URL (m3u8)</label>
-      <input type="text" class="form-control" id="config-stream" value="\${config.streamUrl}">
+      <input type="text" class="form-control" id="config-stream" value="${config.streamUrl}">
     </div>
     <div style="display:flex; gap:12px; margin-bottom:12px;">
       <div class="form-group" style="flex:1;">
         <label class="form-label">시청자 수 뻥튀기</label>
-        <input type="number" class="form-control" id="stat-viewers" value="\${stats.viewers}">
+        <input type="number" class="form-control" id="stat-viewers" value="${stats.viewers}">
       </div>
       <div class="form-group" style="flex:1;">
         <label class="form-label">하트 수 뻥튀기</label>
-        <input type="number" class="form-control" id="stat-hearts" value="\${stats.hearts}">
+        <input type="number" class="form-control" id="stat-hearts" value="${stats.hearts}">
       </div>
     </div>
-    <div style="display:flex; align-items:center; gap:8px;">
-      <input type="checkbox" id="config-bot" \${config.botEnabled ? 'checked' : ''}>
-      <label for="config-bot" style="font-size:14px;">채팅 봇 활성화 (랜덤 가짜 채팅)</label>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="config-show-viewers" ${config.showViewers !== false ? 'checked' : ''}>
+        <label for="config-show-viewers" style="font-size:14px;">시청자 수 노출</label>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="config-bot" ${config.botEnabled ? 'checked' : ''}>
+        <label for="config-bot" style="font-size:14px;">채팅 봇 활성화</label>
+      </div>
     </div>
   `;
 
   // 2. 상품 관리
   const renderProductList = () => {
-    return products.map((p, idx) => \`
+    return products.map((p, idx) => `
       <div style="display:flex; gap:12px; align-items:center; background:#f9fafb; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #e5e7eb;">
-        <img src="\${p.image}" style="width:48px; height:48px; border-radius:4px; object-fit:cover;">
+        <img src="${p.image}" style="width:48px; height:48px; border-radius:4px; object-fit:cover;">
         <div style="flex:1;">
-          <input type="text" class="form-control" style="font-size:13px; margin-bottom:4px; padding:4px 8px;" value="\${p.name}" data-idx="\${idx}" data-field="name" placeholder="상품명">
-          <input type="text" class="form-control" style="font-size:12px; padding:4px 8px;" value="\${p.url}" data-idx="\${idx}" data-field="url" placeholder="상품 이동 URL">
+          <input type="text" class="form-control" style="font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.name}" data-idx="${idx}" data-field="name" placeholder="상품명">
+          <input type="text" class="form-control" style="font-size:12px; padding:4px 8px;" value="${p.url}" data-idx="${idx}" data-field="url" placeholder="상품 이동 URL">
         </div>
         <div>
-          <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="\${p.price}" data-idx="\${idx}" data-field="price" placeholder="가격">
-          <button class="btn btn-danger btn-sm btn-del-product" data-idx="\${idx}" style="width:100%; padding:4px;">삭제</button>
+          <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.price}" data-idx="${idx}" data-field="price" placeholder="가격">
+          <button class="btn btn-danger btn-sm btn-del-product" data-idx="${idx}" style="width:100%; padding:4px;">삭제</button>
         </div>
       </div>
-    \`).join('');
+    `).join('');
   };
 
   const productCard = document.createElement('div');
@@ -105,7 +133,7 @@ export function renderLiveStream() {
       <button class="btn btn-primary btn-sm" id="btn-add-product">+ 상품 추가</button>
     </div>
     <div id="product-list-container">
-      \${renderProductList()}
+      ${renderProductList()}
     </div>
   `;
 
@@ -133,7 +161,7 @@ export function renderLiveStream() {
       <span>📱 모바일 미리보기</span>
       <button class="btn btn-primary btn-sm" id="btn-refresh-preview" style="padding:4px 8px;">새로고침</button>
     </div>
-    <iframe id="live-preview-iframe" src="\${previewUrl}" style="width:100%; flex:1; border:none; background:#000;"></iframe>
+    <iframe id="live-preview-iframe" src="${previewUrl}" style="width:100%; flex:1; border:none; background:#000;"></iframe>
   `;
 
   const chatCard = document.createElement('div');
@@ -179,6 +207,10 @@ export function renderLiveStream() {
     
     document.getElementById('config-bot').addEventListener('change', (e) => {
       config.botEnabled = e.target.checked;
+      saveConfig();
+    });
+    document.getElementById('config-show-viewers').addEventListener('change', (e) => {
+      config.showViewers = e.target.checked;
       saveConfig();
     });
 
@@ -232,7 +264,7 @@ export function renderLiveStream() {
       const chatList = document.getElementById('admin-chat-list');
       const div = document.createElement('div');
       div.style.marginBottom = '8px';
-      div.innerHTML = \`<span style="font-weight:bold; color:var(--primary); margin-right:4px;">\${newChat.name}:</span> \${newChat.text}\`;
+      div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:4px;">${newChat.name}:</span> ${newChat.text}`;
       chatList.appendChild(div);
       chatList.scrollTop = chatList.scrollHeight;
       
@@ -256,7 +288,7 @@ export function renderLiveStream() {
         }
         const div = document.createElement('div');
         div.style.marginBottom = '8px';
-        div.innerHTML = \`<span style="font-weight:bold; color:#333; margin-right:4px;">\${msg.name}:</span> \${msg.text}\`;
+        div.innerHTML = `<span style="font-weight:bold; color:#333; margin-right:4px;">${msg.name}:</span> ${msg.text}`;
         chatList.appendChild(div);
         chatList.scrollTop = chatList.scrollHeight;
       }

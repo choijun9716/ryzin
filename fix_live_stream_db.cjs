@@ -1,0 +1,43 @@
+const fs = require('fs');
+let file = '/Users/chaeijun/Downloads/ryzin-main 2/admin_src/src/pages/live_stream.js';
+let content = fs.readFileSync(file, 'utf8');
+
+const targetSave = `  const saveConfig = () => {
+    localStorage.setItem('ryzin_live_config', JSON.stringify(config));
+    window.dispatchEvent(new Event('storage')); // 같은 탭 내 이벤트를 강제 발생시킬 수도 있음 (필요 시)
+  };
+  const saveStats = () => localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
+  const saveProducts = () => localStorage.setItem('ryzin_live_products', JSON.stringify(products));`;
+
+const newSave = `  const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
+
+  const syncToSheetDB = (sheetName, data) => {
+    // 백그라운드 시트DB 연동
+    fetch(\`\${SHEETDB_URL}?sheet=\${encodeURIComponent(sheetName)}\`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: [data] })
+    }).catch(e => console.warn('SheetDB 연동 실패 (시트가 없을 수 있습니다)', e));
+  };
+
+  const saveConfig = () => {
+    localStorage.setItem('ryzin_live_config', JSON.stringify(config));
+    window.dispatchEvent(new Event('storage')); 
+    syncToSheetDB('라이브설정', { '업데이트시간': new Date().toISOString(), '제목': config.title, 'URL': config.streamUrl });
+  };
+  const saveStats = () => {
+    localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
+    syncToSheetDB('라이브통계', { '업데이트시간': new Date().toISOString(), '시청자수': stats.viewers, '하트수': stats.hearts });
+  };
+  const saveProducts = () => {
+    localStorage.setItem('ryzin_live_products', JSON.stringify(products));
+    // 상품 변경 시 전체 리스트를 전송하려면 복잡하므로 로그 형태로 남김
+    if (products.length > 0) {
+      syncToSheetDB('라이브상품', { '업데이트시간': new Date().toISOString(), '상품수': products.length, '첫상품명': products[0].name });
+    }
+  };`;
+
+if(content.includes('const saveConfig = () => {')) {
+  content = content.replace(targetSave, newSave);
+  fs.writeFileSync(file, content);
+}

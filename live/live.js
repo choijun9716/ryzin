@@ -4,13 +4,27 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
       if(c) {
-        if(c.streamUrl && video.src !== c.streamUrl && c.streamUrl !== m3u8Url) {
-          // url이 바뀌었을 경우 리로드 로직 (데모에선 생략하거나 지원)
+        if(c.streamUrl && window.__lastStreamUrl !== c.streamUrl) {
+          window.__lastStreamUrl = c.streamUrl;
+          if (window.hlsInstance) {
+            window.hlsInstance.loadSource(c.streamUrl);
+            window.hlsInstance.attachMedia(video);
+            window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+              video.play().catch(e => console.warn(e));
+            });
+          } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = c.streamUrl;
+            video.play().catch(e => console.warn(e));
+          }
         }
         const titleEl = document.querySelector('.broadcast-title');
         if(titleEl) titleEl.textContent = c.title;
         const brandLogo = document.querySelector('.brand-logo');
         if(brandLogo && c.logoUrl) brandLogo.src = c.logoUrl;
+        const viewCountWrapper = document.querySelector('.view-count');
+        if(viewCountWrapper) {
+          viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : 'block';
+        }
       }
     }catch(e){}
   }
@@ -76,13 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const m3u8Url = 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
 
   if (Hls.isSupported()) {
-    const hls = new Hls({
+    window.hlsInstance = new Hls({
       // 옵션: 실시간 라이브에 맞게 튜닝 가능
       lowLatencyMode: true
     });
-    hls.loadSource(m3u8Url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+    window.hlsInstance.loadSource(m3u8Url);
+    window.hlsInstance.attachMedia(video);
+    window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
       video.play().catch(e => console.warn("자동 재생이 브라우저 정책에 의해 차단되었습니다.", e));
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
