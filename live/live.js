@@ -1,7 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   // === SheetDB 및 localStorage 연동 로직 (어드민 제어) ===
   const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
-  
+
+  // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
+  const urlParams = new URLSearchParams(window.location.search);
+  const LIVE_ID = urlParams.get('id') || null; // null이면 전체 중 최신
+
   let lastChatTime = Date.now() - 3000; // 최근 3초 전 메시지부터만 수신
   const mySentTexts = []; // 내가 방금 보낸 채팅 텍스트 보관용
   async function pollConfig() {
@@ -10,7 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          const latest = data[data.length - 1]; // 가장 마지막 업데이트 내역
+          // live_id가 있으면 해당 라이브 데이터만 필터, 없으면 전체 최신
+          let filtered = LIVE_ID
+            ? data.filter(row => row['live_id'] === LIVE_ID)
+            : data;
+          if (filtered.length === 0) filtered = data;
+          const latest = filtered[filtered.length - 1]; // 가장 마지막 업데이트 내역
           
           // 파싱 후 로컬스토리지 최신화 (다른 탭 호환 및 구조 유지)
           let extraConfig = {};
@@ -73,10 +82,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function pollChat() {
     try {
-      // 채팅 조회
+      // 채팅 조회 (live_id로 필터)
       const chatRes = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`, { cache: 'no-store' });
       if (chatRes.ok) {
-        const chats = await chatRes.json();
+        let chats = await chatRes.json();
+        // live_id가 있으면 해당 라이브 채팅만 표시
+        if (LIVE_ID && Array.isArray(chats)) {
+          chats = chats.filter(c => !c['live_id'] || c['live_id'] === LIVE_ID);
+        }
         if (chats && Array.isArray(chats)) {
           chats.forEach(c => {
              if (c['시간'] && parseInt(c['시간']) > lastChatTime) {

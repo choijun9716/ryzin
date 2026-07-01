@@ -1,604 +1,692 @@
-export function renderLiveStream() {
-  const container = document.createElement('div');
-  container.className = 'dashboard-container';
-  container.style.display = 'flex';
-  container.style.gap = '24px';
-  container.style.padding = '24px';
-  container.style.height = 'calc(100vh - 48px)';
-  container.style.overflow = 'hidden';
+// ============================================================
+//  RYZIN LIVE STREAM ADMIN — 멀티 라이브 관리 시스템
+//  - 라이브 목록 관리 (live01, live02 ...)
+//  - 각 라이브 독립 SheetDB 데이터 (live_id 컬럼으로 구분)
+//  - 시청자 URL: /live?id=live01
+// ============================================================
 
+const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
 
+// ─── 공통 유틸 ───────────────────────────────────────────────
+const getLives = () => JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
+const saveLives = (list) => localStorage.setItem('ryzin_lives', JSON.stringify(list));
+
+const getLiveConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_config_${liveId}`) || 'null');
+const saveLiveConfig = (liveId, data) => localStorage.setItem(`ryzin_config_${liveId}`, JSON.stringify(data));
+
+const getLiveStats = (liveId) => JSON.parse(localStorage.getItem(`ryzin_stats_${liveId}`) || JSON.stringify({ viewers: 0, hearts: 0 }));
+const saveLiveStats = (liveId, data) => localStorage.setItem(`ryzin_stats_${liveId}`, JSON.stringify(data));
+
+const getLiveProducts = (liveId) => JSON.parse(localStorage.getItem(`ryzin_products_${liveId}`) || '[]');
+const saveLiveProductsLocal = (liveId, data) => localStorage.setItem(`ryzin_products_${liveId}`, JSON.stringify(data));
+
+const getBotConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_bot_${liveId}`) || JSON.stringify({ list: '', interval: 10 }));
+const saveBotConfig = (liveId, data) => localStorage.setItem(`ryzin_bot_${liveId}`, JSON.stringify(data));
+
+function nextLiveId() {
+  const lives = getLives();
+  if (lives.length === 0) return 'live01';
+  const nums = lives.map(l => parseInt(l.id.replace('live', '')) || 0);
+  const max = Math.max(...nums);
+  return `live${String(max + 1).padStart(2, '0')}`;
+}
+
+// ─── SheetDB 동기화 ─────────────────────────────────────────
+let syncTimers = {};
+
+function syncToSheetDB(liveId, config, stats, products, force = false) {
+  if (syncTimers[liveId]) clearTimeout(syncTimers[liveId]);
+  const doSync = () => {
+    const data = {
+      'live_id': liveId,
+      '업데이트시간': new Date().toISOString(),
+      '제목': config.brandName,
+      '부제목': config.title,
+      '프로필이미지': config.logoUrl || '',
+      'URL': config.streamUrl || '',
+      '시청자수': stats.viewers,
+      '하트수': stats.hearts,
+      '상품목록': JSON.stringify(products),
+      '시청자수노출': config.showViewers ? 'O' : 'X',
+      '썸네일URL': config.thumbnailUrl || '',
+      '시작일시': config.liveStartTime || '',
+      '방송상태': config.isLive ? 'ON' : 'OFF'
+    };
+    fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: [data] })
+    }).catch(e => console.warn(`[${liveId}] SheetDB sync failed`, e));
+  };
+  if (force) doSync();
+  else syncTimers[liveId] = setTimeout(doSync, 1200);
+}
+
+// ─── 공통 CSS 스타일 ─────────────────────────────────────────
+function injectGlobalStyles(container) {
   const style = document.createElement('style');
   style.innerHTML = `
-    .modern-input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; transition: all 0.2s; background: #fff; box-sizing: border-box; }
-    .modern-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .modern-input[readonly] { background: #f3f4f6; cursor: not-allowed; }
-    .modern-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
-    .file-upload-wrapper { display: flex; align-items: center; gap: 12px; }
-    .file-upload-btn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; background: #fff; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s; color: #374151; }
-    .file-upload-btn:hover { background: #f9fafb; }
-    .product-row { display: flex; gap: 16px; align-items: center; background: #fff; padding: 16px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .product-img-box { position: relative; width: 64px; height: 64px; flex-shrink: 0; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; cursor: pointer; }
-    .product-img-box img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s; }
-    .product-img-box:hover img { opacity: 0.8; }
-    .product-inputs { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-    .product-prices { display: flex; gap: 8px; align-items: center; }
+    .modern-input { width:100%; padding:10px 14px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; outline:none; transition:all 0.2s; background:#fff; box-sizing:border-box; color:#0f172a; }
+    .modern-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.12); }
+    .modern-input[readonly] { background:#f8fafc; cursor:not-allowed; color:#94a3b8; }
+    .modern-label { display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em; }
+    .file-upload-wrapper { display:flex; align-items:center; gap:14px; }
+    .file-upload-btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; background:#fff; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; color:#374151; }
+    .file-upload-btn:hover { background:#f1f5f9; border-color:#94a3b8; }
+    .product-row { display:flex; gap:16px; align-items:flex-start; background:#fff; padding:20px; border-radius:14px; margin-bottom:12px; border:1.5px solid #e2e8f0; box-shadow:0 2px 8px rgba(0,0,0,0.04); transition:box-shadow 0.2s; }
+    .product-row:hover { box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+    .product-img-box { position:relative; width:72px; height:72px; flex-shrink:0; border-radius:10px; overflow:hidden; border:1.5px solid #e2e8f0; cursor:pointer; }
+    .product-img-box img { width:100%; height:100%; object-fit:cover; transition:opacity 0.2s; }
+    .product-img-box:hover img { opacity:0.8; }
+    .product-inputs { flex:1; display:flex; flex-direction:column; gap:8px; }
+    .product-prices { display:flex; gap:8px; align-items:center; }
+    .live-card { display:flex; align-items:center; gap:16px; background:#fff; border:1.5px solid #e2e8f0; border-radius:14px; padding:20px 24px; margin-bottom:12px; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .live-card:hover { border-color:#3b82f6; box-shadow:0 4px 16px rgba(59,130,246,0.12); transform:translateY(-1px); }
+    .live-badge { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.05em; }
+    .badge-live { background:#dcfce7; color:#16a34a; }
+    .badge-ready { background:#fef9c3; color:#ca8a04; }
+    .badge-ended { background:#f1f5f9; color:#64748b; }
+    .tab-btn { padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all 0.18s; background:transparent; color:#64748b; }
+    .tab-btn.active { background:#0f172a; color:#fff; }
+    .tab-btn:hover:not(.active) { background:#f1f5f9; color:#0f172a; }
+    .section-card { background:#fff; border:1.5px solid #e2e8f0; border-radius:16px; padding:28px; box-shadow:0 4px 16px rgba(0,0,0,0.04); margin-bottom:20px; }
+    .section-card h3 { margin:0 0 20px 0; font-size:17px; font-weight:700; color:#0f172a; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; }
+    .action-btn { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; border:none; transition:all 0.18s; }
+    .action-btn:hover { opacity:0.9; transform:translateY(-1px); }
+    .btn-primary-solid { background:linear-gradient(135deg, #3b82f6, #2563eb); color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.25); }
+    .btn-danger-solid { background:linear-gradient(135deg, #ef4444, #dc2626); color:#fff; box-shadow:0 4px 12px rgba(220,38,38,0.25); }
+    .btn-success-solid { background:linear-gradient(135deg, #10b981, #059669); color:#fff; box-shadow:0 4px 12px rgba(5,150,105,0.25); }
+    .btn-neutral { background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; }
+    .btn-neutral:hover { background:#e2e8f0; }
   `;
   container.appendChild(style);
+}
 
-  // 기본 상태 (localStorage 연동)
-  const defaultConfig = {
-    brandName: 'Ryzin Corp',
-    title: '단독 특가 라이브 방송 중!',
-    streamUrl: 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8',
-    logoUrl: 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
-    botEnabled: true,
-    showViewers: true
-  };
+// ═══════════════════════════════════════════════════════════════
+//  MAIN EXPORT — renderLiveStream()
+// ═══════════════════════════════════════════════════════════════
+export function renderLiveStream() {
+  const container = document.createElement('div');
+  container.style.cssText = 'display:flex; flex-direction:column; height:calc(100vh - 48px); background:#f8fafc; overflow:hidden;';
+  injectGlobalStyles(container);
 
-  const defaultStats = {
-    viewers: 1204,
-    hearts: 12040
-  };
+  // 현재 선택된 라이브 ID (null = 목록 화면)
+  let currentLiveId = null;
 
-  const defaultProducts = [
-    { id: 1, name: "[특가] 트루쿡 인덕션 프라이팬 3종 세트", price: "49,900원", image: "https://images.unsplash.com/photo-1584990347449-a6e81cb8860a?auto=format&fit=crop&q=80&w=200&h=200", url: "#" },
-    { id: 2, name: "네티컬 딥 클렌징 앰플 기획세트", price: "24,000원", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=200&h=200", url: "#" },
-    { id: 3, name: "탐루미 수분폭탄 마스크팩 10매", price: "12,900원", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&q=80&w=200&h=200", url: "#" }
-  ];
-
-  if (!localStorage.getItem('ryzin_live_config')) localStorage.setItem('ryzin_live_config', JSON.stringify(defaultConfig));
-  if (!localStorage.getItem('ryzin_live_stats')) localStorage.setItem('ryzin_live_stats', JSON.stringify(defaultStats));
-  if (!localStorage.getItem('ryzin_live_products')) localStorage.setItem('ryzin_live_products', JSON.stringify(defaultProducts));
-  if (!localStorage.getItem('ryzin_live_chats')) localStorage.setItem('ryzin_live_chats', JSON.stringify([]));
-
-  let config = JSON.parse(localStorage.getItem('ryzin_live_config'));
-  let stats = JSON.parse(localStorage.getItem('ryzin_live_stats'));
-  let products = JSON.parse(localStorage.getItem('ryzin_live_products'));
-
-  const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
-
-  let syncTimeout = null;
-  const syncAllToSheetDB = (force = false) => {
-    if (syncTimeout) clearTimeout(syncTimeout);
-    const doSync = () => {
-      const data = {
-        '업데이트시간': new Date().toISOString(),
-        '제목': config.brandName,
-        '부제목': config.title,
-        '프로필이미지': config.logoUrl,
-        'URL': config.streamUrl,
-        '시청자수': stats.viewers,
-        '하트수': stats.hearts,
-        '상품수': products.length,
-        '첫상품명': JSON.stringify({
-          thumbnailUrl: config.thumbnailUrl || '',
-          liveStartTime: config.liveStartTime || '',
-          isLive: config.isLive === true
-        }),
-        '상품목록': JSON.stringify(products),
-        '시청자수노출': config.showViewers ? 'O' : 'X',
-        '썸네일URL': config.thumbnailUrl || '',
-        '시작일시': config.liveStartTime || '',
-        '방송상태': config.isLive ? 'ON' : 'OFF'
-      };
-      fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [data] })
-      }).catch(e => console.warn('SheetDB 연동 실패', e));
-    };
-    if (force) doSync();
-    else syncTimeout = setTimeout(doSync, 1000); // 1초 디바운스로 여러번 변경 시 1번만 전송
-  };
-
-  const syncToIframe = () => {
-    const iframe = document.getElementById('live-preview-iframe');
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage({ type: 'sync_preview', config, stats, products }, '*');
+  // 뷰 전환 함수
+  const showView = (id) => {
+    currentLiveId = id;
+    container.innerHTML = '';
+    injectGlobalStyles(container);
+    if (id === null) {
+      renderListView(container, showView);
+    } else {
+      renderLiveEditView(container, id, showView);
     }
   };
 
-  const saveConfig = () => {
-    localStorage.setItem('ryzin_live_config', JSON.stringify(config));
-    window.dispatchEvent(new Event('storage')); 
-    syncToIframe();
-    syncAllToSheetDB();
-  };
-  const saveStats = () => {
-    localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
-    syncToIframe();
-    syncAllToSheetDB();
-  };
-  const saveProducts = () => {
-    localStorage.setItem('ryzin_live_products', JSON.stringify(products));
-    syncToIframe();
-    // syncAllToSheetDB(); // 수동 저장으로 변경
-  };
+  renderListView(container, showView);
+  return container;
+}
 
-  // 왼쪽 (컨트롤 패널)
-  const leftPanel = document.createElement('div');
-  leftPanel.style.flex = '1';
-  leftPanel.style.display = 'flex';
-  leftPanel.style.flexDirection = 'column';
-  leftPanel.style.gap = '24px';
-  leftPanel.style.overflowY = 'auto';
-  leftPanel.style.paddingRight = '12px';
+// ═══════════════════════════════════════════════════════════════
+//  LIVE LIST VIEW — 라이브 목록
+// ═══════════════════════════════════════════════════════════════
+function renderListView(container, showView) {
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'max-width:720px; margin:0 auto; padding:40px 24px; width:100%; overflow-y:auto;';
 
-  // --- 메인 탭 헤더 ---
-  const tabHeader = document.createElement('div');
-  tabHeader.className = 'card';
-  tabHeader.style.padding = '16px 24px';
-  tabHeader.style.borderRadius = '12px';
-  tabHeader.style.display = 'flex';
-  tabHeader.style.gap = '24px';
-  tabHeader.style.border = 'none';
-  tabHeader.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
-  tabHeader.innerHTML = `
-    <div id="main-tab-config" style="cursor:pointer; font-weight:700; color:#111; border-bottom:2px solid #111; padding-bottom:4px;">라이브 기본설정</div>
-    <div id="main-tab-chat" style="cursor:pointer; font-weight:600; color:#888; padding-bottom:4px;">채팅 / 봇 관리</div>
-    <div id="main-tab-product" style="cursor:pointer; font-weight:600; color:#888; padding-bottom:4px;">상품 관리</div>
-  `;
-  leftPanel.appendChild(tabHeader);
-
-
-  // 1. 기본 설정 폼
-  const configCard = document.createElement('div');
-  configCard.className = 'card';
-  configCard.style.padding = '24px';
-  configCard.style.borderRadius = '12px';
-  configCard.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
-  configCard.style.border = 'none';
-  configCard.innerHTML = `
-    <h3 style="margin-top:0; border-bottom:1px solid #f3f4f6; padding-bottom:16px; margin-bottom:24px; font-size:18px; font-weight:700; color:#111;">라이브 기본 설정</h3>
-    
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
-      <div>
-        <label class="modern-label">제목 (브랜드명)</label>
-        <input type="text" class="modern-input" id="config-brandName" value="${config.brandName || 'Ryzin Corp'}">
-      </div>
-      <div>
-        <label class="modern-label">부제목 (방송 제목)</label>
-        <input type="text" class="modern-input" id="config-title" value="${config.title || ''}">
-      </div>
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;';
+  header.innerHTML = `
+    <div>
+      <h1 style="margin:0; font-size:26px; font-weight:800; color:#0f172a;">라이브 목록</h1>
+      <p style="margin:6px 0 0; font-size:14px; color:#64748b;">각 라이브는 독립된 URL로 시청자에게 제공됩니다.</p>
     </div>
-
-    <div style="margin-bottom:24px;">
-      <label class="modern-label">방송 시작 일시 (카운트다운용)</label>
-      <input type="datetime-local" class="modern-input" id="config-liveStartTime" value="${config.liveStartTime || ''}">
-    </div>
-
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:24px;">
-      <div class="file-upload-wrapper">
-        <div style="width:56px; height:56px; border-radius:50%; overflow:hidden; border:2px solid #e5e7eb; flex-shrink:0;">
-          <img id="logo-preview" src="${config.logoUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
-        </div>
-        <div>
-          <label class="modern-label">프로필 이미지</label>
-          <label class="file-upload-btn" for="config-logoFile">이미지 업로드</label>
-          <input type="file" id="config-logoFile" accept="image/*" style="display:none;">
-        </div>
-      </div>
-      <div class="file-upload-wrapper">
-        <div style="width:40px; height:71px; border-radius:6px; overflow:hidden; border:2px solid #e5e7eb; flex-shrink:0;">
-          <img id="thumbnail-preview" src="${config.thumbnailUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
-        </div>
-        <div>
-          <label class="modern-label">라이브 썸네일 (9:16 비율)</label>
-          <label class="file-upload-btn" for="config-thumbnailFile">이미지 업로드</label>
-          <input type="file" id="config-thumbnailFile" accept="image/*" style="display:none;">
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-bottom:24px;">
-      <label class="modern-label">스트리밍 URL (m3u8)</label>
-      <input type="text" class="modern-input" id="config-stream" value="${config.streamUrl}">
-    </div>
-
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:24px;">
-      <div>
-        <label class="modern-label">시청자 수 뻥튀기</label>
-        <input type="number" class="modern-input" id="stat-viewers" value="${stats.viewers}">
-      </div>
-      <div>
-        <label class="modern-label">하트 수 뻥튀기</label>
-        <input type="number" class="modern-input" id="stat-hearts" value="${stats.hearts}">
-      </div>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:24px; margin-bottom:32px; background:#f9fafb; padding:16px; border-radius:8px;">
-      <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:500; cursor:pointer;">
-        <input type="checkbox" id="config-show-viewers" style="width:18px; height:18px; accent-color:#e50914;" ${config.showViewers !== false ? 'checked' : ''}>
-        시청자 수 노출
-      </label>
-      <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:500; cursor:pointer;">
-        <input type="checkbox" id="config-bot" style="width:18px; height:18px; accent-color:#e50914;" ${config.botEnabled ? 'checked' : ''}>
-        채팅 봇 활성화
-      </label>
-    </div>
-
-    <div style="display:flex; gap:12px; flex-direction:column;">
-      <button id="btn-save-config" class="btn" style="width:100%; padding:14px; font-weight:700; background:#111; color:#fff; border:none; border-radius:8px; font-size:15px; transition:opacity 0.2s;">
-        라이브 설정 일괄 적용 (저장)
-      </button>
-      <button id="btn-toggle-live" class="btn" style="width:100%; padding:14px; font-weight:700; color:white; background:${config.isLive ? '#6b7280' : '#e50914'}; border:none; border-radius:8px; font-size:15px; transition:opacity 0.2s;">
-        ${config.isLive ? '라이브 종료하기' : '라이브 시작하기'}
-      </button>
-    </div>
-  `;
-
-  // 2. 상품 관리
-  const renderProductList = () => {
-    return products.map((p, idx) => `
-      <div class="product-row">
-        <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 업로드">
-          <img src="${p.image}" id="img-preview-${idx}">
-          <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
-        </div>
-        <div class="product-inputs">
-          <input type="text" class="modern-input" value="${p.name}" data-idx="${idx}" data-field="name" placeholder="상품명">
-          <input type="text" class="modern-input" value="${p.url}" data-idx="${idx}" data-field="url" placeholder="상품 구매 링크 URL">
-          <div class="product-prices">
-            <input type="number" class="modern-input" value="${(p.price||'').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="라이브가(숫자)">
-            <input type="number" class="modern-input" value="${(p.normalPrice||'').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가(숫자)">
-            <input type="number" min="0" max="100" class="modern-input" style="max-width:80px; text-align:center;" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="할인율%" readonly>
-            <button class="btn btn-danger btn-del-product" data-idx="${idx}" style="padding:10px 16px; font-weight:600; border-radius:8px; border:none; background:#ef4444; color:#fff;">삭제</button>
-          </div>
-          <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:8px 12px; border-radius:8px; border:1px solid #fecdd3;">
-            <span style="font-size:13px; font-weight:600; color:#e11d48;">🎁 깜짝딜</span>
-            <input type="text" class="modern-input" style="width:120px; padding:6px 10px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
-            <input type="number" class="modern-input" style="width:70px; padding:6px 10px;" id="deal-min-${idx}" placeholder="분">
-            <button class="btn btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">시작</button>
-            <button class="btn btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">종료/취소</button>
-            <span id="deal-status-${idx}" style="font-size:12px; font-weight:600; color:#e11d48; margin-left:auto;">${p.dealEndTime && p.dealEndTime > Date.now() ? '진행중 ⏰' : ''}</span>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  };
-
-  const productCard = document.createElement('div');
-  productCard.className = 'card';
-  productCard.style.display = 'none';
-  productCard.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3f4f6; padding-bottom:16px; margin-bottom:20px;">
-      <h3 style="margin:0; font-size:18px; font-weight:700; color:#111;">상품 관리</h3>
-      <div style="display:flex; gap:8px;">
-        <button class="btn" id="btn-add-product" style="padding:8px 16px; background:#f3f4f6; border:1px solid #d1d5db; color:#374151; font-weight:600; border-radius:6px; font-size:14px;">+ 상품 추가</button>
-        <button class="btn" id="btn-save-products" style="padding:8px 16px; background:#111; border:none; color:#fff; font-weight:600; border-radius:6px; font-size:14px;">상품 일괄 적용</button>
-      </div>
-    </div>
-    </div>
-    <div id="product-list-container">
-      ${renderProductList()}
-    </div>
-  `;
-
-  leftPanel.appendChild(configCard);
-  leftPanel.appendChild(productCard);
-
-  // 오른쪽 (모니터링 및 채팅)
-  const rightPanel = document.createElement('div');
-  rightPanel.style.width = '380px';
-  rightPanel.style.display = 'flex';
-  rightPanel.style.flexDirection = 'column';
-  rightPanel.style.gap = '16px';
-
-  const previewUrl = window.location.origin.includes('localhost:5173') ? 'http://localhost:8080/live/' : '/live/';
-  
-  const previewCard = document.createElement('div');
-  previewCard.className = 'card';
-  previewCard.style.padding = '0';
-  previewCard.style.overflow = 'hidden';
-  // 9:16 모바일 비율 유지 (예: 360x640)
-  previewCard.style.width = '360px';
-  previewCard.style.height = '640px'; 
-  previewCard.style.margin = '0 auto';
-  previewCard.style.display = 'flex';
-  previewCard.style.flexDirection = 'column';
-  previewCard.style.borderRadius = '16px';
-  previewCard.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-  previewCard.innerHTML = `
-    <div style="background:#2c3e50; color:#fff; padding:12px 16px; font-weight:bold; font-size:14px; display:flex; justify-content:space-between; align-items:center;">
-      <span>모바일 미리보기</span>
-      <button class="btn btn-primary btn-sm" id="btn-refresh-preview" style="padding:4px 10px; font-size:12px; border-radius:4px;">새로고침</button>
-    </div>
-    <iframe id="live-preview-iframe" src="${previewUrl}" style="width:100%; flex:1; border:none; background:#000;"></iframe>
-  `;
-
-  const chatCard = document.createElement('div');
-  chatCard.className = 'card';
-  chatCard.style.flex = '1';
-  chatCard.style.display = 'flex';
-  chatCard.style.flexDirection = 'column';
-  chatCard.style.padding = '24px';
-  chatCard.style.borderRadius = '16px';
-  chatCard.style.boxShadow = '0 10px 25px rgba(0,0,0,0.05)';
-  chatCard.style.border = '1px solid #f3f4f6';
-  chatCard.style.background = '#fff';
-  chatCard.innerHTML = `
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
-      <span style="font-size:20px;">💬</span>
-      <h3 style="margin:0; font-size:18px; font-weight:700; color:#111;">관리자 채팅 발송</h3>
-    </div>
-    <div id="admin-chat-list" style="flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; overflow-y:auto; margin-bottom:16px; min-height:180px; font-size:14px; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">
-      <div style="color:#94a3b8; text-align:center; padding-top:60px; font-weight:500;">
-        <span style="display:block; font-size:24px; margin-bottom:8px;">💭</span>
-        실시간 채팅 내역이 여기에 표시됩니다.
-      </div>
-    </div>
-    <div style="display:flex; gap:12px;">
-      <input type="text" id="admin-chat-input" class="modern-input" placeholder="시청자들에게 보낼 관리자 공지를 입력하세요..." style="flex:1; border-radius:10px; padding:12px 16px;">
-      <button id="btn-send-chat" class="btn btn-primary" style="border-radius:10px; padding:0 24px; font-weight:600; box-shadow:0 4px 6px rgba(59,130,246,0.25); transition:all 0.2s;">전송</button>
-    </div>
-  `;
-
-
-  // --- NEW CHAT BOT CARD ---
-  const botCard = document.createElement('div');
-  botCard.className = 'card';
-  botCard.style.padding = '24px';
-  botCard.style.borderRadius = '16px';
-  botCard.style.boxShadow = '0 10px 25px rgba(0,0,0,0.05)';
-  botCard.style.border = '1px solid #f3f4f6';
-  botCard.style.background = '#fff';
-  botCard.style.marginTop = '24px';
-  botCard.innerHTML = `
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-      <h3 style="margin:0; font-size:18px; font-weight:700; color:#111;">채팅 봇</h3>
-    </div>
-    <p style="font-size:13px; color:#64748b; margin-bottom:20px; line-height:1.6;">
-      시청자에게 자연스럽게 보여질 가상의 채팅 리스트입니다.<br>
-      <b style="color:#0f172a; background:#f1f5f9; padding:2px 6px; border-radius:4px;">닉네임 | 채팅내용</b> 형식으로 한 줄씩 자유롭게 입력해주세요.
-    </p>
-    <textarea id="bot-chat-list" class="modern-input" style="width:100%; height:140px; font-family:'Menlo', monospace; margin-bottom:20px; resize:vertical; padding:16px; font-size:14px; border-radius:12px; background:#f8fafc; border:1px solid #e2e8f0; line-height:1.6;" placeholder="구매자1 | 와 진짜 너무 싸네요!\n라이브맘 | 방금 두 개 주문 완료했습니다ㅎㅎ\n뷰티러버 | 이거 배송 얼마나 걸리나요?"></textarea>
-    
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; background:#f1f5f9; padding:12px 16px; border-radius:10px;">
-      <label style="margin-bottom:0; font-size:14px; font-weight:600; color:#334155;">자동 전송 주기</label>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <input type="number" id="bot-interval" class="modern-input" style="width:80px; text-align:center; border-radius:8px; padding:8px; font-weight:bold; color:#0f172a;" value="5" min="1">
-        <span style="font-size:13px; color:#64748b; font-weight:500;">초마다 1개씩</span>
-      </div>
-    </div>
-    
-    <button id="btn-toggle-bot" class="btn" style="width:100%; background:linear-gradient(135deg, #3b82f6, #2563eb); border-radius:10px; padding:14px; font-size:16px; font-weight:bold; box-shadow:0 4px 12px rgba(37,99,235,0.3); color:white; border:none; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px;">
-      <span id="bot-btn-icon" style="font-size:18px;">▶</span> <span id="bot-btn-text">채팅 봇 가동 시작</span>
+    <button id="btn-create-live" class="action-btn btn-primary-solid">
+      <span style="font-size:18px;">+</span> 새 라이브 생성
     </button>
   `;
+  wrapper.appendChild(header);
 
-  rightPanel.appendChild(previewCard);
+  const listContainer = document.createElement('div');
+  listContainer.id = 'live-list-container';
+  wrapper.appendChild(listContainer);
 
-  // 채팅 & 봇 탭 컨테이너
-  const chatContainer = document.createElement('div');
-  chatContainer.style.display = 'none';
-  chatContainer.style.flexDirection = 'column';
-  chatContainer.style.gap = '24px';
-  chatContainer.appendChild(chatCard);
-  chatContainer.appendChild(botCard);
-  leftPanel.appendChild(chatContainer);
+  container.appendChild(wrapper);
 
+  const renderList = () => {
+    const lives = getLives();
+    listContainer.innerHTML = '';
 
-  container.appendChild(leftPanel);
-  container.appendChild(rightPanel);
+    if (lives.length === 0) {
+      listContainer.innerHTML = `
+        <div style="text-align:center; padding:80px 20px; color:#94a3b8;">
+          <div style="font-size:48px; margin-bottom:16px;">📡</div>
+          <p style="font-size:16px; font-weight:600; margin:0 0 8px;">아직 생성된 라이브가 없습니다.</p>
+          <p style="font-size:14px; margin:0;">"새 라이브 생성" 버튼으로 첫 번째 라이브를 만들어보세요!</p>
+        </div>
+      `;
+      return;
+    }
 
-  // 이벤트 바인딩
-  setTimeout(() => {
-    // 탭 전환 로직
-    const tabConfig = document.getElementById('main-tab-config');
-    const tabChat = document.getElementById('main-tab-chat');
-    const tabProduct = document.getElementById('main-tab-product');
-    
-    const resetTabs = () => {
-      [tabConfig, tabChat, tabProduct].forEach(t => { t.style.fontWeight = '600'; t.style.color = '#888'; t.style.borderBottom = 'none'; });
-      configCard.style.display = 'none';
-      chatContainer.style.display = 'none';
-      productCard.style.display = 'none';
-    };
+    lives.forEach((live) => {
+      const config = getLiveConfig(live.id) || {};
+      const badgeClass = config.isLive ? 'badge-live' : (config.liveStartTime ? 'badge-ready' : 'badge-ended');
+      const badgeText = config.isLive ? '🔴 LIVE' : (config.liveStartTime ? '예고중' : '준비중');
+      const viewerUrl = `https://ryzincorp.com/live?id=${live.id}`;
 
-    tabConfig.addEventListener('click', () => {
-      resetTabs();
-      tabConfig.style.fontWeight = '700';
-      tabConfig.style.color = '#111';
-      tabConfig.style.borderBottom = '2px solid #111';
-      configCard.style.display = 'block';
+      const card = document.createElement('div');
+      card.className = 'live-card';
+      card.innerHTML = `
+        <div style="width:48px; height:48px; background:linear-gradient(135deg,#3b82f6,#2563eb); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:800; flex-shrink:0;">
+          ${live.id.replace('live', '')}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+            <span style="font-size:16px; font-weight:700; color:#0f172a;">${config.brandName || live.id}</span>
+            <span class="live-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <div style="font-size:13px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${config.title || '방송 제목 미설정'}</div>
+          <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
+            <span style="font-size:11px; font-weight:600; color:#94a3b8; background:#f1f5f9; padding:2px 8px; border-radius:6px; font-family:monospace;">${live.id}</span>
+            <a href="${viewerUrl}" target="_blank" style="font-size:11px; color:#3b82f6; text-decoration:none; font-weight:600;">${viewerUrl} ↗</a>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <button class="action-btn btn-neutral btn-edit" data-id="${live.id}" style="padding:8px 16px; font-size:13px;">설정 ›</button>
+          <button class="action-btn btn-neutral btn-delete" data-id="${live.id}" style="padding:8px 12px; font-size:13px; color:#ef4444; border-color:#fee2e2;">삭제</button>
+        </div>
+      `;
+      listContainer.appendChild(card);
     });
 
-    tabChat.addEventListener('click', () => {
-      resetTabs();
-      tabChat.style.fontWeight = '700';
-      tabChat.style.color = '#111';
-      tabChat.style.borderBottom = '2px solid #111';
-      chatContainer.style.display = 'flex';
-    });
-    
-    tabProduct.addEventListener('click', () => {
-      resetTabs();
-      tabProduct.style.fontWeight = '700';
-      tabProduct.style.color = '#111';
-      tabProduct.style.borderBottom = '2px solid #111';
-      productCard.style.display = 'block';
-    });
-
-    // 설정 변경 이벤트 (통계치만 즉시 반영, 나머지는 수동 저장)
-    const bindStatInput = (id, key) => {
-      document.getElementById(id).addEventListener('input', (e) => {
-        stats[key] = parseInt(e.target.value) || 0;
-        saveStats();
+    listContainer.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showView(btn.dataset.id);
       });
-    };
-    
-    document.getElementById('config-brandName').addEventListener('input', (e) => { config.brandName = e.target.value; saveConfig(); });
-    document.getElementById('config-title').addEventListener('input', (e) => { config.title = e.target.value; saveConfig(); });
-    document.getElementById('config-stream').addEventListener('input', (e) => { config.streamUrl = e.target.value; saveConfig(); });
-    document.getElementById('config-liveStartTime').addEventListener('input', (e) => { config.liveStartTime = e.target.value; saveConfig(); });
-
-    // 이미지 업로드 공통 함수 (Catbox/tmpfiles 무료 서버)
-    const uploadImage = async (file, previewId, configKey) => {
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const preview = document.getElementById(previewId);
-      preview.style.opacity = '0.5';
-      
-      try {
-        const res = await fetch('https://tmpfiles.org/api/v1/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const json = await res.json();
-        if (json.status === 'success') {
-          const url = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-          config[configKey] = url;
-          preview.src = url;
-          saveConfig();
-        } else {
-          alert('이미지 업로드 실패');
+    });
+    listContainer.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        if (confirm(`${id} 라이브를 삭제하시겠습니까? 관련 데이터가 모두 삭제됩니다.`)) {
+          let lives = getLives();
+          lives = lives.filter(l => l.id !== id);
+          saveLives(lives);
+          localStorage.removeItem(`ryzin_config_${id}`);
+          localStorage.removeItem(`ryzin_stats_${id}`);
+          localStorage.removeItem(`ryzin_products_${id}`);
+          localStorage.removeItem(`ryzin_bot_${id}`);
+          renderList();
         }
-      } catch (err) {
-        console.error(err);
-        alert('이미지 업로드 에러');
-      } finally {
-        preview.style.opacity = '1';
-      }
-    };
-
-    document.getElementById('config-logoFile').addEventListener('change', (e) => {
-      uploadImage(e.target.files[0], 'logo-preview', 'logoUrl');
+      });
     });
 
-    document.getElementById('config-thumbnailFile').addEventListener('change', (e) => {
-      uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl');
+    // 카드 자체 클릭
+    listContainer.querySelectorAll('.live-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+        const id = card.querySelector('.btn-edit').dataset.id;
+        showView(id);
+      });
+    });
+  };
+
+  renderList();
+
+  document.getElementById('btn-create-live').addEventListener('click', () => {
+    const id = nextLiveId();
+    const lives = getLives();
+    lives.push({ id, createdAt: Date.now() });
+    saveLives(lives);
+
+    const defaultConfig = {
+      brandName: `라이브 ${id}`,
+      title: '단독 특가 라이브 방송 중!',
+      streamUrl: '',
+      logoUrl: '',
+      thumbnailUrl: '',
+      liveStartTime: '',
+      showViewers: true,
+      isLive: false,
+      botEnabled: false
+    };
+    saveLiveConfig(id, defaultConfig);
+    saveLiveStats(id, { viewers: 0, hearts: 0 });
+    saveLiveProductsLocal(id, []);
+    renderList();
+    showView(id);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  LIVE EDIT VIEW — 개별 라이브 설정
+// ═══════════════════════════════════════════════════════════════
+function renderLiveEditView(container, liveId, showView) {
+  let config = getLiveConfig(liveId) || {};
+  let stats = getLiveStats(liveId);
+  let products = getLiveProducts(liveId);
+  let botCfg = getBotConfig(liveId);
+
+  const saveConfig = () => {
+    saveLiveConfig(liveId, config);
+    syncToSheetDB(liveId, config, stats, products);
+  };
+  const saveStats = () => {
+    saveLiveStats(liveId, stats);
+    syncToSheetDB(liveId, config, stats, products);
+  };
+  const saveProducts = () => {
+    saveLiveProductsLocal(liveId, products);
+  };
+  const saveBotCfg = () => saveBotConfig(liveId, botCfg);
+
+  // ── 레이아웃 ──────────────────────────────────────────────
+  const layout = document.createElement('div');
+  layout.style.cssText = 'display:flex; gap:0; height:100%; overflow:hidden;';
+
+  // 좌측 (컨트롤)
+  const leftPanel = document.createElement('div');
+  leftPanel.style.cssText = 'flex:1; display:flex; flex-direction:column; overflow:hidden;';
+
+  // 탑바
+  const topBar = document.createElement('div');
+  topBar.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px 28px; background:#fff; border-bottom:1.5px solid #e2e8f0; flex-shrink:0;';
+  topBar.innerHTML = `
+    <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px;">← 목록</button>
+    <div style="display:flex; align-items:center; gap:10px; flex:1;">
+      <span style="font-size:13px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 12px; border-radius:8px; font-family:monospace;">${liveId}</span>
+      <span style="font-size:16px; font-weight:700; color:#0f172a;">${config.brandName || ''}</span>
+    </div>
+    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px;">
+      <button class="tab-btn active" data-tab="config">라이브 기본설정</button>
+      <button class="tab-btn" data-tab="chat">채팅 / 봇 관리</button>
+      <button class="tab-btn" data-tab="product">상품 관리</button>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-left:8px;">
+      <span style="font-size:12px; color:#64748b; font-weight:600;">시청자 URL</span>
+      <a href="https://ryzincorp.com/live?id=${liveId}" target="_blank" style="font-size:12px; color:#3b82f6; font-weight:600; font-family:monospace;">ryzincorp.com/live?id=${liveId} ↗</a>
+    </div>
+  `;
+  leftPanel.appendChild(topBar);
+
+  // 탭 컨텐츠 영역
+  const contentArea = document.createElement('div');
+  contentArea.style.cssText = 'flex:1; overflow-y:auto; padding:28px;';
+  leftPanel.appendChild(contentArea);
+
+  layout.appendChild(leftPanel);
+
+  // 우측 (미리보기)
+  const rightPanel = document.createElement('div');
+  rightPanel.style.cssText = 'width:340px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; padding:24px 20px; background:#fff; border-left:1.5px solid #e2e8f0; gap:16px; overflow-y:auto;';
+
+  const isLocal = window.location.origin.includes('localhost:5173');
+  const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
+  const previewUrl = `${previewBase}?id=${liveId}`;
+
+  rightPanel.innerHTML = `
+    <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; align-self:flex-start;">모바일 미리보기</div>
+    <div style="width:300px; height:535px; border-radius:20px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.15); border:1.5px solid #e2e8f0; flex-shrink:0;">
+      <iframe id="live-preview-iframe" src="${previewUrl}" style="width:100%; height:100%; border:none; background:#000;"></iframe>
+    </div>
+    <button id="btn-refresh-preview" class="action-btn btn-neutral" style="width:100%; justify-content:center;">새로고침</button>
+  `;
+  layout.appendChild(rightPanel);
+
+  container.appendChild(layout);
+
+  // ── 탭 패널 렌더 함수들 ───────────────────────────────────
+  const renderConfigTab = () => {
+    contentArea.innerHTML = `
+      <div class="section-card">
+        <h3>기본 정보</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
+          <div>
+            <label class="modern-label">브랜드명 (제목)</label>
+            <input type="text" class="modern-input" id="cfg-brandName" value="${config.brandName || ''}">
+          </div>
+          <div>
+            <label class="modern-label">방송 부제목</label>
+            <input type="text" class="modern-input" id="cfg-title" value="${config.title || ''}">
+          </div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <label class="modern-label">방송 시작 예정 일시 (카운트다운용)</label>
+          <input type="datetime-local" class="modern-input" id="cfg-liveStartTime" value="${config.liveStartTime || ''}">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
+          <div class="file-upload-wrapper">
+            <div style="width:56px; height:56px; border-radius:50%; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0;">
+              <img id="logo-preview" src="${config.logoUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div>
+              <label class="modern-label">프로필 이미지</label>
+              <label class="file-upload-btn" for="cfg-logoFile">이미지 업로드</label>
+              <input type="file" id="cfg-logoFile" accept="image/*" style="display:none;">
+            </div>
+          </div>
+          <div class="file-upload-wrapper">
+            <div style="width:40px; height:71px; border-radius:8px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0;">
+              <img id="thumbnail-preview" src="${config.thumbnailUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            <div>
+              <label class="modern-label">썸네일 (9:16)</label>
+              <label class="file-upload-btn" for="cfg-thumbnailFile">이미지 업로드</label>
+              <input type="file" id="cfg-thumbnailFile" accept="image/*" style="display:none;">
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="modern-label">스트리밍 URL (m3u8)</label>
+          <input type="text" class="modern-input" id="cfg-stream" value="${config.streamUrl || ''}">
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h3>통계 (가라 데이터)</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+          <div>
+            <label class="modern-label">시청자 수</label>
+            <input type="number" class="modern-input" id="cfg-viewers" value="${stats.viewers}">
+          </div>
+          <div>
+            <label class="modern-label">하트 수</label>
+            <input type="number" class="modern-input" id="cfg-hearts" value="${stats.hearts}">
+          </div>
+        </div>
+        <div style="margin-top:18px; display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="cfg-showViewers" style="width:18px; height:18px; accent-color:#3b82f6;" ${config.showViewers ? 'checked' : ''}>
+          <label for="cfg-showViewers" style="font-size:14px; font-weight:600; color:#374151; cursor:pointer;">시청자 수 화면에 노출</label>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button id="btn-save-config" class="action-btn btn-primary-solid" style="flex:1; justify-content:center; padding:14px; font-size:15px;">설정 저장 (SheetDB 적용)</button>
+        <button id="btn-toggle-live" class="action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}" style="flex:1; justify-content:center; padding:14px; font-size:15px;">
+          ${config.isLive ? '🔴 라이브 종료' : '🟢 라이브 시작'}
+        </button>
+      </div>
+    `;
+
+    // 이벤트
+    document.getElementById('btn-save-config').addEventListener('click', () => {
+      config.brandName = document.getElementById('cfg-brandName').value;
+      config.title = document.getElementById('cfg-title').value;
+      config.streamUrl = document.getElementById('cfg-stream').value;
+      config.liveStartTime = document.getElementById('cfg-liveStartTime').value;
+      stats.viewers = parseInt(document.getElementById('cfg-viewers').value) || 0;
+      stats.hearts = parseInt(document.getElementById('cfg-hearts').value) || 0;
+      config.showViewers = document.getElementById('cfg-showViewers').checked;
+      saveConfig();
+      saveStats();
+      // topbar 브랜드명 업데이트
+      topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
+      alert('설정이 저장되었습니다!');
     });
 
     document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
       config.isLive = !config.isLive;
-      e.target.textContent = config.isLive ? '라이브 종료하기' : '라이브 시작하기';
-      e.target.style.background = config.isLive ? '#6b7280' : '#10b981';
+      e.target.textContent = config.isLive ? '🔴 라이브 종료' : '🟢 라이브 시작';
+      e.target.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
+      e.target.style.cssText = 'flex:1; justify-content:center; padding:14px; font-size:15px;';
       saveConfig();
-      // 방송 상태는 즉시 DB 반영
-      alert(config.isLive ? '라이브가 시작되었습니다! 모바일 시청자들에게 영상이 송출됩니다.' : '라이브가 종료되었습니다. 시청자들에게 썸네일이 노출됩니다.');
+      syncToSheetDB(liveId, config, stats, products, true);
     });
 
-    document.getElementById('btn-save-config').addEventListener('click', () => {
-      config.brandName = document.getElementById('config-brandName').value;
-      config.title = document.getElementById('config-title').value;
-      config.streamUrl = document.getElementById('config-stream').value;
-      config.liveStartTime = document.getElementById('config-liveStartTime').value;
-      saveConfig();
-      alert('라이브 기본설정이 저장되었습니다.');
-    });
+    const uploadImage = async (file, previewId, configKey) => {
+      if (!file) return;
+      const fd = new FormData();
+      fd.append('file', file);
+      document.getElementById(previewId).style.opacity = '0.5';
+      try {
+        const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.status === 'success') {
+          const url = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+          config[configKey] = url;
+          document.getElementById(previewId).src = url;
+          saveConfig();
+        }
+      } catch (err) { console.error(err); }
+      finally { document.getElementById(previewId).style.opacity = '1'; }
+    };
 
+    document.getElementById('cfg-logoFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'logo-preview', 'logoUrl'));
+    document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
+  };
 
-    bindStatInput('stat-viewers', 'viewers');
-    bindStatInput('stat-hearts', 'hearts');
-    
-    document.getElementById('config-bot').addEventListener('change', (e) => {
-      config.botEnabled = e.target.checked;
-      saveConfig();
-    });
-    document.getElementById('config-show-viewers').addEventListener('change', (e) => {
-      config.showViewers = e.target.checked;
-      saveConfig();
-    });
+  const renderChatTab = () => {
+    contentArea.innerHTML = `
+      <div class="section-card">
+        <h3>관리자 채팅 발송</h3>
+        <div id="admin-chat-list" style="height:200px; overflow-y:auto; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:16px; font-size:14px;">
+          <div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
+            <div style="font-size:24px; margin-bottom:8px;">💭</div>
+            실시간 채팅 내역이 여기에 표시됩니다.
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <input type="text" id="admin-chat-input" class="modern-input" placeholder="시청자에게 공지할 내용을 입력하세요..." style="flex:1;">
+          <button id="btn-send-chat" class="action-btn btn-primary-solid" style="white-space:nowrap;">전송</button>
+        </div>
+      </div>
 
-    // 미리보기 새로고침
-    document.getElementById('btn-refresh-preview').addEventListener('click', () => {
-      document.getElementById('live-preview-iframe').src = previewUrl;
-    });
+      <div class="section-card">
+        <h3>채팅 봇</h3>
+        <p style="font-size:13px; color:#64748b; margin:0 0 16px; line-height:1.6;">
+          시청자에게 보여질 가상 채팅입니다.<br>
+          <code style="background:#f1f5f9; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:700;">닉네임 | 채팅내용</code> 형식으로 한 줄씩 입력하세요.
+        </p>
+        <textarea id="bot-chat-list" class="modern-input" style="height:140px; font-family:monospace; resize:vertical; font-size:13px; line-height:1.7; margin-bottom:16px;" placeholder="뷰티러버 | 이 제품 민감성 피부도 사용 가능한가요?&#10;예쁜하루 | 오늘 할인율이 몇 %인가요?&#10;맘스타그램 | 임산부도 사용해도 되나요?">${botCfg.list}</textarea>
+        <div style="display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:14px 18px; border-radius:10px; border:1.5px solid #e2e8f0; margin-bottom:16px;">
+          <label style="font-size:14px; font-weight:700; color:#374151;">자동 전송 주기</label>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="number" id="bot-interval" class="modern-input" value="${botCfg.interval}" min="1" style="width:72px; text-align:center; font-weight:700;">
+            <span style="font-size:13px; color:#64748b; font-weight:600;">초마다 1개</span>
+          </div>
+        </div>
+        <button id="btn-toggle-bot" class="action-btn btn-primary-solid" style="width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;">
+          <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
+        </button>
+      </div>
+    `;
 
-    // 상품 리스트 이벤트
+    // 관리자 채팅 전송
+    const chatInput = document.getElementById('admin-chat-input');
+    const chatList = document.getElementById('admin-chat-list');
+    let isSending = false;
+    const sendAdminChat = async () => {
+      const text = chatInput.value.trim();
+      if (!text || isSending) return;
+      isSending = true;
+      const msgId = Date.now();
+      const div = document.createElement('div');
+      div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;';
+      div.innerHTML = `<span style="font-weight:700; color:#3b82f6;">관리자:</span> ${text}`;
+      if (chatList.innerHTML.includes('실시간 채팅')) chatList.innerHTML = '';
+      chatList.appendChild(div);
+      chatList.scrollTop = chatList.scrollHeight;
+      chatInput.value = '';
+      try {
+        await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: [{ 'live_id': liveId, '시간': msgId.toString(), '닉네임': '관리자', '내용': text }] })
+        });
+      } catch (e) { console.warn('Admin chat send failed', e); }
+      finally { isSending = false; }
+    };
+    document.getElementById('btn-send-chat').addEventListener('click', sendAdminChat);
+    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAdminChat(); });
+
+    // 채팅 봇
+    const botListEl = document.getElementById('bot-chat-list');
+    const botIntervalEl = document.getElementById('bot-interval');
+    botListEl.addEventListener('input', () => { botCfg.list = botListEl.value; saveBotCfg(); });
+    botIntervalEl.addEventListener('input', () => { botCfg.interval = parseInt(botIntervalEl.value) || 10; saveBotCfg(); });
+
+    let botTimer = null;
+    let botActive = false;
+    document.getElementById('btn-toggle-bot').addEventListener('click', () => {
+      botActive = !botActive;
+      const icon = document.getElementById('bot-icon');
+      const text = document.getElementById('bot-text');
+      const btn = document.getElementById('btn-toggle-bot');
+      if (botActive) {
+        const lines = botListEl.value.split('\n').map(l => l.trim()).filter(l => l.includes('|'));
+        if (lines.length === 0) { alert('닉네임|내용 형식으로 1줄 이상 입력해주세요.'); botActive = false; return; }
+        icon.textContent = '⏸';
+        text.textContent = '채팅 봇 중지';
+        btn.className = 'action-btn btn-danger-solid';
+        btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
+        const sec = parseInt(botIntervalEl.value) || 10;
+        botTimer = setInterval(async () => {
+          const line = lines[Math.floor(Math.random() * lines.length)];
+          const [name, ...parts] = line.split('|');
+          const msgText = parts.join('|').trim();
+          if (!name || !msgText) return;
+          const msgId = Date.now();
+          // UI 반영
+          const div = document.createElement('div');
+          div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;';
+          div.innerHTML = `<span style="font-weight:700; color:#64748b;">${name.trim()}:</span> ${msgText}`;
+          if (chatList.innerHTML.includes('실시간 채팅')) chatList.innerHTML = '';
+          chatList.appendChild(div);
+          chatList.scrollTop = chatList.scrollHeight;
+          // SheetDB 전송
+          try {
+            await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: [{ 'live_id': liveId, '시간': msgId.toString(), '닉네임': name.trim(), '내용': msgText }] })
+            });
+          } catch (e) { console.warn('Bot chat failed', e); }
+        }, sec * 1000);
+      } else {
+        if (botTimer) clearInterval(botTimer);
+        icon.textContent = '▶';
+        text.textContent = '채팅 봇 시작';
+        btn.className = 'action-btn btn-primary-solid';
+        btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
+      }
+    });
+  };
+
+  const renderProductList = () => products.map((p, idx) => `
+    <div class="product-row">
+      <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경">
+        <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}">
+        <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
+      </div>
+      <div class="product-inputs">
+        <input type="text" class="modern-input" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
+        <input type="text" class="modern-input" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL">
+        <div class="product-prices">
+          <input type="number" class="modern-input" value="${(p.price||'').toString().replace(/[^0-9]/g,'')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
+          <input type="number" class="modern-input" value="${(p.normalPrice||'').toString().replace(/[^0-9]/g,'')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
+          <input type="number" class="modern-input" value="${p.discountRate||0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="max-width:72px; text-align:center;">
+          <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:10px; border:1px solid #fecdd3;">
+          <span style="font-size:12px; font-weight:700; color:#e11d48;">⚡ 깜짝딜</span>
+          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText||'깜짝딜 종료까지'}">
+          <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
+          <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+          <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+          ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const renderProductTab = () => {
+    contentArea.innerHTML = `
+      <div class="section-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
+          <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-add-product" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
+            <button id="btn-save-products" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">SheetDB 적용</button>
+          </div>
+        </div>
+        <div id="product-list-container">${renderProductList()}</div>
+      </div>
+    `;
+
     const bindProductEvents = () => {
-      const container = document.getElementById('product-list-container');
-      container.querySelectorAll('input').forEach(input => {
+      const plc = document.getElementById('product-list-container');
+      plc.querySelectorAll('input[data-field]').forEach(input => {
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const field = e.target.dataset.field;
           products[idx][field] = e.target.value;
-          
-          // 정상가/할인가 입력 시 할인율 자동계산
           if (field === 'price' || field === 'normalPrice') {
-            const normalStr = (products[idx].normalPrice || '').toString().replace(/[^0-9]/g, '');
-            const priceStr = (products[idx].price || '').toString().replace(/[^0-9]/g, '');
-            if (normalStr && priceStr) {
-              const normal = Number(normalStr);
-              const price = Number(priceStr);
-              if (normal > 0 && normal >= price) {
-                const rate = Math.floor(((normal - price) / normal) * 100);
-                products[idx].discountRate = rate;
-                const rateInput = container.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
-                if (rateInput) rateInput.value = rate;
-              }
+            const n = Number((products[idx].normalPrice||'').toString().replace(/[^0-9]/g,''));
+            const p = Number((products[idx].price||'').toString().replace(/[^0-9]/g,''));
+            if (n > 0 && n >= p) {
+              products[idx].discountRate = Math.floor(((n - p) / n) * 100);
+              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
+              if (ri) ri.value = products[idx].discountRate;
             }
           }
           saveProducts();
         });
       });
-      container.querySelectorAll('.prod-img-upload').forEach(input => {
+      plc.querySelectorAll('.prod-img-upload').forEach(input => {
         input.addEventListener('change', async (e) => {
           const file = e.target.files[0];
           if (!file) return;
           const idx = parseInt(e.target.dataset.idx);
-          
-          const formData = new FormData();
-          formData.append('file', file);
-          
-          const previewImg = document.getElementById(`img-preview-${idx}`);
-          previewImg.style.opacity = '0.5';
-          
+          const preview = document.getElementById(`img-prev-${idx}`);
+          preview.style.opacity = '0.5';
+          const fd = new FormData(); fd.append('file', file);
           try {
-            const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: formData });
+            const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: fd });
             const json = await res.json();
             if (json.status === 'success') {
               const url = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
               products[idx].image = url;
-              previewImg.src = url;
+              preview.src = url;
               saveProducts();
-            } else {
-              alert('상품 이미지 업로드 실패');
             }
-          } catch (err) {
-            console.error(err);
-            alert('상품 이미지 업로드 에러');
-          } finally {
-            previewImg.style.opacity = '1';
-          }
+          } catch (e) { console.error(e); }
+          finally { preview.style.opacity = '1'; }
         });
       });
-      container.querySelectorAll('.btn-deal-start').forEach(btn => {
+      plc.querySelectorAll('.btn-deal-start').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);
-          const minInput = document.getElementById(`deal-min-${idx}`);
-          const textInput = document.getElementById(`deal-text-${idx}`);
-          const min = parseInt(minInput.value);
-          if(min > 0) {
-            products[idx].dealText = textInput ? textInput.value : '깜짝딜 종료까지';
+          const min = parseInt(document.getElementById(`deal-min-${idx}`).value);
+          if (min > 0) {
+            products[idx].dealText = document.getElementById(`deal-text-${idx}`).value || '깜짝딜 종료까지';
             products[idx].dealEndTime = Date.now() + min * 60 * 1000;
             saveProducts();
-            document.getElementById('product-list-container').innerHTML = renderProductList();
+            plc.innerHTML = renderProductList();
             bindProductEvents();
-            syncAllToSheetDB(true);
-            setTimeout(() => alert(`${min}분 깜짝딜이 시작되었습니다.`), 10);
+            syncToSheetDB(liveId, config, stats, products, true);
+            setTimeout(() => alert(`${min}분 깜짝딜이 시작되었습니다!`), 10);
           }
         });
       });
-      container.querySelectorAll('.btn-deal-cancel').forEach(btn => {
+      plc.querySelectorAll('.btn-deal-cancel').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           products[idx].dealEndTime = 0;
           saveProducts();
-          document.getElementById('product-list-container').innerHTML = renderProductList();
+          plc.innerHTML = renderProductList();
           bindProductEvents();
-          syncAllToSheetDB(true);
+          syncToSheetDB(liveId, config, stats, products, true);
         });
       });
-      container.querySelectorAll('.btn-del-product').forEach(btn => {
+      plc.querySelectorAll('.btn-del-product').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           products.splice(idx, 1);
           saveProducts();
-          document.getElementById('product-list-container').innerHTML = renderProductList();
+          plc.innerHTML = renderProductList();
           bindProductEvents();
         });
       });
@@ -606,151 +694,37 @@ export function renderLiveStream() {
     bindProductEvents();
 
     document.getElementById('btn-add-product').addEventListener('click', () => {
-      products.push({ id: Date.now(), name: "새 상품", price: "", normalPrice: "", discountRate: 0, image: "https://via.placeholder.com/200", url: "#" });
+      products.push({ id: Date.now(), name: '새 상품', price: '', normalPrice: '', discountRate: 0, image: 'https://via.placeholder.com/72', url: '#' });
       saveProducts();
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
     });
-
     document.getElementById('btn-save-products').addEventListener('click', () => {
-      syncAllToSheetDB();
-      alert('상품 목록이 시트 DB에 일괄 적용되었습니다.');
+      syncToSheetDB(liveId, config, stats, products, true);
+      alert('상품 목록이 SheetDB에 적용되었습니다!');
+    });
+  };
+
+  // ── 탭 전환 로직 ──────────────────────────────────────────
+  setTimeout(() => {
+    document.getElementById('btn-back').addEventListener('click', () => showView(null));
+    document.getElementById('btn-refresh-preview').addEventListener('click', () => {
+      document.getElementById('live-preview-iframe').src = previewUrl;
     });
 
-    // 관리자 채팅 전송
-    const chatInput = document.getElementById('admin-chat-input');
-    let isSending = false;
-    const sendChat = async () => {
-      const text = chatInput.value.trim();
-      if (!text || isSending) return;
-      
-      isSending = true;
-      const newChat = { id: Date.now(), name: '관리자', text: text, isAdmin: true };
-      
-      // Update local view (optimistic)
-      const chatList = document.getElementById('admin-chat-list');
-      const div = document.createElement('div');
-      div.style.marginBottom = '8px';
-      div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:4px;">${newChat.name}:</span> ${newChat.text}`;
-      chatList.appendChild(div);
-      chatList.scrollTop = chatList.scrollHeight;
-      
-      chatInput.value = '';
-      
-      // SheetDB로 POST
-      try {
-        await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: [{ '시간': newChat.id.toString(), '닉네임': '관리자', '내용': text }] })
-        });
-      } catch(e) { console.warn('Admin chat sync failed', e); }
-      finally { isSending = false; }
-    };
-    
-    document.getElementById('btn-send-chat').addEventListener('click', sendChat);
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendChat();
-    });
-
-    // --- 채팅 봇 로직 ---
-    const botListEl = document.getElementById('bot-chat-list');
-    const botIntervalEl = document.getElementById('bot-interval');
-    const btnToggleBot = document.getElementById('btn-toggle-bot');
-    
-    // 로컬 스토리지 불러오기
-    let botConfig = { list: "", interval: 5 };
-    try {
-      const stored = localStorage.getItem('ryzin_chatbot_config');
-      if (stored) {
-        botConfig = JSON.parse(stored);
-        botListEl.value = botConfig.list;
-        botIntervalEl.value = botConfig.interval;
-      }
-    } catch(e){}
-
-    const saveBotConfig = () => {
-      botConfig.list = botListEl.value;
-      botConfig.interval = parseInt(botIntervalEl.value) || 5;
-      localStorage.setItem('ryzin_chatbot_config', JSON.stringify(botConfig));
+    const tabBtns = topBar.querySelectorAll('.tab-btn');
+    const switchTab = (tabName) => {
+      tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
+      if (tabName === 'config') renderConfigTab();
+      else if (tabName === 'chat') renderChatTab();
+      else if (tabName === 'product') renderProductTab();
     };
 
-    botListEl.addEventListener('input', saveBotConfig);
-    botIntervalEl.addEventListener('input', saveBotConfig);
-
-    let botIntervalId = null;
-    let botActive = false;
-
-    btnToggleBot.addEventListener('click', () => {
-      botActive = !botActive;
-      if (botActive) {
-        const lines = botListEl.value.split('\n').map(l => l.trim()).filter(l => l && l.includes('|'));
-        if (lines.length === 0) {
-          alert("형식에 맞는 채팅 리스트(닉네임|내용)를 1줄 이상 입력해주세요.");
-          botActive = false;
-          return;
-        }
-        document.getElementById('bot-btn-icon').textContent = '⏸';
-        document.getElementById('bot-btn-text').textContent = '채팅 봇 가동 중지';
-        btnToggleBot.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-        btnToggleBot.style.boxShadow = '0 4px 12px rgba(220,38,38,0.3)';
-        
-        const sec = parseInt(botIntervalEl.value) || 5;
-        botIntervalId = setInterval(async () => {
-          const randLine = lines[Math.floor(Math.random() * lines.length)];
-          const [name, ...msgParts] = randLine.split('|');
-          const text = msgParts.join('|');
-          
-          if (!name || !text) return;
-
-          const newChat = { id: Date.now(), name: name.trim(), text: text.trim(), isAdmin: false };
-          
-          // 낙관적 렌더링
-          const chatList = document.getElementById('admin-chat-list');
-          const div = document.createElement('div');
-          div.style.marginBottom = '8px';
-          div.innerHTML = `<span style="font-weight:bold; color:#666; margin-right:4px;">${newChat.name}:</span> ${newChat.text}`;
-          chatList.appendChild(div);
-          chatList.scrollTop = chatList.scrollHeight;
-
-          // 실제 전송
-          try {
-            await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ data: [{ '시간': newChat.id.toString(), '닉네임': newChat.name, '내용': newChat.text }] })
-            });
-          } catch(e) { console.warn('Bot chat sync failed', e); }
-
-        }, sec * 1000);
-      } else {
-        document.getElementById('bot-btn-icon').textContent = '▶';
-        document.getElementById('bot-btn-text').textContent = '채팅 봇 가동 시작';
-        btnToggleBot.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
-        btnToggleBot.style.boxShadow = '0 4px 12px rgba(37,99,235,0.3)';
-        if (botIntervalId) clearInterval(botIntervalId);
-      }
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
-    // 실시간 채팅 수신 리스너 (iframe이나 다른 탭에서 유저가 채팅을 치면 localStorage에 저장한다고 가정)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'ryzin_user_chat_trigger') {
-        const msg = JSON.parse(e.newValue);
-        if (!msg) return;
-        const chatList = document.getElementById('admin-chat-list');
-        // 처음에 안내 메시지가 있으면 제거
-        if (chatList.innerHTML.includes('실시간 채팅 내역')) {
-          chatList.innerHTML = '';
-        }
-        const div = document.createElement('div');
-        div.style.marginBottom = '8px';
-        div.innerHTML = `<span style="font-weight:bold; color:#333; margin-right:4px;">${msg.name}:</span> ${msg.text}`;
-        chatList.appendChild(div);
-        chatList.scrollTop = chatList.scrollHeight;
-      }
-    });
-
+    // 기본: 기본설정 탭
+    renderConfigTab();
   }, 0);
-
-  return container;
 }
