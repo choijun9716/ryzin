@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mySentTexts = []; // 내가 방금 보낸 채팅 텍스트 보관용
   async function pollConfig() {
     try {
-      const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
+      const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function pollChat() {
     try {
       // 채팅 조회
-      const chatRes = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`);
+      const chatRes = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`, { cache: 'no-store' });
       if (chatRes.ok) {
         const chats = await chatRes.json();
         if (chats && Array.isArray(chats)) {

@@ -59,9 +59,9 @@ export function renderLiveStream() {
   const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
 
   let syncTimeout = null;
-  const syncAllToSheetDB = () => {
+  const syncAllToSheetDB = (force = false) => {
     if (syncTimeout) clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(() => {
+    const doSync = () => {
       const data = {
         '업데이트시간': new Date().toISOString(),
         '제목': config.brandName,
@@ -87,7 +87,9 @@ export function renderLiveStream() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: [data] })
       }).catch(e => console.warn('SheetDB 연동 실패', e));
-    }, 1000); // 1초 디바운스로 여러번 변경 시 1번만 전송
+    };
+    if (force) doSync();
+    else syncTimeout = setTimeout(doSync, 1000); // 1초 디바운스로 여러번 변경 시 1번만 전송
   };
 
   const syncToIframe = () => {
@@ -469,8 +471,8 @@ export function renderLiveStream() {
             saveProducts();
             document.getElementById('product-list-container').innerHTML = renderProductList();
             bindProductEvents();
-            syncAllToSheetDB();
-            alert(`${min}분 깜짝딜이 시작되었습니다.`);
+            syncAllToSheetDB(true);
+            setTimeout(() => alert(`${min}분 깜짝딜이 시작되었습니다.`), 10);
           }
         });
       });
@@ -481,7 +483,7 @@ export function renderLiveStream() {
           saveProducts();
           document.getElementById('product-list-container').innerHTML = renderProductList();
           bindProductEvents();
-          syncAllToSheetDB();
+          syncAllToSheetDB(true);
         });
       });
       container.querySelectorAll('.btn-del-product').forEach(btn => {
