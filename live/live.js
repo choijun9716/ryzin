@@ -18,7 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
             title: latest['부제목'] || '단독 특가 라이브 방송 중!',
             logoUrl: latest['프로필이미지'] || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
             streamUrl: latest['URL'] || '',
-            showViewers: latest['시청자수노출'] !== 'X'
+            showViewers: latest['시청자수노출'] !== 'X',
+            thumbnailUrl: latest['썸네일URL'] || '',
+            liveStartTime: latest['시작일시'] || '',
+            isLive: latest['방송상태'] === 'ON'
           };
           
           const stats = {
@@ -92,17 +95,28 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
       if(c) {
-        if(c.streamUrl && window.__lastStreamUrl !== c.streamUrl) {
+        const overlay = document.getElementById('thumbnail-overlay');
+        
+        // 라이브 상태 변경 확인 (streamUrl 변경 또는 isLive 변경)
+        if(c.streamUrl && (window.__lastStreamUrl !== c.streamUrl || window.__lastIsLive !== c.isLive)) {
           window.__lastStreamUrl = c.streamUrl;
-          if (window.hlsInstance) {
-            window.hlsInstance.loadSource(c.streamUrl);
-            window.hlsInstance.attachMedia(video);
-            window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+          window.__lastIsLive = c.isLive;
+          
+          if (c.isLive) {
+            if (overlay) overlay.classList.add('hidden');
+            if (window.hlsInstance) {
+              window.hlsInstance.loadSource(c.streamUrl);
+              window.hlsInstance.attachMedia(video);
+              window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+                video.play().catch(e => console.warn(e));
+              });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+              video.src = c.streamUrl;
               video.play().catch(e => console.warn(e));
-            });
-          } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = c.streamUrl;
-            video.play().catch(e => console.warn(e));
+            }
+          } else {
+            if (overlay) overlay.classList.remove('hidden');
+            video.pause();
           }
         }
         const titleEl = document.querySelector('.broadcast-title');
