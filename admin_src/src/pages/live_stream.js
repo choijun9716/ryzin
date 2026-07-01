@@ -56,7 +56,8 @@ export function renderLiveStream() {
         '상품목록': JSON.stringify(products),
         '시청자수노출': config.showViewers ? 'O' : 'X',
         '썸네일URL': config.thumbnailUrl || '',
-        '시작일시': config.liveStartTime || ''
+        '시작일시': config.liveStartTime || '',
+        '방송상태': config.isLive ? 'ON' : 'OFF'
       };
       fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
         method: 'POST',
@@ -162,7 +163,12 @@ export function renderLiveStream() {
         <label for="config-bot" style="font-size:14px;">채팅 봇 활성화</label>
       </div>
     </div>
-    <div style="margin-top:16px; margin-bottom:24px;">
+    <div style="margin-top:16px; margin-bottom:12px;">
+      <button id="btn-toggle-live" class="btn" style="width:100%; padding:14px; font-weight:bold; color:white; background:${config.isLive ? '#6b7280' : '#10b981'}; border:none; font-size:16px;">
+        ${config.isLive ? '라이브 종료하기' : '라이브 시작하기'}
+      </button>
+    </div>
+    <div style="margin-bottom:24px;">
       <button id="btn-save-config" class="btn btn-primary" style="width:100%; padding:10px; font-weight:bold;">라이브 설정 일괄 적용 (저장)</button>
     </div>
   `;
@@ -310,6 +316,15 @@ export function renderLiveStream() {
 
     document.getElementById('config-thumbnailFile').addEventListener('change', (e) => {
       uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl');
+    });
+
+    document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
+      config.isLive = !config.isLive;
+      e.target.textContent = config.isLive ? '라이브 종료하기' : '라이브 시작하기';
+      e.target.style.background = config.isLive ? '#6b7280' : '#10b981';
+      saveConfig();
+      // 방송 상태는 즉시 DB 반영
+      alert(config.isLive ? '라이브가 시작되었습니다! 모바일 시청자들에게 영상이 송출됩니다.' : '라이브가 종료되었습니다. 시청자들에게 썸네일이 노출됩니다.');
     });
 
     document.getElementById('btn-save-config').addEventListener('click', () => {
