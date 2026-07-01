@@ -14,11 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          // live_id가 있으면 해당 라이브 데이터만 필터, 없으면 전체 최신
-          let filtered = LIVE_ID
-            ? data.filter(row => row['live_id'] === LIVE_ID)
-            : data;
-          if (filtered.length === 0) filtered = data;
+          // live_id가 지정된 경우 해당 라이브 데이터만 사용
+          // ⚠️ 일치하는 데이터가 없으면 다른 라이브 데이터를 절대 사용하지 않음
+          let filtered;
+          if (LIVE_ID) {
+            filtered = data.filter(row => row['live_id'] === LIVE_ID);
+            if (filtered.length === 0) return; // 해당 live_id 데이터 없음 → 아무것도 재생 안 함
+          } else {
+            filtered = data; // id 파라미터 없으면 전체 최신
+          }
           const latest = filtered[filtered.length - 1]; // 가장 마지막 업데이트 내역
           
           // 파싱 후 로컬스토리지 최신화 (다른 탭 호환 및 구조 유지)
@@ -74,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
           loadLiveConfig();
           loadLiveStats();
         }
+
       }
     } catch (e) {
       console.warn("SheetDB pollConfig failed:", e);
