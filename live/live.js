@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // === SheetDB 및 localStorage 연동 로직 (어드민 제어) ===
   const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
   
+  let lastChatTime = Date.now() - 3000; // 최근 3초 전 메시지부터만 수신
   async function pollSheetDB() {
     try {
       const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
@@ -37,6 +38,23 @@ document.addEventListener('DOMContentLoaded', () => {
           
           loadLiveConfig();
           loadLiveStats();
+        }
+      }
+
+      // 채팅 조회
+      const chatRes = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`);
+      if (chatRes.ok) {
+        const chats = await chatRes.json();
+        if (chats && Array.isArray(chats)) {
+          chats.forEach(c => {
+             if (c['시간'] && parseInt(c['시간']) > lastChatTime) {
+                // 자신이 보낸 건 이미 로컬에 표시되었으므로 닉네임과 내용이 같으면 패스 (완벽하진 않지만 데모용)
+                if (c['닉네임'] !== userNickname || c['시간'] > lastChatTime + 5000) {
+                   addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자');
+                }
+                lastChatTime = parseInt(c['시간']);
+             }
+          });
         }
       }
     } catch (e) {
@@ -216,6 +234,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const btnSend = document.getElementById('btn-send');
+  const nicknameSection = document.getElementById('nickname-section');
+  const chatSectionWrap = document.getElementById('chat-section-wrap');
+  const nicknameInput = document.getElementById('nickname-input');
+  const btnSetNickname = document.getElementById('btn-set-nickname');
+
+  let userNickname = localStorage.getItem('ryzin_nickname') || '';
+  if (userNickname) {
+    chatSectionWrap.style.display = 'block';
+  } else {
+    nicknameSection.style.display = 'block';
+  }
+
+  btnSetNickname.addEventListener('click', () => {
+    const n = nicknameInput.value.trim();
+    if (n) {
+      userNickname = n;
+      localStorage.setItem('ryzin_nickname', n);
+      nicknameSection.style.display = 'none';
+      chatSectionWrap.style.display = 'block';
+      chatInput.focus();
+    }
+  });
+
+  nicknameInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') btnSetNickname.click();
+  });
+
 
   const botNames = ['라이즌팬', '쇼핑왕', '득템요정', '오늘만산다', '트루쿡매니아', '김지현', '박민수', '이서연'];
   const botMsgs = ['대박이네요', '어머 이건 사야해', '배송 언제 오나요?', '품절되기 전에 결제했습니다', '컬러 고민되네요', '할인율 미쳤다', '진행자님 예뻐요!'];

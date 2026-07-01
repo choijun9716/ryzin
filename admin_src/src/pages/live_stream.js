@@ -369,16 +369,15 @@ export function renderLiveStream() {
 
     // 관리자 채팅 전송
     const chatInput = document.getElementById('admin-chat-input');
-    const sendChat = () => {
+    let isSending = false;
+    const sendChat = async () => {
       const text = chatInput.value.trim();
-      if (!text) return;
+      if (!text || isSending) return;
       
+      isSending = true;
       const newChat = { id: Date.now(), name: '관리자', text: text, isAdmin: true };
       
-      // trigger event via localStorage
-      localStorage.setItem('ryzin_admin_chat_trigger', JSON.stringify(newChat));
-      
-      // Update local view
+      // Update local view (optimistic)
       const chatList = document.getElementById('admin-chat-list');
       const div = document.createElement('div');
       div.style.marginBottom = '8px';
@@ -387,6 +386,16 @@ export function renderLiveStream() {
       chatList.scrollTop = chatList.scrollHeight;
       
       chatInput.value = '';
+      
+      // SheetDB로 POST
+      try {
+        await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: [{ '시간': newChat.id.toString(), '닉네임': '관리자', '내용': text }] })
+        });
+      } catch(e) { console.warn('Admin chat sync failed', e); }
+      finally { isSending = false; }
     };
     
     document.getElementById('btn-send-chat').addEventListener('click', sendChat);
