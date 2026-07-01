@@ -172,8 +172,8 @@ function renderListView(container, showView) {
 
     lives.forEach((live) => {
       const config = getLiveConfig(live.id) || {};
-      const badgeClass = config.isLive ? 'badge-live' : (config.liveStartTime ? 'badge-ready' : 'badge-ended');
-      const badgeText = config.isLive ? '🔴 LIVE' : (config.liveStartTime ? '예고중' : '준비중');
+      const badgeClass = config.isLive ? 'badge-live' : 'badge-ready';
+      const badgeText = config.isLive ? 'LIVE' : '대기';
       const viewerUrl = `https://ryzincorp.com/live?id=${live.id}`;
 
       const card = document.createElement('div');
