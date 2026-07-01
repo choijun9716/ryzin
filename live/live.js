@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const LIVE_ID = urlParams.get('id') || null; // null이면 전체 중 최신
 
-  let lastChatTime = Date.now() - 3000; // 최근 3초 전 메시지부터만 수신
+  let lastChatTime = 0; // 0으로 설정하면 최초 폴링 시 전체 채팅 이력 로드
+  let chatHistoryLoaded = false; // 최초 전체 이력 로드 여부 추적
   const mySentTexts = []; // 내가 방금 보낸 채팅 텍스트 보관용
   async function pollConfig() {
     try {
@@ -98,23 +99,40 @@ document.addEventListener('DOMContentLoaded', () => {
           chats = chats.filter(c => !c['live_id'] || c['live_id'] === LIVE_ID);
         }
         if (chats && Array.isArray(chats)) {
+          // 시간순 정렬
+          chats.sort((a, b) => (parseInt(a['시간']) || 0) - (parseInt(b['시간']) || 0));
+          
+          const isFirstLoad = !chatHistoryLoaded;
+          let addedCount = 0;
+          
           chats.forEach(c => {
              if (c['시간'] && parseInt(c['시간']) > lastChatTime) {
-                // 자신이 보낸 건 이미 로컬에 표시되었으므로 닉네임과 내용이 같으면 패스
-                if (c['닉네임'] === userNickname) {
+                if (c['닉네임'] === userNickname && !isFirstLoad) {
+                  // 내가 방금 보낸 메시지는 로컬에 이미 표시된 경우만 스킵
                   const idx = mySentTexts.indexOf(c['내용']);
                   if (idx !== -1) {
-                    // 방금 로컬에서 띄운 내 메시지면 스킵하고 배열에서 지움
                     mySentTexts.splice(idx, 1);
                   } else {
-                    addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자');
+                    addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자', isFirstLoad);
+                    addedCount++;
                   }
                 } else {
-                   addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자');
+                   addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자', isFirstLoad);
+                   addedCount++;
                 }
                 lastChatTime = parseInt(c['시간']);
              }
           });
+          
+          // 최초 로드 완료 후 맨 아래로 스크롤
+          if (isFirstLoad) {
+            chatHistoryLoaded = true;
+            if (addedCount > 0) {
+              setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+              }, 100);
+            }
+          }
         }
       }
     } catch (e) {
@@ -502,15 +520,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  function addMessage(name, text, isMe = false) {
+  function addMessage(name, text, isAdmin = false, isHistory = false) {
     const el = document.createElement('div');
-    el.className = 'chat-msg' + (isMe ? ' me' : '');
+    el.className = 'chat-msg' + (isAdmin ? ' me' : '');
+    if (isHistory) el.style.opacity = '0.72';
     el.innerHTML = `
       <span class="chat-name">${name}</span>
       <span class="chat-text">${text}</span>
     `;
     chatMessages.appendChild(el);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    // 히스토리 로드 중엔 자동스크롤 없음, 새 메시지만 아래로 스크롤
+    if (!isHistory) chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
   // 사용자 메시지 전송

@@ -673,6 +673,52 @@ function renderLiveEditView(container, liveId, showView) {
         btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
       }
     });
+
+    // === 어드민 채팅 실시간 폴링 (이력 포함 스크롤 가능) ===
+    let adminLastChatTime = 0;
+    let adminChatLoaded = false;
+
+    const addAdminChatItem = (name, text, isHistory = false) => {
+      if (chatList.querySelector('.empty-placeholder')) chatList.innerHTML = '';
+      const div = document.createElement('div');
+      div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;' + (isHistory ? 'opacity:0.72;' : '');
+      const nameColor = name === '관리자' ? '#3b82f6' : '#64748b';
+      div.innerHTML = `<span style="font-weight:700; color:${nameColor};">${name}:</span> ${text}`;
+      chatList.appendChild(div);
+      if (!isHistory) chatList.scrollTop = chatList.scrollHeight;
+    };
+
+    const pollAdminChat = async () => {
+      try {
+        const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          let chats = await res.json();
+          if (Array.isArray(chats)) {
+            chats = chats.filter(c => !c['live_id'] || c['live_id'] === liveId);
+            chats.sort((a, b) => (parseInt(a['시간']) || 0) - (parseInt(b['시간']) || 0));
+            const isFirst = !adminChatLoaded;
+            let added = 0;
+            chats.forEach(c => {
+              if (c['시간'] && parseInt(c['시간']) > adminLastChatTime) {
+                addAdminChatItem(c['닉네임'] || '?', c['내용'] || '', isFirst);
+                adminLastChatTime = parseInt(c['시간']);
+                added++;
+              }
+            });
+            if (isFirst) {
+              adminChatLoaded = true;
+              if (added > 0) setTimeout(() => { chatList.scrollTop = chatList.scrollHeight; }, 100);
+            }
+          }
+        }
+      } catch(e) { console.warn('Admin chat poll failed', e); }
+    };
+
+    pollAdminChat();
+    const adminChatPollTimer = setInterval(pollAdminChat, 15000);
+
+    // 탭 이동 시 폴링 정리
+    contentArea.addEventListener('adminTabLeave', () => clearInterval(adminChatPollTimer));
   };
 
   const renderProductList = () => products.map((p, idx) => {
