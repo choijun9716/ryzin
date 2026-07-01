@@ -327,12 +327,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 주기적으로 좋아요 증가
   setInterval(() => {
     likeCount += Math.floor(Math.random() * 5);
-    likeCountEl.textContent = (likeCount / 1000).toFixed(1) + 'K';
+    likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
   }, 3000);
 
   btnLike.addEventListener('click', () => {
     likeCount += 1;
-    likeCountEl.textContent = (likeCount / 1000).toFixed(1) + 'K';
+    likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
     
     // 하트 / RYZIN 텍스트 번갈아 띄우기
     window._heartToggle = !window._heartToggle; // 번갈아가며 나타나도록 전역 변수 사용 (또는 클로저)
