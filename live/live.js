@@ -246,11 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
       if(s) {
-        let text = s.viewers.toLocaleString() + '명 시청중';
-        if (s.cumViewers !== undefined && s.cumViewers !== null) {
-          text += ' | 누적 ' + Number(s.cumViewers).toLocaleString() + '명';
-        }
-        document.getElementById('view-count').textContent = text;
+        document.getElementById('view-count').textContent = s.viewers.toLocaleString() + '명 시청중';
       }
     }catch(e){}
   }
