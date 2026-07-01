@@ -228,6 +228,7 @@ export function renderLiveStream() {
           </div>
           <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:8px 12px; border-radius:8px; border:1px solid #fecdd3;">
             <span style="font-size:13px; font-weight:600; color:#e11d48;">🎁 깜짝딜</span>
+            <input type="text" class="modern-input" style="width:120px; padding:6px 10px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
             <input type="number" class="modern-input" style="width:70px; padding:6px 10px;" id="deal-min-${idx}" placeholder="분">
             <button class="btn btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">시작</button>
             <button class="btn btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">종료/취소</button>
@@ -460,8 +461,10 @@ export function renderLiveStream() {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const minInput = document.getElementById(`deal-min-${idx}`);
+          const textInput = document.getElementById(`deal-text-${idx}`);
           const min = parseInt(minInput.value);
           if(min > 0) {
+            products[idx].dealText = textInput ? textInput.value : '깜짝딜 종료까지';
             products[idx].dealEndTime = Date.now() + min * 60 * 1000;
             saveProducts();
             document.getElementById('product-list-container').innerHTML = renderProductList();

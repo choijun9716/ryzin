@@ -549,7 +549,8 @@ setInterval(() => {
         const diff = deal.dealEndTime - now;
         const m = Math.floor(diff / 60000);
         const s = Math.floor((diff % 60000) / 1000);
-        textEl.textContent = `깜짝딜 종료까지 ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        const dealText = deal.dealText || '깜짝딜 종료까지';
+        textEl.textContent = `${dealText} ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         if (timerEl.style.display === 'none') {
           timerEl.style.display = 'flex';
           loadLiveProducts(); // UI 갱신 (뱃지 추가)
