@@ -192,7 +192,7 @@ export function renderLiveStream() {
         <div>
            <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.price}" data-idx="${idx}" data-field="price" placeholder="가격">
            <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.normalPrice || ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
-           <input type="number" min="0" max="100" class="form-control" style="width:70px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="할인율%">
+           <input type="number" min="0" max="100" class="form-control" style="width:70px; font-size:13px; margin-bottom:4px; padding:4px 8px; background-color:#e9ecef;" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="할인율%" readonly>
           <button class="btn btn-danger btn-sm btn-del-product" data-idx="${idx}" style="width:100%; padding:4px;">삭제</button>
         </div>
       </div>
@@ -385,7 +385,7 @@ export function renderLiveStream() {
               const normal = Number(normalStr);
               const price = Number(priceStr);
               if (normal > 0 && normal >= price) {
-                const rate = Math.round(((normal - price) / normal) * 100);
+                const rate = Math.floor(((normal - price) / normal) * 100);
                 products[idx].discountRate = rate;
                 const rateInput = container.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
                 if (rateInput) rateInput.value = rate;
