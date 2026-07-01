@@ -7,6 +7,7 @@ import ryzinLogo from '../assets/Ryzin.png';
 
 // SVG 아이콘
 const icons = {
+  live_stream: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12A10 10 0 1 0 12 22a10 10 0 0 0 10-10z"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
   dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
   projects: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
   hosts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
@@ -19,6 +20,7 @@ const icons = {
 
 const menuConfig = [
   { key: 'dashboard', label: '대시보드', path: '/', icon: 'dashboard' },
+  { key: 'live_stream', label: '라이브 송출 관리', path: '/live_stream', icon: 'live_stream' },
   { key: 'projects', label: '라이브 관리', path: '/projects', icon: 'projects' },
   { key: 'hosts', label: '쇼호스트 관리', path: '/hosts', icon: 'hosts' },
   { key: 'brands', label: '브랜드 관리', path: '/brands', icon: 'brands' },

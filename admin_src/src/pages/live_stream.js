@@ -1,0 +1,268 @@
+export function renderLiveStream() {
+  const container = document.createElement('div');
+  container.className = 'dashboard-container';
+  container.style.display = 'flex';
+  container.style.gap = '24px';
+  container.style.padding = '24px';
+  container.style.height = 'calc(100vh - 48px)';
+  container.style.overflow = 'hidden';
+
+  // 기본 상태 (localStorage 연동)
+  const defaultConfig = {
+    title: '단독 특가 라이브 방송 중!',
+    streamUrl: 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8',
+    logoUrl: 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
+    botEnabled: true
+  };
+
+  const defaultStats = {
+    viewers: 1204,
+    hearts: 12040
+  };
+
+  const defaultProducts = [
+    { id: 1, name: "[특가] 트루쿡 인덕션 프라이팬 3종 세트", price: "49,900원", image: "https://images.unsplash.com/photo-1584990347449-a6e81cb8860a?auto=format&fit=crop&q=80&w=200&h=200", url: "#" },
+    { id: 2, name: "네티컬 딥 클렌징 앰플 기획세트", price: "24,000원", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=200&h=200", url: "#" },
+    { id: 3, name: "탐루미 수분폭탄 마스크팩 10매", price: "12,900원", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&q=80&w=200&h=200", url: "#" }
+  ];
+
+  if (!localStorage.getItem('ryzin_live_config')) localStorage.setItem('ryzin_live_config', JSON.stringify(defaultConfig));
+  if (!localStorage.getItem('ryzin_live_stats')) localStorage.setItem('ryzin_live_stats', JSON.stringify(defaultStats));
+  if (!localStorage.getItem('ryzin_live_products')) localStorage.setItem('ryzin_live_products', JSON.stringify(defaultProducts));
+  if (!localStorage.getItem('ryzin_live_chats')) localStorage.setItem('ryzin_live_chats', JSON.stringify([]));
+
+  let config = JSON.parse(localStorage.getItem('ryzin_live_config'));
+  let stats = JSON.parse(localStorage.getItem('ryzin_live_stats'));
+  let products = JSON.parse(localStorage.getItem('ryzin_live_products'));
+
+  const saveConfig = () => {
+    localStorage.setItem('ryzin_live_config', JSON.stringify(config));
+    window.dispatchEvent(new Event('storage')); // 같은 탭 내 이벤트를 강제 발생시킬 수도 있음 (필요 시)
+  };
+  const saveStats = () => localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
+  const saveProducts = () => localStorage.setItem('ryzin_live_products', JSON.stringify(products));
+
+  // 왼쪽 (컨트롤 패널)
+  const leftPanel = document.createElement('div');
+  leftPanel.style.flex = '1';
+  leftPanel.style.display = 'flex';
+  leftPanel.style.flexDirection = 'column';
+  leftPanel.style.gap = '24px';
+  leftPanel.style.overflowY = 'auto';
+  leftPanel.style.paddingRight = '12px';
+
+  // 1. 기본 설정 폼
+  const configCard = document.createElement('div');
+  configCard.className = 'card';
+  configCard.innerHTML = `
+    <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px;">📺 라이브 기본 설정</h3>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">방송 제목</label>
+      <input type="text" class="form-control" id="config-title" value="\${config.title}">
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label class="form-label">스트리밍 URL (m3u8)</label>
+      <input type="text" class="form-control" id="config-stream" value="\${config.streamUrl}">
+    </div>
+    <div style="display:flex; gap:12px; margin-bottom:12px;">
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">시청자 수 뻥튀기</label>
+        <input type="number" class="form-control" id="stat-viewers" value="\${stats.viewers}">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">하트 수 뻥튀기</label>
+        <input type="number" class="form-control" id="stat-hearts" value="\${stats.hearts}">
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <input type="checkbox" id="config-bot" \${config.botEnabled ? 'checked' : ''}>
+      <label for="config-bot" style="font-size:14px;">채팅 봇 활성화 (랜덤 가짜 채팅)</label>
+    </div>
+  `;
+
+  // 2. 상품 관리
+  const renderProductList = () => {
+    return products.map((p, idx) => \`
+      <div style="display:flex; gap:12px; align-items:center; background:#f9fafb; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #e5e7eb;">
+        <img src="\${p.image}" style="width:48px; height:48px; border-radius:4px; object-fit:cover;">
+        <div style="flex:1;">
+          <input type="text" class="form-control" style="font-size:13px; margin-bottom:4px; padding:4px 8px;" value="\${p.name}" data-idx="\${idx}" data-field="name" placeholder="상품명">
+          <input type="text" class="form-control" style="font-size:12px; padding:4px 8px;" value="\${p.url}" data-idx="\${idx}" data-field="url" placeholder="상품 이동 URL">
+        </div>
+        <div>
+          <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="\${p.price}" data-idx="\${idx}" data-field="price" placeholder="가격">
+          <button class="btn btn-danger btn-sm btn-del-product" data-idx="\${idx}" style="width:100%; padding:4px;">삭제</button>
+        </div>
+      </div>
+    \`).join('');
+  };
+
+  const productCard = document.createElement('div');
+  productCard.className = 'card';
+  productCard.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px;">
+      <h3 style="margin:0;">🛍️ 상품 관리</h3>
+      <button class="btn btn-primary btn-sm" id="btn-add-product">+ 상품 추가</button>
+    </div>
+    <div id="product-list-container">
+      \${renderProductList()}
+    </div>
+  `;
+
+  leftPanel.appendChild(configCard);
+  leftPanel.appendChild(productCard);
+
+  // 오른쪽 (모니터링 및 채팅)
+  const rightPanel = document.createElement('div');
+  rightPanel.style.width = '400px';
+  rightPanel.style.display = 'flex';
+  rightPanel.style.flexDirection = 'column';
+  rightPanel.style.gap = '16px';
+
+  const previewUrl = window.location.origin.includes('localhost:5173') ? 'http://localhost:8080/live/' : '/live/';
+  
+  const previewCard = document.createElement('div');
+  previewCard.className = 'card';
+  previewCard.style.padding = '0';
+  previewCard.style.overflow = 'hidden';
+  previewCard.style.height = '600px';
+  previewCard.style.display = 'flex';
+  previewCard.style.flexDirection = 'column';
+  previewCard.innerHTML = `
+    <div style="background:#111; color:#fff; padding:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+      <span>📱 모바일 미리보기</span>
+      <button class="btn btn-primary btn-sm" id="btn-refresh-preview" style="padding:4px 8px;">새로고침</button>
+    </div>
+    <iframe id="live-preview-iframe" src="\${previewUrl}" style="width:100%; flex:1; border:none; background:#000;"></iframe>
+  `;
+
+  const chatCard = document.createElement('div');
+  chatCard.className = 'card';
+  chatCard.style.flex = '1';
+  chatCard.style.display = 'flex';
+  chatCard.style.flexDirection = 'column';
+  chatCard.innerHTML = `
+    <h3 style="margin-top:0; margin-bottom:12px;">💬 관리자 채팅 발송</h3>
+    <div id="admin-chat-list" style="flex:1; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:12px; overflow-y:auto; margin-bottom:12px; min-height:150px; font-size:13px;">
+      <div style="color:#666; text-align:center; padding-top:40px;">실시간 채팅 내역이 여기에 표시됩니다.</div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="admin-chat-input" class="form-control" placeholder="관리자 공지 전송...">
+      <button id="btn-send-chat" class="btn btn-primary">전송</button>
+    </div>
+  `;
+
+  rightPanel.appendChild(previewCard);
+  rightPanel.appendChild(chatCard);
+
+  container.appendChild(leftPanel);
+  container.appendChild(rightPanel);
+
+  // 이벤트 바인딩
+  setTimeout(() => {
+    // 설정 변경 이벤트
+    const bindConfigInput = (id, key, isStat = false) => {
+      document.getElementById(id).addEventListener('input', (e) => {
+        if (isStat) {
+          stats[key] = parseInt(e.target.value) || 0;
+          saveStats();
+        } else {
+          config[key] = e.target.value;
+          saveConfig();
+        }
+      });
+    };
+    bindConfigInput('config-title', 'title');
+    bindConfigInput('config-stream', 'streamUrl');
+    bindConfigInput('stat-viewers', 'viewers', true);
+    bindConfigInput('stat-hearts', 'hearts', true);
+    
+    document.getElementById('config-bot').addEventListener('change', (e) => {
+      config.botEnabled = e.target.checked;
+      saveConfig();
+    });
+
+    // 미리보기 새로고침
+    document.getElementById('btn-refresh-preview').addEventListener('click', () => {
+      document.getElementById('live-preview-iframe').src = previewUrl;
+    });
+
+    // 상품 리스트 이벤트
+    const bindProductEvents = () => {
+      const container = document.getElementById('product-list-container');
+      container.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const field = e.target.dataset.field;
+          products[idx][field] = e.target.value;
+          saveProducts();
+        });
+      });
+      container.querySelectorAll('.btn-del-product').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          products.splice(idx, 1);
+          saveProducts();
+          document.getElementById('product-list-container').innerHTML = renderProductList();
+          bindProductEvents();
+        });
+      });
+    };
+    bindProductEvents();
+
+    document.getElementById('btn-add-product').addEventListener('click', () => {
+      products.push({ id: Date.now(), name: "새 상품", price: "0원", image: "https://via.placeholder.com/200", url: "#" });
+      saveProducts();
+      document.getElementById('product-list-container').innerHTML = renderProductList();
+      bindProductEvents();
+    });
+
+    // 관리자 채팅 전송
+    const chatInput = document.getElementById('admin-chat-input');
+    const sendChat = () => {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      
+      const newChat = { id: Date.now(), name: '관리자', text: text, isAdmin: true };
+      
+      // trigger event via localStorage
+      localStorage.setItem('ryzin_admin_chat_trigger', JSON.stringify(newChat));
+      
+      // Update local view
+      const chatList = document.getElementById('admin-chat-list');
+      const div = document.createElement('div');
+      div.style.marginBottom = '8px';
+      div.innerHTML = \`<span style="font-weight:bold; color:var(--primary); margin-right:4px;">\${newChat.name}:</span> \${newChat.text}\`;
+      chatList.appendChild(div);
+      chatList.scrollTop = chatList.scrollHeight;
+      
+      chatInput.value = '';
+    };
+    
+    document.getElementById('btn-send-chat').addEventListener('click', sendChat);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendChat();
+    });
+
+    // 실시간 채팅 수신 리스너 (iframe이나 다른 탭에서 유저가 채팅을 치면 localStorage에 저장한다고 가정)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'ryzin_user_chat_trigger') {
+        const msg = JSON.parse(e.newValue);
+        if (!msg) return;
+        const chatList = document.getElementById('admin-chat-list');
+        // 처음에 안내 메시지가 있으면 제거
+        if (chatList.innerHTML.includes('실시간 채팅 내역')) {
+          chatList.innerHTML = '';
+        }
+        const div = document.createElement('div');
+        div.style.marginBottom = '8px';
+        div.innerHTML = \`<span style="font-weight:bold; color:#333; margin-right:4px;">\${msg.name}:</span> \${msg.text}\`;
+        chatList.appendChild(div);
+        chatList.scrollTop = chatList.scrollHeight;
+      }
+    });
+
+  }, 0);
+
+  return container;
+}

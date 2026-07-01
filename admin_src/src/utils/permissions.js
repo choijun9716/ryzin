@@ -64,6 +64,7 @@ export function getAccessibleMenus() {
   const role = getCurrentRole();
   const allMenus = [
     { key: 'dashboard', label: '대시보드' },
+    { key: 'live_stream', label: '라이브 송출 관리' },
     { key: 'projects', label: '라이브 관리' },
     { key: 'hosts', label: '쇼호스트 관리' },
     { key: 'brands', label: '브랜드 관리' },

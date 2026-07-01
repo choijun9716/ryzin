@@ -12,6 +12,7 @@ import { renderSidebar } from './components/sidebar.js';
 
 // 페이지 import
 import { renderDashboard } from './pages/dashboard.js';
+import { renderLiveStream } from './pages/live_stream.js';
 import { renderHosts, renderHostDetail } from './pages/hosts.js';
 import { renderBrands, renderBrandDetail } from './pages/brands.js';
 import { renderProjects, renderProjectDetail } from './pages/projects.js';
@@ -97,6 +98,7 @@ async function initApp() {
   router.register('/login', () => renderLogin());
 
   router.register('/', () => renderDashboard());
+  router.register('/live_stream', () => renderLiveStream());
   router.register('/projects', () => renderProjects());
   router.register('/projects/new', () => renderProjects());
   router.register('/projects/:id', (params) => renderProjectDetail(params));

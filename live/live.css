@@ -445,7 +445,7 @@ body {
 
 
 /* 채팅창 토글 숨김용 클래스 */
-.chat-section, .input-section {
+.chat-section, .input-section, .side-actions {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
