@@ -325,7 +325,7 @@ body {
   bottom: 80px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 28px; /* 버튼 사이 간격 띄움 */
   pointer-events: auto;
   z-index: 5;
 }
@@ -334,8 +334,8 @@ body {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
+  width: 44px; /* 조금 더 미니멀하게 */
+  height: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -346,21 +346,29 @@ body {
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   position: relative;
+  transition: transform 0.1s;
+}
+
+.action-btn:active {
+  transform: scale(0.9);
 }
 
 .action-btn .icon {
-  font-size: 20px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .action-btn .label {
   position: absolute;
-  bottom: -18px;
+  bottom: -20px;
   font-size: 11px;
-  font-weight: bold;
+  font-weight: normal;
   text-shadow: 0 1px 2px rgba(0,0,0,0.8);
   white-space: nowrap;
 }
+
+
 
 /* 입력 영역 */
 .input-section {
