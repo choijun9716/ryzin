@@ -133,6 +133,34 @@ document.addEventListener('DOMContentLoaded', () => {
     pollChat();
   }, 500);
 
+  // === 페이지 로드(새로고침 포함) 시마다 누적 시청자수 +1 ===
+  // sessionStorage 사용: 탭 닫고 재진입하면 다시 카운트. 같은 탭 내에서는 중복 집계 없음
+  const SESSION_KEY = `ryzin_viewer_counted_${LIVE_ID || 'default'}`;
+  if (!sessionStorage.getItem(SESSION_KEY)) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    // 0.8초 뒤 SheetDB 조회 후 누적 시청자수 +1 PATCH
+    setTimeout(async () => {
+      try {
+        const targetLiveId = LIVE_ID || 'live01';
+        const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
+        if (res.ok) {
+          const data = await res.json();
+          const row = data.find(r => r.live_id === targetLiveId);
+          if (row) {
+            const newCum = (parseInt(row['누적시청자수']) || 0) + 1;
+            await fetch(`${SHEETDB_URL}/live_id/${targetLiveId}?sheet=${encodeURIComponent('라이브관제')}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: { '누적시청자수': newCum } })
+            });
+          }
+        }
+      } catch(e) {
+        console.warn('Viewer count increment failed:', e);
+      }
+    }, 800);
+  }
+
   function loadLiveConfig() {
     try {
       const c = JSON.parse(localStorage.getItem('ryzin_live_config'));

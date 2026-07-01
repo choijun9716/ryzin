@@ -390,12 +390,19 @@ function renderLiveEditView(container, liveId, showView) {
         <h3>통계 (실시간 조회 데이터)</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:18px;">
           <div>
-            <label class="modern-label">실시간 시청자 수 (수정 가능)</label>
-            <input type="number" class="modern-input" id="cfg-viewers" value="${stats.viewers}">
+            <label class="modern-label">실시간 시청자 수 (현재값)</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">${stats.viewers.toLocaleString()}명</div>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
+              <input type="number" class="modern-input" id="cfg-viewers-add" placeholder="+추가할 수" style="flex:1; padding:8px 10px; font-size:13px;">
+              <button id="btn-add-viewers" class="action-btn btn-primary-solid" style="white-space:nowrap; padding:8px 12px; font-size:13px;">+추가</button>
+            </div>
           </div>
           <div>
             <label class="modern-label">누적 시청자 수</label>
             <input type="number" class="modern-input" id="cfg-cumViewers" value="${stats.cumViewers || 0}" readonly style="background:#f1f5f9; color:#64748b; cursor:not-allowed;">
+            <div style="margin-top:4px; font-size:11px; color:#94a3b8;">페이지 로드마다 자동 누적</div>
           </div>
           <div>
             <label class="modern-label">하트 수 (수정 가능)</label>
@@ -428,7 +435,7 @@ function renderLiveEditView(container, liveId, showView) {
       config.title = document.getElementById('cfg-title').value;
       config.streamUrl = document.getElementById('cfg-stream').value;
       config.liveStartTime = document.getElementById('cfg-liveStartTime').value;
-      stats.viewers = parseInt(document.getElementById('cfg-viewers').value) || 0;
+      // 시청자 수는 +추가 버튼으로 별도 처리 (stats.viewers는 별도 유지)
       stats.cumViewers = parseInt(document.getElementById('cfg-cumViewers').value) || 0;
       stats.hearts = parseInt(document.getElementById('cfg-hearts').value) || 0;
       config.showViewers = document.getElementById('cfg-showViewers').checked;
@@ -437,6 +444,43 @@ function renderLiveEditView(container, liveId, showView) {
       // topbar 브랜드명 업데이트
       topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
       alert('설정이 저장되었습니다!');
+    });
+
+    // +추가 버튼: SheetDB에서 현재 시청자수를 조회 후 입력값만큼 더해서 PATCH
+    document.getElementById('btn-add-viewers').addEventListener('click', async () => {
+      const addVal = parseInt(document.getElementById('cfg-viewers-add').value) || 0;
+      if (addVal === 0) {
+        alert('추가할 시청자 수를 입력해주세요.');
+        return;
+      }
+      const btn = document.getElementById('btn-add-viewers');
+      btn.disabled = true;
+      btn.textContent = '처리중...';
+      try {
+        // 최신 데이터 먼저 조회
+        const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
+        const data = await res.json();
+        const row = Array.isArray(data) ? data.find(r => r.live_id === liveId) : null;
+        const currentViewers = row ? (parseInt(row['시청자수']) || 0) : stats.viewers;
+        const newViewers = currentViewers + addVal;
+
+        await fetch(`${SHEETDB_URL}/live_id/${liveId}?sheet=${encodeURIComponent('라이브관제')}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: { '시청자수': newViewers } })
+        });
+
+        stats.viewers = newViewers;
+        saveStats();
+        document.getElementById('cfg-viewers-display').textContent = newViewers.toLocaleString() + '명';
+        document.getElementById('cfg-viewers-add').value = '';
+        alert(`시청자 수가 ${newViewers.toLocaleString()}명으로 업데이트되었습니다.`);
+      } catch(err) {
+        alert('시청자 수 업데이트 실패: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '+추가';
+      }
     });
 
     document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
