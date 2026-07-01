@@ -387,23 +387,23 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
 
       <div class="section-card">
-        <h3>통계</h3>
+        <h3>통계 (실시간 조회 데이터)</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:18px;">
           <div>
-            <label class="modern-label">실시간 시청자 수</label>
+            <label class="modern-label">실시간 시청자 수 (수정 가능)</label>
             <input type="number" class="modern-input" id="cfg-viewers" value="${stats.viewers}">
           </div>
           <div>
             <label class="modern-label">누적 시청자 수</label>
-            <input type="number" class="modern-input" id="cfg-cumViewers" value="${stats.cumViewers || 0}">
+            <input type="number" class="modern-input" id="cfg-cumViewers" value="${stats.cumViewers || 0}" readonly style="background:#f1f5f9; color:#64748b; cursor:not-allowed;">
           </div>
           <div>
-            <label class="modern-label">하트 수</label>
+            <label class="modern-label">하트 수 (수정 가능)</label>
             <input type="number" class="modern-input" id="cfg-hearts" value="${stats.hearts}">
           </div>
           <div>
             <label class="modern-label">총 상품 조회수 (클릭수)</label>
-            <div class="modern-input" style="background:#f1f5f9; display:flex; align-items:center; font-weight:bold; color:#0f172a;">
+            <div class="modern-input" id="cfg-total-clicks" style="background:#f1f5f9; display:flex; align-items:center; font-weight:bold; color:#0f172a;">
               ${(products || []).reduce((acc, curr) => acc + (parseInt(curr.clicks) || 0), 0).toLocaleString()}회
             </div>
           </div>
@@ -481,6 +481,37 @@ function renderLiveEditView(container, liveId, showView) {
 
     document.getElementById('cfg-logoFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'logo-preview', 'logoUrl'));
     document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
+
+    // 라이브관제에서 실시간 통계 정보 패치 후 노출
+    fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const row = data.find(r => r.live_id === liveId);
+          if (row) {
+            const remoteCumViewers = parseInt(row['누적시청자수']) || 0;
+            const remoteViewers = parseInt(row['시청자수']) || 0;
+            const remoteHearts = parseInt(row['하트수']) || 0;
+            
+            // 어드민 UI에 실시간 수치 반영 (사용자는 시청자수, 하트수 필드를 수정해서 가라 입력 가능)
+            const cumEl = document.getElementById('cfg-cumViewers');
+            if (cumEl) cumEl.value = remoteCumViewers;
+            
+            const viewersEl = document.getElementById('cfg-viewers');
+            if (viewersEl && !viewersEl.matches(':focus')) viewersEl.value = remoteViewers;
+            
+            const heartsEl = document.getElementById('cfg-hearts');
+            if (heartsEl && !heartsEl.matches(':focus')) heartsEl.value = remoteHearts;
+            
+            // stats 로컬 객체 동기화
+            stats.cumViewers = remoteCumViewers;
+            stats.viewers = remoteViewers;
+            stats.hearts = remoteHearts;
+            saveStats();
+          }
+        }
+      })
+      .catch(err => console.warn('Failed to fetch stats from 라이브관제', err));
   };
 
   const renderChatTab = () => {
