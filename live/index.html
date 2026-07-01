@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ryzin Live Commerce</title>
+  
+  <!-- HLS.js for m3u8 playback -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  
+  <link rel="stylesheet" href="live.css">
+</head>
+<body>
+  <div class="live-container">
+    <!-- 비디오 영역 -->
+    <div class="video-wrapper">
+      <video id="live-video" autoplay muted playsinline></video>
+      <div class="video-overlay">
+        <div class="live-badge">LIVE</div>
+        <div class="view-count"><span class="icon">👁️</span> <span id="view-count">1,204</span></div>
+      </div>
+      
+      <!-- 하단 그라데이션 오버레이 (텍스트 가독성) -->
+      <div class="bottom-gradient"></div>
+    </div>
+
+    <!-- UI 레이어 (비디오 위에 띄워지는 정보들) -->
+    <div class="ui-layer">
+      <!-- 상단 방송 정보 -->
+      <div class="header">
+        <div class="brand-info">
+          <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
+          <div>
+            <h1 class="brand-name">Ryzin Corp</h1>
+            <p class="broadcast-title">단독 특가 라이브 방송 중!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 상품 리스트 영역 -->
+      <div class="products-section">
+        <div class="products-scroll" id="products-list">
+          <!-- JS에서 렌더링됨 -->
+        </div>
+      </div>
+
+      <!-- 채팅 영역 -->
+      <div class="chat-section">
+        <div class="chat-messages" id="chat-messages">
+          <!-- JS에서 렌더링됨 -->
+        </div>
+      </div>
+
+      <!-- 입력 영역 -->
+      <div class="input-section">
+        <button class="btn-like" id="btn-like">❤️ <span class="like-count" id="like-count">12K</span></button>
+        <div class="input-wrapper">
+          <input type="text" id="chat-input" placeholder="실시간 채팅에 참여하세요..." autocomplete="off">
+          <button id="btn-send">전송</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="live.js"></script>
+</body>
+</html>
