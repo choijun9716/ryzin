@@ -328,14 +328,58 @@ function renderLiveEditView(container, liveId, showView) {
   const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
   const previewUrl = `${previewBase}?id=${liveId}`;
 
+  const viewerUrl = `https://ryzincorp.com/live/?id=${liveId}`;
+  const embedCodeMobile = `<iframe src="${viewerUrl}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden;"></iframe>`;
+  const embedCodeWide = `<iframe src="${viewerUrl}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none;"></iframe>`;
+
   rightPanel.innerHTML = `
     <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; align-self:flex-start;">모바일 미리보기</div>
     <div style="width:300px; height:535px; border-radius:20px; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.15); border:1.5px solid #e2e8f0; flex-shrink:0;">
       <iframe id="live-preview-iframe" src="${previewUrl}" style="width:100%; height:100%; border:none; background:#000;"></iframe>
     </div>
     <button id="btn-refresh-preview" class="action-btn btn-neutral" style="width:100%; justify-content:center;">새로고침</button>
+
+    <div style="width:100%; border-top:1.5px solid #e2e8f0; padding-top:16px; margin-top:4px;">
+      <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; margin-bottom:12px;">임베드 코드 (다른 사이트 삽입용)</div>
+
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">모바일 세로형 (390×693)</div>
+        <div style="position:relative;">
+          <textarea id="embed-code-mobile" readonly style="width:100%; height:68px; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px; resize:none; color:#334155; line-height:1.5;">${embedCodeMobile}</textarea>
+          <button id="btn-copy-embed-mobile" style="position:absolute; top:6px; right:6px; background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">복사</button>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">와이드형 (전체너비×600)</div>
+        <div style="position:relative;">
+          <textarea id="embed-code-wide" readonly style="width:100%; height:68px; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px; resize:none; color:#334155; line-height:1.5;">${embedCodeWide}</textarea>
+          <button id="btn-copy-embed-wide" style="position:absolute; top:6px; right:6px; background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">복사</button>
+        </div>
+      </div>
+    </div>
   `;
   layout.appendChild(rightPanel);
+
+  // 복사 버튼 이벤트
+  const copyEmbed = (id, btnId) => {
+    const el = document.getElementById(id);
+    const btn = document.getElementById(btnId);
+    if (!el || !btn) return;
+    navigator.clipboard.writeText(el.value).then(() => {
+      btn.textContent = '복사됨!';
+      btn.style.background = '#22c55e';
+      setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#3b82f6'; }, 2000);
+    }).catch(() => {
+      el.select();
+      document.execCommand('copy');
+      btn.textContent = '복사됨!';
+      btn.style.background = '#22c55e';
+      setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#3b82f6'; }, 2000);
+    });
+  };
+  document.getElementById('btn-copy-embed-mobile').addEventListener('click', () => copyEmbed('embed-code-mobile', 'btn-copy-embed-mobile'));
+  document.getElementById('btn-copy-embed-wide').addEventListener('click', () => copyEmbed('embed-code-wide', 'btn-copy-embed-wide'));
 
   container.appendChild(layout);
 
