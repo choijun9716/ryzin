@@ -395,16 +395,6 @@ export function renderLiveStream() {
     const bindProductEvents = () => {
       const container = document.getElementById('product-list-container');
       container.querySelectorAll('input').forEach(input => {
-        // 구두점 실시간 자동화
-        if (input.dataset.field === 'price' || input.dataset.field === 'normalPrice') {
-          input.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/[^0-9]/g, '');
-            if (val) {
-              e.target.value = Number(val).toLocaleString('ko-KR');
-            }
-          });
-        }
-
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const field = e.target.dataset.field;
