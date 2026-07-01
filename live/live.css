@@ -531,3 +531,75 @@ body {
   0% { transform: scale(0.9); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* 썸네일 오버레이 */
+.thumbnail-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 30; /* 비디오 위, UI 레이어(2)보다 위로 덮기 위해 z-index 조정 필요하지만, ui-layer가 2이므로 3으로 올리면 ui-layer를 가립니다. 하지만 ui-layer가 보여야 하므로 일단 1.5로 하거나 배경으로 둡니다. ui-layer는 z-index 2. */
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ui-layer보다 뒤에 썸네일이 오게 하려면 z-index: 1 */
+.thumbnail-overlay {
+  z-index: 1;
+}
+
+.thumbnail-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+}
+
+.thumbnail-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.live-start-text {
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  text-align: center;
+  padding: 0 20px;
+}
+
+.btn-start-live {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(229, 9, 20, 0.9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  animation: pulsePlay 2s infinite;
+  pointer-events: auto;
+}
+
+@keyframes pulsePlay {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(229, 9, 20, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
+}
+
+.thumbnail-overlay.hidden {
+  display: none;
+}

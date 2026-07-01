@@ -54,7 +54,9 @@ export function renderLiveStream() {
         '상품수': products.length,
         '첫상품명': products.length > 0 ? products[0].name : '',
         '상품목록': JSON.stringify(products),
-        '시청자수노출': config.showViewers ? 'O' : 'X'
+        '시청자수노출': config.showViewers ? 'O' : 'X',
+        '썸네일URL': config.thumbnailUrl || '',
+        '시작일시': config.liveStartTime || ''
       };
       fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
         method: 'POST',
@@ -109,7 +111,13 @@ export function renderLiveStream() {
       </div>
       <div class="form-group" style="flex:1;">
         <label class="form-label">부제목 (방송 제목)</label>
-        <input type="text" class="form-control" id="config-title" value="${config.title}">
+        <input type="text" class="form-control" id="config-title" value="${config.title || ''}">
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; margin-bottom:12px;">
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">방송 시작 일시 (텍스트)</label>
+        <input type="text" class="form-control" id="config-liveStartTime" placeholder="예: 오늘 밤 9시 시작" value="${config.liveStartTime || ''}">
       </div>
     </div>
     <div style="display:flex; gap:12px; margin-bottom:12px; align-items:flex-end;">
@@ -118,7 +126,16 @@ export function renderLiveStream() {
         <input type="file" class="form-control" id="config-logoFile" accept="image/*" style="font-size:12px;">
       </div>
       <div style="width:48px; height:48px; border-radius:50%; overflow:hidden; border:1px solid #eee;">
-        <img id="logo-preview" src="${config.logoUrl}" style="width:100%; height:100%; object-fit:cover;">
+        <img id="logo-preview" src="${config.logoUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+    </div>
+    <div style="display:flex; gap:12px; margin-bottom:12px; align-items:flex-end;">
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">라이브 썸네일 (9:16 비율 권장)</label>
+        <input type="file" class="form-control" id="config-thumbnailFile" accept="image/*" style="font-size:12px;">
+      </div>
+      <div style="width:36px; height:64px; border-radius:4px; overflow:hidden; border:1px solid #eee; flex-shrink:0;">
+        <img id="thumbnail-preview" src="${config.thumbnailUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
       </div>
     </div>
     <div class="form-group" style="margin-bottom:12px;">
@@ -251,25 +268,19 @@ export function renderLiveStream() {
       });
     };
     
-    document.getElementById('btn-save-config').addEventListener('click', () => {
-      config.brandName = document.getElementById('config-brandName').value;
-      config.title = document.getElementById('config-title').value;
-      config.streamUrl = document.getElementById('config-stream').value;
-      saveConfig();
-      alert('라이브 기본설정이 저장되었습니다.');
-    });
+    document.getElementById('config-brandName').addEventListener('input', (e) => { config.brandName = e.target.value; saveConfig(); });
+    document.getElementById('config-title').addEventListener('input', (e) => { config.title = e.target.value; saveConfig(); });
+    document.getElementById('config-stream').addEventListener('input', (e) => { config.streamUrl = e.target.value; saveConfig(); });
+    document.getElementById('config-liveStartTime').addEventListener('input', (e) => { config.liveStartTime = e.target.value; saveConfig(); });
 
-    document.getElementById('config-logoFile').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
+    // 이미지 업로드 공통 함수 (Catbox/tmpfiles 무료 서버)
+    const uploadImage = async (file, previewId, configKey) => {
       if (!file) return;
-      
-      // Catbox 무료 서버로 업로드
       const formData = new FormData();
       formData.append('file', file);
       
-      const btn = e.target;
-      btn.disabled = true;
-      document.getElementById('logo-preview').style.opacity = '0.5';
+      const preview = document.getElementById(previewId);
+      preview.style.opacity = '0.5';
       
       try {
         const res = await fetch('https://tmpfiles.org/api/v1/upload', {
@@ -278,22 +289,39 @@ export function renderLiveStream() {
         });
         const json = await res.json();
         if (json.status === 'success') {
-          // tmpfiles.org/ URL을 tmpfiles.org/dl/ 로 변경해야 직접 이미지가 보입니다
           const url = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-          config.logoUrl = url;
-          document.getElementById('logo-preview').src = url;
+          config[configKey] = url;
+          preview.src = url;
           saveConfig();
         } else {
-          alert('이미지 업로드 실패: ' + JSON.stringify(json));
+          alert('이미지 업로드 실패');
         }
       } catch (err) {
         console.error(err);
         alert('이미지 업로드 에러');
       } finally {
-        btn.disabled = false;
-        document.getElementById('logo-preview').style.opacity = '1';
+        preview.style.opacity = '1';
       }
+    };
+
+    document.getElementById('config-logoFile').addEventListener('change', (e) => {
+      uploadImage(e.target.files[0], 'logo-preview', 'logoUrl');
     });
+
+    document.getElementById('config-thumbnailFile').addEventListener('change', (e) => {
+      uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl');
+    });
+
+    document.getElementById('btn-save-config').addEventListener('click', () => {
+      config.brandName = document.getElementById('config-brandName').value;
+      config.title = document.getElementById('config-title').value;
+      config.streamUrl = document.getElementById('config-stream').value;
+      config.liveStartTime = document.getElementById('config-liveStartTime').value;
+      saveConfig();
+      alert('라이브 기본설정이 저장되었습니다.');
+    });
+
+
     bindStatInput('stat-viewers', 'viewers');
     bindStatInput('stat-hearts', 'hearts');
     

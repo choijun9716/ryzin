@@ -15,6 +15,18 @@
     <!-- 비디오 영역 -->
     <div class="video-wrapper">
       <video id="live-video" autoplay muted playsinline></video>
+      
+      <!-- 썸네일 및 재생 오버레이 -->
+      <div id="thumbnail-overlay" class="thumbnail-overlay">
+        <img id="thumbnail-img" class="thumbnail-img" src="" alt="Live Thumbnail" style="display:none;">
+        <div class="thumbnail-content">
+          <div id="live-start-text" class="live-start-text"></div>
+          <button id="btn-start-live" class="btn-start-live">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </button>
+        </div>
+      </div>
+
       <div class="video-overlay">
         <div class="live-badge">LIVE</div>
         <div class="view-count"><span id="view-count"></span></div>
@@ -62,6 +74,12 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
           </span>
           <span class="label">상품</span>
+        </button>
+        <button class="action-btn" id="btn-like">
+          <span class="icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </span>
+          <span class="label" id="like-count">12.0K</span>
         </button>
       </div>
 

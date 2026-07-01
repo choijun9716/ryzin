@@ -108,6 +108,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const titleEl = document.querySelector('.broadcast-title');
         if(titleEl) titleEl.textContent = c.title;
         const brandNameEl = document.querySelector('.brand-name');
+        
+        // 썸네일 및 시작 시간 적용
+        const thumbImg = document.getElementById('thumbnail-img');
+        const startText = document.getElementById('live-start-text');
+        
+        if (c.thumbnailUrl && thumbImg) {
+          thumbImg.src = c.thumbnailUrl;
+          thumbImg.style.display = 'block';
+        } else if (thumbImg) {
+          thumbImg.style.display = 'none';
+        }
+        
+        if (c.liveStartTime && startText) {
+          startText.textContent = c.liveStartTime;
+        } else if (startText) {
+          startText.textContent = '';
+        }
+
         if(brandNameEl && c.brandName) brandNameEl.textContent = c.brandName;
         const brandLogo = document.querySelector('.brand-logo');
         if(brandLogo && c.logoUrl) brandLogo.src = c.logoUrl;
@@ -146,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const normal = Number(normalPriceStr);
             const rate = Number(item.discountRate);
             const current = currentPriceStr ? Number(currentPriceStr) : Math.round(normal * (1 - rate / 100));
-            priceHtml = `<span style="color:#e50914; font-weight:bold; margin-right:4px;">${rate}%</span><span class="original-price" style="text-decoration:line-through; color:#aaa; margin-right:4px; font-size:12px;">${normal.toLocaleString()}원</span><span class="discounted-price" style="font-weight:bold; color:#fff;">${current.toLocaleString()}원</span>`;
+            priceHtml = `<span style="color:#e50914; font-weight:bold; margin-right:4px;">${rate}%</span><span class="original-price" style="text-decoration:line-through; color:#aaa; margin-right:4px; font-size:12px;">${normal.toLocaleString()}원</span><span class="discounted-price" style="font-weight:bold; color:#333; font-size:16px;">${current.toLocaleString()}원</span>`;
           } else {
             priceHtml = `${item.price}`;
           }
@@ -336,7 +354,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-  // Heart and like functionality removed
+  // 4. 좋아요 버튼 연출 (시각적 효과만, DB 연동 X)
+  const btnLike = document.getElementById('btn-like');
+  const likeCountEl = document.getElementById('like-count');
+  let likeCount = 12040;
+
+  if (btnLike && likeCountEl) {
+    // 주기적으로 하트 증가 연출
+    setInterval(() => {
+      likeCount += Math.floor(Math.random() * 5);
+      likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\\.0$/, '') + 'K';
+    }, 3000);
+
+    btnLike.addEventListener('click', () => {
+      likeCount += 1;
+      likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\\.0$/, '') + 'K';
+
+      const heart = document.createElement('div');
+      heart.className = 'floating-heart';
+      heart.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="#e50914" stroke="#e50914" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+      heart.style.position = 'absolute';
+      
+      const rect = btnLike.getBoundingClientRect();
+      heart.style.left = rect.left + (rect.width / 2) - 12 + 'px';
+      heart.style.top = rect.top + 'px';
+      heart.style.pointerEvents = 'none';
+      heart.style.zIndex = '9999';
+      
+      const randomX = (Math.random() - 0.5) * 100;
+      heart.style.setProperty('--tx', randomX + 'px');
+      
+      heart.style.animation = 'dynamicFloatUp 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+      document.body.appendChild(heart);
+      
+      setTimeout(() => heart.remove(), 1500);
+    });
+  }
   // 모바일 키보드 열림 등으로 인해 비디오가 일시정지되는 현상 방지
   video.addEventListener('pause', () => {
     // 탭을 내리거나 다른 앱으로 간 게 아니라면(document.hidden이 아니라면) 강제 재재생
