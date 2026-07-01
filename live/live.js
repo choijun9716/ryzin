@@ -217,13 +217,17 @@ document.addEventListener('DOMContentLoaded', () => {
           viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : 'block';
         }
 
-        // 라이브 배지 텍스트 업데이트 (LIVE / 대기)
+        // 라이브 배지 텍스트 업데이트 (스트리밍 URL 없으면 숨김)
         const liveBadge = document.querySelector('.live-badge');
         if (liveBadge) {
-          if (c.isLive) {
+          if (!c.streamUrl) {
+            liveBadge.style.display = 'none';
+          } else if (c.isLive) {
+            liveBadge.style.display = '';
             liveBadge.textContent = 'LIVE';
             liveBadge.style.background = '#e50914';
           } else {
+            liveBadge.style.display = '';
             liveBadge.textContent = '대기';
             liveBadge.style.background = '#374151';
           }
