@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const titleEl = document.querySelector('.broadcast-title');
         if(titleEl) titleEl.textContent = c.title;
+        const brandNameEl = document.querySelector('.brand-name');
+        if(brandNameEl && c.brandName) brandNameEl.textContent = c.brandName;
         const brandLogo = document.querySelector('.brand-logo');
         if(brandLogo && c.logoUrl) brandLogo.src = c.logoUrl;
         const viewCountWrapper = document.querySelector('.view-count');
