@@ -101,7 +101,7 @@ export function renderLiveStream() {
   const configCard = document.createElement('div');
   configCard.className = 'card';
   configCard.innerHTML = `
-    <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px;">📺 라이브 기본 설정</h3>
+    <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px; font-size:16px; font-weight:600; color:#333;">라이브 기본 설정</h3>
     <div style="display:flex; gap:12px; margin-bottom:12px;">
       <div class="form-group" style="flex:1;">
         <label class="form-label">제목 (브랜드명)</label>
@@ -171,7 +171,7 @@ export function renderLiveStream() {
   productCard.className = 'card';
   productCard.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px;">
-      <h3 style="margin:0;">🛍️ 상품 관리</h3>
+      <h3 style="margin:0; font-size:16px; font-weight:600; color:#333;">상품 관리</h3>
       <button class="btn btn-primary btn-sm" id="btn-add-product">+ 상품 추가</button>
     </div>
     <div id="product-list-container">
@@ -184,7 +184,7 @@ export function renderLiveStream() {
 
   // 오른쪽 (모니터링 및 채팅)
   const rightPanel = document.createElement('div');
-  rightPanel.style.width = '400px';
+  rightPanel.style.width = '380px';
   rightPanel.style.display = 'flex';
   rightPanel.style.flexDirection = 'column';
   rightPanel.style.gap = '16px';
@@ -195,13 +195,18 @@ export function renderLiveStream() {
   previewCard.className = 'card';
   previewCard.style.padding = '0';
   previewCard.style.overflow = 'hidden';
-  previewCard.style.height = '600px';
+  // 9:16 모바일 비율 유지 (예: 360x640)
+  previewCard.style.width = '360px';
+  previewCard.style.height = '640px'; 
+  previewCard.style.margin = '0 auto';
   previewCard.style.display = 'flex';
   previewCard.style.flexDirection = 'column';
+  previewCard.style.borderRadius = '16px';
+  previewCard.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
   previewCard.innerHTML = `
-    <div style="background:#111; color:#fff; padding:12px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
-      <span>📱 모바일 미리보기</span>
-      <button class="btn btn-primary btn-sm" id="btn-refresh-preview" style="padding:4px 8px;">새로고침</button>
+    <div style="background:#2c3e50; color:#fff; padding:12px 16px; font-weight:bold; font-size:14px; display:flex; justify-content:space-between; align-items:center;">
+      <span>모바일 미리보기</span>
+      <button class="btn btn-primary btn-sm" id="btn-refresh-preview" style="padding:4px 10px; font-size:12px; border-radius:4px;">새로고침</button>
     </div>
     <iframe id="live-preview-iframe" src="${previewUrl}" style="width:100%; flex:1; border:none; background:#000;"></iframe>
   `;
@@ -212,7 +217,7 @@ export function renderLiveStream() {
   chatCard.style.display = 'flex';
   chatCard.style.flexDirection = 'column';
   chatCard.innerHTML = `
-    <h3 style="margin-top:0; margin-bottom:12px;">💬 관리자 채팅 발송</h3>
+    <h3 style="margin-top:0; margin-bottom:12px; font-size:16px; font-weight:600; color:#333;">관리자 채팅 발송</h3>
     <div id="admin-chat-list" style="flex:1; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:12px; overflow-y:auto; margin-bottom:12px; min-height:150px; font-size:13px;">
       <div style="color:#666; text-align:center; padding-top:40px;">실시간 채팅 내역이 여기에 표시됩니다.</div>
     </div>
