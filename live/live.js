@@ -170,46 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. 더미 상품 리스트 렌더링
-  const products = [
-    {
-      id: 1,
-      name: "[특가] 트루쿡 인덕션 프라이팬 3종 세트",
-      price: "49,900원",
-      image: "https://images.unsplash.com/photo-1584990347449-a6e81cb8860a?auto=format&fit=crop&q=80&w=200&h=200"
-    },
-    {
-      id: 2,
-      name: "네티컬 딥 클렌징 앰플 기획세트",
-      price: "24,000원",
-      image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=200&h=200"
-    },
-    {
-      id: 3,
-      name: "탐루미 수분폭탄 마스크팩 10매",
-      price: "12,900원",
-      image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&q=80&w=200&h=200"
-    }
-  ];
 
-  const modalProductsList = document.getElementById('modal-products-list');
-  products.forEach(p => {
-    const el = document.createElement('a');
-    el.href = "#"; // 실제 링크로 대체 가능
-    el.className = 'product-card';
-    el.innerHTML = `
-      <img src="${p.image}" alt="product" class="product-image">
-      <div class="product-info">
-        <div class="product-name">${p.name}</div>
-        <div class="product-price">${p.price}</div>
-      </div>
-    `;
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      showToast('상품 구매 페이지로 이동합니다: ' + p.name);
-    });
-    modalProductsList.appendChild(el);
-  });
 
   // 화면 클릭 시 채팅창 숨기기/보이기 토글
   const videoWrapper = document.querySelector('.video-wrapper');
