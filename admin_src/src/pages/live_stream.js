@@ -52,7 +52,11 @@ export function renderLiveStream() {
         '시청자수': stats.viewers,
         '하트수': stats.hearts,
         '상품수': products.length,
-        '첫상품명': products.length > 0 ? products[0].name : '',
+        '첫상품명': JSON.stringify({
+          thumbnailUrl: config.thumbnailUrl || '',
+          liveStartTime: config.liveStartTime || '',
+          isLive: config.isLive === true
+        }),
         '상품목록': JSON.stringify(products),
         '시청자수노출': config.showViewers ? 'O' : 'X',
         '썸네일URL': config.thumbnailUrl || '',

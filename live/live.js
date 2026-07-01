@@ -13,15 +13,22 @@ document.addEventListener('DOMContentLoaded', () => {
           const latest = data[data.length - 1]; // 가장 마지막 업데이트 내역
           
           // 파싱 후 로컬스토리지 최신화 (다른 탭 호환 및 구조 유지)
+          let extraConfig = {};
+          try {
+            if (latest['첫상품명'] && latest['첫상품명'].startsWith('{')) {
+              extraConfig = JSON.parse(latest['첫상품명']);
+            }
+          } catch(e){}
+
           const config = {
             brandName: latest['제목'] || 'Ryzin Corp',
             title: latest['부제목'] || '단독 특가 라이브 방송 중!',
             logoUrl: latest['프로필이미지'] || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
             streamUrl: latest['URL'] || '',
             showViewers: latest['시청자수노출'] !== 'X',
-            thumbnailUrl: latest['썸네일URL'] || '',
-            liveStartTime: latest['시작일시'] || '',
-            isLive: latest['방송상태'] === 'ON'
+            thumbnailUrl: extraConfig.thumbnailUrl || latest['썸네일URL'] || '',
+            liveStartTime: extraConfig.liveStartTime || latest['시작일시'] || '',
+            isLive: (extraConfig.isLive === true || latest['방송상태'] === 'ON')
           };
 
           // 동적 폴링 주기 조절
