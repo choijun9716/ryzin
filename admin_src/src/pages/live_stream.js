@@ -145,6 +145,9 @@ export function renderLiveStream() {
         <label for="config-bot" style="font-size:14px;">채팅 봇 활성화</label>
       </div>
     </div>
+    <div style="margin-top:16px; margin-bottom:24px;">
+      <button id="btn-save-config" class="btn btn-primary" style="width:100%; padding:10px; font-weight:bold;">라이브 설정 일괄 적용 (저장)</button>
+    </div>
   `;
 
   // 2. 상품 관리
@@ -235,21 +238,21 @@ export function renderLiveStream() {
 
   // 이벤트 바인딩
   setTimeout(() => {
-    // 설정 변경 이벤트
-    const bindConfigInput = (id, key, isStat = false) => {
+    // 설정 변경 이벤트 (통계치만 즉시 반영, 나머지는 수동 저장)
+    const bindStatInput = (id, key) => {
       document.getElementById(id).addEventListener('input', (e) => {
-        if (isStat) {
-          stats[key] = parseInt(e.target.value) || 0;
-          saveStats();
-        } else {
-          config[key] = e.target.value;
-          saveConfig();
-        }
+        stats[key] = parseInt(e.target.value) || 0;
+        saveStats();
       });
     };
-    bindConfigInput('config-brandName', 'brandName');
-    bindConfigInput('config-title', 'title');
-    bindConfigInput('config-stream', 'streamUrl');
+    
+    document.getElementById('btn-save-config').addEventListener('click', () => {
+      config.brandName = document.getElementById('config-brandName').value;
+      config.title = document.getElementById('config-title').value;
+      config.streamUrl = document.getElementById('config-stream').value;
+      saveConfig();
+      alert('라이브 기본설정이 저장되었습니다.');
+    });
 
     document.getElementById('config-logoFile').addEventListener('change', async (e) => {
       const file = e.target.files[0];
@@ -286,8 +289,8 @@ export function renderLiveStream() {
         document.getElementById('logo-preview').style.opacity = '1';
       }
     });
-    bindConfigInput('stat-viewers', 'viewers', true);
-    bindConfigInput('stat-hearts', 'hearts', true);
+    bindStatInput('stat-viewers', 'viewers');
+    bindStatInput('stat-hearts', 'hearts');
     
     document.getElementById('config-bot').addEventListener('change', (e) => {
       config.botEnabled = e.target.checked;
