@@ -643,33 +643,35 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
     `;
 
-    // CRM활동에서 클릭 로그 조회 및 렌더링 반영
-    fetch(`${SHEETDB_URL}?sheet=CRM%ED%99%9C%EB%8F%99`)
+    // 라이브관제 시트에서 최신 상품목록 JSON을 불러와 조회수(클릭수)를 동기화
+    fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`)
       .then(res => res.json())
-      .then(logs => {
-        if (Array.isArray(logs)) {
-          // live_id 필터링 & 상품클릭 유형 필터링
-          const filtered = logs.filter(l => l['고객아이디'] === liveId && l['유형'] === '상품클릭');
-          // 상품별 클릭수 집계
-          const counts = {};
-          filtered.forEach(log => {
-            const pName = log['내용'];
-            counts[pName] = (counts[pName] || 0) + 1;
-          });
-          // products 어레이에 병합
-          products.forEach(p => {
-            p.clicks = counts[p.name] || 0;
-          });
-          // 로컬스토리지 저장 및 리렌더링
-          saveProducts();
-          const listContainer = document.getElementById('product-list-container');
-          if (listContainer) {
-            listContainer.innerHTML = renderProductList();
-            bindProductEvents();
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const row = data.find(r => r.live_id === liveId);
+          if (row && row['상품목록']) {
+            try {
+              const remoteProducts = JSON.parse(row['상품목록']);
+              if (Array.isArray(remoteProducts)) {
+                // 원격 데이터에서 클릭수 정보를 현재 products 리스트에 매핑
+                products.forEach(p => {
+                  const match = remoteProducts.find(rp => rp.name === p.name);
+                  if (match) {
+                    p.clicks = parseInt(match.clicks) || 0;
+                  }
+                });
+                saveProducts();
+                const listContainer = document.getElementById('product-list-container');
+                if (listContainer) {
+                  listContainer.innerHTML = renderProductList();
+                  bindProductEvents();
+                }
+              }
+            } catch(e){}
           }
         }
       })
-      .catch(err => console.warn('Failed to load product clicks', err));
+      .catch(err => console.warn('Failed to load product clicks from 라이브관제', err));
 
     const bindProductEvents = () => {
       const plc = document.getElementById('product-list-container');

@@ -289,20 +289,27 @@ document.addEventListener('DOMContentLoaded', () => {
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', (e) => {
             if(!item.url || item.url === '#') e.preventDefault();
-            // 상품 클릭수 (조회수) 트래킹 - CRM활동 시트에 기록
+            // 상품 클릭수 (조회수) 트래킹 - 라이브관제 시트의 상품목록 JSON에 누적 업데이트
             try {
-              const clickData = {
-                '고객아이디': LIVE_ID || 'general',
-                '날짜': new Date().toISOString().split('T')[0],
-                '유형': '상품클릭',
-                '내용': item.name || '알 수 없는 상품',
-                '생성일': new Date().toISOString()
-              };
-              fetch(`${SHEETDB_URL}?sheet=CRM%ED%99%9C%EB%8F%99`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: [clickData] })
-              }).catch(err => console.warn('Product click tracking failed', err));
+              const currentProducts = JSON.parse(localStorage.getItem('ryzin_live_products')) || [];
+              const targetProd = currentProducts.find(p => p.name === item.name);
+              if (targetProd) {
+                targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
+                localStorage.setItem('ryzin_live_products', JSON.stringify(currentProducts));
+                
+                // SheetDB의 라이브관제 시트에 업데이트 요청 전송
+                if (LIVE_ID) {
+                  const updatePayload = {
+                    '상품목록': JSON.stringify(currentProducts),
+                    '업데이트시간': new Date().toISOString()
+                  };
+                  fetch(`${SHEETDB_URL}/live_id/${LIVE_ID}?sheet=${encodeURIComponent('라이브관제')}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: updatePayload })
+                  }).catch(err => console.warn('Product click sync failed', err));
+                }
+              }
             } catch(err){}
           });
           modalProductsList.appendChild(el);
