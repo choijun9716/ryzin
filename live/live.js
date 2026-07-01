@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   let lastChatTime = Date.now() - 3000; // 최근 3초 전 메시지부터만 수신
   const mySentTexts = []; // 내가 방금 보낸 채팅 텍스트 보관용
-  async function pollSheetDB() {
+  async function pollConfig() {
     try {
       const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
       if (res.ok) {
@@ -41,7 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
           loadLiveStats();
         }
       }
+    } catch (e) {
+      console.warn("SheetDB pollConfig failed:", e);
+    }
+  }
 
+  async function pollChat() {
+    try {
       // 채팅 조회
       const chatRes = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`);
       if (chatRes.ok) {
@@ -67,14 +73,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } catch (e) {
-      console.warn("SheetDB polling failed:", e);
+      console.warn("SheetDB pollChat failed:", e);
     }
   }
 
-  // 3초마다 어드민(SheetDB) 변경사항 폴링
-  setInterval(pollSheetDB, 3000);
+  // 채팅 30초마다 조회
+  setInterval(pollChat, 30000);
+  // 상품/관제 10분마다 조회 (600,000ms)
+  setInterval(pollConfig, 600000);
+  
   // 초기 1회 즉시 실행
-  setTimeout(pollSheetDB, 500);
+  setTimeout(() => {
+    pollConfig();
+    pollChat();
+  }, 500);
 
   function loadLiveConfig() {
     try {
@@ -112,8 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
       if(s) {
         document.getElementById('view-count').textContent = s.viewers.toLocaleString() + '명 시청중';
-        likeCount = s.hearts;
-        document.getElementById('like-count').textContent = (likeCount >= 1000 ? (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : likeCount);
       }
     }catch(e){}
   }
@@ -128,10 +138,22 @@ document.addEventListener('DOMContentLoaded', () => {
           const el = document.createElement('a');
           el.href = item.url || "#";
           el.className = 'product-card';
-          el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.name}</div><div class="product-price">${item.price}</div></div>`;
+          let priceHtml = '';
+          const normalPriceStr = item.normalPrice ? item.normalPrice.toString().replace(/[^0-9]/g, '') : '';
+          const currentPriceStr = item.price ? item.price.toString().replace(/[^0-9]/g, '') : '';
+          
+          if (normalPriceStr && item.discountRate) {
+            const normal = Number(normalPriceStr);
+            const rate = Number(item.discountRate);
+            const current = currentPriceStr ? Number(currentPriceStr) : Math.round(normal * (1 - rate / 100));
+            priceHtml = `<span style="color:#e50914; font-weight:bold; margin-right:4px;">${rate}%</span><span class="original-price" style="text-decoration:line-through; color:#aaa; margin-right:4px; font-size:12px;">${normal.toLocaleString()}원</span><span class="discounted-price" style="font-weight:bold; color:#fff;">${current.toLocaleString()}원</span>`;
+          } else {
+            priceHtml = `${item.price}`;
+          }
+          el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', (e) => {
             if(!item.url || item.url === '#') e.preventDefault();
-            showToast('상품 구매 페이지로 이동합니다: ' + item.name);
+// removed alert, direct navigation
           });
           modalProductsList.appendChild(el);
         });
@@ -271,9 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  const botNames = ['라이즌팬', '쇼핑왕', '득템요정', '오늘만산다', '트루쿡매니아', '김지현', '박민수', '이서연'];
-  const botMsgs = ['대박이네요', '어머 이건 사야해', '배송 언제 오나요?', '품절되기 전에 결제했습니다', '컬러 고민되네요', '할인율 미쳤다', '진행자님 예뻐요!'];
-
   function addMessage(name, text, isMe = false) {
     const el = document.createElement('div');
     el.className = 'chat-msg' + (isMe ? ' me' : '');
@@ -296,11 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mySentTexts.push(text);
       chatInput.value = '';
       
-      // 더미 챗봇 자동 응답
-      setTimeout(() => {
-        if(text.includes('안녕')) addMessage('관리자', '안녕하세요! 환영합니다 ❤️', true);
-        else if(text.includes('얼마')) addMessage('관리자', '하단의 상품 리스트를 클릭하시면 가격 확인이 가능합니다!', true);
-      }, 1000);
+
 
       // 시트 DB '라이브채팅' 전송
       try {
@@ -319,61 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') sendMessage();
   });
 
-  // 주기적으로 다른 사람들의 채팅이 올라오는 것처럼 연출
-  setInterval(() => {
-    // 30% 확률로 봇 채팅
-    if (Math.random() < 0.3) {
-      const rName = botNames[Math.floor(Math.random() * botNames.length)];
-      const rMsg = botMsgs[Math.floor(Math.random() * botMsgs.length)];
-      addMessage(rName, rMsg);
-    }
-  }, 2000);
 
-  // 4. 좋아요 버튼 연출
-  const btnLike = document.getElementById('btn-like');
-  const likeCountEl = document.getElementById('like-count');
-  let likeCount = 12040;
 
-  // 주기적으로 좋아요 증가
-  setInterval(() => {
-    likeCount += Math.floor(Math.random() * 5);
-    likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  }, 3000);
-
-  btnLike.addEventListener('click', () => {
-    likeCount += 1;
-    likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-    
-    // 하트 / RYZIN 텍스트 번갈아 띄우기
-    window._heartToggle = !window._heartToggle; // 번갈아가며 나타나도록 전역 변수 사용 (또는 클로저)
-    
-    const colors = ['#e50914', '#ff4081', '#ffca28', '#29b6f6', '#66bb6a'];
-    const heartColor = colors[Math.floor(Math.random() * colors.length)];
-    
-    const heart = document.createElement('div');
-    if (window._heartToggle) {
-      heart.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="${heartColor}" stroke="${heartColor}" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
-    } else {
-      heart.innerHTML = `<span style="font-size: 16px; font-weight: 900; color: #000; font-style: italic; -webkit-text-stroke: 1.5px #fff; paint-order: stroke fill; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">RYZIN</span>`;
-    }
-    heart.style.position = 'absolute';
-    
-    // 버튼 위치를 기준으로 시작 (중앙)
-    const rect = btnLike.getBoundingClientRect();
-    heart.style.left = rect.left + (rect.width / 2) - 12 + 'px';
-    heart.style.top = rect.top + 'px';
-    heart.style.pointerEvents = 'none';
-    heart.style.zIndex = '9999';
-    
-    // 랜덤 이동 경로 계산
-    const randomX = (Math.random() - 0.5) * 100; // 좌우 퍼짐 정도
-    heart.style.setProperty('--tx', randomX + 'px');
-    
-    heart.style.animation = 'dynamicFloatUp 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
-    document.body.appendChild(heart);
-    
-    setTimeout(() => heart.remove(), 1500);
-  });
+  // Heart and like functionality removed
   // 모바일 키보드 열림 등으로 인해 비디오가 일시정지되는 현상 방지
   video.addEventListener('pause', () => {
     // 탭을 내리거나 다른 앱으로 간 게 아니라면(document.hidden이 아니라면) 강제 재재생

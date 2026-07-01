@@ -85,7 +85,7 @@ export function renderLiveStream() {
   const saveProducts = () => {
     localStorage.setItem('ryzin_live_products', JSON.stringify(products));
     syncToIframe();
-    syncAllToSheetDB();
+    // syncAllToSheetDB(); // 수동 저장으로 변경
   };
 
   // 왼쪽 (컨트롤 패널)
@@ -163,7 +163,9 @@ export function renderLiveStream() {
           <input type="text" class="form-control" style="font-size:12px; padding:4px 8px;" value="${p.url}" data-idx="${idx}" data-field="url" placeholder="상품 이동 URL">
         </div>
         <div>
-          <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.price}" data-idx="${idx}" data-field="price" placeholder="가격">
+           <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.price}" data-idx="${idx}" data-field="price" placeholder="가격">
+           <input type="text" class="form-control" style="width:80px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.normalPrice || ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
+           <input type="number" min="0" max="100" class="form-control" style="width:70px; font-size:13px; margin-bottom:4px; padding:4px 8px;" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="할인율%">
           <button class="btn btn-danger btn-sm btn-del-product" data-idx="${idx}" style="width:100%; padding:4px;">삭제</button>
         </div>
       </div>
@@ -175,7 +177,10 @@ export function renderLiveStream() {
   productCard.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:16px;">
       <h3 style="margin:0; font-size:16px; font-weight:600; color:#333;">상품 관리</h3>
-      <button class="btn btn-primary btn-sm" id="btn-add-product">+ 상품 추가</button>
+      <div>
+        <button class="btn btn-primary btn-sm" id="btn-add-product" style="margin-right:8px;">+ 상품 추가</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-products" style="background:#e50914; border-color:#e50914;">상품 일괄 적용 (저장)</button>
+      </div>
     </div>
     <div id="product-list-container">
       ${renderProductList()}
@@ -310,10 +315,36 @@ export function renderLiveStream() {
     const bindProductEvents = () => {
       const container = document.getElementById('product-list-container');
       container.querySelectorAll('input').forEach(input => {
+        // 구두점 실시간 자동화
+        if (input.dataset.field === 'price' || input.dataset.field === 'normalPrice') {
+          input.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            if (val) {
+              e.target.value = Number(val).toLocaleString('ko-KR');
+            }
+          });
+        }
+
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const field = e.target.dataset.field;
           products[idx][field] = e.target.value;
+          
+          // 정상가/할인가 입력 시 할인율 자동계산
+          if (field === 'price' || field === 'normalPrice') {
+            const normalStr = (products[idx].normalPrice || '').toString().replace(/[^0-9]/g, '');
+            const priceStr = (products[idx].price || '').toString().replace(/[^0-9]/g, '');
+            if (normalStr && priceStr) {
+              const normal = Number(normalStr);
+              const price = Number(priceStr);
+              if (normal > 0 && normal >= price) {
+                const rate = Math.round(((normal - price) / normal) * 100);
+                products[idx].discountRate = rate;
+                const rateInput = container.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
+                if (rateInput) rateInput.value = rate;
+              }
+            }
+          }
           saveProducts();
         });
       });
@@ -361,10 +392,15 @@ export function renderLiveStream() {
     bindProductEvents();
 
     document.getElementById('btn-add-product').addEventListener('click', () => {
-      products.push({ id: Date.now(), name: "새 상품", price: "0원", image: "https://via.placeholder.com/200", url: "#" });
+      products.push({ id: Date.now(), name: "새 상품", price: "0원", normalPrice: "", discountRate: 0, image: "https://via.placeholder.com/200", url: "#" });
       saveProducts();
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
+    });
+
+    document.getElementById('btn-save-products').addEventListener('click', () => {
+      syncAllToSheetDB();
+      alert('상품 목록이 시트 DB에 일괄 적용되었습니다.');
     });
 
     // 관리자 채팅 전송
