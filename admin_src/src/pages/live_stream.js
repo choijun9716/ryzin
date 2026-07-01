@@ -387,10 +387,10 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
 
       <div class="section-card">
-        <h3>통계 (가라 데이터)</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
+        <h3>통계</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:18px;">
           <div>
-            <label class="modern-label">시청자 수</label>
+            <label class="modern-label">실시간 시청자 수</label>
             <input type="number" class="modern-input" id="cfg-viewers" value="${stats.viewers}">
           </div>
           <div>
@@ -400,6 +400,12 @@ function renderLiveEditView(container, liveId, showView) {
           <div>
             <label class="modern-label">하트 수</label>
             <input type="number" class="modern-input" id="cfg-hearts" value="${stats.hearts}">
+          </div>
+          <div>
+            <label class="modern-label">총 상품 조회수 (클릭수)</label>
+            <div class="modern-input" style="background:#f1f5f9; display:flex; align-items:center; font-weight:bold; color:#0f172a;">
+              ${(products || []).reduce((acc, curr) => acc + (parseInt(curr.clicks) || 0), 0).toLocaleString()}회
+            </div>
           </div>
         </div>
         <div style="margin-top:18px; display:flex; align-items:center; gap:8px;">
