@@ -37,9 +37,13 @@
         </div>
       </div>
 
-      <!-- 상품 리스트 영역 -->
-      <div class="products-section">
-        <div class="products-scroll" id="products-list">
+      <!-- 상품 모달 (숨김 상태) -->
+      <div id="product-modal" class="product-modal hidden">
+        <div class="modal-header">
+          <h2>방송 중 특가 상품</h2>
+          <button id="btn-close-modal" class="btn-close">✕</button>
+        </div>
+        <div class="modal-body" id="modal-products-list">
           <!-- JS에서 렌더링됨 -->
         </div>
       </div>
@@ -53,9 +57,10 @@
 
       <!-- 입력 영역 -->
       <div class="input-section">
+        <button class="btn-shop" id="btn-shop">🛍️ 상품</button>
         <button class="btn-like" id="btn-like">❤️ <span class="like-count" id="like-count">12K</span></button>
         <div class="input-wrapper">
-          <input type="text" id="chat-input" placeholder="실시간 채팅에 참여하세요..." autocomplete="off">
+          <input type="text" id="chat-input" placeholder="실시간 채팅..." autocomplete="off">
           <button id="btn-send">전송</button>
         </div>
       </div>
