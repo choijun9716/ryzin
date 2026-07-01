@@ -14,7 +14,7 @@ const saveLives = (list) => localStorage.setItem('ryzin_lives', JSON.stringify(l
 const getLiveConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_config_${liveId}`) || 'null');
 const saveLiveConfig = (liveId, data) => localStorage.setItem(`ryzin_config_${liveId}`, JSON.stringify(data));
 
-const getLiveStats = (liveId) => JSON.parse(localStorage.getItem(`ryzin_stats_${liveId}`) || JSON.stringify({ viewers: 0, hearts: 0 }));
+const getLiveStats = (liveId) => JSON.parse(localStorage.getItem(`ryzin_stats_${liveId}`) || JSON.stringify({ viewers: 0, hearts: 0, cumViewers: 0 }));
 const saveLiveStats = (liveId, data) => localStorage.setItem(`ryzin_stats_${liveId}`, JSON.stringify(data));
 
 const getLiveProducts = (liveId) => JSON.parse(localStorage.getItem(`ryzin_products_${liveId}`) || '[]');
@@ -50,7 +50,8 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       '시청자수노출': config.showViewers ? 'O' : 'X',
       '썸네일URL': config.thumbnailUrl || '',
       '시작일시': config.liveStartTime || '',
-      '방송상태': config.isLive ? 'ON' : 'OFF'
+      '방송상태': config.isLive ? 'ON' : 'OFF',
+      '누적시청자수': stats.cumViewers || 0
     };
     fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
       method: 'POST',
@@ -387,10 +388,14 @@ function renderLiveEditView(container, liveId, showView) {
 
       <div class="section-card">
         <h3>통계 (가라 데이터)</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;">
           <div>
             <label class="modern-label">시청자 수</label>
             <input type="number" class="modern-input" id="cfg-viewers" value="${stats.viewers}">
+          </div>
+          <div>
+            <label class="modern-label">누적 시청자 수</label>
+            <input type="number" class="modern-input" id="cfg-cumViewers" value="${stats.cumViewers || 0}">
           </div>
           <div>
             <label class="modern-label">하트 수</label>
@@ -418,6 +423,7 @@ function renderLiveEditView(container, liveId, showView) {
       config.streamUrl = document.getElementById('cfg-stream').value;
       config.liveStartTime = document.getElementById('cfg-liveStartTime').value;
       stats.viewers = parseInt(document.getElementById('cfg-viewers').value) || 0;
+      stats.cumViewers = parseInt(document.getElementById('cfg-cumViewers').value) || 0;
       stats.hearts = parseInt(document.getElementById('cfg-hearts').value) || 0;
       config.showViewers = document.getElementById('cfg-showViewers').checked;
       saveConfig();
@@ -588,14 +594,21 @@ function renderLiveEditView(container, liveId, showView) {
     });
   };
 
-  const renderProductList = () => products.map((p, idx) => `
+  const renderProductList = () => products.map((p, idx) => {
+    const clickCount = p.clicks || 0;
+    return `
     <div class="product-row">
       <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경">
         <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}">
         <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
       </div>
       <div class="product-inputs">
-        <input type="text" class="modern-input" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <input type="text" class="modern-input" style="flex:1;" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
+          <span style="margin-left:12px; font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:4px 10px; border-radius:12px; white-space:nowrap;">
+            조회수 (클릭수): ${clickCount.toLocaleString()}회
+          </span>
+        </div>
         <input type="text" class="modern-input" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL">
         <div class="product-prices">
           <input type="number" class="modern-input" value="${(p.price||'').toString().replace(/[^0-9]/g,'')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
@@ -613,7 +626,8 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
       </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 
   const renderProductTab = () => {
     contentArea.innerHTML = `
@@ -628,6 +642,34 @@ function renderLiveEditView(container, liveId, showView) {
         <div id="product-list-container">${renderProductList()}</div>
       </div>
     `;
+
+    // CRM활동에서 클릭 로그 조회 및 렌더링 반영
+    fetch(`${SHEETDB_URL}?sheet=CRM%ED%99%9C%EB%8F%99`)
+      .then(res => res.json())
+      .then(logs => {
+        if (Array.isArray(logs)) {
+          // live_id 필터링 & 상품클릭 유형 필터링
+          const filtered = logs.filter(l => l['고객아이디'] === liveId && l['유형'] === '상품클릭');
+          // 상품별 클릭수 집계
+          const counts = {};
+          filtered.forEach(log => {
+            const pName = log['내용'];
+            counts[pName] = (counts[pName] || 0) + 1;
+          });
+          // products 어레이에 병합
+          products.forEach(p => {
+            p.clicks = counts[p.name] || 0;
+          });
+          // 로컬스토리지 저장 및 리렌더링
+          saveProducts();
+          const listContainer = document.getElementById('product-list-container');
+          if (listContainer) {
+            listContainer.innerHTML = renderProductList();
+            bindProductEvents();
+          }
+        }
+      })
+      .catch(err => console.warn('Failed to load product clicks', err));
 
     const bindProductEvents = () => {
       const plc = document.getElementById('product-list-container');

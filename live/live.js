@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
           
           const stats = {
             viewers: parseInt(latest['시청자수']) || 0,
-            hearts: parseInt(latest['하트수']) || 0
+            hearts: parseInt(latest['하트수']) || 0,
+            cumViewers: latest['누적시청자수'] !== undefined && latest['누적시청자수'] !== '' ? parseInt(latest['누적시청자수']) || 0 : 0
           };
           
           localStorage.setItem('ryzin_live_config', JSON.stringify(config));
@@ -245,7 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
       if(s) {
-        document.getElementById('view-count').textContent = s.viewers.toLocaleString() + '명 시청중';
+        let text = s.viewers.toLocaleString() + '명 시청중';
+        if (s.cumViewers !== undefined && s.cumViewers !== null) {
+          text += ' | 누적 ' + Number(s.cumViewers).toLocaleString() + '명';
+        }
+        document.getElementById('view-count').textContent = text;
       }
     }catch(e){}
   }
@@ -284,7 +289,21 @@ document.addEventListener('DOMContentLoaded', () => {
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', (e) => {
             if(!item.url || item.url === '#') e.preventDefault();
-// removed alert, direct navigation
+            // 상품 클릭수 (조회수) 트래킹 - CRM활동 시트에 기록
+            try {
+              const clickData = {
+                '고객아이디': LIVE_ID || 'general',
+                '날짜': new Date().toISOString().split('T')[0],
+                '유형': '상품클릭',
+                '내용': item.name || '알 수 없는 상품',
+                '생성일': new Date().toISOString()
+              };
+              fetch(`${SHEETDB_URL}?sheet=CRM%ED%99%9C%EB%8F%99`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [clickData] })
+              }).catch(err => console.warn('Product click tracking failed', err));
+            } catch(err){}
           });
           modalProductsList.appendChild(el);
         });
