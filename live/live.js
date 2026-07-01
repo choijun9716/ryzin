@@ -216,6 +216,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if(viewCountWrapper) {
           viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : 'block';
         }
+
+        // 라이브 배지 텍스트 업데이트 (LIVE / 대기)
+        const liveBadge = document.querySelector('.live-badge');
+        if (liveBadge) {
+          if (c.isLive) {
+            liveBadge.textContent = 'LIVE';
+            liveBadge.style.background = '#e50914';
+          } else {
+            liveBadge.textContent = '대기';
+            liveBadge.style.background = '#374151';
+          }
+        }
       }
     }catch(e){}
   }
