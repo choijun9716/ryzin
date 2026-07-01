@@ -236,7 +236,7 @@ function renderListView(container, showView) {
 
   renderList();
 
-  document.getElementById('btn-create-live').addEventListener('click', () => {
+  header.querySelector('#btn-create-live').addEventListener('click', () => {
     const id = nextLiveId();
     const lives = getLives();
     lives.push({ id, createdAt: Date.now() });
