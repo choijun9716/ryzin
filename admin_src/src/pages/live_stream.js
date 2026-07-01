@@ -346,8 +346,7 @@ export function renderLiveStream() {
   botCard.style.marginTop = '24px';
   botCard.innerHTML = `
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-      <span style="font-size:20px;">🤖</span>
-      <h3 style="margin:0; font-size:18px; font-weight:700; color:#111;">채팅 봇 (더미 채팅)</h3>
+      <h3 style="margin:0; font-size:18px; font-weight:700; color:#111;">채팅 봇</h3>
     </div>
     <p style="font-size:13px; color:#64748b; margin-bottom:20px; line-height:1.6;">
       시청자에게 자연스럽게 보여질 가상의 채팅 리스트입니다.<br>
