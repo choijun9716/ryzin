@@ -284,31 +284,44 @@ document.addEventListener('DOMContentLoaded', () => {
             priceHtml = currentPriceStr ? `${current.toLocaleString()}원` : '';
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
-          el.addEventListener('click', (e) => {
+          el.addEventListener('click', async (e) => {
             if(!item.url || item.url === '#') e.preventDefault();
-            // 상품 클릭수 (조회수) 트래킹 - 라이브관제 시트의 상품목록 JSON에 누적 업데이트
+            // 상품 클릭수 (조회수) 트래킹 - SheetDB에서 실시간 상품목록을 조회한 뒤 안전하게 누적합산 PATCH
             try {
-              const currentProducts = JSON.parse(localStorage.getItem('ryzin_live_products')) || [];
-              const targetProd = currentProducts.find(p => p.name === item.name);
-              if (targetProd) {
-                targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
-                localStorage.setItem('ryzin_live_products', JSON.stringify(currentProducts));
-                
-                // SheetDB의 라이브관제 시트에 업데이트 요청 전송
-                const targetLiveId = LIVE_ID || (config && config.liveId) || 'live01';
-                if (targetLiveId) {
-                  const updatePayload = {
-                    '상품목록': JSON.stringify(currentProducts),
-                    '업데이트시간': new Date().toISOString()
-                  };
-                  fetch(`${SHEETDB_URL}/live_id/${targetLiveId}?sheet=${encodeURIComponent('라이브관제')}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: updatePayload })
-                  }).catch(err => console.warn('Product click sync failed', err));
+              const targetLiveId = LIVE_ID || (config && config.liveId) || 'live01';
+              if (!targetLiveId) return;
+
+              // 1. 최신 시트 데이터 조회
+              const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
+              if (res.ok) {
+                const data = await res.json();
+                const row = data.find(r => r.live_id === targetLiveId);
+                if (row && row['상품목록']) {
+                  const remoteProducts = JSON.parse(row['상품목록']) || [];
+                  const targetProd = remoteProducts.find(p => p.name === item.name);
+                  if (targetProd) {
+                    // 원격 데이터에서 가져온 값에 1 누적
+                    targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
+                    
+                    // 2. 누적된 신규 데이터를 로컬 스토리지에 즉시 반영 및 PATCH
+                    localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
+                    
+                    const updatePayload = {
+                      '상품목록': JSON.stringify(remoteProducts),
+                      '업데이트시간': new Date().toISOString()
+                    };
+                    
+                    await fetch(`${SHEETDB_URL}/live_id/${targetLiveId}?sheet=${encodeURIComponent('라이브관제')}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ data: updatePayload })
+                    });
+                  }
                 }
               }
-            } catch(err){}
+            } catch(err){
+              console.warn('Product click sync failed', err);
+            }
           });
           modalProductsList.appendChild(el);
         });
