@@ -113,6 +113,7 @@ async function initApp() {
   router.register('/crm', () => renderCRM());
   router.register('/settings', () => renderSettings());
 
+  // 라우터 시작 (SheetDB init 후에 호출되도록 대기 처리)
   router.start();
 
   // 모든 앵커 클릭 인터셉트 (SPA 네비게이션)

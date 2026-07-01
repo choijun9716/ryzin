@@ -241,7 +241,12 @@ class DataStore {
       });
     });
 
-    this._data.users = users;
+    // 사용자 정보가 SheetDB 조회 결과 비어있다면, 로컬스토리지에 저장되어있던 기존 유저 정보를 백업하여 유지합니다 (새로고침 시 튕김 방지)
+    if (users.length > 0) {
+      this._data.users = users;
+    } else if (!this._data.users || this._data.users.length === 0) {
+      this._data.users = [];
+    }
     this._data.hosts = hosts;
     this._data.brands = brands;
     this._data.projects = projects;
