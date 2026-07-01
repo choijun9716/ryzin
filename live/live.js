@@ -450,10 +450,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 시트 DB '라이브채팅' 전송
       try {
+        const chatData = { '시간': new Date().getTime().toString(), '닉네임': userNickname, '내용': text };
+        if (LIVE_ID) chatData['live_id'] = LIVE_ID;
         await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: [{ '시간': new Date().getTime().toString(), '닉네임': userNickname, '내용': text }] })
+          body: JSON.stringify({ data: [chatData] })
         });
       } catch(e) { console.warn(e); }
       finally { isChatSending = false; }
