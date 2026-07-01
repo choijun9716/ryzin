@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   async function pollSheetDB() {
     try {
-      const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`);
+      const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
