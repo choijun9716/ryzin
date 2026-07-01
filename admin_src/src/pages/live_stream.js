@@ -125,6 +125,23 @@ export function renderLiveStream() {
   leftPanel.style.overflowY = 'auto';
   leftPanel.style.paddingRight = '12px';
 
+  // --- 메인 탭 헤더 ---
+  const tabHeader = document.createElement('div');
+  tabHeader.className = 'card';
+  tabHeader.style.padding = '16px 24px';
+  tabHeader.style.borderRadius = '12px';
+  tabHeader.style.display = 'flex';
+  tabHeader.style.gap = '24px';
+  tabHeader.style.border = 'none';
+  tabHeader.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+  tabHeader.innerHTML = `
+    <div id="main-tab-config" style="cursor:pointer; font-weight:700; color:#111; border-bottom:2px solid #111; padding-bottom:4px;">라이브 기본설정</div>
+    <div id="main-tab-chat" style="cursor:pointer; font-weight:600; color:#888; padding-bottom:4px;">채팅 / 봇 관리</div>
+    <div id="main-tab-product" style="cursor:pointer; font-weight:600; color:#888; padding-bottom:4px;">상품 관리</div>
+  `;
+  leftPanel.appendChild(tabHeader);
+
+
   // 1. 기본 설정 폼
   const configCard = document.createElement('div');
   configCard.className = 'card';
@@ -243,6 +260,7 @@ export function renderLiveStream() {
 
   const productCard = document.createElement('div');
   productCard.className = 'card';
+  productCard.style.display = 'none';
   productCard.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f3f4f6; padding-bottom:16px; margin-bottom:20px;">
       <h3 style="margin:0; font-size:18px; font-weight:700; color:#111;">상품 관리</h3>
@@ -333,14 +351,58 @@ export function renderLiveStream() {
   `;
 
   rightPanel.appendChild(previewCard);
-  rightPanel.appendChild(chatCard);
-  rightPanel.appendChild(botCard);
+
+  // 채팅 & 봇 탭 컨테이너
+  const chatContainer = document.createElement('div');
+  chatContainer.style.display = 'none';
+  chatContainer.style.flexDirection = 'column';
+  chatContainer.style.gap = '24px';
+  chatContainer.appendChild(chatCard);
+  chatContainer.appendChild(botCard);
+  leftPanel.appendChild(chatContainer);
+
 
   container.appendChild(leftPanel);
   container.appendChild(rightPanel);
 
   // 이벤트 바인딩
   setTimeout(() => {
+    // 탭 전환 로직
+    const tabConfig = document.getElementById('main-tab-config');
+    const tabChat = document.getElementById('main-tab-chat');
+    const tabProduct = document.getElementById('main-tab-product');
+    
+    const resetTabs = () => {
+      [tabConfig, tabChat, tabProduct].forEach(t => { t.style.fontWeight = '600'; t.style.color = '#888'; t.style.borderBottom = 'none'; });
+      configCard.style.display = 'none';
+      chatContainer.style.display = 'none';
+      productCard.style.display = 'none';
+    };
+
+    tabConfig.addEventListener('click', () => {
+      resetTabs();
+      tabConfig.style.fontWeight = '700';
+      tabConfig.style.color = '#111';
+      tabConfig.style.borderBottom = '2px solid #111';
+      configCard.style.display = 'block';
+    });
+
+    tabChat.addEventListener('click', () => {
+      resetTabs();
+      tabChat.style.fontWeight = '700';
+      tabChat.style.color = '#111';
+      tabChat.style.borderBottom = '2px solid #111';
+      chatContainer.style.display = 'flex';
+    });
+    
+    tabProduct.addEventListener('click', () => {
+      resetTabs();
+      tabProduct.style.fontWeight = '700';
+      tabProduct.style.color = '#111';
+      tabProduct.style.borderBottom = '2px solid #111';
+      productCard.style.display = 'block';
+    });
+
     // 설정 변경 이벤트 (통계치만 즉시 반영, 나머지는 수동 저장)
     const bindStatInput = (id, key) => {
       document.getElementById(id).addEventListener('input', (e) => {
