@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const btnSend = document.getElementById('btn-send');
-  const nicknameSection = document.getElementById('nickname-section');
+  const nicknameModal = document.getElementById('nickname-modal');
   const chatSectionWrap = document.getElementById('chat-section-wrap');
   const nicknameInput = document.getElementById('nickname-input');
   const btnSetNickname = document.getElementById('btn-set-nickname');
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (userNickname) {
     chatSectionWrap.style.display = 'block';
   } else {
-    nicknameSection.style.display = 'block';
+    nicknameModal.style.display = 'flex';
   }
 
   btnSetNickname.addEventListener('click', () => {
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (n) {
       userNickname = n;
       localStorage.setItem('ryzin_nickname', n);
-      nicknameSection.style.display = 'none';
+      nicknameModal.style.display = 'none';
       chatSectionWrap.style.display = 'block';
       chatInput.focus();
     }
