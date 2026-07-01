@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } catch(e){}
 
           const config = {
+            liveId: latest['live_id'] || 'live01',
             brandName: latest['제목'] || 'Ryzin Corp',
             title: latest['부제목'] || '단독 특가 라이브 방송 중!',
             logoUrl: latest['프로필이미지'] || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
@@ -294,12 +295,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('ryzin_live_products', JSON.stringify(currentProducts));
                 
                 // SheetDB의 라이브관제 시트에 업데이트 요청 전송
-                if (LIVE_ID) {
+                const targetLiveId = LIVE_ID || (config && config.liveId) || 'live01';
+                if (targetLiveId) {
                   const updatePayload = {
                     '상품목록': JSON.stringify(currentProducts),
                     '업데이트시간': new Date().toISOString()
                   };
-                  fetch(`${SHEETDB_URL}/live_id/${LIVE_ID}?sheet=${encodeURIComponent('라이브관제')}`, {
+                  fetch(`${SHEETDB_URL}/live_id/${targetLiveId}?sheet=${encodeURIComponent('라이브관제')}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: updatePayload })
