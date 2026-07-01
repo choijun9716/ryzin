@@ -109,6 +109,18 @@ document.addEventListener('DOMContentLoaded', () => {
   loadLiveStats();
   loadLiveProducts();
 
+  // 어드민 iframe에서 postMessage로 실시간 데이터 쏘는 것 수신
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'sync_preview') {
+      if (e.data.config) localStorage.setItem('ryzin_live_config', JSON.stringify(e.data.config));
+      if (e.data.stats) localStorage.setItem('ryzin_live_stats', JSON.stringify(e.data.stats));
+      if (e.data.products) localStorage.setItem('ryzin_live_products', JSON.stringify(e.data.products));
+      loadLiveConfig();
+      loadLiveStats();
+      loadLiveProducts();
+    }
+  });
+
   window.addEventListener('storage', (e) => {
     if(e.key === 'ryzin_live_config') loadLiveConfig();
     if(e.key === 'ryzin_live_stats') loadLiveStats();

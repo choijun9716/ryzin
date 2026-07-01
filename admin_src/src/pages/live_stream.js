@@ -63,17 +63,27 @@ export function renderLiveStream() {
     }, 1000); // 1초 디바운스로 여러번 변경 시 1번만 전송
   };
 
+  const syncToIframe = () => {
+    const iframe = document.getElementById('live-preview-iframe');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'sync_preview', config, stats, products }, '*');
+    }
+  };
+
   const saveConfig = () => {
     localStorage.setItem('ryzin_live_config', JSON.stringify(config));
     window.dispatchEvent(new Event('storage')); 
+    syncToIframe();
     syncAllToSheetDB();
   };
   const saveStats = () => {
     localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
+    syncToIframe();
     syncAllToSheetDB();
   };
   const saveProducts = () => {
     localStorage.setItem('ryzin_live_products', JSON.stringify(products));
+    syncToIframe();
     syncAllToSheetDB();
   };
 
