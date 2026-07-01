@@ -439,7 +439,7 @@ export function renderLiveStream() {
     bindProductEvents();
 
     document.getElementById('btn-add-product').addEventListener('click', () => {
-      products.push({ id: Date.now(), name: "새 상품", price: "0원", normalPrice: "", discountRate: 0, image: "https://via.placeholder.com/200", url: "#" });
+      products.push({ id: Date.now(), name: "새 상품", price: "", normalPrice: "", discountRate: 0, image: "https://via.placeholder.com/200", url: "#" });
       saveProducts();
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
