@@ -361,7 +361,9 @@ function renderLiveEditView(container, liveId, showView) {
   `;
   layout.appendChild(rightPanel);
 
-  // 복사 버튼 이벤트
+  container.appendChild(layout);
+
+  // 복사 버튼 이벤트 (container에 layout이 추가된 이후에 등록)
   const copyEmbed = (id, btnId) => {
     const el = document.getElementById(id);
     const btn = document.getElementById(btnId);
@@ -380,8 +382,6 @@ function renderLiveEditView(container, liveId, showView) {
   };
   document.getElementById('btn-copy-embed-mobile').addEventListener('click', () => copyEmbed('embed-code-mobile', 'btn-copy-embed-mobile'));
   document.getElementById('btn-copy-embed-wide').addEventListener('click', () => copyEmbed('embed-code-wide', 'btn-copy-embed-wide'));
-
-  container.appendChild(layout);
 
   // ── 탭 패널 렌더 함수들 ───────────────────────────────────
   const renderConfigTab = () => {
