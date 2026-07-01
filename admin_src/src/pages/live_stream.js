@@ -52,7 +52,8 @@ export function renderLiveStream() {
         '시청자수': stats.viewers,
         '하트수': stats.hearts,
         '상품수': products.length,
-        '첫상품명': products.length > 0 ? products[0].name : ''
+        '첫상품명': products.length > 0 ? products[0].name : '',
+        '시청자수노출': config.showViewers ? 'O' : 'X'
       };
       fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
         method: 'POST',
