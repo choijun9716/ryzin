@@ -23,6 +23,21 @@ document.addEventListener('DOMContentLoaded', () => {
             liveStartTime: latest['시작일시'] || '',
             isLive: latest['방송상태'] === 'ON'
           };
+
+          // 동적 폴링 주기 조절
+          if (config.isLive) {
+            if (window.__currentPollRate !== 'slow') {
+              window.__currentPollRate = 'slow';
+              clearInterval(window.pollConfigIntervalId);
+              window.pollConfigIntervalId = setInterval(pollConfig, 600000); // 10분
+            }
+          } else {
+            if (window.__currentPollRate !== 'fast') {
+              window.__currentPollRate = 'fast';
+              clearInterval(window.pollConfigIntervalId);
+              window.pollConfigIntervalId = setInterval(pollConfig, 3000); // 3초
+            }
+          }
           
           const stats = {
             viewers: parseInt(latest['시청자수']) || 0,
@@ -82,8 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 채팅 30초마다 조회
   setInterval(pollChat, 30000);
-  // 상품/관제 10분마다 조회 (600,000ms)
-  setInterval(pollConfig, 600000);
+  // 방송 전에는 즉각적인 시작을 위해 3초마다 조회, 방송 시작 후에는 데이터 절감을 위해 10분마다 조회
+  window.pollConfigIntervalId = setInterval(pollConfig, 3000);
   
   // 초기 1회 즉시 실행
   setTimeout(() => {
