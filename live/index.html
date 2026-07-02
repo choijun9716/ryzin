@@ -8,7 +8,7 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   
-  <link rel="stylesheet" href="live.css?v=1782978504906">
+  <link rel="stylesheet" href="live.css?v=1782978694047">
 </head>
 <body>
   <div class="live-container">
@@ -34,18 +34,16 @@
       <!-- 상단 방송 정보 -->
       <div class="header">
         <div class="brand-info">
-          <!-- 원형 프로필 + 바로 아래 대기/LIVE 뱃지 -->
-          <div class="brand-logo-wrap">
-            <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
-            <div class="video-overlay">
-              <div class="live-badge">LIVE</div>
-              <div class="view-count"><span id="view-count"></span></div>
-            </div>
-          </div>
+          <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
           <div>
             <h1 class="brand-name"></h1>
             <p class="broadcast-title"></p>
           </div>
+        </div>
+        <!-- 대기/LIVE 뱃지 + 시청자수 (brand-info 아래 좌측) -->
+        <div class="video-overlay">
+          <div class="live-badge">LIVE</div>
+          <div class="view-count"><span id="view-count"></span></div>
         </div>
       </div>
 
@@ -112,6 +110,6 @@
     </div>
   </div>
 
-  <script src="live.js?v=1782978504906"></script>
+  <script src="live.js?v=1782978694047"></script>
 </body>
 </html>
