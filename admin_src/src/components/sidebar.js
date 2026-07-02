@@ -20,8 +20,8 @@ const icons = {
 
 const menuConfig = [
   { key: 'dashboard', label: '대시보드', path: '/', icon: 'dashboard' },
-  { key: 'live_stream', label: '라이브 송출 관리', path: '/live_stream', icon: 'live_stream' },
   { key: 'projects', label: '라이브 관리', path: '/projects', icon: 'projects' },
+  { key: 'live_stream', label: '라이브 송출 관리', path: '/live_stream', icon: 'live_stream' },
   { key: 'hosts', label: '쇼호스트 관리', path: '/hosts', icon: 'hosts' },
   { key: 'brands', label: '브랜드 관리', path: '/brands', icon: 'brands' },
   { key: 'finance', label: '매출/손익', path: '/finance', icon: 'finance' },

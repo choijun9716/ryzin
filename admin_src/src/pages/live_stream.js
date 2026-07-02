@@ -466,7 +466,7 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
 
       <div style="display:flex; gap:12px;">
-        <button id="btn-save-config" class="action-btn btn-primary-solid" style="flex:1; justify-content:center; padding:14px; font-size:15px;">설정 저장 (SheetDB 적용)</button>
+        <button id="btn-save-config" class="action-btn btn-primary-solid" style="flex:1; justify-content:center; padding:14px; font-size:15px;">설정 저장</button>
         <button id="btn-toggle-live" class="action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}" style="flex:1; justify-content:center; padding:14px; font-size:15px;">
           ${config.isLive ? '라이브 종료' : '라이브 시작'}
         </button>
@@ -549,21 +549,32 @@ function renderLiveEditView(container, liveId, showView) {
       syncToSheetDB(liveId, config, stats, products, true);
     });
 
+    const IMGBB_API_KEY = '117dfb947bc9e0045774b193d1eef7b6';
     const uploadImage = async (file, previewId, configKey) => {
       if (!file) return;
-      const fd = new FormData();
-      fd.append('file', file);
       document.getElementById(previewId).style.opacity = '0.5';
       try {
-        const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: fd });
+        // 파일을 Base64로 변환
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]); // data:...;base64, 제거
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        const fd = new FormData();
+        fd.append('key', IMGBB_API_KEY);
+        fd.append('image', base64);
+        const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
         const json = await res.json();
-        if (json.status === 'success') {
-          const url = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        if (json.success) {
+          const url = json.data.url;
           config[configKey] = url;
           document.getElementById(previewId).src = url;
           saveConfig();
+        } else {
+          console.error('ImgBB 업로드 실패:', json);
         }
-      } catch (err) { console.error(err); }
+      } catch (err) { console.error('이미지 업로드 오류:', err); }
       finally { document.getElementById(previewId).style.opacity = '1'; }
     };
 
@@ -807,7 +818,7 @@ function renderLiveEditView(container, liveId, showView) {
           <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
           <div style="display:flex; gap:8px;">
             <button id="btn-add-product" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
-            <button id="btn-save-products" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">SheetDB 적용</button>
+            <button id="btn-save-products" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">적용</button>
           </div>
         </div>
         <div id="product-list-container">${renderProductList()}</div>
@@ -929,7 +940,7 @@ function renderLiveEditView(container, liveId, showView) {
     });
     document.getElementById('btn-save-products').addEventListener('click', () => {
       syncToSheetDB(liveId, config, stats, products, true);
-      alert('상품 목록이 SheetDB에 적용되었습니다!');
+      alert('상품 목록이 적용되었습니다!');
     });
   };
 

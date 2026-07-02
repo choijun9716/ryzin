@@ -285,6 +285,31 @@ document.addEventListener('DOMContentLoaded', () => {
             liveBadge.style.background = '#374151';
           }
         }
+
+        // ── 채팅 활성/비활성 처리 ──────────────────────────────
+        const chatInputEl = document.getElementById('chat-input');
+        const btnSendEl = document.getElementById('btn-send');
+        if (chatInputEl && btnSendEl) {
+          if (c.isLive) {
+            // 라이브 중 → 채팅 활성화
+            chatInputEl.disabled = false;
+            chatInputEl.placeholder = '실시간 채팅에 참여하세요...';
+            chatInputEl.style.opacity = '1';
+            chatInputEl.style.cursor = '';
+            btnSendEl.disabled = false;
+            btnSendEl.style.opacity = '1';
+            btnSendEl.style.cursor = '';
+          } else {
+            // 방송 전 → 채팅 비활성화
+            chatInputEl.disabled = true;
+            chatInputEl.placeholder = '방송 시작 후 채팅이 활성화됩니다';
+            chatInputEl.style.opacity = '0.45';
+            chatInputEl.style.cursor = 'not-allowed';
+            btnSendEl.disabled = true;
+            btnSendEl.style.opacity = '0.45';
+            btnSendEl.style.cursor = 'not-allowed';
+          }
+        }
       }
     }catch(e){}
   }
@@ -485,11 +510,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSetNickname = document.getElementById('btn-set-nickname');
 
   let userNickname = localStorage.getItem('ryzin_nickname') || '';
-  if (userNickname) {
-    chatSectionWrap.style.display = 'block';
-  } else {
+
+  // 채팅 입력창은 항상 보여줌 (닉네임 여부와 무관)
+  chatSectionWrap.style.display = 'block';
+
+  // 닉네임 모달 열기 함수
+  const openNicknameModal = () => {
     nicknameModal.style.display = 'flex';
-  }
+    setTimeout(() => nicknameInput.focus(), 100);
+  };
+
+  // 채팅 입력창 클릭 시 닉네임 없으면 모달 팝업
+  chatInput.addEventListener('focus', () => {
+    if (!userNickname) {
+      chatInput.blur();
+      openNicknameModal();
+    }
+  });
+
+  // 전송 버튼 클릭 시 닉네임 없으면 모달 팝업
+  btnSend.addEventListener('click', () => {
+    if (!userNickname) { openNicknameModal(); }
+  });
 
   btnSetNickname.addEventListener('click', () => {
     const n = nicknameInput.value.trim();
@@ -497,7 +539,6 @@ document.addEventListener('DOMContentLoaded', () => {
       userNickname = n;
       localStorage.setItem('ryzin_nickname', n);
       nicknameModal.style.display = 'none';
-      chatSectionWrap.style.display = 'block';
       chatInput.focus();
     }
   });
@@ -547,9 +588,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  btnSend.addEventListener('click', sendMessage);
   chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter') {
+      if (!userNickname) { openNicknameModal(); return; }
+      sendMessage();
+    }
   });
 
 
