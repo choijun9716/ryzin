@@ -327,6 +327,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
       if(p && Array.isArray(p)) {
+        // ── 동일 데이터면 재렌더링 스킵 (이미지 깜빡임 방지) ──
+        const newJSON = JSON.stringify(p);
+        if (window.__lastProductsJSON === newJSON) return;
+        window.__lastProductsJSON = newJSON;
+
         const modalProductsList = document.getElementById('modal-products-list');
         modalProductsList.innerHTML = '';
         const now = Date.now();
@@ -376,6 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // 2. 누적된 신규 데이터를 로컬 스토리지에 즉시 반영 및 PATCH
                     localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
+                    // 캐시 무효화 (클릭수 변경이므로 다음 폴링에 반영되게)
+                    window.__lastProductsJSON = null;
                     
                     const updatePayload = {
                       '상품목록': JSON.stringify(remoteProducts),
