@@ -8,7 +8,7 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   
-  <link rel="stylesheet" href="live.css?v=1782977675843">
+  <link rel="stylesheet" href="live.css?v=1782978317589">
 </head>
 <body>
   <div class="live-container">
@@ -24,11 +24,7 @@
         </div>
       </div>
 
-      <div class="video-overlay">
-        <div class="live-badge">LIVE</div>
-        <div class="view-count"><span id="view-count"></span></div>
-      </div>
-      
+
       <!-- 하단 그라데이션 오버레이 (텍스트 가독성) -->
       <div class="bottom-gradient"></div>
     </div>
@@ -42,6 +38,11 @@
           <div>
             <h1 class="brand-name"></h1>
             <p class="broadcast-title"></p>
+            <!-- 대기/LIVE 뱃지 + 시청자수 (프로필 아래 인라인) -->
+            <div class="video-overlay">
+              <div class="live-badge">LIVE</div>
+              <div class="view-count"><span id="view-count"></span></div>
+            </div>
           </div>
         </div>
       </div>
@@ -109,6 +110,6 @@
     </div>
   </div>
 
-  <script src="live.js?v=1782977675843"></script>
+  <script src="live.js?v=1782978317589"></script>
 </body>
 </html>
