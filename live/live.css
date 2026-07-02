@@ -49,11 +49,18 @@ body {
 }
 
 /* 대기/LIVE 뱃지 + 시청자수 (프로필 아래 인라인) */
+.brand-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .video-overlay {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 5px;
+  gap: 4px;
 }
 
 .live-badge {
