@@ -519,7 +519,7 @@ function renderLiveEditView(container, liveId, showView) {
         document.getElementById('cfg-viewers-display').textContent = newViewers.toLocaleString() + '명';
         document.getElementById('cfg-viewers-add').value = '';
         alert(`시청자 수가 ${newViewers.toLocaleString()}명으로 업데이트되었습니다.`);
-      } catch(err) {
+      } catch (err) {
         alert('시청자 수 업데이트 실패: ' + err.message);
       } finally {
         btn.disabled = false;
@@ -591,17 +591,17 @@ function renderLiveEditView(container, liveId, showView) {
             const remoteCumViewers = parseInt(row['누적시청자수']) || 0;
             const remoteViewers = parseInt(row['시청자수']) || 0;
             const remoteHearts = parseInt(row['하트수']) || 0;
-            
+
             // 어드민 UI에 실시간 수치 반영 (사용자는 시청자수, 하트수 필드를 수정해서 가라 입력 가능)
             const cumEl = document.getElementById('cfg-cumViewers');
             if (cumEl) cumEl.value = remoteCumViewers;
-            
+
             const viewersEl = document.getElementById('cfg-viewers');
             if (viewersEl && !viewersEl.matches(':focus')) viewersEl.value = remoteViewers;
-            
+
             const heartsEl = document.getElementById('cfg-hearts');
             if (heartsEl && !heartsEl.matches(':focus')) heartsEl.value = remoteHearts;
-            
+
             // stats 로컬 객체 동기화
             stats.cumViewers = remoteCumViewers;
             stats.viewers = remoteViewers;
@@ -766,7 +766,7 @@ function renderLiveEditView(container, liveId, showView) {
             }
           }
         }
-      } catch(e) { console.warn('Admin chat poll failed', e); }
+      } catch (e) { console.warn('Admin chat poll failed', e); }
     };
 
     pollAdminChat();
@@ -793,14 +793,14 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
         <input type="text" class="modern-input" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL">
         <div class="product-prices">
-          <input type="number" class="modern-input" value="${(p.price||'').toString().replace(/[^0-9]/g,'')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
-          <input type="number" class="modern-input" value="${(p.normalPrice||'').toString().replace(/[^0-9]/g,'')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
-          <input type="number" class="modern-input" value="${p.discountRate||0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="max-width:72px; text-align:center;">
+          <input type="number" class="modern-input" value="${(p.price || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
+          <input type="number" class="modern-input" value="${(p.normalPrice || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
+          <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="max-width:72px; text-align:center;">
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
         <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:10px; border:1px solid #fecdd3;">
           <span style="font-size:12px; font-weight:700; color:#e11d48;">⚡ 깜짝딜</span>
-          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText||'깜짝딜 종료까지'}">
+          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
           <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
           <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
           <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
@@ -849,7 +849,7 @@ function renderLiveEditView(container, liveId, showView) {
                   bindProductEvents();
                 }
               }
-            } catch(e){}
+            } catch (e) { }
           }
         }
       })
@@ -863,8 +863,8 @@ function renderLiveEditView(container, liveId, showView) {
           const field = e.target.dataset.field;
           products[idx][field] = e.target.value;
           if (field === 'price' || field === 'normalPrice') {
-            const n = Number((products[idx].normalPrice||'').toString().replace(/[^0-9]/g,''));
-            const p = Number((products[idx].price||'').toString().replace(/[^0-9]/g,''));
+            const n = Number((products[idx].normalPrice || '').toString().replace(/[^0-9]/g, ''));
+            const p = Number((products[idx].price || '').toString().replace(/[^0-9]/g, ''));
             if (n > 0 && n >= p) {
               products[idx].discountRate = Math.floor(((n - p) / n) * 100);
               const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);

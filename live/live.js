@@ -25,14 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
             filtered = data; // id 파라미터 없으면 전체 최신
           }
           const latest = filtered[filtered.length - 1]; // 가장 마지막 업데이트 내역
-          
+
           // 파싱 후 로컬스토리지 최신화 (다른 탭 호환 및 구조 유지)
           let extraConfig = {};
           try {
             if (latest['첫상품명'] && latest['첫상품명'].startsWith('{')) {
               extraConfig = JSON.parse(latest['첫상품명']);
             }
-          } catch(e){}
+          } catch (e) { }
 
           const config = {
             liveId: latest['live_id'] || 'live01',
@@ -60,24 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
               window.pollConfigIntervalId = setInterval(pollConfig, 3000); // 3초
             }
           }
-          
+
           const stats = {
             viewers: parseInt(latest['시청자수']) || 0,
             hearts: parseInt(latest['하트수']) || 0,
             cumViewers: latest['누적시청자수'] !== undefined && latest['누적시청자수'] !== '' ? parseInt(latest['누적시청자수']) || 0 : 0
           };
-          
+
           localStorage.setItem('ryzin_live_config', JSON.stringify(config));
           localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
-          
+
           if (latest['상품목록']) {
-             try {
-                const parsed = JSON.parse(latest['상품목록']);
-                localStorage.setItem('ryzin_live_products', JSON.stringify(parsed));
-                loadLiveProducts();
-             } catch(e){}
+            try {
+              const parsed = JSON.parse(latest['상품목록']);
+              localStorage.setItem('ryzin_live_products', JSON.stringify(parsed));
+              loadLiveProducts();
+            } catch (e) { }
           }
-          
+
           loadLiveConfig();
           loadLiveStats();
         }
@@ -90,6 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function pollChat() {
     try {
+      // 채팅 차단/관리자 목록 가져오기
+      const blockedList = JSON.parse(localStorage.getItem(`ryzin_blocked_${LIVE_ID}`) || '[]');
+      const adminList = JSON.parse(localStorage.getItem(`ryzin_admins_${LIVE_ID}`) || '["관리자"]');
+
       // 채팅 조회 (live_id로 필터)
       const chatRes = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`, { cache: 'no-store' });
       if (chatRes.ok) {
@@ -101,29 +105,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chats && Array.isArray(chats)) {
           // 시간순 정렬
           chats.sort((a, b) => (parseInt(a['시간']) || 0) - (parseInt(b['시간']) || 0));
-          
+
           const isFirstLoad = !chatHistoryLoaded;
           let addedCount = 0;
-          
+
           chats.forEach(c => {
-             if (c['시간'] && parseInt(c['시간']) > lastChatTime) {
-                if (c['닉네임'] === userNickname && !isFirstLoad) {
-                  // 내가 방금 보낸 메시지는 로컬에 이미 표시된 경우만 스킵
-                  const idx = mySentTexts.indexOf(c['내용']);
-                  if (idx !== -1) {
-                    mySentTexts.splice(idx, 1);
-                  } else {
-                    addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자', isFirstLoad);
-                    addedCount++;
-                  }
-                } else {
-                   addMessage(c['닉네임'], c['내용'], c['닉네임'] === '관리자', isFirstLoad);
-                   addedCount++;
-                }
+            if (c['시간'] && parseInt(c['시간']) > lastChatTime) {
+              const nick = c['닉네임'] || '';
+              
+              // 차단된 사용자 스킵
+              if (blockedList.includes(nick)) {
                 lastChatTime = parseInt(c['시간']);
-             }
+                return;
+              }
+
+              const isAdmin = adminList.includes(nick);
+
+              if (nick === userNickname && !isFirstLoad) {
+                // 내가 방금 보낸 메시지는 로컬에 이미 표시된 경우만 스킵
+                const idx = mySentTexts.indexOf(c['내용']);
+                if (idx !== -1) {
+                  mySentTexts.splice(idx, 1);
+                } else {
+                  addMessage(nick, c['내용'], isAdmin, isFirstLoad);
+                  addedCount++;
+                }
+              } else {
+                addMessage(nick, c['내용'], isAdmin, isFirstLoad);
+                addedCount++;
+              }
+              lastChatTime = parseInt(c['시간']);
+            }
           });
-          
+
           // 최초 로드 완료 후 맨 아래로 스크롤
           if (isFirstLoad) {
             chatHistoryLoaded = true;
@@ -140,11 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+
   // 채팅 30초마다 조회
   setInterval(pollChat, 30000);
   // 방송 전에는 즉각적인 시작을 위해 3초마다 조회, 방송 시작 후에는 데이터 절감을 위해 10분마다 조회
   window.pollConfigIntervalId = setInterval(pollConfig, 3000);
-  
+
   // 초기 1회 즉시 실행
   setTimeout(() => {
     pollConfig();
@@ -173,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           }
         }
-      } catch(e) {
+      } catch (e) {
         console.warn('Viewer count increment failed:', e);
       }
     }, 800);
@@ -182,14 +197,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadLiveConfig() {
     try {
       const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
-      if(c) {
+      if (c) {
         const overlay = document.getElementById('thumbnail-overlay');
-        
+
         // 라이브 상태 변경 확인 (streamUrl 변경 또는 isLive 변경)
-        if(c.streamUrl && (window.__lastStreamUrl !== c.streamUrl || window.__lastIsLive !== c.isLive)) {
+        if (c.streamUrl && (window.__lastStreamUrl !== c.streamUrl || window.__lastIsLive !== c.isLive)) {
           window.__lastStreamUrl = c.streamUrl;
           window.__lastIsLive = c.isLive;
-          
+
           if (c.isLive) {
             if (overlay) overlay.classList.add('hidden');
             if (window.hlsInstance) {
@@ -208,21 +223,21 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         const titleEl = document.querySelector('.broadcast-title');
-        if(titleEl) titleEl.textContent = c.title;
+        if (titleEl) titleEl.textContent = c.title;
         const brandNameEl = document.querySelector('.brand-name');
-        
+
         // 썸네일 및 시작 시간 적용
         const thumbImg = document.getElementById('thumbnail-img');
         const startText = document.getElementById('live-start-text');
-        
+
         if (c.thumbnailUrl && thumbImg) {
           thumbImg.src = c.thumbnailUrl;
           thumbImg.style.display = 'block';
         } else if (thumbImg) {
           thumbImg.style.display = 'none';
         }
-        
-        
+
+
         // 카운트다운 타이머 관련 전역 변수 해제 (중복 방지)
         if (window.liveCountdownInterval) {
           clearInterval(window.liveCountdownInterval);
@@ -230,11 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (c.liveStartTime && startText) {
           const targetTime = new Date(c.liveStartTime).getTime();
-          
+
           const updateCountdown = () => {
             const now = new Date().getTime();
             const diff = targetTime - now;
-            
+
             if (diff <= 0) {
               startText.textContent = '곧 라이브가 시작됩니다!';
               if (window.liveCountdownInterval) clearInterval(window.liveCountdownInterval);
@@ -243,15 +258,15 @@ document.addEventListener('DOMContentLoaded', () => {
               const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
               const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
               const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-              
+
               let countStr = '라이브 시작까지\n';
               if (days > 0) countStr += `${days}일 `;
               countStr += `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-              
+
               startText.innerText = countStr;
             }
           };
-          
+
           if (!isNaN(targetTime)) {
             updateCountdown();
             window.liveCountdownInterval = setInterval(updateCountdown, 1000);
@@ -262,18 +277,20 @@ document.addEventListener('DOMContentLoaded', () => {
           startText.textContent = '';
         }
 
-        if(brandNameEl && c.brandName) brandNameEl.textContent = c.brandName;
+        if (brandNameEl && c.brandName) brandNameEl.textContent = c.brandName;
         const brandLogo = document.querySelector('.brand-logo');
-        if(brandLogo && c.logoUrl) brandLogo.src = c.logoUrl;
+        if (brandLogo && c.logoUrl) brandLogo.src = c.logoUrl;
         const viewCountWrapper = document.querySelector('.view-count');
-        if(viewCountWrapper) {
+        if (viewCountWrapper) {
           viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : 'block';
         }
 
         // 라이브 배지 텍스트 업데이트 (스트리밍 URL 없으면 숨김)
         const liveBadge = document.querySelector('.live-badge');
         if (liveBadge) {
-          if (c.isLive) {
+          if (!c.streamUrl) {
+            liveBadge.style.display = 'none';
+          } else if (c.isLive) {
             liveBadge.style.display = '';
             liveBadge.textContent = 'LIVE';
             liveBadge.style.background = '#e50914';
@@ -309,27 +326,22 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
-    }catch(e){}
+    } catch (e) { }
   }
 
   function loadLiveStats() {
     try {
       const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
-      if(s) {
+      if (s) {
         document.getElementById('view-count').textContent = s.viewers.toLocaleString() + '명 시청중';
       }
-    }catch(e){}
+    } catch (e) { }
   }
 
   function loadLiveProducts() {
     try {
       const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
-      if(p && Array.isArray(p)) {
-        // ── 동일 데이터면 재렌더링 스킵 (이미지 깜빡임 방지) ──
-        const newJSON = JSON.stringify(p);
-        if (window.__lastProductsJSON === newJSON) return;
-        window.__lastProductsJSON = newJSON;
-
+      if (p && Array.isArray(p)) {
         const modalProductsList = document.getElementById('modal-products-list');
         modalProductsList.innerHTML = '';
         const now = Date.now();
@@ -344,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
           let priceHtml = '';
           const normalPriceStr = item.normalPrice ? item.normalPrice.toString().replace(/[^0-9]/g, '') : '';
           const currentPriceStr = item.price ? item.price.toString().replace(/[^0-9]/g, '') : '';
-          
+
           if (normalPriceStr && item.discountRate) {
             const normal = Number(normalPriceStr);
             const rate = Number(item.discountRate);
@@ -359,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
-            if(!item.url || item.url === '#') e.preventDefault();
+            if (!item.url || item.url === '#') e.preventDefault();
             // 상품 클릭수 (조회수) 트래킹 - SheetDB에서 실시간 상품목록을 조회한 뒤 안전하게 누적합산 PATCH
             try {
               const targetLiveId = LIVE_ID || (config && config.liveId) || 'live01';
@@ -376,17 +388,15 @@ document.addEventListener('DOMContentLoaded', () => {
                   if (targetProd) {
                     // 원격 데이터에서 가져온 값에 1 누적
                     targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
-                    
+
                     // 2. 누적된 신규 데이터를 로컬 스토리지에 즉시 반영 및 PATCH
                     localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
-                    // 캐시 무효화 (클릭수 변경이므로 다음 폴링에 반영되게)
-                    window.__lastProductsJSON = null;
-                    
+
                     const updatePayload = {
                       '상품목록': JSON.stringify(remoteProducts),
                       '업데이트시간': new Date().toISOString()
                     };
-                    
+
                     await fetch(`${SHEETDB_URL}/live_id/${targetLiveId}?sheet=${encodeURIComponent('라이브관제')}`, {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
@@ -395,14 +405,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   }
                 }
               }
-            } catch(err){
+            } catch (err) {
               console.warn('Product click sync failed', err);
             }
           });
           modalProductsList.appendChild(el);
         });
       }
-    }catch(e){}
+    } catch (e) { }
   }
 
   // 초기 로드
@@ -423,20 +433,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('storage', (e) => {
-    if(e.key === 'ryzin_live_config') loadLiveConfig();
-    if(e.key === 'ryzin_live_stats') loadLiveStats();
-    if(e.key === 'ryzin_live_products') loadLiveProducts();
-    if(e.key === 'ryzin_admin_chat_trigger') {
+    if (e.key === 'ryzin_live_config') loadLiveConfig();
+    if (e.key === 'ryzin_live_stats') loadLiveStats();
+    if (e.key === 'ryzin_live_products') loadLiveProducts();
+    if (e.key === 'ryzin_admin_chat_trigger') {
       try {
         const msg = JSON.parse(e.newValue);
-        if(msg) {
+        if (msg) {
           const el = document.createElement('div');
           el.className = 'chat-msg admin-notice';
           el.innerHTML = `<span class="chat-name" style="color:#ffcc00;">[공지] ${msg.name}</span><span class="chat-text" style="font-weight:bold;">${msg.text}</span>`;
           chatMessages.appendChild(el);
           chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-      }catch(err){}
+      } catch (err) { }
     }
   });
   // ===========================================
@@ -474,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
   videoWrapper.addEventListener('click', () => {
     chatSection.classList.toggle('chat-hidden');
     inputSection.classList.toggle('chat-hidden');
-    if(sideActions) sideActions.classList.toggle('chat-hidden');
+    if (sideActions) sideActions.classList.toggle('chat-hidden');
   });
 
   // 화면 첫 터치/클릭 시 자동 음소거 해제 (브라우저 정책 우회)
@@ -488,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.removeEventListener('click', unmuteOnInteraction);
     document.removeEventListener('touchstart', unmuteOnInteraction);
   };
-  
+
   document.addEventListener('click', unmuteOnInteraction);
   document.addEventListener('touchstart', unmuteOnInteraction, { passive: true });
 
@@ -549,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   nicknameInput.addEventListener('keypress', (e) => {
-    if(e.key === 'Enter') btnSetNickname.click();
+    if (e.key === 'Enter') btnSetNickname.click();
   });
 
 
@@ -570,13 +580,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let isChatSending = false;
   async function sendMessage() {
     const text = chatInput.value.trim();
-    if(text && userNickname && !isChatSending) {
+    if (text && userNickname && !isChatSending) {
       isChatSending = true;
       // 로컬에 먼저 보여주기
       addMessage(userNickname, text);
       mySentTexts.push(text);
       chatInput.value = '';
-      
+
 
 
       // 시트 DB '라이브채팅' 전송
@@ -588,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: [chatData] })
         });
-      } catch(e) { console.warn(e); }
+      } catch (e) { console.warn(e); }
       finally { isChatSending = false; }
     }
   }
@@ -622,19 +632,19 @@ document.addEventListener('DOMContentLoaded', () => {
       heart.className = 'floating-heart';
       heart.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="#e50914" stroke="#e50914" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
       heart.style.position = 'absolute';
-      
+
       const rect = btnLike.getBoundingClientRect();
       heart.style.left = rect.left + (rect.width / 2) - 12 + 'px';
       heart.style.top = rect.top + 'px';
       heart.style.pointerEvents = 'none';
       heart.style.zIndex = '9999';
-      
+
       const randomX = (Math.random() - 0.5) * 100;
       heart.style.setProperty('--tx', randomX + 'px');
-      
+
       heart.style.animation = 'dynamicFloatUp 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
       document.body.appendChild(heart);
-      
+
       setTimeout(() => heart.remove(), 1500);
     });
   }
@@ -645,7 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
       video.play().catch(e => console.warn('강제 재생 실패:', e));
     }
   });
-  
+
   // 브라우저 포커스가 돌아왔을 때 무조건 다시 재생
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
@@ -709,10 +719,10 @@ setInterval(() => {
     const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
     const timerEl = document.getElementById('surprise-deal-timer');
     const textEl = document.getElementById('surprise-deal-text');
-    if(p && Array.isArray(p) && timerEl && textEl) {
+    if (p && Array.isArray(p) && timerEl && textEl) {
       const now = Date.now();
       // 가장 먼저 끝나는 활성 깜짝딜 찾기
-      const activeDeals = p.filter(item => item.dealEndTime && item.dealEndTime > now).sort((a,b) => a.dealEndTime - b.dealEndTime);
+      const activeDeals = p.filter(item => item.dealEndTime && item.dealEndTime > now).sort((a, b) => a.dealEndTime - b.dealEndTime);
       if (activeDeals.length > 0) {
         const deal = activeDeals[0];
         const diff = deal.dealEndTime - now;
@@ -731,6 +741,6 @@ setInterval(() => {
         }
       }
     }
-  } catch(e) {}
+  } catch (e) { }
 }, 1000);
 

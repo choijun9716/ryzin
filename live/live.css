@@ -7,17 +7,21 @@
 }
 
 * {
-  touch-action: manipulation; /* 사파리 더블탭 확대 방지 */
+  touch-action: manipulation;
+  /* 사파리 더블탭 확대 방지 */
 }
 
 body {
   background-color: #000;
   color: #fff;
-  overflow: hidden; /* 스크롤 방지 */
-  position: fixed; /* 모바일에서 바운스/스크롤 원천 차단 */
+  overflow: hidden;
+  /* 스크롤 방지 */
+  position: fixed;
+  /* 모바일에서 바운스/스크롤 원천 차단 */
   width: 100%;
   height: 100%;
-  overscroll-behavior: none; /* 스와이프 바운스 현상만 차단 */
+  overscroll-behavior: none;
+  /* 스와이프 바운스 현상만 차단 */
 }
 
 /* 전체 컨테이너 */
@@ -26,7 +30,7 @@ body {
   width: 100vw;
   height: 100vh;
   /* 모바일 높이 이슈 대응 (vh 대신 dvh 지원 브라우저용) */
-  height: 100dvh; 
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -45,20 +49,16 @@ body {
 #live-video {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* 꽉 차게 */
+  object-fit: cover;
+  /* 꽉 차게 */
 }
 
-/* 대기/LIVE 뱃지 + 시청자수 (brand-info 아래 좌측 배치) */
-.brand-logo-wrap {
-  display: none; /* 미사용 */
-}
-
+/* 대기/LIVE 뱃지 + 시청자수 (프로필 아래 인라인) */
 .video-overlay {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 8px;
-  margin-left: 2px;
+  margin-top: 5px;
 }
 
 .live-badge {
@@ -99,9 +99,17 @@ body {
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 /* 하단 가독성용 그라데이션 */
@@ -111,7 +119,7 @@ body {
   left: 0;
   width: 100%;
   height: 50%;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
 }
 
@@ -123,11 +131,15 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  pointer-events: none; /* 클릭 이벤트가 아래로 전달되게 함 */
+  pointer-events: none;
+  /* 클릭 이벤트가 아래로 전달되게 함 */
 }
 
 /* 개별 UI 요소들은 터치 가능하게 */
-.header, .products-section, .chat-section, .input-section {
+.header,
+.products-section,
+.chat-section,
+.input-section {
   pointer-events: auto;
 }
 
@@ -135,9 +147,8 @@ body {
 .header {
   padding: 16px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
 }
 
 .brand-info {
@@ -179,13 +190,14 @@ body {
   transform: translateY(0);
   pointer-events: auto;
   z-index: 10;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .product-modal.hidden {
   transform: translateY(100%);
   pointer-events: none;
-  visibility: hidden; /* 숨김 상태일 때 스크롤이나 클릭 이벤트 완전 차단 */
+  visibility: hidden;
+  /* 숨김 상태일 때 스크롤이나 클릭 이벤트 완전 차단 */
 }
 
 .modal-header {
@@ -271,7 +283,8 @@ body {
 /* 채팅 영역 */
 .chat-section {
   height: 250px;
-  margin-top: auto; /* 상단 공간을 다 밀어내서 하단으로 내림 */
+  margin-top: auto;
+  /* 상단 공간을 다 밀어내서 하단으로 내림 */
   padding: 0 80px 16px 16px;
   display: flex;
   flex-direction: column;
@@ -329,18 +342,27 @@ body {
 }
 
 @keyframes slideIn {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* 사이드 액션 버튼 */
 .side-actions {
   position: absolute;
   right: 16px;
-  bottom: 110px; /* 조금 더 위로 */
+  bottom: 110px;
+  /* 조금 더 위로 */
   display: flex;
   flex-direction: column;
-  gap: 36px; /* 간격 더 벌림 */
+  gap: 36px;
+  /* 간격 더 벌림 */
   pointer-events: auto;
   z-index: 5;
 }
@@ -349,7 +371,8 @@ body {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  width: 44px; /* 조금 더 미니멀하게 */
+  width: 44px;
+  /* 조금 더 미니멀하게 */
   height: 44px;
   display: flex;
   flex-direction: column;
@@ -359,7 +382,7 @@ body {
   cursor: pointer;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   position: relative;
   transition: transform 0.1s;
 }
@@ -379,7 +402,7 @@ body {
   bottom: -20px;
   font-size: 11px;
   font-weight: normal;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   white-space: nowrap;
 }
 
@@ -390,7 +413,7 @@ body {
   padding: 8px 16px 16px;
   display: flex;
   align-items: center;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: auto;
   z-index: 5;
 }
@@ -437,20 +460,23 @@ body {
     justify-content: center;
     align-items: center;
   }
-  
+
   .live-container {
-    width: 375px; /* 아이폰 비율 */
+    width: 375px;
+    /* 아이폰 비율 */
     height: 812px;
     border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     position: relative;
   }
 }
 
 
 /* 채팅창 토글 숨김용 클래스 */
-.chat-section, .input-section, .side-actions {
+.chat-section,
+.input-section,
+.side-actions {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
@@ -485,7 +511,7 @@ body {
   width: 80%;
   max-width: 320px;
   text-align: center;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
   animation: modalScaleUp 0.3s ease-out;
 }
 
@@ -506,8 +532,8 @@ body {
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.5);
   color: #fff;
   font-size: 15px;
   margin-bottom: 16px;
@@ -532,8 +558,15 @@ body {
 }
 
 @keyframes modalScaleUp {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* 썸네일 오버레이 */
@@ -543,7 +576,8 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 30; /* 비디오 위, UI 레이어(2)보다 위로 덮기 위해 z-index 조정 필요하지만, ui-layer가 2이므로 3으로 올리면 ui-layer를 가립니다. 하지만 ui-layer가 보여야 하므로 일단 1.5로 하거나 배경으로 둡니다. ui-layer는 z-index 2. */
+  z-index: 30;
+  /* 비디오 위, UI 레이어(2)보다 위로 덮기 위해 z-index 조정 필요하지만, ui-layer가 2이므로 3으로 올리면 ui-layer를 가립니다. 하지만 ui-layer가 보여야 하므로 일단 1.5로 하거나 배경으로 둡니다. ui-layer는 z-index 2. */
   background-color: #000;
   display: flex;
   justify-content: center;
@@ -578,7 +612,7 @@ body {
   color: #fff;
   font-size: 20px;
   font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   text-align: center;
   padding: 0 20px;
 }
@@ -593,15 +627,26 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
   animation: pulsePlay 2s infinite;
   pointer-events: auto;
 }
 
 @keyframes pulsePlay {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(229, 9, 20, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7);
+  }
+
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 15px rgba(229, 9, 20, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0);
+  }
 }
 
 .thumbnail-overlay.hidden {

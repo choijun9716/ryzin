@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Ryzin Live Commerce</title>
-  
+
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  
-  <link rel="stylesheet" href="live.css?v=1782980163138">
+
+  <link rel="stylesheet" href="live.css?v=1782981763001">
 </head>
+
 <body>
   <div class="live-container">
     <!-- 비디오 영역 -->
     <div class="video-wrapper">
       <video id="live-video" autoplay muted playsinline></video>
-      
+
       <!-- 썸네일 오버레이 (어드민에서 방송 시작 시 숨김 처리됨) -->
       <div id="thumbnail-overlay" class="thumbnail-overlay">
         <img id="thumbnail-img" class="thumbnail-img" src="" alt="Live Thumbnail" style="display:none;">
@@ -38,19 +40,20 @@
           <div>
             <h1 class="brand-name"></h1>
             <p class="broadcast-title"></p>
+            <!-- 대기/LIVE 뱃지 + 시청자수 (프로필 아래 인라인) -->
+            <div class="video-overlay">
+              <div class="live-badge">LIVE</div>
+              <div class="view-count"><span id="view-count"></span></div>
+            </div>
           </div>
-        </div>
-        <!-- 대기/LIVE 뱃지 + 시청자수 (brand-info 아래 좌측) -->
-        <div class="video-overlay">
-          <div class="live-badge">LIVE</div>
-          <div class="view-count"><span id="view-count"></span></div>
         </div>
       </div>
 
       <!-- 깜짝딜 타이머 배너 (제목 아래 가운데 배치) -->
       <div style="display:flex; justify-content:center; width:100%; pointer-events:none; padding-top:4px;">
-        <div id="surprise-deal-timer" style="display:none; background:rgba(225,29,72,0.95); color:white; padding:8px 16px; border-radius:24px; font-weight:bold; font-size:14px; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(225,29,72,0.4); animation: pulse 2s infinite; pointer-events:auto;">
-          
+        <div id="surprise-deal-timer"
+          style="display:none; background:rgba(225,29,72,0.95); color:white; padding:8px 16px; border-radius:24px; font-weight:bold; font-size:14px; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(225,29,72,0.4); animation: pulse 2s infinite; pointer-events:auto;">
+
           <span id="surprise-deal-text">깜짝딜 종료까지 00:00</span>
         </div>
       </div>
@@ -77,13 +80,23 @@
       <div class="side-actions chat-hidden">
         <button class="action-btn" id="btn-shop">
           <span class="icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
           </span>
           <span class="label">상품</span>
         </button>
         <button class="action-btn" id="btn-like">
           <span class="icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
+            </svg>
           </span>
           <span class="label" id="like-count" style="display:none;">12.0K</span>
           <span class="label">응원</span>
@@ -110,6 +123,7 @@
     </div>
   </div>
 
-  <script src="live.js?v=1782980163138"></script>
+  <script src="live.js?v=1782981763001"></script>
 </body>
+
 </html>
