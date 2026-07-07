@@ -342,20 +342,11 @@ document.addEventListener('DOMContentLoaded', () => {
           el.href = item.url || "#";
           el.className = 'product-card';
           let priceHtml = '';
-          const normalPriceStr = item.normalPrice ? item.normalPrice.toString().replace(/[^0-9]/g, '') : '';
           const currentPriceStr = item.price ? item.price.toString().replace(/[^0-9]/g, '') : '';
 
-          if (normalPriceStr && item.discountRate) {
-            const normal = Number(normalPriceStr);
-            const rate = Number(item.discountRate);
-            let current = Number(currentPriceStr);
-            if (!currentPriceStr || current === 0) {
-              current = Math.round(normal * (1 - rate / 100));
-            }
-            priceHtml = `<span class="discounted-price" style="font-weight:bold; color:#333; font-size:16px; margin-right:4px;">${current.toLocaleString()}원</span><span class="original-price" style="text-decoration:line-through; color:#aaa; margin-right:4px; font-size:12px;">${normal.toLocaleString()}원</span><span style="color:#e50914; font-weight:bold; font-size:14px;">${rate}%</span>`;
-          } else {
-            const current = currentPriceStr ? Number(currentPriceStr) : 0;
-            priceHtml = currentPriceStr ? `${current.toLocaleString()}원` : '';
+          if (currentPriceStr) {
+            const current = Number(currentPriceStr);
+            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:16px; margin-right:6px;">${current.toLocaleString()}원</span><span class="live-benefit-tag" style="background:#e50914; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
