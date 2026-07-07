@@ -620,6 +620,32 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
       </div>
 
+      <div class="section-card">
+        <h3>공유 링크 설정 (SNS 임베드 메타 태그)</h3>
+        <p style="margin:-12px 0 16px 0; font-size:12px; color:#64748b;">카카오톡, 라인 등 SNS에 라이브 링크를 보낼 때 노출되는 카드 임베드 정보입니다.</p>
+        <div style="display:grid; grid-template-columns:1fr; gap:18px; margin-bottom:18px;">
+          <div>
+            <label class="modern-label">공유 제목 (Title)</label>
+            <input type="text" class="modern-input" id="cfg-shareTitle" value="${config.shareTitle || ''}" placeholder="공유 시 노출할 제목 (예: [딘시] 단 하루 특가 라이브)">
+          </div>
+          <div>
+            <label class="modern-label">공유 설명문 (Description)</label>
+            <textarea class="modern-input" id="cfg-shareDesc" style="height:64px; resize:none; padding:10px 14px;" placeholder="공유 시 노출할 상세 설명글">${config.shareDesc || ''}</textarea>
+          </div>
+        </div>
+        <div class="file-upload-wrapper" style="margin-bottom:12px;">
+          <div style="width:72px; height:72px; border-radius:8px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0; background:#f8fafc;">
+            <img id="share-image-preview" src="${config.shareImageUrl || 'https://via.placeholder.com/72'}" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+          <div>
+            <label class="modern-label">공유용 대표 이미지 (Image)</label>
+            <label class="file-upload-btn" for="cfg-shareImageFile">이미지 업로드</label>
+            <input type="file" id="cfg-shareImageFile" accept="image/*" style="display:none;">
+            <div style="margin-top:6px; font-size:11px; color:#94a3b8;">미등록 시 기본 방송 썸네일이 대표 이미지로 노출됩니다.</div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex; gap:12px;">
         <button id="btn-save-config" class="action-btn btn-primary-solid" style="flex:1; justify-content:center; padding:14px; font-size:15px;">설정 저장</button>
         <button id="btn-toggle-live" class="action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}" style="flex:1; justify-content:center; padding:14px; font-size:15px;">
