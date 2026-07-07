@@ -1019,9 +1019,21 @@ function renderLiveEditView(container, liveId, showView) {
           if (!file) return;
           const idx = parseInt(e.target.dataset.idx);
           const preview = document.getElementById(`img-prev-${idx}`);
-          preview.style.opacity = '0.5';
+          if (preview) preview.style.opacity = '0.5';
           try {
-            const base64 = await compressImage(file, 360, 360, 0.85);
+            let base64 = '';
+            try {
+              base64 = await compressImage(file, 360, 360, 0.85);
+            } catch (compressErr) {
+              console.warn('Canvas compression failed, falling back to raw base64:', compressErr);
+              base64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
+            }
+
             const fd = new FormData();
             fd.append('key', IMGBB_API_KEY);
             fd.append('image', base64);
@@ -1030,11 +1042,19 @@ function renderLiveEditView(container, liveId, showView) {
             if (json.success) {
               const url = json.data.url;
               products[idx].image = url;
-              preview.src = url;
+              if (preview) preview.src = url;
               saveProducts();
+              plc.innerHTML = renderProductList();
+              bindProductEvents();
+            } else {
+              alert('이미지 업로드 실패: ' + (json.error ? json.error.message : '서버 응답 오류'));
             }
-          } catch (err) { console.error(err); }
-          finally { preview.style.opacity = '1'; }
+          } catch (err) {
+            console.error(err);
+            alert('이미지 처리 중 오류가 발생했습니다: ' + err.message);
+          } finally {
+            if (preview) preview.style.opacity = '1';
+          }
         });
       });
       plc.querySelectorAll('.btn-deal-start').forEach(btn => {
