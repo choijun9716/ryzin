@@ -304,7 +304,34 @@ function renderListView(container, showView) {
 //  LIVE EDIT VIEW — 개별 라이브 설정
 // ═══════════════════════════════════════════════════════════════
 function renderLiveEditView(container, liveId, showView) {
-  const IMGBB_API_KEY = '117dfb947bc9e0045774b193d1eef7b6';
+  const IMGBB_KEYS = [
+    '117dfb947bc9e0045774b193d1eef7b6',
+    'd2b512c9bf10e4a3bfec604be1218579',
+    '6049a4f479f67a26eb3ccb8823b1eef7'
+  ];
+
+  const uploadToImgBB = async (base64Data) => {
+    let lastError = null;
+    for (const key of IMGBB_KEYS) {
+      try {
+        const fd = new FormData();
+        fd.append('key', key);
+        fd.append('image', base64Data);
+        const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success && json.data && json.data.url) {
+          return json.data.url;
+        } else {
+          throw new Error(json.error ? json.error.message : 'API 응답 실패');
+        }
+      } catch (err) {
+        console.warn(`ImgBB API Key (${key}) upload failed:`, err);
+        lastError = err;
+      }
+    }
+    throw lastError || new Error('모든 이미지 업로드 서버 키가 만료되거나 실패했습니다.');
+  };
+
   const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -672,21 +699,16 @@ function renderLiveEditView(container, liveId, showView) {
         const quality = isLogo ? 0.88 : 0.82;
         const base64 = await compressImage(file, maxWidth, maxHeight, quality);
 
-        const fd = new FormData();
-        fd.append('key', IMGBB_API_KEY);
-        fd.append('image', base64);
-        const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.success) {
-          const url = json.data.url;
-          config[configKey] = url;
-          document.getElementById(previewId).src = url;
-          saveConfig();
-        } else {
-          console.error('ImgBB 업로드 실패:', json);
-        }
-      } catch (err) { console.error('이미지 업로드 오류:', err); }
-      finally { document.getElementById(previewId).style.opacity = '1'; }
+        const url = await uploadToImgBB(base64);
+        config[configKey] = url;
+        document.getElementById(previewId).src = url;
+        saveConfig();
+      } catch (err) {
+        console.error('이미지 업로드 오류:', err);
+        alert('이미지 업로드 실패: ' + err.message);
+      } finally {
+        document.getElementById(previewId).style.opacity = '1';
+      }
     };
 
     document.getElementById('cfg-logoFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'logo-preview', 'logoUrl'));
@@ -1034,21 +1056,12 @@ function renderLiveEditView(container, liveId, showView) {
               reader.readAsDataURL(file);
             });
 
-            const fd = new FormData();
-            fd.append('key', IMGBB_API_KEY);
-            fd.append('image', base64);
-            const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
-            const json = await res.json();
-            if (json.success) {
-              const url = json.data.url;
-              products[idx].image = url;
-              if (preview) preview.src = url;
-              saveProducts();
-              plc.innerHTML = renderProductList();
-              bindProductEvents();
-            } else {
-              alert('이미지 업로드 실패: ' + (json.error ? json.error.message : '서버 응답 오류'));
-            }
+            const url = await uploadToImgBB(base64);
+            products[idx].image = url;
+            if (preview) preview.src = url;
+            saveProducts();
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
           } catch (err) {
             console.error(err);
             alert('이미지 처리 중 오류가 발생했습니다: ' + err.message);
