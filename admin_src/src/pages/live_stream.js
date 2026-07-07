@@ -160,7 +160,22 @@ function renderListView(container, showView) {
 
   container.appendChild(wrapper);
 
-  const renderList = () => {
+  const renderList = async () => {
+    if (db) {
+      try {
+        const { data, error } = await db.from('live_control').select('live_id, updated_at');
+        if (!error && data && Array.isArray(data)) {
+          const localLives = getLives();
+          data.forEach(row => {
+            if (row.live_id && !localLives.some(l => l.id === row.live_id)) {
+              localLives.push({ id: row.live_id, createdAt: new Date(row.updated_at).getTime() });
+            }
+          });
+          saveLives(localLives);
+        }
+      } catch (e) { console.warn('Failed to load remote lives', e); }
+    }
+
     const lives = getLives();
     listContainer.innerHTML = '';
 
@@ -278,6 +293,41 @@ function renderLiveEditView(container, liveId, showView) {
   let stats = getLiveStats(liveId);
   let products = getLiveProducts(liveId);
   let botCfg = getBotConfig(liveId);
+
+  // Supabase로부터 설정 정보 역동기화 (로컬 캐시가 비어있을 경우 대응)
+  if (db && (!config.brandName || Object.keys(config).length <= 2)) {
+    db.from('live_control')
+      .select('*')
+      .eq('live_id', liveId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          config = {
+            brandName: data.title || `라이브 ${liveId}`,
+            title: data.subtitle || '단독 특가 라이브 방송 중!',
+            streamUrl: data.stream_url || '',
+            logoUrl: data.profile_image || '',
+            thumbnailUrl: data.thumbnail_url || '',
+            liveStartTime: data.start_time || '',
+            showViewers: data.show_viewers !== false,
+            isLive: data.status === 'ON',
+            botEnabled: false
+          };
+          stats = {
+            viewers: data.viewers || 0,
+            hearts: data.hearts || 0,
+            cumViewers: data.cum_viewers || 0
+          };
+          if (data.products) {
+            products = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+          }
+          saveLiveConfig(liveId, config);
+          saveLiveStats(liveId, stats);
+          saveLiveProductsLocal(liveId, products);
+          showView(liveId);
+        }
+      });
+  }
 
   const saveConfig = () => {
     saveLiveConfig(liveId, config);
