@@ -177,6 +177,12 @@ function renderListView(container, showView) {
     }
 
     const lives = getLives();
+    // live_id 순서대로 정렬 (예: live01, live02, live03...)
+    lives.sort((a, b) => {
+      const numA = parseInt(a.id.replace('live', '')) || 0;
+      const numB = parseInt(b.id.replace('live', '')) || 0;
+      return numA - numB;
+    });
     listContainer.innerHTML = '';
 
     if (lives.length === 0) {
@@ -239,6 +245,15 @@ function renderListView(container, showView) {
           localStorage.removeItem(`ryzin_stats_${id}`);
           localStorage.removeItem(`ryzin_products_${id}`);
           localStorage.removeItem(`ryzin_bot_${id}`);
+          
+          // Supabase 데이터도 완전히 지우기
+          if (db) {
+            Promise.all([
+              db.from('live_control').delete().eq('live_id', id),
+              db.from('live_chats').delete().eq('live_id', id)
+            ]).catch(err => console.warn('Supabase delete failed', err));
+          }
+
           renderList();
         }
       });
