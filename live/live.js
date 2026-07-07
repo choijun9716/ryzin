@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (currentPriceStr) {
             const current = Number(currentPriceStr);
-            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:16px; margin-right:6px;">${current.toLocaleString()}원</span><span class="live-benefit-tag" style="background:#e50914; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
+            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#0f172a; font-size:15px;">${current.toLocaleString()}원</span><span class="live-benefit-tag" style="background:#fff1f2; border:1.5px solid #ffe4e6; color:#f43f5e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
