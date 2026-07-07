@@ -1057,14 +1057,17 @@ function renderLiveEditView(container, liveId, showView) {
             });
 
             const url = await uploadToImgBB(base64);
+            if (!url) throw new Error('서버로부터 다운로드 URL을 받지 못했습니다.');
+
             products[idx].image = url;
             if (preview) preview.src = url;
             saveProducts();
             plc.innerHTML = renderProductList();
             bindProductEvents();
+            alert('🎉 상품 이미지 변경 성공!');
           } catch (err) {
             console.error(err);
-            alert('이미지 처리 중 오류가 발생했습니다: ' + err.message);
+            alert('❌ 상품 이미지 업로드 에러:\n' + err.message);
           } finally {
             if (preview) preview.style.opacity = '1';
           }
