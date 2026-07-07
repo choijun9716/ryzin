@@ -389,6 +389,7 @@ function renderLiveEditView(container, liveId, showView) {
   };
   const saveProducts = () => {
     saveLiveProductsLocal(liveId, products);
+    syncToSheetDB(liveId, config, stats, products);
   };
   const saveBotCfg = () => saveBotConfig(liveId, botCfg);
 
@@ -974,13 +975,18 @@ function renderLiveEditView(container, liveId, showView) {
             try {
               const remoteProducts = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
               if (Array.isArray(remoteProducts)) {
-                // 원격 데이터에서 클릭수 정보를 현재 products 리스트에 매핑
-                products.forEach(p => {
-                  const match = remoteProducts.find(rp => rp.name === p.name);
-                  if (match) {
-                    p.clicks = parseInt(match.clicks) || 0;
-                  }
-                });
+                if (!products || products.length === 0) {
+                  products = remoteProducts;
+                } else {
+                  // 원격 데이터에서 클릭수 및 누락 이미지 정보를 현재 products 리스트에 매핑
+                  products.forEach(p => {
+                    const match = remoteProducts.find(rp => rp.name === p.name);
+                    if (match) {
+                      p.clicks = parseInt(match.clicks) || 0;
+                      if (!p.image && match.image) p.image = match.image;
+                    }
+                  });
+                }
                 saveProducts();
                 const listContainer = document.getElementById('product-list-container');
                 if (listContainer) {
