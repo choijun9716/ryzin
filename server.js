@@ -87,6 +87,84 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    if (req.method === 'POST' && req.url === '/api/sync-live-og') {
+        let bodyChunks = [];
+        req.on('data', chunk => {
+            bodyChunks.push(chunk);
+        });
+        req.on('end', () => {
+            try {
+                const body = Buffer.concat(bodyChunks).toString('utf8');
+                const data = JSON.parse(body);
+                if (!data.liveId) {
+                    throw new Error('liveId가 제공되지 않았습니다.');
+                }
+                const makeRedirectHtml = (title, desc, image, targetUrl) => `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>${title}</title>
+    <!-- Open Graph / Previews -->
+    <meta property="og:title" content="${title}">
+    <meta property="og:description" content="${desc}">
+    <meta property="og:image" content="${image}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${targetUrl}">
+    <!-- Twitter Previews -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${title}">
+    <meta name="twitter:description" content="${desc}">
+    <meta name="twitter:image" content="${image}">
+    <script>
+      window.location.replace("${targetUrl}");
+    </script>
+  </head>
+  <body>
+    <p style="font-family:-apple-system,sans-serif; text-align:center; padding-top:40px; color:#64748b;">
+      라이브 스트리밍 페이지로 이동 중입니다...
+    </p>
+  </body>
+</html>`;
+
+                const shareTitle = data.shareTitle || 'RYZIN 라이브';
+                const shareDesc = data.shareDesc || '실시간 라이브 특가 방송 진행 중!';
+                const shareImage = data.shareImageUrl || 'https://via.placeholder.com/600x315';
+                const targetUrl = `https://ryzincorp.com/live/?id=${data.liveId}`;
+
+                const html = makeRedirectHtml(shareTitle, shareDesc, shareImage, targetUrl);
+                const liveDir = path.join(__dirname, 'live');
+                if (!fs.existsSync(liveDir)) {
+                    fs.mkdirSync(liveDir, { recursive: true });
+                }
+                fs.writeFileSync(path.join(liveDir, `${data.liveId}.html`), html, 'utf8');
+
+                // Git commands
+                const gitCmd = `git add live/${data.liveId}.html && git commit -m "Update OG meta redirect for ${data.liveId}" && git push`;
+                exec(gitCmd, { cwd: __dirname }, (error, stdout, stderr) => {
+                    if (error) {
+                        const outStr = (stdout + stderr).toLowerCase();
+                        if (outStr.includes('nothing to commit') || outStr.includes('clean') || outStr.includes('변경 사항 없음')) {
+                            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                            res.end(JSON.stringify({ success: true, message: '변경된 내용이 없어 저장이 생략되었습니다.' }));
+                            return;
+                        }
+                        console.error(`Git error: ${error.message}`);
+                        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+                        res.end(JSON.stringify({ success: false, error: error.message }));
+                        return;
+                    }
+                    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: true, message: '공유 링크 파일이 성공적으로 배포되었습니다!' }));
+                });
+            } catch (err) {
+                console.error(err);
+                res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: false, error: err.message }));
+            }
+        });
+        return;
+    }
+
     if (req.method === 'POST' && req.url === '/api/upload') {
         let bodyChunks = [];
         req.on('data', chunk => {

@@ -474,7 +474,7 @@ function renderLiveEditView(container, liveId, showView) {
   const embedCodeMobile = `<iframe src="${viewerUrl}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden;"></iframe>`;
   const embedCodeWide = `<iframe src="${viewerUrl}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none;"></iframe>`;
 
-  const shareGatewayUrl = `https://vybrnhyaeugfwezbygdt.supabase.co/functions/v1/share?id=${liveId}`;
+  const shareGatewayUrl = `https://ryzincorp.com/live/${liveId}.html`;
 
   rightPanel.innerHTML = `
     <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; align-self:flex-start;">모바일 미리보기</div>
@@ -488,7 +488,7 @@ function renderLiveEditView(container, liveId, showView) {
 
       <div style="margin-bottom:14px;">
         <div style="font-size:11px; font-weight:700; color:#e11d48; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em; display:flex; align-items:center; gap:4px;">
-          <span>카카오톡 공유용 링크 (동적 OG 대응)</span>
+          <span>카카오톡 공유용 링크 (추천)</span>
         </div>
         <div style="position:relative;">
           <input type="text" id="share-gateway-url" readonly style="width:100%; font-size:11px; font-family:monospace; background:#fff8f8; border:1.5px solid #fecdd3; border-radius:8px; padding:10px 64px 10px 8px; color:#e11d48; box-sizing:border-box; outline:none;" value="${shareGatewayUrl}">
@@ -669,6 +669,28 @@ function renderLiveEditView(container, liveId, showView) {
       saveStats();
       // topbar 브랜드명 업데이트
       topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
+
+      // 로컬 개발 서버가 떠있을 경우, 동적 OG 리다이렉트 HTML 생성/커밋/푸시 API 발송
+      fetch('/api/sync-live-og', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          liveId: liveId,
+          shareTitle: config.shareTitle,
+          shareDesc: config.shareDesc,
+          shareImageUrl: config.shareImageUrl || config.thumbnailUrl
+        })
+      }).then(res => res.json())
+        .then(res => {
+          if (res.success) {
+            console.log('공유 정적 HTML 파일 동기화 성공:', res.message);
+          } else {
+            console.warn('공유 정적 HTML 파일 빌드 경고:', res.error);
+          }
+        }).catch(err => {
+          console.warn('로컬 API 서버 연결 안 됨 (실서버 동작 시 무시):', err);
+        });
+
       alert('설정이 저장되었습니다!');
     });
 

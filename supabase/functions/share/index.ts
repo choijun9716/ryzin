@@ -1,18 +1,18 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const liveId = url.searchParams.get("id") || "live01";
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Supabase live_control 테이블에서 해당 liveId의 공유 설정 정보 조회
   const { data, error } = await supabase
     .from("live_control")
-    .select("title, subtitle, thumbnail_url, share_title, share_desc, share_image")
+    .select("*")
     .eq("live_id", liveId)
     .maybeSingle();
 
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     <meta property="og:description" content="${shareDesc}">
     <meta property="og:image" content="${shareImage}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="${url.href}">
+    <meta property="og:url" content="${targetUrl}">
     
     <!-- Twitter Link Previews -->
     <meta name="twitter:card" content="summary_large_image">
