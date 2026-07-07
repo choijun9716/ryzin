@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (brandLogo && c.logoUrl) brandLogo.src = c.logoUrl;
         const viewCountWrapper = document.querySelector('.view-count');
         if (viewCountWrapper) {
-          viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : 'block';
+          viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : '';
         }
 
         // 라이브 배지 텍스트 업데이트 (스트리밍 URL 없으면 숨김)
