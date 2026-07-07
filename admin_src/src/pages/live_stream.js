@@ -1020,17 +1020,20 @@ function renderLiveEditView(container, liveId, showView) {
           const idx = parseInt(e.target.dataset.idx);
           const preview = document.getElementById(`img-prev-${idx}`);
           preview.style.opacity = '0.5';
-          const fd = new FormData(); fd.append('file', file);
           try {
-            const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: fd });
+            const base64 = await compressImage(file, 360, 360, 0.85);
+            const fd = new FormData();
+            fd.append('key', IMGBB_API_KEY);
+            fd.append('image', base64);
+            const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
             const json = await res.json();
-            if (json.status === 'success') {
-              const url = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+            if (json.success) {
+              const url = json.data.url;
               products[idx].image = url;
               preview.src = url;
               saveProducts();
             }
-          } catch (e) { console.error(e); }
+          } catch (err) { console.error(err); }
           finally { preview.style.opacity = '1'; }
         });
       });
