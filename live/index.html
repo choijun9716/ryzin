@@ -9,7 +9,7 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <link rel="stylesheet" href="live.css?v=1782981763004">
+  <link rel="stylesheet" href="live.css?v=1782981763005">
 </head>
 
 <body>
@@ -36,18 +36,16 @@
       <!-- 상단 방송 정보 -->
       <div class="header">
         <div class="brand-info">
-          <div class="logo-side">
-            <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
-            <!-- 대기/LIVE 뱃지 + 시청자수 (프로필 아래 인라인) -->
-            <div class="video-overlay">
-              <div class="live-badge">LIVE</div>
-              <div class="view-count"><span id="view-count"></span></div>
-            </div>
-          </div>
+          <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
           <div class="text-side">
             <h1 class="brand-name"></h1>
             <p class="broadcast-title"></p>
           </div>
+        </div>
+        <!-- 대기/LIVE 뱃지 + 시청자수 (프로필 아래 인라인 배치) -->
+        <div class="video-overlay">
+          <div class="live-badge">LIVE</div>
+          <div class="view-count"><span id="view-count"></span></div>
         </div>
       </div>
 
@@ -128,7 +126,7 @@
   <!-- Supabase JS SDK & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_config.js"></script>
-  <script src="live.js?v=1782981763004"></script>
+  <script src="live.js?v=1782981763005"></script>
 </body>
 
 </html>
