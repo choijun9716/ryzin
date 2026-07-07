@@ -2,7 +2,8 @@
 import { getBroadcastStatus, getSettleStatus, getBroadcastStatusLabel, getSettleStatusLabel } from './models.js';
 import CryptoJS from 'crypto-js';
 
-const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
+const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
 const SECRET_SALT = 'ryzin_super_secret_salt_2026';
 
 class DataStore {
@@ -41,7 +42,8 @@ class DataStore {
     }
   }
 
-  // --- SheetDB 초기 로딩 ---
+  // --- Supabase 초기 로딩 ---
+  // --- Supabase 초기 로딩 ---
   async init() {
     if (this.isDemoMode) {
       if (this._data.users.length === 0) {
@@ -51,36 +53,153 @@ class DataStore {
       return true; // 데모 모드일 경우 시트 동기화 스킵
     }
     try {
-      const userEnc = encodeURIComponent('사용자');
-      const shEnc = encodeURIComponent('쇼호스트');
-      const brEnc = encodeURIComponent('브랜드');
-      const liveEnc = encodeURIComponent('라이브방송');
-      const crmClientEnc = encodeURIComponent('CRM고객');
-      const crmActEnc = encodeURIComponent('CRM활동');
-      const [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes] = await Promise.all([
-        fetch(`${SHEETDB_URL}?sheet=${userEnc}`).catch(() => null),
-        fetch(`${SHEETDB_URL}?sheet=${shEnc}`).catch(() => null),
-        fetch(`${SHEETDB_URL}?sheet=${brEnc}`).catch(() => null),
-        fetch(`${SHEETDB_URL}?sheet=${liveEnc}`).catch(() => null),
-        fetch(`${SHEETDB_URL}?sheet=${crmClientEnc}`).catch(() => null),
-        fetch(`${SHEETDB_URL}?sheet=${crmActEnc}`).catch(() => null)
+      const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      };
+      
+      let [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers }).catch(() => null),
+        fetch(`${SUPABASE_URL}/rest/v1/hosts?select=*`, { headers }).catch(() => null),
+        fetch(`${SUPABASE_URL}/rest/v1/brands?select=*`, { headers }).catch(() => null),
+        fetch(`${SUPABASE_URL}/rest/v1/live_broadcasts?select=*`, { headers }).catch(() => null),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_clients?select=*`, { headers }).catch(() => null),
+        fetch(`${SUPABASE_URL}/rest/v1/crm_activities?select=*`, { headers }).catch(() => null)
       ]);
       
-      const userData = userRes && userRes.ok ? await userRes.json() : [];
-      const shData = shRes && shRes.ok ? await shRes.json() : [];
-      const brData = brRes && brRes.ok ? await brRes.json() : [];
-      const liveData = liveRes && liveRes.ok ? await liveRes.json() : [];
-      const crmClientData = crmClientRes && crmClientRes.ok ? await crmClientRes.json() : [];
-      const crmActData = crmActRes && crmActRes.ok ? await crmActRes.json() : [];
+      let userData = userRes && userRes.ok ? await userRes.json() : [];
+      let shData = shRes && shRes.ok ? await shRes.json() : [];
+      let brData = brRes && brRes.ok ? await brRes.json() : [];
+      let liveData = liveRes && liveRes.ok ? await liveRes.json() : [];
+      let crmClientData = crmClientRes && crmClientRes.ok ? await crmClientRes.json() : [];
+      let crmActData = crmActRes && crmActRes.ok ? await crmActRes.json() : [];
 
-      if (userData.length || shData.length || brData.length || liveData.length || crmClientData.length || crmActData.length) {
-        this._parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData);
-        this._sheetDBReady = true;
+      // Supabase 데이터가 비어있고, 기존 로컬 캐시 데이터가 존재하면 자동 1회성 마이그레이션 실행
+      const isSupabaseEmpty = userData.length === 0 && shData.length === 0 && brData.length === 0 && liveData.length === 0;
+      const hasLocalData = (this._data.brands && this._data.brands.length > 0) || 
+                            (this._data.hosts && this._data.hosts.length > 0) || 
+                            (this._data.projects && this._data.projects.length > 0);
+
+      if (isSupabaseEmpty && hasLocalData) {
+        console.log('🔄 Supabase가 비어있어 로컬 캐시 데이터 마이그레이션을 시작합니다...');
+        await this._migrateLocalToSupabase();
+        
+        // 마이그레이션 후 다시 조회
+        [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes] = await Promise.all([
+          fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers }).catch(() => null),
+          fetch(`${SUPABASE_URL}/rest/v1/hosts?select=*`, { headers }).catch(() => null),
+          fetch(`${SUPABASE_URL}/rest/v1/brands?select=*`, { headers }).catch(() => null),
+          fetch(`${SUPABASE_URL}/rest/v1/live_broadcasts?select=*`, { headers }).catch(() => null),
+          fetch(`${SUPABASE_URL}/rest/v1/crm_clients?select=*`, { headers }).catch(() => null),
+          fetch(`${SUPABASE_URL}/rest/v1/crm_activities?select=*`, { headers }).catch(() => null)
+        ]);
+        
+        userData = userRes && userRes.ok ? await userRes.json() : [];
+        shData = shRes && shRes.ok ? await shRes.json() : [];
+        brData = brRes && brRes.ok ? await brRes.json() : [];
+        liveData = liveRes && liveRes.ok ? await liveRes.json() : [];
+        crmClientData = crmClientRes && crmClientRes.ok ? await crmClientRes.json() : [];
+        crmActData = crmActRes && crmActRes.ok ? await crmActRes.json() : [];
       }
+
+      this._parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData);
+      this._sheetDBReady = true;
       return true;
     } catch (e) {
-      console.error('SheetDB 연동 실패:', e);
+      console.error('Supabase 연동 실패:', e);
       return false;
+    }
+  }
+
+  async _migrateLocalToSupabase() {
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    };
+
+    try {
+      if (this._data.users && this._data.users.length > 0) {
+        const payload = this._data.users.map(u => ({
+          id: u.id, password: u.password, name: u.name, role: u.role, otp_secret: u.otpSecret || ''
+        }));
+        await fetch(`${SUPABASE_URL}/rest/v1/users`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+      }
+      
+      if (this._data.hosts && this._data.hosts.length > 0) {
+        const payload = this._data.hosts.map(h => ({
+          id: h.id, name: h.name, phone: h.phone, ssn: h.ssn, bank: h.bank, account: h.account, account_holder: h.accountHolder, address: h.address, memo: h.memo ? h.memo.features : ''
+        }));
+        await fetch(`${SUPABASE_URL}/rest/v1/hosts`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+      }
+
+      if (this._data.brands && this._data.brands.length > 0) {
+        const payload = this._data.brands.map(b => ({
+          id: b.id, name: b.name, company_name: b.companyName, category: b.category, tax_invoice: b.taxInvoice === true, manager: b.manager, phone: b.phone, email: b.email, business_no: b.businessNo, address: b.address, memo: b.memo
+        }));
+        await fetch(`${SUPABASE_URL}/rest/v1/brands`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+      }
+
+      if (this._data.crmClients && this._data.crmClients.length > 0) {
+        const payload = this._data.crmClients.map(c => ({
+          id: c.id, company_name: c.companyName, contact_name: c.contactName, phone: c.phone, email: c.email, status: c.status, category: c.category, interested_service: c.interestedService, source: c.source, memo: c.memo, last_contact_date: c.lastContactDate, created_at: c.createdAt
+        }));
+        await fetch(`${SUPABASE_URL}/rest/v1/crm_clients`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+      }
+
+      if (this._data.crmActivities && this._data.crmActivities.length > 0) {
+        const payload = this._data.crmActivities.map(a => ({
+          id: a.id, client_id: a.clientId, date: a.date, type: a.type, content: a.content, follow_up_date: a.followUpDate, created_at: a.createdAt
+        }));
+        await fetch(`${SUPABASE_URL}/rest/v1/crm_activities`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+      }
+
+      if (this._data.projects && this._data.projects.length > 0) {
+        const payload = this._data.projects.map(p => {
+          const liveId = p.id;
+          const r = this.getById('results', liveId) || {};
+          const f = this.getById('finances', liveId) || {};
+          const m = this.query('liveHosts', lh => lh.liveId === liveId);
+          
+          const hostA = m[0] ? this.getById('hosts', m[0].hostId) : null;
+          const hostB = m[1] ? this.getById('hosts', m[1].hostId) : null;
+
+          const bLabel = getBroadcastStatusLabel(p.broadcastStatus);
+          const sLabel = getSettleStatusLabel(p.settleStatus);
+
+          return {
+            id: liveId,
+            status: bLabel,
+            brand_name: p.brandName || '',
+            category: p.category || '',
+            broadcast_month: p.broadcastMonth || '',
+            broadcast_date: p.broadcastDate || '',
+            broadcast_time: p.broadcastTime || '',
+            platform: p.platform || '',
+            live_url: p.liveUrl || '',
+            pd: p.pd || '',
+            designer: p.designer || '',
+            views: r.views || 0,
+            live_revenue: r.liveRevenue || 0,
+            host_a: hostA ? hostA.name : '',
+            fee_a: m[0] ? m[0].fee || 0 : 0,
+            host_b: hostB ? hostB.name : '',
+            fee_b: m[1] ? m[1].fee || 0 : 0,
+            settle_status: sLabel,
+            ad_cost: f.adCost || 0,
+            production_cost: f.productionCost || 0,
+            sales_revenue: f.salesRevenue || 0,
+            operating_profit: f.operatingProfit || 0,
+            net_margin: f.netMargin || 0,
+            note: p.note || ''
+          };
+        });
+        await fetch(`${SUPABASE_URL}/rest/v1/live_broadcasts`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+      }
+      console.log('✅ 로컬 캐시 데이터 Supabase 마이그레이션 완료!');
+    } catch (e) {
+      console.warn('로컬 데이터 마이그레이션 실패:', e);
     }
   }
 
@@ -101,7 +220,6 @@ class DataStore {
     const crmActivities = [];
     let lhCounter = 1;
 
-    // 배열인지 확인 (SheetDB 에러 응답 방어)
     const validUserData = Array.isArray(userData) ? userData : [];
     const validShData = Array.isArray(shData) ? shData : [];
     const validBrData = Array.isArray(brData) ? brData : [];
@@ -111,141 +229,142 @@ class DataStore {
 
     // 사용자 파싱
     validUserData.forEach(row => {
-      if (!row['아이디']) return;
+      if (!row.id) return;
       users.push({
-        id: row['아이디'],
-        password: row['비밀번호'] || '',
-        name: row['이름'] || '',
-        role: row['권한'] || 'pd',
-        otpSecret: row['OTP키'] || ''
+        id: row.id,
+        password: row.password || '',
+        name: row.name || '',
+        role: row.role || 'pd',
+        otpSecret: row.otp_secret || ''
       });
     });
 
     // 쇼호스트 파싱
     validShData.forEach(row => {
-      if (!row['이름']) return;
+      if (!row.name) return;
       hosts.push({
-        id: 'h_' + row['이름'],
-        name: row['이름'],
-        phone: row['전화번호'] || '',
-        ssn: row['주민번호'] || '',
-        bank: row['은행명'] || '',
-        account: row['계좌번호'] || '',
-        accountHolder: row['예금주'] || '',
-        address: row['주소'] || '',
-        memo: { features: row['메모'] || '', strengths: '', weaknesses: '', style: '', brandPreference: '', caution: '', comment: '' },
+        id: row.id || ('h_' + row.name),
+        name: row.name,
+        phone: row.phone || '',
+        ssn: row.ssn || '',
+        bank: row.bank || '',
+        account: row.account || '',
+        accountHolder: row.account_holder || '',
+        address: row.address || '',
+        memo: { features: row.memo || '', strengths: '', weaknesses: '', style: '', brandPreference: '', caution: '', comment: '' },
         createdAt: '2025-01-01'
       });
     });
 
+    // 브랜드 파싱
     validBrData.forEach(row => {
-      if (!row['브랜드명']) return;
+      if (!row.name) return;
       brands.push({
-        id: 'b_' + row['브랜드명'],
-        name: row['브랜드명'],
-        companyName: row['사업자명'] || '',
-        category: row['카테고리'] || '',
-        taxInvoice: row['세금계산서여부'] === 'O' || row['세금계산서'] === '완료',
-        manager: row['담당자명'] || '',
-        phone: row['연락처'] || '',
-        email: row['이메일'] || '',
-        businessNo: row['사업자번호'] || '',
-        address: row['주소'] || '',
-        memo: row['메모'] || '',
+        id: row.id || ('b_' + row.name),
+        name: row.name,
+        companyName: row.company_name || '',
+        category: row.category || '',
+        taxInvoice: row.tax_invoice === true,
+        manager: row.manager || '',
+        phone: row.phone || '',
+        email: row.email || '',
+        businessNo: row.business_no || '',
+        address: row.address || '',
+        memo: row.memo || '',
         createdAt: '2025-01-01'
       });
     });
 
-    
+    // CRM 고객 파싱
     validCrmClientData.forEach(row => {
-      if (!row['아이디']) return;
+      if (!row.id) return;
       crmClients.push({
-        id: row['아이디'],
-        companyName: row['회사명'] || '',
-        contactName: row['담당자명'] || '',
-        phone: row['연락처'] || '',
-        email: row['이메일'] || '',
-        status: row['상태'] || '',
-        category: row['고객분류'] || '',
-        interestedService: row['관심서비스'] || '',
-        source: row['유입경로'] || '',
-        memo: row['메모'] || '',
-        lastContactDate: row['마지막연락일'] || '',
-        createdAt: row['생성일'] || ''
+        id: row.id,
+        companyName: row.company_name || '',
+        contactName: row.contact_name || '',
+        phone: row.phone || '',
+        email: row.email || '',
+        status: row.status || '',
+        category: row.category || '',
+        interestedService: row.interested_service || '',
+        source: row.source || '',
+        memo: row.memo || '',
+        lastContactDate: row.last_contact_date || '',
+        createdAt: row.created_at || ''
       });
     });
 
+    // CRM 활동 파싱
     validCrmActData.forEach(row => {
-      if (!row['아이디']) return;
+      if (!row.id) return;
       crmActivities.push({
-        id: row['아이디'],
-        clientId: row['고객아이디'] || '',
-        date: row['날짜'] || '',
-        type: row['유형'] || '',
-        content: row['내용'] || '',
-        followUpDate: row['팔로업예정일'] || '',
-        createdAt: row['생성일'] || ''
+        id: row.id,
+        clientId: row.client_id || '',
+        date: row.date || '',
+        type: row.type || '',
+        content: row.content || '',
+        followUpDate: row.follow_up_date || '',
+        createdAt: row.created_at || ''
       });
     });
 
+    // 라이브방송 파싱
     validLiveData.forEach(row => {
-      if (!row['방송ID']) return;
-      const pId = row['방송ID'];
-      const brandId = 'b_' + row['브랜드명'];
+      if (!row.id) return;
+      const pId = row.id;
+      const brandId = 'b_' + row.brand_name;
 
       projects.push({
         id: pId,
         brandId,
-        brandName: row['브랜드명'] || '',
-        category: row['카테고리'] || '',
-        broadcastMonth: row['진행월'] || '',
-        broadcastDate: row['방송일'] || '',
-        broadcastTime: row['방송시간'] || '',
-        platform: row['플랫폼'] || '',
-        liveUrl: row['라이브URL'] || '',
-        pd: row['담당PD'] || '',
-        designer: row['담당디자이너'] || '',
-        broadcastStatus: getBroadcastStatus(row['진행상태']),
-        settleStatus: getSettleStatus(row['정산상태']),
-        note: row['집행결과'] || '',
-        createdAt: row['방송일'] || '2025-01-01'
+        brandName: row.brand_name || '',
+        category: row.category || '',
+        broadcastMonth: row.broadcast_month || '',
+        broadcastDate: row.broadcast_date || '',
+        broadcastTime: row.broadcast_time || '',
+        platform: row.platform || '',
+        liveUrl: row.live_url || '',
+        pd: row.pd || '',
+        designer: row.designer || '',
+        broadcastStatus: getBroadcastStatus(row.status),
+        settleStatus: getSettleStatus(row.settle_status),
+        note: row.note || '',
+        createdAt: row.broadcast_date || '2025-01-01'
       });
 
-      if (row['쇼호스트A']) {
+      if (row.host_a) {
         liveHosts.push({
-          id: 'lh' + lhCounter++, liveId: pId, hostId: 'h_' + row['쇼호스트A'], role: 'main',
-          fee: this._parseNum(row['진행금액A']), settleStatus: getSettleStatus(row['정산상태']), memo: ''
+          id: 'lh' + lhCounter++, liveId: pId, hostId: 'h_' + row.host_a, role: 'main',
+          fee: this._parseNum(row.fee_a), settleStatus: getSettleStatus(row.settle_status), memo: ''
         });
       }
-      if (row['쇼호스트B']) {
+      if (row.host_b) {
         liveHosts.push({
-          id: 'lh' + lhCounter++, liveId: pId, hostId: 'h_' + row['쇼호스트B'], role: 'guest',
-          fee: this._parseNum(row['진행금액B']), settleStatus: getSettleStatus(row['정산상태']), memo: ''
+          id: 'lh' + lhCounter++, liveId: pId, hostId: 'h_' + row.host_b, role: 'guest',
+          fee: this._parseNum(row.fee_b), settleStatus: getSettleStatus(row.settle_status), memo: ''
         });
       }
 
-      const liveRevenue = this._parseNum(row['라이브매출']);
-      const totalCost = this._parseNum(row['광고비']) + this._parseNum(row['제작비']) + this._parseNum(row['진행금액A']) + this._parseNum(row['진행금액B']);
+      const liveRevenue = this._parseNum(row.live_revenue);
+      const totalCost = this._parseNum(row.ad_cost) + this._parseNum(row.production_cost) + this._parseNum(row.fee_a) + this._parseNum(row.fee_b);
       const roi = totalCost > 0 ? (liveRevenue / totalCost) : 0;
 
       results.push({
-        id: pId, liveId: pId, views: this._parseNum(row['시청뷰']), likes: 0, orders: 0,
+        id: pId, liveId: pId, views: this._parseNum(row.views), likes: 0, orders: 0,
         liveRevenue, roi
       });
 
       finances.push({
-        id: pId, liveId: pId, adCost: this._parseNum(row['광고비']), productionCost: this._parseNum(row['제작비']),
-        hostCost: this._parseNum(row['진행금액A']) + this._parseNum(row['진행금액B']), otherCost: 0,
-        salesRevenue: this._parseNum(row['영업매출액']), operatingProfit: this._parseNum(row['영업이익']),
-        vat: this._parseNum(row['부가세']), netMargin: this._parseNum(row['순마진'])
+        id: pId, liveId: pId, adCost: this._parseNum(row.ad_cost), productionCost: this._parseNum(row.production_cost),
+        hostCost: this._parseNum(row.fee_a) + this._parseNum(row.fee_b), otherCost: 0,
+        salesRevenue: this._parseNum(row.sales_revenue), operatingProfit: this._parseNum(row.operating_profit),
+        vat: 0,
+        netMargin: this._parseNum(row.net_margin)
       });
     });
 
-    // 사용자 정보가 SheetDB 조회 결과 비어있다면, 로컬스토리지에 저장되어있던 기존 유저 정보를 백업하여 유지합니다 (새로고침 시 튕김 방지)
     if (users.length > 0) {
       this._data.users = users;
-    } else if (!this._data.users || this._data.users.length === 0) {
-      this._data.users = [];
     }
     this._data.hosts = hosts;
     this._data.brands = brands;
@@ -258,7 +377,7 @@ class DataStore {
     this._save();
   }
 
-  // --- SheetDB 비동기 백그라운드 동기화 ---
+  // --- Supabase 비동기 백그라운드 동기화 ---
   async _syncToSheetDB(collection, action, item) {
     if (!this._sheetDBReady) return;
     try {
@@ -266,105 +385,119 @@ class DataStore {
       let payload = null;
       let method = 'POST';
 
-      const userEnc = encodeURIComponent('사용자');
       if (collection === 'users') {
-        const row = { '아이디': item.id, '비밀번호': item.password, '이름': item.name, '권한': item.role, 'OTP키': item.otpSecret || '' };
-        endpoint = `?sheet=${userEnc}`;
-        if (action === 'update') { method = 'PUT'; endpoint = `/아이디/${item.id}?sheet=${userEnc}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/아이디/${item.id}?sheet=${userEnc}`; }
-        payload = { data: [row] };
+        endpoint = '/rest/v1/users';
+        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/users?id=eq.${item.id}`; }
+        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/users?id=eq.${item.id}`; }
+        payload = { id: item.id, password: item.password, name: item.name, role: item.role, otp_secret: item.otpSecret || '' };
       }
       else if (collection === 'hosts') {
-        const shEnc = encodeURIComponent('쇼호스트');
-        const row = { '이름': item.name, '전화번호': item.phone, '주민번호': item.ssn, '은행명': item.bank, '계좌번호': item.account, '예금주': item.accountHolder, '주소': item.address, '메모': item.memo.features };
-        endpoint = `?sheet=${shEnc}`;
-        if (action === 'update') { method = 'PUT'; endpoint = `/이름/${item.name}?sheet=${shEnc}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/이름/${item.name}?sheet=${shEnc}`; }
-        payload = { data: [row] };
+        endpoint = '/rest/v1/hosts';
+        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/hosts?id=eq.${item.id}`; }
+        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/hosts?id=eq.${item.id}`; }
+        payload = { id: item.id, name: item.name, phone: item.phone, ssn: item.ssn, bank: item.bank, account: item.account, account_holder: item.accountHolder, address: item.address, memo: item.memo.features };
       } 
       else if (collection === 'brands') {
-        const brEnc = encodeURIComponent('브랜드');
-        const row = { '브랜드명': item.name, '카테고리': item.category, '세금계산서': item.taxInvoice ? '완료' : '', '담당자명': item.manager, '연락처': item.phone, '이메일': item.email, '사업자번호': item.businessNo, '주소': item.address, '메모': item.memo };
-        endpoint = `?sheet=${brEnc}`;
-        if (action === 'update') { method = 'PUT'; endpoint = `/브랜드명/${item.name}?sheet=${brEnc}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/브랜드명/${item.name}?sheet=${brEnc}`; }
-        payload = { data: [row] };
+        endpoint = '/rest/v1/brands';
+        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/brands?id=eq.${item.id}`; }
+        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/brands?id=eq.${item.id}`; }
+        payload = { id: item.id, name: item.name, company_name: item.companyName, category: item.category, tax_invoice: item.taxInvoice === true, manager: item.manager, phone: item.phone, email: item.email, business_no: item.businessNo, address: item.address, memo: item.memo };
+      }
+      else if (collection === 'crmClients') {
+        endpoint = '/rest/v1/crm_clients';
+        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/crm_clients?id=eq.${item.id}`; }
+        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/crm_clients?id=eq.${item.id}`; }
+        payload = { id: item.id, company_name: item.companyName, contact_name: item.contactName, phone: item.phone, email: item.email, status: item.status, category: item.category, interested_service: item.interestedService, source: item.source, memo: item.memo, last_contact_date: item.lastContactDate, created_at: item.createdAt };
+      }
+      else if (collection === 'crmActivities') {
+        endpoint = '/rest/v1/crm_activities';
+        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/crm_activities?id=eq.${item.id}`; }
+        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/crm_activities?id=eq.${item.id}`; }
+        payload = { id: item.id, client_id: item.clientId, date: item.date, type: item.type, content: item.content, follow_up_date: item.followUpDate, created_at: item.createdAt };
       }
       else if (['projects', 'results', 'finances', 'liveHosts'].includes(collection)) {
-        const liveEnc = encodeURIComponent('라이브방송');
         const liveId = item.liveId || item.id;
-        const p = this.getById('projects', liveId);
-        if (!p && action !== 'delete') return;
-
-        const b = p ? this.getById('brands', p.brandId) : null;
-        const r = this.getById('results', liveId) || {};
-        const f = this.getById('finances', liveId) || {};
-        const m = this.query('liveHosts', lh => lh.liveId === liveId);
+        endpoint = '/rest/v1/live_broadcasts';
         
-        const hostA = m[0] ? this.getById('hosts', m[0].hostId) : null;
-        const hostB = m[1] ? this.getById('hosts', m[1].hostId) : null;
-
-        const bStatus = p ? p.broadcastStatus : 'new';
-        const sStatus = p ? p.settleStatus : 'wait';
-        
-        const bLabel = getBroadcastStatusLabel(bStatus);
-        const sLabel = getSettleStatusLabel(sStatus);
-
-        const row = {
-          '방송ID': liveId,
-          '진행상태': bLabel,
-          '브랜드명': p ? (p.brandName || (b ? b.name : '')) : '',
-          '카테고리': p ? p.category : '',
-          '진행월': p ? p.broadcastMonth : '',
-          '방송일': p ? p.broadcastDate : '',
-          '방송시간': p ? p.broadcastTime : '',
-          '플랫폼': p ? p.platform : '',
-          '라이브URL': p ? p.liveUrl : '',
-          '담당PD': p ? p.pd : '',
-          '담당디자이너': p ? p.designer : '',
-          '시청뷰': r.views || 0,
-          '라이브매출': r.liveRevenue || 0,
-          '쇼호스트A': hostA ? hostA.name : '',
-          '진행금액A': m[0] ? m[0].fee || 0 : 0,
-          '쇼호스트B': hostB ? hostB.name : '',
-          '진행금액B': m[1] ? m[1].fee || 0 : 0,
-          '정산상태': sLabel,
-          '광고비': f.adCost || 0,
-          '제작비': f.productionCost || 0,
-          '영업매출액': f.salesRevenue || 0,
-          '영업이익': f.operatingProfit || 0,
-          '순마진': f.netMargin || 0,
-          '집행결과': p ? p.note : ''
-        };
-
         if (action === 'delete' && collection === 'projects') {
-          method = 'DELETE'; endpoint = `/방송ID/${liveId}?sheet=${liveEnc}`;
+          method = 'DELETE';
+          endpoint = `/rest/v1/live_broadcasts?id=eq.${liveId}`;
           payload = null;
         } else {
-          const putRes = await fetch(`${SHEETDB_URL}/방송ID/${liveId}?sheet=${liveEnc}`, {
-            method: 'PUT', headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
-            body: JSON.stringify({ data: [row] })
-          });
-          if (putRes.ok) {
-            const result = await putRes.json();
-            if (result.updated > 0) return; // Success!
-          }
-          method = 'POST'; endpoint = `?sheet=${liveEnc}`;
-          payload = { data: [row] };
+          const p = this.getById('projects', liveId);
+          if (!p && action !== 'delete') return;
+
+          const b = p ? this.getById('brands', p.brandId) : null;
+          const r = this.getById('results', liveId) || {};
+          const f = this.getById('finances', liveId) || {};
+          const m = this.query('liveHosts', lh => lh.liveId === liveId);
+          
+          const hostA = m[0] ? this.getById('hosts', m[0].hostId) : null;
+          const hostB = m[1] ? this.getById('hosts', m[1].hostId) : null;
+
+          const bStatus = p ? p.broadcastStatus : 'new';
+          const sStatus = p ? p.settleStatus : 'wait';
+          
+          const bLabel = getBroadcastStatusLabel(bStatus);
+          const sLabel = getSettleStatusLabel(sStatus);
+
+          payload = {
+            id: liveId,
+            status: bLabel,
+            brand_name: p ? (p.brandName || (b ? b.name : '')) : '',
+            category: p ? p.category : '',
+            broadcast_month: p ? p.broadcastMonth : '',
+            broadcast_date: p ? p.broadcastDate : '',
+            broadcast_time: p ? p.broadcastTime : '',
+            platform: p ? p.platform : '',
+            live_url: p ? p.liveUrl : '',
+            pd: p ? p.pd : '',
+            designer: p ? p.designer : '',
+            views: r.views || 0,
+            live_revenue: r.liveRevenue || 0,
+            host_a: hostA ? hostA.name : '',
+            fee_a: m[0] ? m[0].fee || 0 : 0,
+            host_b: hostB ? hostB.name : '',
+            fee_b: m[1] ? m[1].fee || 0 : 0,
+            settle_status: sLabel,
+            ad_cost: f.adCost || 0,
+            production_cost: f.productionCost || 0,
+            sales_revenue: f.salesRevenue || 0,
+            operating_profit: f.operatingProfit || 0,
+            net_margin: f.netMargin || 0,
+            note: p ? p.note : ''
+          };
+          method = 'POST';
         }
       }
 
+      const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      };
+
+      if (method === 'POST' && ['live_broadcasts', 'users', 'hosts', 'brands', 'crm_clients', 'crm_activities'].some(t => endpoint.includes(t))) {
+        headers['Prefer'] = 'resolution=merge-duplicates';
+      }
+
       if (payload) {
-        await fetch(`${SHEETDB_URL}${endpoint}`, {
+        await fetch(`${SUPABASE_URL}${endpoint}`, {
           method: method,
-          headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+          headers: headers,
           body: JSON.stringify(payload)
         });
       } else if (method === 'DELETE') {
-        await fetch(`${SHEETDB_URL}${endpoint}`, { method: 'DELETE', headers: {'Accept': 'application/json'} });
+        await fetch(`${SUPABASE_URL}${endpoint}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        });
       }
     } catch (e) {
-      console.error('SheetDB 동기화 에러:', e);
+      console.error('Supabase 동기화 에러:', e);
     }
   }
 
@@ -401,43 +534,41 @@ class DataStore {
   async _syncBulkToSheetDB(collection, items) {
     if (!this._sheetDBReady || items.length === 0) return;
     try {
-      let sheetName = '';
-      let payloadData = [];
+      let endpoint = '';
+      let payload = [];
       
       if (collection === 'crmClients') {
-        sheetName = 'CRM고객';
-        payloadData = items.map(data => ({
-          '아이디': data.id || '',
-          '회사명': data.companyName || '',
-          '담당자명': data.contactName || '',
-          '연락처': data.phone || '',
-          '이메일': data.email || '',
-          '상태': data.status || '',
-          '고객분류': data.category || '',
-          '관심서비스': data.interestedService || '',
-          '유입경로': data.source || '',
-          '메모': data.memo || '',
-          '마지막연락일': data.lastContactDate || '',
-          '생성일': data.createdAt || ''
+        endpoint = '/rest/v1/crm_clients';
+        payload = items.map(data => ({
+          id: data.id || '',
+          company_name: data.companyName || '',
+          contact_name: data.contactName || '',
+          phone: data.phone || '',
+          email: data.email || '',
+          status: data.status || '',
+          category: data.category || '',
+          interested_service: data.interestedService || '',
+          source: data.source || '',
+          memo: data.memo || '',
+          last_contact_date: data.lastContactDate || '',
+          created_at: data.createdAt || ''
         }));
       }
 
-      if (!sheetName) return;
+      if (!endpoint) return;
 
-      const encSheet = encodeURIComponent(sheetName);
-      const url = `${SHEETDB_URL}?sheet=${encSheet}`;
-      
-      const payload = { data: payloadData };
-      
-      const res = await fetch(url, {
+      const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      };
+
+      await fetch(`${SUPABASE_URL}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify(payload)
       });
-      
-      if (!res.ok) {
-        throw new Error('SheetDB Bulk Error');
-      }
     } catch (e) {
       console.error('대량 저장 오류:', e);
     }
