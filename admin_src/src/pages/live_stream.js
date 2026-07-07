@@ -1021,18 +1021,12 @@ function renderLiveEditView(container, liveId, showView) {
           const preview = document.getElementById(`img-prev-${idx}`);
           if (preview) preview.style.opacity = '0.5';
           try {
-            let base64 = '';
-            try {
-              base64 = await compressImage(file, 360, 360, 0.85);
-            } catch (compressErr) {
-              console.warn('Canvas compression failed, falling back to raw base64:', compressErr);
-              base64 = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-              });
-            }
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result.split(',')[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
 
             const fd = new FormData();
             fd.append('key', IMGBB_API_KEY);
