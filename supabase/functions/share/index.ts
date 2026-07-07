@@ -1,10 +1,9 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const url = new URL(req.url);
   const liveId = url.searchParams.get("id") || "live01";
 
@@ -28,7 +27,22 @@ serve(async (req) => {
   // 사용자의 라이브 시청 주소 (GitHub Pages 본진 도메인)
   const targetUrl = `https://choijun9716.github.io/ryzin/live/?id=${liveId}`;
 
-  // 카카오톡 봇 등 스크레이퍼 봇과 일반 브라우저 유저에 모두 대응하는 리다이렉션 HTML 템플릿
+  // 1. User-Agent 판별을 통해 크롤러 봇인지 실제 사람 브라우저인지 감지
+  const ua = req.headers.get("user-agent") || "";
+  const isBot = /bot|crawl|spider|facebook|kakao|naver|slack|twitter|scrap/i.test(ua);
+
+  if (!isBot) {
+    // 2. 실제 사용자는 Deno 단에서 즉각 302 Found 리다이렉션으로 진짜 시청 주소로 워프시킴
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "location": targetUrl,
+        "access-control-allow-origin": "*"
+      }
+    });
+  }
+
+  // 3. 카카오톡/페이스북/슬랙 등 메타 데이터 수집 봇은 이 HTML 태그를 파싱해 썸네일 카드를 생성함
   const html = `<!DOCTYPE html>
 <html>
   <head>
@@ -46,23 +60,16 @@ serve(async (req) => {
     <meta name="twitter:title" content="${shareTitle}">
     <meta name="twitter:description" content="${shareDesc}">
     <meta name="twitter:image" content="${shareImage}">
-
-    <script>
-      // 봇이 아닌 브라우저 사용자일 경우 즉시 진짜 라이브 시청 주소로 리다이렉트
-      window.location.replace("${targetUrl}");
-    </script>
   </head>
   <body>
-    <p style="font-family:-apple-system,sans-serif; text-align:center; padding-top:40px; color:#64748b;">
-      라이브 스트리밍 페이지로 안전하게 이동 중입니다...
-    </p>
+    <p>Crawling index data...</p>
   </body>
 </html>`;
 
   return new Response(html, {
     headers: { 
-      "Content-Type": "text/html; charset=UTF-8",
-      "Access-Control-Allow-Origin": "*"
+      "content-type": "text/html; charset=UTF-8",
+      "access-control-allow-origin": "*"
     },
   });
 })

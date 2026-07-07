@@ -488,7 +488,7 @@ function renderLiveEditView(container, liveId, showView) {
 
       <div style="margin-bottom:14px;">
         <div style="font-size:11px; font-weight:700; color:#e11d48; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em; display:flex; align-items:center; gap:4px;">
-          <span>💬 카카오톡 공유용 링크 (동적 OG 대응)</span>
+          <span>카카오톡 공유용 링크 (동적 OG 대응)</span>
         </div>
         <div style="position:relative;">
           <input type="text" id="share-gateway-url" readonly style="width:100%; font-size:11px; font-family:monospace; background:#fff8f8; border:1.5px solid #fecdd3; border-radius:8px; padding:10px 64px 10px 8px; color:#e11d48; box-sizing:border-box; outline:none;" value="${shareGatewayUrl}">
