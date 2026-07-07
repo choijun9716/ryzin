@@ -259,8 +259,12 @@ function renderListView(container, showView) {
       botEnabled: false
     };
     saveLiveConfig(id, defaultConfig);
-    saveLiveStats(id, { viewers: 0, hearts: 0 });
+    saveLiveStats(id, { viewers: 0, hearts: 0, cumViewers: 0 });
     saveLiveProductsLocal(id, []);
+    
+    // Supabase 테이블에 신규 라이브 연동 정보 즉시 생성 (대기 상태로 선제 동기화)
+    syncToSheetDB(id, defaultConfig, { viewers: 0, hearts: 0, cumViewers: 0 }, [], true);
+
     renderList();
     showView(id);
   });
