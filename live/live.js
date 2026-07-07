@@ -1,192 +1,180 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // === SheetDB 및 localStorage 연동 로직 (어드민 제어) ===
-  const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
+  // === Supabase 및 localStorage 연동 로직 (어드민 제어) ===
+  const db = window.supabaseClient;
 
   // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
   const urlParams = new URLSearchParams(window.location.search);
-  const LIVE_ID = urlParams.get('id') || null; // null이면 전체 중 최신
+  const LIVE_ID = urlParams.get('id') || 'live01';
 
-  let lastChatTime = 0; // 0으로 설정하면 최초 폴링 시 전체 채팅 이력 로드
+  let lastChatTime = 0; // 0으로 설정하면 최초 로드 시 전체 채팅 이력 로드
   let chatHistoryLoaded = false; // 최초 전체 이력 로드 여부 추적
   const mySentTexts = []; // 내가 방금 보낸 채팅 텍스트 보관용
-  async function pollConfig() {
+
+  // 1. 초기 라이브 제어 정보 로드 (최초 1회 실행)
+  async function loadConfigOnce() {
+    if (!db) {
+      console.warn("Supabase client not initialized.");
+      return;
+    }
     try {
-      const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`, { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.length > 0) {
-          // live_id가 지정된 경우 해당 라이브 데이터만 사용
-          // ⚠️ 일치하는 데이터가 없으면 다른 라이브 데이터를 절대 사용하지 않음
-          let filtered;
-          if (LIVE_ID) {
-            filtered = data.filter(row => row['live_id'] === LIVE_ID);
-            if (filtered.length === 0) return; // 해당 live_id 데이터 없음 → 아무것도 재생 안 함
-          } else {
-            filtered = data; // id 파라미터 없으면 전체 최신
-          }
-          const latest = filtered[filtered.length - 1]; // 가장 마지막 업데이트 내역
+      const { data, error } = await db
+        .from('live_control')
+        .select('*')
+        .eq('live_id', LIVE_ID)
+        .maybeSingle();
 
-          // 파싱 후 로컬스토리지 최신화 (다른 탭 호환 및 구조 유지)
-          let extraConfig = {};
-          try {
-            if (latest['첫상품명'] && latest['첫상품명'].startsWith('{')) {
-              extraConfig = JSON.parse(latest['첫상품명']);
-            }
-          } catch (e) { }
-
-          const config = {
-            liveId: latest['live_id'] || 'live01',
-            brandName: latest['제목'] || 'Ryzin Corp',
-            title: latest['부제목'] || '단독 특가 라이브 방송 중!',
-            logoUrl: latest['프로필이미지'] || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
-            streamUrl: latest['URL'] || '',
-            showViewers: latest['시청자수노출'] !== 'X',
-            thumbnailUrl: extraConfig.thumbnailUrl || latest['썸네일URL'] || '',
-            liveStartTime: extraConfig.liveStartTime || latest['시작일시'] || '',
-            isLive: (extraConfig.isLive === true || latest['방송상태'] === 'ON')
-          };
-
-          // 사용자의 요청에 따라 라이브 중에도 상품 즉각 적용을 위해 폴링 주기 단축 (5초)
-          if (config.isLive) {
-            if (window.__currentPollRate !== 'live') {
-              window.__currentPollRate = 'live';
-              clearInterval(window.pollConfigIntervalId);
-              window.pollConfigIntervalId = setInterval(pollConfig, 5000); // 5초
-            }
-          } else {
-            if (window.__currentPollRate !== 'standby') {
-              window.__currentPollRate = 'standby';
-              clearInterval(window.pollConfigIntervalId);
-              window.pollConfigIntervalId = setInterval(pollConfig, 3000); // 3초
-            }
-          }
-
-          const stats = {
-            viewers: parseInt(latest['시청자수']) || 0,
-            hearts: parseInt(latest['하트수']) || 0,
-            cumViewers: latest['누적시청자수'] !== undefined && latest['누적시청자수'] !== '' ? parseInt(latest['누적시청자수']) || 0 : 0
-          };
-
-          localStorage.setItem('ryzin_live_config', JSON.stringify(config));
-          localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
-
-          if (latest['상품목록']) {
-            try {
-              const parsed = JSON.parse(latest['상품목록']);
-              localStorage.setItem('ryzin_live_products', JSON.stringify(parsed));
-              loadLiveProducts();
-            } catch (e) { }
-          }
-
-          loadLiveConfig();
-          loadLiveStats();
-        }
-
+      if (error) throw error;
+      if (data) {
+        applyLiveConfig(data);
       }
     } catch (e) {
-      console.warn("SheetDB pollConfig failed:", e);
+      console.warn("Supabase loadConfigOnce failed:", e);
     }
   }
 
-  async function pollChat() {
+  // 2. 실시간 라이브 제어 감지 설정
+  function subscribeConfig() {
+    if (!db) return;
+    db.channel('live-control-channel')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, payload => {
+        if (payload.new) {
+          applyLiveConfig(payload.new);
+        }
+      })
+      .subscribe();
+  }
+
+  // 설정 데이터를 파싱하고 UI에 적용하는 헬퍼 함수
+  function applyLiveConfig(row) {
+    const config = {
+      liveId: row.live_id || 'live01',
+      brandName: row.title || 'Ryzin Corp', // '제목'을 title 필드로 맵핑
+      title: row.subtitle || '단독 특가 라이브 방송 중!', // '부제목'을 subtitle 필드로 맵핑
+      logoUrl: row.profile_image || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
+      streamUrl: row.stream_url || '',
+      showViewers: row.show_viewers !== false,
+      thumbnailUrl: row.thumbnail_url || '',
+      liveStartTime: row.start_time || '',
+      isLive: row.status === 'ON'
+    };
+
+    const stats = {
+      viewers: parseInt(row.viewers) || 0,
+      hearts: parseInt(row.hearts) || 0,
+      cumViewers: parseInt(row.cum_viewers) || 0
+    };
+
+    localStorage.setItem('ryzin_live_config', JSON.stringify(config));
+    localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
+
+    if (row.products) {
+      try {
+        const productsList = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
+        localStorage.setItem('ryzin_live_products', JSON.stringify(productsList));
+        loadLiveProducts();
+      } catch (e) {}
+    }
+
+    loadLiveConfig();
+    loadLiveStats();
+  }
+
+  // 3. 초기 채팅 로드 (최초 1회 실행)
+  async function loadChatOnce() {
+    if (!db) return;
     try {
-      // 채팅 차단/관리자 목록 가져오기
       const blockedList = JSON.parse(localStorage.getItem(`ryzin_blocked_${LIVE_ID}`) || '[]');
       const adminList = JSON.parse(localStorage.getItem(`ryzin_admins_${LIVE_ID}`) || '["관리자"]');
 
-      // 채팅 조회 (live_id로 필터)
-      const chatRes = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`, { cache: 'no-store' });
-      if (chatRes.ok) {
-        let chats = await chatRes.json();
-        // live_id가 있으면 해당 라이브 채팅만 표시
-        if (LIVE_ID && Array.isArray(chats)) {
-          chats = chats.filter(c => !c['live_id'] || c['live_id'] === LIVE_ID);
-        }
-        if (chats && Array.isArray(chats)) {
-          // 시간순 정렬
-          chats.sort((a, b) => (parseInt(a['시간']) || 0) - (parseInt(b['시간']) || 0));
+      // 기존 채팅 내역 로드 (최신 100개)
+      const { data: chats, error } = await db
+        .from('live_chats')
+        .select('*')
+        .eq('live_id', LIVE_ID)
+        .order('created_at', { ascending: true })
+        .limit(100);
 
-          const isFirstLoad = !chatHistoryLoaded;
-          let addedCount = 0;
+      if (error) throw error;
+      if (chats && Array.isArray(chats)) {
+        chats.forEach(c => {
+          const nick = c.nickname || '';
+          if (blockedList.includes(nick)) return;
+          const isAdmin = adminList.includes(nick);
+          addMessage(nick, c.content, isAdmin, true);
+          lastChatTime = parseInt(c.created_at) || 0;
+        });
 
-          chats.forEach(c => {
-            if (c['시간'] && parseInt(c['시간']) > lastChatTime) {
-              const nick = c['닉네임'] || '';
-              
-              // 차단된 사용자 스킵
-              if (blockedList.includes(nick)) {
-                lastChatTime = parseInt(c['시간']);
-                return;
-              }
-
-              const isAdmin = adminList.includes(nick);
-
-              if (nick === userNickname && !isFirstLoad) {
-                // 내가 방금 보낸 메시지는 로컬에 이미 표시된 경우만 스킵
-                const idx = mySentTexts.indexOf(c['내용']);
-                if (idx !== -1) {
-                  mySentTexts.splice(idx, 1);
-                } else {
-                  addMessage(nick, c['내용'], isAdmin, isFirstLoad);
-                  addedCount++;
-                }
-              } else {
-                addMessage(nick, c['내용'], isAdmin, isFirstLoad);
-                addedCount++;
-              }
-              lastChatTime = parseInt(c['시간']);
-            }
-          });
-
-          // 최초 로드 완료 후 맨 아래로 스크롤
-          if (isFirstLoad) {
-            chatHistoryLoaded = true;
-            if (addedCount > 0) {
-              setTimeout(() => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-              }, 100);
-            }
-          }
-        }
+        chatHistoryLoaded = true;
+        setTimeout(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
       }
     } catch (e) {
-      console.warn("SheetDB pollChat failed:", e);
+      console.warn("Supabase loadChatOnce failed:", e);
     }
   }
 
+  // 4. 실시간 채팅 감지 설정 (구독)
+  function subscribeChat() {
+    if (!db) return;
+    db.channel('live-chats-channel')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_chats', filter: `live_id=eq.${LIVE_ID}` }, payload => {
+        const c = payload.new;
+        if (!c) return;
 
-  // 채팅 30초마다 조회
-  setInterval(pollChat, 30000);
-  // 방송 전에는 즉각적인 시작을 위해 3초마다 조회, 방송 시작 후에는 데이터 절감을 위해 10분마다 조회
-  window.pollConfigIntervalId = setInterval(pollConfig, 3000);
+        const blockedList = JSON.parse(localStorage.getItem(`ryzin_blocked_${LIVE_ID}`) || '[]');
+        const adminList = JSON.parse(localStorage.getItem(`ryzin_admins_${LIVE_ID}`) || '["관리자"]');
 
-  // 초기 1회 즉시 실행
+        const nick = c.nickname || '';
+        if (blockedList.includes(nick)) return;
+
+        const isAdmin = adminList.includes(nick);
+        
+        // 내가 방금 보낸 메시지 처리
+        if (nick === userNickname) {
+          const idx = mySentTexts.indexOf(c.content);
+          if (idx !== -1) {
+            mySentTexts.splice(idx, 1);
+          } else {
+            addMessage(nick, c.content, isAdmin, false);
+          }
+        } else {
+          addMessage(nick, c.content, isAdmin, false);
+        }
+        lastChatTime = parseInt(c.created_at) || 0;
+      })
+      .subscribe();
+  }
+
+  // 초기 1회 로드 및 실시간 구독 시작
   setTimeout(() => {
-    pollConfig();
-    pollChat();
+    loadConfigOnce();
+    loadChatOnce();
+    subscribeConfig();
+    subscribeChat();
   }, 500);
 
   // === 페이지 로드(새로고침 포함) 시마다 누적 시청자수 +1 ===
-  // sessionStorage 사용: 탭 닫고 재진입하면 다시 카운트. 같은 탭 내에서는 중복 집계 없음
   const SESSION_KEY = `ryzin_viewer_counted_${LIVE_ID || 'default'}`;
   if (!sessionStorage.getItem(SESSION_KEY)) {
     sessionStorage.setItem(SESSION_KEY, '1');
-    // 0.8초 뒤 SheetDB 조회 후 누적 시청자수 +1 PATCH
     setTimeout(async () => {
       try {
         const targetLiveId = LIVE_ID || 'live01';
-        const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
-        if (res.ok) {
-          const data = await res.json();
-          const row = data.find(r => r.live_id === targetLiveId);
-          if (row) {
-            const newCum = (parseInt(row['누적시청자수']) || 0) + 1;
-            await fetch(`${SHEETDB_URL}/live_id/${targetLiveId}?sheet=${encodeURIComponent('라이브관제')}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ data: { '누적시청자수': newCum } })
-            });
-          }
+        if (!db) return;
+
+        const { data, error } = await db
+          .from('live_control')
+          .select('cum_viewers')
+          .eq('live_id', targetLiveId)
+          .maybeSingle();
+
+        if (data) {
+          const newCum = (parseInt(data.cum_viewers) || 0) + 1;
+          await db
+            .from('live_control')
+            .update({ cum_viewers: newCum })
+            .eq('live_id', targetLiveId);
         }
       } catch (e) {
         console.warn('Viewer count increment failed:', e);
@@ -372,37 +360,35 @@ document.addEventListener('DOMContentLoaded', () => {
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
             if (!item.url || item.url === '#') e.preventDefault();
-            // 상품 클릭수 (조회수) 트래킹 - SheetDB에서 실시간 상품목록을 조회한 뒤 안전하게 누적합산 PATCH
+            // 상품 클릭수 (조회수) 트래킹 - Supabase에서 실시간 상품목록을 조회한 뒤 안전하게 누적합산 UPDATE
             try {
-              const targetLiveId = LIVE_ID || (config && config.liveId) || 'live01';
-              if (!targetLiveId) return;
+              const targetLiveId = LIVE_ID || 'live01';
+              if (!targetLiveId || !db) return;
 
-              // 1. 최신 시트 데이터 조회
-              const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
-              if (res.ok) {
-                const data = await res.json();
-                const row = data.find(r => r.live_id === targetLiveId);
-                if (row && row['상품목록']) {
-                  const remoteProducts = JSON.parse(row['상품목록']) || [];
-                  const targetProd = remoteProducts.find(p => p.name === item.name);
-                  if (targetProd) {
-                    // 원격 데이터에서 가져온 값에 1 누적
-                    targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
+              // 1. 최신 데이터 조회
+              const { data, error } = await db
+                .from('live_control')
+                .select('products')
+                .eq('live_id', targetLiveId)
+                .maybeSingle();
 
-                    // 2. 누적된 신규 데이터를 로컬 스토리지에 즉시 반영 및 PATCH
-                    localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
+              if (data && data.products) {
+                const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+                const targetProd = remoteProducts.find(p => p.name === item.name);
+                if (targetProd) {
+                  // 원격 데이터에서 가져온 값에 1 누적
+                  targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
 
-                    const updatePayload = {
-                      '상품목록': JSON.stringify(remoteProducts),
-                      '업데이트시간': new Date().toISOString()
-                    };
+                  // 2. 누적된 신규 데이터를 로컬 스토리지에 즉시 반영 및 UPDATE
+                  localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
 
-                    await fetch(`${SHEETDB_URL}/live_id/${targetLiveId}?sheet=${encodeURIComponent('라이브관제')}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ data: updatePayload })
-                    });
-                  }
+                  await db
+                    .from('live_control')
+                    .update({ 
+                      products: remoteProducts,
+                      updated_at: new Date().toISOString()
+                    })
+                    .eq('live_id', targetLiveId);
                 }
               }
             } catch (err) {
@@ -587,17 +573,16 @@ document.addEventListener('DOMContentLoaded', () => {
       mySentTexts.push(text);
       chatInput.value = '';
 
-
-
-      // 시트 DB '라이브채팅' 전송
+      // Supabase 'live_chats' 전송
       try {
-        const chatData = { '시간': new Date().getTime().toString(), '닉네임': userNickname, '내용': text };
-        if (LIVE_ID) chatData['live_id'] = LIVE_ID;
-        await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: [chatData] })
-        });
+        if (!db) return;
+        const chatData = { 
+          'live_id': LIVE_ID, 
+          'created_at': new Date().getTime(), 
+          'nickname': userNickname, 
+          'content': text 
+        };
+        await db.from('live_chats').insert([chatData]);
       } catch (e) { console.warn(e); }
       finally { isChatSending = false; }
     }

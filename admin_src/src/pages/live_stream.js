@@ -34,30 +34,34 @@ function nextLiveId() {
 // ─── SheetDB 동기화 ─────────────────────────────────────────
 let syncTimers = {};
 
+const db = window.supabaseClient;
+
 function syncToSheetDB(liveId, config, stats, products, force = false) {
   if (syncTimers[liveId]) clearTimeout(syncTimers[liveId]);
-  const doSync = () => {
+  const doSync = async () => {
+    if (!db) return;
     const data = {
-      'live_id': liveId,
-      '업데이트시간': new Date().toISOString(),
-      '제목': config.brandName,
-      '부제목': config.title,
-      '프로필이미지': config.logoUrl || '',
-      'URL': config.streamUrl || '',
-      '시청자수': stats.viewers,
-      '하트수': stats.hearts,
-      '상품목록': JSON.stringify(products),
-      '시청자수노출': config.showViewers ? 'O' : 'X',
-      '썸네일URL': config.thumbnailUrl || '',
-      '시작일시': config.liveStartTime || '',
-      '방송상태': config.isLive ? 'ON' : 'OFF',
-      '누적시청자수': stats.cumViewers || 0
+      live_id: liveId,
+      title: config.brandName,
+      subtitle: config.title,
+      profile_image: config.logoUrl || '',
+      stream_url: config.streamUrl || '',
+      viewers: parseInt(stats.viewers) || 0,
+      hearts: parseInt(stats.hearts) || 0,
+      products: products, // JSON 형태
+      show_viewers: config.showViewers !== false,
+      thumbnail_url: config.thumbnailUrl || '',
+      start_time: config.liveStartTime || '',
+      status: config.isLive ? 'ON' : 'OFF',
+      cum_viewers: parseInt(stats.cumViewers) || 0,
+      updated_at: new Date().toISOString()
     };
-    fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: [data] })
-    }).catch(e => console.warn(`[${liveId}] SheetDB sync failed`, e));
+    try {
+      const { error } = await db.from('live_control').upsert(data);
+      if (error) throw error;
+    } catch (e) {
+      console.warn(`[${liveId}] Supabase sync failed`, e);
+    }
   };
   if (force) doSync();
   else syncTimers[liveId] = setTimeout(doSync, 1200);
@@ -490,7 +494,7 @@ function renderLiveEditView(container, liveId, showView) {
       alert('설정이 저장되었습니다!');
     });
 
-    // +추가 버튼: SheetDB에서 현재 시청자수를 조회 후 입력값만큼 더해서 PATCH
+    // +추가 버튼: Supabase에서 현재 시청자수를 조회 후 입력값만큼 더해서 UPDATE
     document.getElementById('btn-add-viewers').addEventListener('click', async () => {
       const addVal = parseInt(document.getElementById('cfg-viewers-add').value) || 0;
       if (addVal === 0) {
@@ -501,18 +505,22 @@ function renderLiveEditView(container, liveId, showView) {
       btn.disabled = true;
       btn.textContent = '처리중...';
       try {
-        // 최신 데이터 먼저 조회
-        const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}&t=${Date.now()}`);
-        const data = await res.json();
-        const row = Array.isArray(data) ? data.find(r => r.live_id === liveId) : null;
-        const currentViewers = row ? (parseInt(row['시청자수']) || 0) : stats.viewers;
+        if (!db) return;
+        // 최신 데이터 조회
+        const { data, error } = await db
+          .from('live_control')
+          .select('viewers')
+          .eq('live_id', liveId)
+          .maybeSingle();
+
+        if (error) throw error;
+        const currentViewers = data ? (parseInt(data.viewers) || 0) : stats.viewers;
         const newViewers = currentViewers + addVal;
 
-        await fetch(`${SHEETDB_URL}/live_id/${liveId}?sheet=${encodeURIComponent('라이브관제')}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: { '시청자수': newViewers } })
-        });
+        await db
+          .from('live_control')
+          .update({ viewers: newViewers })
+          .eq('live_id', liveId);
 
         stats.viewers = newViewers;
         saveStats();
@@ -582,15 +590,17 @@ function renderLiveEditView(container, liveId, showView) {
     document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
 
     // 라이브관제에서 실시간 통계 정보 패치 후 노출
-    fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          const row = data.find(r => r.live_id === liveId);
+    if (db) {
+      db.from('live_control')
+        .select('*')
+        .eq('live_id', liveId)
+        .maybeSingle()
+        .then(({ data: row, error }) => {
+          if (error) throw error;
           if (row) {
-            const remoteCumViewers = parseInt(row['누적시청자수']) || 0;
-            const remoteViewers = parseInt(row['시청자수']) || 0;
-            const remoteHearts = parseInt(row['하트수']) || 0;
+            const remoteCumViewers = parseInt(row.cum_viewers) || 0;
+            const remoteViewers = parseInt(row.viewers) || 0;
+            const remoteHearts = parseInt(row.hearts) || 0;
 
             // 어드민 UI에 실시간 수치 반영 (사용자는 시청자수, 하트수 필드를 수정해서 가라 입력 가능)
             const cumEl = document.getElementById('cfg-cumViewers');
@@ -608,9 +618,9 @@ function renderLiveEditView(container, liveId, showView) {
             stats.hearts = remoteHearts;
             saveStats();
           }
-        }
-      })
-      .catch(err => console.warn('Failed to fetch stats from 라이브관제', err));
+        })
+        .catch(err => console.warn('Failed to fetch stats from Supabase', err));
+    }
   };
 
   const renderChatTab = () => {
@@ -666,11 +676,13 @@ function renderLiveEditView(container, liveId, showView) {
       chatList.scrollTop = chatList.scrollHeight;
       chatInput.value = '';
       try {
-        await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: [{ 'live_id': liveId, '시간': msgId.toString(), '닉네임': '관리자', '내용': text }] })
-        });
+        if (!db) return;
+        await db.from('live_chats').insert([{
+          live_id: liveId,
+          created_at: msgId,
+          nickname: '관리자',
+          content: text
+        }]);
       } catch (e) { console.warn('Admin chat send failed', e); }
       finally { isSending = false; }
     };
@@ -711,13 +723,15 @@ function renderLiveEditView(container, liveId, showView) {
           if (chatList.innerHTML.includes('실시간 채팅')) chatList.innerHTML = '';
           chatList.appendChild(div);
           chatList.scrollTop = chatList.scrollHeight;
-          // SheetDB 전송
+          // Supabase 전송
           try {
-            await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ data: [{ 'live_id': liveId, '시간': msgId.toString(), '닉네임': name.trim(), '내용': msgText }] })
-            });
+            if (!db) return;
+            await db.from('live_chats').insert([{
+              live_id: liveId,
+              created_at: msgId,
+              nickname: name.trim(),
+              content: msgText
+            }]);
           } catch (e) { console.warn('Bot chat failed', e); }
         }, sec * 1000);
       } else {
@@ -729,12 +743,13 @@ function renderLiveEditView(container, liveId, showView) {
       }
     });
 
-    // === 어드민 채팅 실시간 폴링 (이력 포함 스크롤 가능) ===
+    // === 어드민 채팅 실시간 감지 (이력 로드 및 Realtime 구독) ===
     let adminLastChatTime = 0;
     let adminChatLoaded = false;
+    let chatChannel = null;
 
     const addAdminChatItem = (name, text, isHistory = false) => {
-      if (chatList.querySelector('.empty-placeholder')) chatList.innerHTML = '';
+      if (chatList.innerHTML.includes('실시간 채팅 내역이 여기에')) chatList.innerHTML = '';
       const div = document.createElement('div');
       div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;' + (isHistory ? 'opacity:0.72;' : '');
       const nameColor = name === '관리자' ? '#3b82f6' : '#64748b';
@@ -743,37 +758,57 @@ function renderLiveEditView(container, liveId, showView) {
       if (!isHistory) chatList.scrollTop = chatList.scrollHeight;
     };
 
-    const pollAdminChat = async () => {
+    // 1. 최초 이력 로드
+    const loadAdminChatHistory = async () => {
+      if (!db) return;
       try {
-        const res = await fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브채팅')}&t=${Date.now()}`, { cache: 'no-store' });
-        if (res.ok) {
-          let chats = await res.json();
-          if (Array.isArray(chats)) {
-            chats = chats.filter(c => !c['live_id'] || c['live_id'] === liveId);
-            chats.sort((a, b) => (parseInt(a['시간']) || 0) - (parseInt(b['시간']) || 0));
-            const isFirst = !adminChatLoaded;
-            let added = 0;
-            chats.forEach(c => {
-              if (c['시간'] && parseInt(c['시간']) > adminLastChatTime) {
-                addAdminChatItem(c['닉네임'] || '?', c['내용'] || '', isFirst);
-                adminLastChatTime = parseInt(c['시간']);
-                added++;
-              }
-            });
-            if (isFirst) {
-              adminChatLoaded = true;
-              if (added > 0) setTimeout(() => { chatList.scrollTop = chatList.scrollHeight; }, 100);
-            }
-          }
+        const { data: chats, error } = await db
+          .from('live_chats')
+          .select('*')
+          .eq('live_id', liveId)
+          .order('created_at', { ascending: true })
+          .limit(100);
+
+        if (error) throw error;
+        if (chats && Array.isArray(chats)) {
+          chats.forEach(c => {
+            addAdminChatItem(c.nickname || '?', c.content || '', true);
+            adminLastChatTime = parseInt(c.created_at) || 0;
+          });
+          adminChatLoaded = true;
+          setTimeout(() => { chatList.scrollTop = chatList.scrollHeight; }, 100);
         }
-      } catch (e) { console.warn('Admin chat poll failed', e); }
+      } catch (e) {
+        console.warn('Failed to load chat history', e);
+      }
     };
 
-    pollAdminChat();
-    const adminChatPollTimer = setInterval(pollAdminChat, 15000);
+    // 2. 실시간 구독
+    const subscribeAdminChat = () => {
+      if (!db) return;
+      chatChannel = db.channel(`admin-chat-channel-${liveId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_chats', filter: `live_id=eq.${liveId}` }, payload => {
+          const c = payload.new;
+          if (c && parseInt(c.created_at) > adminLastChatTime) {
+            addAdminChatItem(c.nickname || '?', c.content || '', false);
+            adminLastChatTime = parseInt(c.created_at);
+          }
+        })
+        .subscribe();
+    };
 
-    // 탭 이동 시 폴링 정리
-    contentArea.addEventListener('adminTabLeave', () => clearInterval(adminChatPollTimer));
+    loadAdminChatHistory();
+    subscribeAdminChat();
+
+    // 탭 이동 시 구독 해제 및 봇 정리
+    contentArea.addEventListener('adminTabLeave', () => {
+      if (chatChannel) {
+        db.removeChannel(chatChannel);
+      }
+      if (botTimer) {
+        clearInterval(botTimer);
+      }
+    });
   };
 
   const renderProductList = () => products.map((p, idx) => {
@@ -825,15 +860,17 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
     `;
 
-    // 라이브관제 시트에서 최신 상품목록 JSON을 불러와 조회수(클릭수)를 동기화
-    fetch(`${SHEETDB_URL}?sheet=${encodeURIComponent('라이브관제')}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          const row = data.find(r => r.live_id === liveId);
-          if (row && row['상품목록']) {
+    // Supabase 라이브관제 테이블에서 최신 상품목록 JSON을 불러와 조회수(클릭수)를 동기화
+    if (db) {
+      db.from('live_control')
+        .select('products')
+        .eq('live_id', liveId)
+        .maybeSingle()
+        .then(({ data: row, error }) => {
+          if (error) throw error;
+          if (row && row.products) {
             try {
-              const remoteProducts = JSON.parse(row['상품목록']);
+              const remoteProducts = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
               if (Array.isArray(remoteProducts)) {
                 // 원격 데이터에서 클릭수 정보를 현재 products 리스트에 매핑
                 products.forEach(p => {
@@ -851,9 +888,9 @@ function renderLiveEditView(container, liveId, showView) {
               }
             } catch (e) { }
           }
-        }
-      })
-      .catch(err => console.warn('Failed to load product clicks from 라이브관제', err));
+        })
+        .catch(err => console.warn('Failed to load product clicks from Supabase', err));
+    }
 
     const bindProductEvents = () => {
       const plc = document.getElementById('product-list-container');
