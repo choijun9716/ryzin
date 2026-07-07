@@ -627,17 +627,50 @@ function renderLiveEditView(container, liveId, showView) {
     });
 
     const IMGBB_API_KEY = '117dfb947bc9e0045774b193d1eef7b6';
+    const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          URL.revokeObjectURL(img.src);
+          resolve(dataUrl.split(',')[1]);
+        };
+        img.onerror = (e) => {
+          URL.revokeObjectURL(img.src);
+          reject(e);
+        };
+      });
+    };
+
     const uploadImage = async (file, previewId, configKey) => {
       if (!file) return;
       document.getElementById(previewId).style.opacity = '0.5';
       try {
-        // 파일을 Base64로 변환
-        const base64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]); // data:...;base64, 제거
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+        const isLogo = configKey === 'logoUrl';
+        const maxWidth = isLogo ? 256 : 1080;
+        const maxHeight = isLogo ? 256 : 1920;
+        const quality = isLogo ? 0.88 : 0.82;
+        const base64 = await compressImage(file, maxWidth, maxHeight, quality);
+
         const fd = new FormData();
         fd.append('key', IMGBB_API_KEY);
         fd.append('image', base64);
