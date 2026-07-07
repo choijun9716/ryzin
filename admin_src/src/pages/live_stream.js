@@ -304,6 +304,41 @@ function renderListView(container, showView) {
 //  LIVE EDIT VIEW — 개별 라이브 설정
 // ═══════════════════════════════════════════════════════════════
 function renderLiveEditView(container, liveId, showView) {
+  const IMGBB_API_KEY = '117dfb947bc9e0045774b193d1eef7b6';
+  const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        URL.revokeObjectURL(img.src);
+        resolve(dataUrl.split(',')[1]);
+      };
+      img.onerror = (e) => {
+        URL.revokeObjectURL(img.src);
+        reject(e);
+      };
+    });
+  };
+
   let config = getLiveConfig(liveId) || {};
   let stats = getLiveStats(liveId);
   let products = getLiveProducts(liveId);
@@ -625,41 +660,6 @@ function renderLiveEditView(container, liveId, showView) {
       saveConfig();
       syncToSheetDB(liveId, config, stats, products, true);
     });
-
-    const IMGBB_API_KEY = '117dfb947bc9e0045774b193d1eef7b6';
-    const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        img.onload = () => {
-          let width = img.width;
-          let height = img.height;
-          if (width > height) {
-            if (width > maxWidth) {
-              height = Math.round((height * maxWidth) / width);
-              width = maxWidth;
-            }
-          } else {
-            if (height > maxHeight) {
-              width = Math.round((width * maxHeight) / height);
-              height = maxHeight;
-            }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', quality);
-          URL.revokeObjectURL(img.src);
-          resolve(dataUrl.split(',')[1]);
-        };
-        img.onerror = (e) => {
-          URL.revokeObjectURL(img.src);
-          reject(e);
-        };
-      });
-    };
 
     const uploadImage = async (file, previewId, configKey) => {
       if (!file) return;
