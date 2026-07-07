@@ -54,6 +54,9 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       start_time: config.liveStartTime || '',
       status: config.isLive ? 'ON' : 'OFF',
       cum_viewers: parseInt(stats.cumViewers) || 0,
+      share_title: config.shareTitle || '',
+      share_desc: config.shareDesc || '',
+      share_image: config.shareImageUrl || '',
       updated_at: new Date().toISOString()
     };
     try {
@@ -388,7 +391,10 @@ function renderLiveEditView(container, liveId, showView) {
             liveStartTime: data.start_time || '',
             showViewers: data.show_viewers !== false,
             isLive: data.status === 'ON',
-            botEnabled: false
+            botEnabled: false,
+            shareTitle: data.share_title || '',
+            shareDesc: data.share_desc || '',
+            shareImageUrl: data.share_image || ''
           };
           stats = {
             viewers: data.viewers || 0,
@@ -615,10 +621,11 @@ function renderLiveEditView(container, liveId, showView) {
       config.title = document.getElementById('cfg-title').value;
       config.streamUrl = document.getElementById('cfg-stream').value;
       config.liveStartTime = document.getElementById('cfg-liveStartTime').value;
-      // 시청자 수는 +추가 버튼으로 별도 처리 (stats.viewers는 별도 유지)
       stats.cumViewers = parseInt(document.getElementById('cfg-cumViewers').value) || 0;
       stats.hearts = parseInt(document.getElementById('cfg-hearts').value) || 0;
       config.showViewers = document.getElementById('cfg-showViewers').checked;
+      config.shareTitle = document.getElementById('cfg-shareTitle').value;
+      config.shareDesc = document.getElementById('cfg-shareDesc').value;
       saveConfig();
       saveStats();
       // topbar 브랜드명 업데이트
@@ -713,6 +720,7 @@ function renderLiveEditView(container, liveId, showView) {
 
     document.getElementById('cfg-logoFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'logo-preview', 'logoUrl'));
     document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
+    document.getElementById('cfg-shareImageFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'share-image-preview', 'shareImageUrl'));
 
     // 라이브관제에서 실시간 통계 정보 패치 후 노출
     if (db) {
