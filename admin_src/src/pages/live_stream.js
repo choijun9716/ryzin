@@ -1070,14 +1070,6 @@ function renderLiveEditView(container, liveId, showView) {
           <button id="btn-announce-winner" class="action-btn btn-primary-solid" style="white-space:nowrap; background:#fab005; border-color:#fab005;">당첨자 발표</button>
         </div>
 
-        <!-- 실시간 채팅 참여자 닉네임 리스트 (빠른 선택용) -->
-        <div style="margin-bottom:20px;">
-          <label style="font-size:12px; font-weight:700; color:#64748b; display:block; margin-bottom:6px;">최근 채팅 참여 고객 (클릭 시 자동 입력)</label>
-          <div id="recent-chatters-container" style="display:flex; flex-wrap:wrap; gap:8px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; min-height:36px; align-items:center;">
-            <span style="font-size:12px; color:#94a3b8; width:100%; text-align:center;">채팅 메시지가 올라오면 참여자 목록이 자동 표시됩니다.</span>
-          </div>
-        </div>
-
         <!-- 소통왕 배송지 주소 리스트 현황판 -->
         <h4 style="margin:20px 0 8px 0; font-size:14px; font-weight:700; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
           <span>🎁 당첨자 경품 배송지 수집 현황</span>
@@ -1113,43 +1105,13 @@ function renderLiveEditView(container, liveId, showView) {
     const bgColorInput = document.getElementById('admin-bg-color-input');
     const bgColorCode = document.getElementById('admin-bg-color-code');
 
-    // 채팅 참여자 닉네임 트래킹
-    window.__activeChatters = new Set();
-
-    const parseNickSimple = (raw) => {
-      if (!raw || typeof raw !== 'string') return raw || '';
-      return raw.includes('|') ? raw.split('|')[0] : raw;
-    };
-
-    const updateRecentChattersUI = () => {
-      const container = document.getElementById('recent-chatters-container');
-      if (!container) return;
-      if (window.__activeChatters.size === 0) {
-        container.innerHTML = `<span style="font-size:12px; color:#94a3b8; width:100%; text-align:center;">채팅 메시지가 올라오면 참여자 목록이 자동 표시됩니다.</span>`;
-        return;
-      }
-      container.innerHTML = Array.from(window.__activeChatters).map(name => {
-        return `<button class="action-btn btn-neutral btn-chatter-pick" data-name="${name}" style="padding:4px 8px; font-size:11px; height:24px; line-height:1; border-radius:4px; font-weight:700; cursor:pointer;">${name}</button>`;
-      }).join('');
-      
-      container.querySelectorAll('.btn-chatter-pick').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const inp = document.getElementById('winner-nickname-input');
-          if (inp) {
-            inp.value = btn.dataset.name;
-            inp.focus();
-          }
-        });
-      });
-    };
-
     // 소통왕 당첨자 데이터베이스 업데이트 공포
     const announceBtn = document.getElementById('btn-announce-winner');
     if (announceBtn) {
       announceBtn.addEventListener('click', async () => {
         const wName = document.getElementById('winner-nickname-input').value.trim();
         if (!wName) {
-          alert('소통왕 당첨자 닉네임을 입력하거나 아래 목록에서 선택해 주세요.');
+          alert('소통왕 당첨자 닉네임을 입력해 주세요.');
           return;
         }
 
@@ -1362,12 +1324,6 @@ function renderLiveEditView(container, liveId, showView) {
       chatList.appendChild(div);
       if (!isHistory) chatList.scrollTop = chatList.scrollHeight;
 
-      // 채팅 참여 고객 닉네임 수집
-      const cleanName = parseNickSimple(name);
-      if (cleanName && cleanName !== '관리자' && cleanName !== '?') {
-        window.__activeChatters.add(cleanName);
-        updateRecentChattersUI();
-      }
     };
 
     // 1. 최초 이력 로드

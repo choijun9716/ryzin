@@ -333,20 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        // === [NEW] 실시간 소통왕 당첨 오버레이 팝업 리액터 ===
-        const rowTS = row.winner_timestamp ? Number(row.winner_timestamp) : 0;
-        if (rowTS > 0) {
-          if (window.__lastWinnerTimestamp === null) {
-            // 최초 로드 시점에는 현재 당첨 타임스탬프를 초기값으로 잠정 동기화만 해둠 (폭죽 스킵)
-            window.__lastWinnerTimestamp = rowTS;
-          } else if (window.__lastWinnerTimestamp !== rowTS) {
-            // 최초 로드 이후에 새로 갱신(발표)이 이뤄졌을 때만 실시간 반응 발현!
-            window.__lastWinnerTimestamp = rowTS;
-            if (row.winner_name) {
-              triggerWinnerAward(row.winner_name);
-            }
-          }
-        }
+        // === [NEW] 소통왕 당첨자 정보 로컬스토리지 동기화 ===
+        if (row.winner_name) localStorage.setItem('ryzin_winner_name', row.winner_name);
+        if (row.winner_timestamp) localStorage.setItem('ryzin_winner_timestamp', row.winner_timestamp.toString());
       }
     } catch (e) { }
   }
@@ -1013,36 +1002,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // === [NEW] 소통왕 당첨자 정보 입력 리스너 및 애니메이션 연계 ===
   window.__lastWinnerTimestamp = null;
 
-  function triggerWinnerAward(winnerName) {
-    spawnConfetti();
-
-    const alertOverlay = document.getElementById('winner-alert-overlay');
-    const nameSpan = document.getElementById('winner-name-span');
-    if (alertOverlay && nameSpan) {
-      nameSpan.textContent = winnerName;
-      alertOverlay.style.display = 'flex';
-      setTimeout(() => {
-        alertOverlay.style.opacity = '0';
-        setTimeout(() => {
-          alertOverlay.style.display = 'none';
-          alertOverlay.style.opacity = '1';
-        }, 500);
-      }, 5000);
-    }
-
-    if (userNickname && userNickname === winnerName) {
-      setTimeout(() => {
-        const addressModal = document.getElementById('winner-address-modal');
-        if (addressModal) {
-          document.getElementById('winner-real-name').value = '';
-          document.getElementById('winner-phone').value = '';
-          document.getElementById('winner-address').value = '';
-          addressModal.style.display = 'flex';
-        }
-      }, 3500);
-    }
-  }
-
   const btnSubmitAddress = document.getElementById('btn-submit-address');
   if (btnSubmitAddress) {
     btnSubmitAddress.addEventListener('click', async () => {
@@ -1070,6 +1029,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }]);
 
         if (error) throw error;
+
+        // 제출 완료 로컬 마킹
+        const wTS = Number(localStorage.getItem('ryzin_winner_timestamp')) || 0;
+        if (wTS > 0) {
+          localStorage.setItem(`ryzin_winner_submitted_${wTS}`, 'true');
+        }
 
         alert('🎉 경품 배송 정보가 성공적으로 제출되었습니다. 감사합니다!');
         const addressModal = document.getElementById('winner-address-modal');
@@ -1151,15 +1116,15 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
-// 깜짝딜 글로벌 타이머 로직
+// 깜짝딜 및 소통왕 당첨 실시간 동기화 1초 주기 감시 엔진
 setInterval(() => {
+  // 1. 깜짝딜 타이머 로직
   try {
     const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
     const timerEl = document.getElementById('surprise-deal-timer');
     const textEl = document.getElementById('surprise-deal-text');
     if (p && Array.isArray(p) && timerEl && textEl) {
       const now = Date.now();
-      // 가장 먼저 끝나는 활성 깜짝딜 찾기
       const activeDeals = p.filter(item => item.dealEndTime && item.dealEndTime > now).sort((a, b) => a.dealEndTime - b.dealEndTime);
       if (activeDeals.length > 0) {
         const deal = activeDeals[0];
@@ -1170,52 +1135,49 @@ setInterval(() => {
         textEl.textContent = `${dealText} ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         if (timerEl.style.display === 'none') {
           timerEl.style.display = 'flex';
-          loadLiveProducts(); // UI 갱신 (뱃지 추가)
+          loadLiveProducts();
         }
       } else {
         if (timerEl.style.display !== 'none') {
           timerEl.style.display = 'none';
-          loadLiveProducts(); // UI 갱신 (만료된 상품 숨김)
+          loadLiveProducts();
         }
       }
     }
   } catch (e) { }
+
+  // 2. [NEW] 소통왕 당첨 배너 및 배송지 정보 수집 1초 감시 로직 (깜짝딜과 동일한 단순 구조)
+  try {
+    const wName = localStorage.getItem('ryzin_winner_name') || '';
+    const wTS = Number(localStorage.getItem('ryzin_winner_timestamp')) || 0;
+    const winnerEl = document.getElementById('winner-alert-overlay');
+    const winnerNameSpan = document.getElementById('winner-name-span');
+
+    if (wTS > 0 && (Date.now() - wTS) < 10000) { // 당첨 발표 후 10초간 배너 유지
+      if (winnerEl && winnerNameSpan) {
+        winnerNameSpan.textContent = wName;
+        if (winnerEl.style.display === 'none') {
+          winnerEl.style.display = 'flex';
+        }
+      }
+
+      // 만약 내가 당첨자라면, 수령 정보 수집 모달창 띄움
+      const myNick = localStorage.getItem('ryzin_nickname') || '';
+      const addressModal = document.getElementById('winner-address-modal');
+      if (myNick && myNick === wName && addressModal) {
+        const isSubmitted = localStorage.getItem(`ryzin_winner_submitted_${wTS}`) === 'true';
+        if (!isSubmitted && addressModal.style.display === 'none') {
+          document.getElementById('winner-real-name').value = '';
+          document.getElementById('winner-phone').value = '';
+          document.getElementById('winner-address').value = '';
+          addressModal.style.display = 'flex';
+        }
+      }
+    } else {
+      if (winnerEl && winnerEl.style.display !== 'none') {
+        winnerEl.style.display = 'none';
+      }
+    }
+  } catch (err) { }
 }, 1000);
-
-// Confetti 오색폭죽 흩날림 물리 가속 연출 함수
-function spawnConfetti() {
-  const colors = ['#fcc419', '#ff8787', '#74c0fc', '#63e6be', '#da77f3', '#ff922b'];
-  const container = document.body;
-  if (!container) return;
-
-  for (let i = 0; i < 70; i++) {
-    const p = document.createElement('div');
-    p.className = 'confetti-piece';
-    p.style.left = Math.random() * 100 + 'vw';
-    p.style.top = '-20px';
-    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
-    const w = 6 + Math.random() * 8;
-    const h = 6 + Math.random() * 8;
-    p.style.width = w + 'px';
-    p.style.height = h + 'px';
-
-    const rotation = Math.random() * 360;
-    p.style.transform = `rotate(${rotation}deg)`;
-
-    const dur = 2.5 + Math.random() * 2.5;
-    const delay = Math.random() * 1.5;
-
-    p.style.transition = `transform ${dur}s linear ${delay}s, top ${dur}s linear ${delay}s, opacity ${dur}s ease-in ${delay}s`;
-    container.appendChild(p);
-
-    setTimeout(() => {
-      p.style.top = '105vh';
-      p.style.transform = `rotate(${rotation + (Math.random() - 0.5) * 720}deg) translate(${(Math.random() - 0.5) * 150}px, 0)`;
-      p.style.opacity = '0';
-    }, 50);
-
-    setTimeout(() => p.remove(), (dur + delay) * 1000 + 100);
-  }
-}
 
