@@ -473,11 +473,11 @@ function renderLiveEditView(container, liveId, showView) {
   topBar.style.cssText = 'display:flex; align-items:center; gap:18px; padding:18px 28px; background:#fff; border-bottom:1.5px solid #e2e8f0; flex-shrink:0;';
   
   const statusBadge = config.isLive 
-    ? '<span style="font-size:10px; font-weight:800; color:#ef4444; background:#fee2e2; border:1px solid #fecaca; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center; gap:4px;"><span style="width:5px; height:5px; background:#ef4444; border-radius:50%; display:inline-block; animation: blink 1s infinite;"></span>라이브 중</span>'
+    ? '<span style="font-size:10px; font-weight:800; color:#ef4444; background:#fee2e2; border:1px solid #fecaca; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center; gap:4px;"><span style="width:5px; height:5px; background:#ef4444; border-radius:50%; display:inline-block;"></span>라이브 중</span>'
     : '<span style="font-size:10px; font-weight:800; color:#64748b; background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center;">송출 대기</span>';
 
   const onAirTimerHtml = config.isLive
-    ? `<div id="onair-timer-wrapper" style="display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; color:#ef4444; background:#fff5f5; padding:2px 8px; border-radius:4px; border:1px solid #fee2e2; margin-left:4px; font-family:monospace; white-space:nowrap;">ON AIR <span id="onair-timer-text">00:00:00</span></div>`
+    ? `<div id="onair-timer-wrapper" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:800; color:#dc2626; background:#fef2f2; padding:3px 8px; border-radius:4px; border:1px solid #fee2e2; margin-left:4px; font-family:monospace; white-space:nowrap;">ON AIR <span id="onair-timer-text">00:00:00</span></div>`
     : '';
 
   topBar.innerHTML = `
@@ -493,12 +493,10 @@ function renderLiveEditView(container, liveId, showView) {
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
     </div>
-    <div id="btn-copy-live-url" style="display:flex; align-items:center; gap:8px; background:#eff6ff; border:1px dashed #bfdbfe; padding:6px 14px; border-radius:8px; flex-shrink:0; cursor:pointer; transition:all 0.2s;" title="클릭하여 시청자 URL 복사">
-      <span style="font-size:11px; color:#475569; font-weight:700; white-space:nowrap; pointer-events:none;">시청자 URL</span>
-      <span style="font-size:11px; color:#2563eb; font-weight:700; font-family:monospace; display:flex; align-items:center; gap:4px; white-space:nowrap; pointer-events:none;">
-        ryzincorp.com/live?id=${liveId} 
-        <span id="copy-status-icon" style="font-size:12px; color:#3b82f6;">📋</span>
-      </span>
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
+      <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
+      <span style="font-size:12px; color:#0f172a; font-family:monospace; font-weight:600; white-space:nowrap; margin-right:4px;">ryzincorp.com/live?id=${liveId}</span>
+      <button id="btn-copy-live-url" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; height:28px; line-height:1; border-radius:6px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; font-weight:700; white-space:nowrap;">복사</button>
     </div>
   `;
   leftPanel.appendChild(topBar);
@@ -511,15 +509,16 @@ function renderLiveEditView(container, liveId, showView) {
         const urlToCopy = `https://ryzincorp.com/live?id=${liveId}`;
         try {
           await navigator.clipboard.writeText(urlToCopy);
-          const statusIcon = document.getElementById('copy-status-icon');
-          if (statusIcon) {
-            statusIcon.textContent = '✅ 복사됨!';
-            statusIcon.style.color = '#10b981';
-            setTimeout(() => {
-              statusIcon.textContent = '📋';
-              statusIcon.style.color = '#3b82f6';
-            }, 2000);
-          }
+          btnCopyUrl.textContent = '복사 완료!';
+          btnCopyUrl.style.color = '#10b981';
+          btnCopyUrl.style.borderColor = '#a7f3d0';
+          btnCopyUrl.style.backgroundColor = '#ecfdf5';
+          setTimeout(() => {
+            btnCopyUrl.textContent = '복사';
+            btnCopyUrl.style.color = '';
+            btnCopyUrl.style.borderColor = '';
+            btnCopyUrl.style.backgroundColor = '';
+          }, 2000);
         } catch (err) {
           console.warn('URL 복사 오류:', err);
         }
@@ -870,6 +869,15 @@ function renderLiveEditView(container, liveId, showView) {
         return;
       }
       config.isLive = !config.isLive;
+      if (config.isLive) {
+        // 실제 라이브 시작 버튼을 누른 바로 그 시점의 타임스탬프를 DB에 영구 고정 저장
+        config.liveStartTime = new Date().toISOString();
+        const startTextEl = document.getElementById('cfg-liveStartTime');
+        if (startTextEl) {
+          const localISO = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+          startTextEl.value = localISO;
+        }
+      }
       e.target.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
       e.target.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
       e.target.style.cssText = 'flex:1; justify-content:center; padding:14px; font-size:15px;';
