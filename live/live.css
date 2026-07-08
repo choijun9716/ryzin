@@ -679,19 +679,19 @@ body {
 .bottom-product-banner {
   position: absolute;
   bottom: 80px; /* input-section 위에 안정적으로 안착하도록 높이 조절 */
-  left: 16px;
-  right: 16px;
-  height: 84px;
+  left: 12px;
+  width: 250px; /* 가로 너비 아담하게 제한 */
+  height: 72px; /* 세로 높이 아담하게 조율 */
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
   pointer-events: auto; /* 클릭 가능하도록 */
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 /* 롤링을 위한 뷰포트 및 트랙 */
@@ -713,18 +713,18 @@ body {
 .banner-product-card {
   display: flex;
   align-items: center;
-  height: 84px;
-  min-height: 84px;
+  height: 72px;
+  min-height: 72px;
   width: 100%;
   text-decoration: none;
   color: #111827;
-  padding: 8px 12px;
+  padding: 6px 10px;
 }
 
 .banner-img-box {
-  width: 68px;
-  height: 68px;
-  border-radius: 8px;
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
@@ -739,30 +739,30 @@ body {
 
 .banner-badge {
   position: absolute;
-  top: 4px;
-  left: 4px;
+  top: 3px;
+  left: 3px;
   background-color: #ef4444;
   color: #ffffff;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 1px 3px;
+  border-radius: 3px;
   line-height: 1;
   letter-spacing: -0.02em;
 }
 
 .banner-info-box {
   flex: 1;
-  padding-left: 12px;
+  padding-left: 9px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   min-width: 0; /* text ellipsis 작동용 */
 }
 
 .banner-title {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   color: #1f2937;
   overflow: hidden;

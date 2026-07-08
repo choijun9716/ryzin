@@ -452,9 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${rateHtml}
                     <span class="banner-price">${current.toLocaleString()}원</span>
                   </div>
-                  <div class="banner-delivery-badge">
-                    <span style="background:#03c75a; color:#fff; font-size:8px; font-weight:800; padding:1px 3px; border-radius:2px; line-height:1.2; letter-spacing:-0.05em; display:inline-block;">N 배송</span>
-                  </div>
                 </div>
               `;
               
@@ -497,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
               let currentIdx = 0;
               rollingInterval = setInterval(() => {
                 currentIdx = (currentIdx + 1) % activeProducts.length;
-                track.style.transform = `translateY(-${currentIdx * 84}px)`;
+                track.style.transform = `translateY(-${currentIdx * 72}px)`;
               }, 3000);
             } else {
               track.style.transform = 'translateY(0)';
