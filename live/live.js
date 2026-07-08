@@ -795,14 +795,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnLike && likeCountEl) {
     // 주기적으로 하트 증가 연출
+    likeCountEl.textContent = likeCount.toLocaleString();
+
     setInterval(() => {
       likeCount += Math.floor(Math.random() * 5);
-      likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\\.0$/, '') + 'K';
+      likeCountEl.textContent = likeCount.toLocaleString();
     }, 3000);
 
     btnLike.addEventListener('click', () => {
       likeCount += 1;
-      likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      likeCountEl.textContent = likeCount.toLocaleString();
 
       const rect = btnLike.getBoundingClientRect();
 
