@@ -78,8 +78,8 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
   else syncTimers[liveId] = setTimeout(doSync, 1200);
 }
 
-// ─── GitHub API: live/index.html OG 태그 자동 업데이트 ────────────
-async function updateGitHubOgTags(shareTitle, shareDesc, shareImageUrl) {
+// ─── GitHub API: live/liveId.html OG 태그 및 리다이렉터 자동 업데이트 ────────────
+async function updateGitHubOgTags(liveId, shareTitle, shareDesc, shareImageUrl) {
   const token = localStorage.getItem('ryzin_github_token');
   if (!token) {
     console.warn('[GitHub OG] 토큰 없음 - 스킵');
@@ -87,7 +87,7 @@ async function updateGitHubOgTags(shareTitle, shareDesc, shareImageUrl) {
   }
   const owner = 'choijun9716';
   const repo = 'ryzin';
-  const path = 'live/index.html';
+  const path = `live/${liveId}.html`;
   const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
   const headers = {
     'Authorization': `token ${token}`,
@@ -95,17 +95,30 @@ async function updateGitHubOgTags(shareTitle, shareDesc, shareImageUrl) {
     'Content-Type': 'application/json'
   };
 
+  let sha = null;
+  let currentContent = '';
+
+  // 1. 해당 라이브 전용 HTML 파일이 이미 존재하는지 확인
   const fileRes = await fetch(apiBase, { headers });
-  if (!fileRes.ok) throw new Error('GitHub API 파일 조회 실패: ' + fileRes.status);
-  const fileData = await fileRes.json();
-  const sha = fileData.sha;
-  const currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
+  if (fileRes.ok) {
+    const fileData = await fileRes.json();
+    sha = fileData.sha;
+    currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
+  } else if (fileRes.status === 404) {
+    // 2. 존재하지 않는 경우, 공통 템플릿(live/index.html)을 가져와서 뼈대로 삼음
+    const templateRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/live/index.html`, { headers });
+    if (!templateRes.ok) throw new Error('공통 템플릿 파일 조회 실패: ' + templateRes.status);
+    const templateData = await templateRes.json();
+    currentContent = decodeURIComponent(escape(atob(templateData.content.replace(/\n/g, ''))));
+  } else {
+    throw new Error('GitHub API 조회 실패: ' + fileRes.status);
+  }
 
   const safeTitle = (shareTitle || 'RYZIN 라이브 방송 중').replace(/"/g, '&quot;');
   const safeDesc = (shareDesc || '지금 바로 입장해서 라이브 특가를 놓치지 마세요!').replace(/"/g, '&quot;');
   const safeImg = shareImageUrl || 'https://ryzincorp.com/live/og-default.jpg';
 
-  const newContent = currentContent
+  let newContent = currentContent
     .replace(/<meta property="og:title" content="[^"]*">/,
              `<meta property="og:title" content="${safeTitle}">`)
     .replace(/<meta property="og:description" content="[^"]*">/,
@@ -119,15 +132,33 @@ async function updateGitHubOgTags(shareTitle, shareDesc, shareImageUrl) {
     .replace(/<meta name="twitter:image" content="[^"]*">/,
              `<meta name="twitter:image" content="${safeImg}">`);
 
+  // 리다이렉트 스크립트 중복 삽입 방지 및 추가
+  if (!newContent.includes('window.location.replace')) {
+    const redirectScript = `
+    <!-- RYZIN Live Redirector -->
+    <script>
+      const ua = navigator.userAgent || "";
+      if (!/bot|crawl|spider|facebook|kakao|naver|slack|twitter|scrap|preview/i.test(ua)) {
+        window.location.replace('./?id=${liveId}');
+      }
+    </script>
+    </head>`;
+    newContent = newContent.replace('</head>', redirectScript);
+  }
+
   const encoded = btoa(unescape(encodeURIComponent(newContent)));
+  const payload = {
+    message: `chore: OG 태그 및 리다이렉터 업데이트 (${liveId}) - ${safeTitle}`,
+    content: encoded
+  };
+  if (sha) {
+    payload.sha = sha;
+  }
+
   const pushRes = await fetch(apiBase, {
     method: 'PUT',
     headers,
-    body: JSON.stringify({
-      message: `chore: OG 태그 업데이트 - ${safeTitle}`,
-      content: encoded,
-      sha
-    })
+    body: JSON.stringify(payload)
   });
   if (!pushRes.ok) throw new Error('GitHub API 커밋 실패: ' + pushRes.status);
   return { success: true };
@@ -650,7 +681,7 @@ function renderLiveEditView(container, liveId, showView) {
   const embedCodeMobile = `<iframe src="${viewerUrl}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden;"></iframe>`;
   const embedCodeWide = `<iframe src="${viewerUrl}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none;"></iframe>`;
 
-  const shareGatewayUrl = `https://vybrnhyaeugfwezbygdt.supabase.co/functions/v1/share?id=${liveId}`;
+  const shareGatewayUrl = `https://ryzincorp.com/live/${liveId}.html`;
 
   rightPanel.innerHTML = `
     <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; align-self:flex-start;">모바일 미리보기</div>
@@ -716,7 +747,7 @@ function renderLiveEditView(container, liveId, showView) {
     const el = document.getElementById('share-gateway-url');
     const btn = document.getElementById('btn-copy-share-gateway');
     if (!el || !btn) return;
-    const freshShareUrl = `https://vybrnhyaeugfwezbygdt.supabase.co/functions/v1/share?id=${liveId}&t=${Date.now()}`;
+    const freshShareUrl = `https://ryzincorp.com/live/${liveId}.html`;
     navigator.clipboard.writeText(freshShareUrl).then(() => {
       btn.textContent = '복사됨!';
       btn.style.background = '#22c55e';
@@ -933,9 +964,9 @@ function renderLiveEditView(container, liveId, showView) {
       const shareImageUrl = config.shareImageUrl || config.thumbnailUrl || '';
       try {
         saveBtn.textContent = 'GitHub 업데이트 중...';
-        const result = await updateGitHubOgTags(config.shareTitle, config.shareDesc, shareImageUrl);
+        const result = await updateGitHubOgTags(liveId, config.shareTitle, config.shareDesc, shareImageUrl);
         if (result && result.success) {
-          alert('✅ 설정 저장 완료!\n\nryzincorp.com/live 공유 카드도 자동 업데이트되었습니다.\n(GitHub Pages 반영까지 1~2분 소요)');
+          alert('✅ 설정 저장 완료!\n\n카카오톡 공유 카드용 페이지가 생성/업데이트되었습니다.\n(GitHub Pages 반영까지 1~2분 소요)');
         } else if (result && result.skipped) {
           alert('설정이 저장되었습니다!\n\n💡 GitHub Token을 입력하면 공유 카드 이미지도 자동 업데이트됩니다.');
         }
