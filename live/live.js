@@ -319,9 +319,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadLiveStats() {
     try {
+      const c = JSON.parse(localStorage.getItem('ryzin_live_config')) || {};
       const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
-      if (s) {
-        document.getElementById('view-count').textContent = s.viewers.toLocaleString() + '명 시청중';
+      
+      const viewCountEl = document.getElementById('view-count');
+      if (!viewCountEl) return;
+
+      const isLive = c.isLive;
+      const isShowViewers = c.showViewers !== false;
+
+      if (!isShowViewers) {
+        viewCountEl.style.display = 'none';
+        return;
+      }
+      viewCountEl.style.display = 'flex';
+
+      if (!isLive) {
+        // 대기 화면일 때는 "대기중" 노출
+        viewCountEl.textContent = '대기중';
+      } else if (s) {
+        // 라이브 중일 때는 [누적시청자수 + 실시간시청자수] 가산하여 노출
+        const total = (parseInt(s.cumViewers) || 0) + (parseInt(s.viewers) || 0);
+        viewCountEl.textContent = total.toLocaleString() + '명 시청중';
       }
     } catch (e) { }
   }
