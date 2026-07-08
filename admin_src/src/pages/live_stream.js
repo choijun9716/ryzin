@@ -5,6 +5,8 @@
 //  - 시청자 URL: /live?id=live01
 // ============================================================
 
+import { store } from '../data/store.js';
+
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
 
 // ─── 공통 유틸 ───────────────────────────────────────────────
@@ -203,6 +205,10 @@ export function renderLiveStream() {
 //  LIVE LIST VIEW — 라이브 목록
 // ═══════════════════════════════════════════════════════════════
 function renderListView(container, showView) {
+  const role = store.getCurrentRole();
+  const isLiveStreamOnly = role && role.startsWith('live_stream:');
+  const targetLiveId = isLiveStreamOnly ? role.split(':')[1] : null;
+
   const wrapper = document.createElement('div');
   wrapper.style.cssText = 'max-width:720px; margin:0 auto; padding:40px 24px; width:100%; overflow-y:auto;';
 
@@ -213,9 +219,11 @@ function renderListView(container, showView) {
       <h1 style="margin:0; font-size:26px; font-weight:800; color:#0f172a;">라이브 목록</h1>
       <p style="margin:6px 0 0; font-size:14px; color:#64748b;">각 라이브는 독립된 URL로 시청자에게 제공됩니다.</p>
     </div>
+    ${isLiveStreamOnly ? '' : `
     <button id="btn-create-live" class="action-btn btn-primary-solid">
       <span style="font-size:18px;">+</span> 새 라이브 생성
     </button>
+    `}
   `;
   wrapper.appendChild(header);
 
@@ -242,7 +250,12 @@ function renderListView(container, showView) {
       } catch (e) { console.warn('Failed to load remote lives', e); }
     }
 
-    const lives = getLives();
+    let lives = getLives();
+    // 특정 라이브 전용 로그인 상태인 경우, 해당 라이브 ID만 필터링
+    if (isLiveStreamOnly && targetLiveId) {
+      lives = lives.filter(l => l.id === targetLiveId);
+    }
+
     // live_id 순서대로 정렬 (예: live01, live02, live03...)
     lives.sort((a, b) => {
       const numA = parseInt(a.id.replace('live', '')) || 0;
@@ -287,7 +300,9 @@ function renderListView(container, showView) {
         </div>
         <div style="display:flex; gap:8px; flex-shrink:0;">
           <button class="action-btn btn-neutral btn-edit" data-id="${live.id}" style="padding:8px 16px; font-size:13px;">설정 ›</button>
+          ${isLiveStreamOnly ? '' : `
           <button class="action-btn btn-neutral btn-delete" data-id="${live.id}" style="padding:8px 12px; font-size:13px; color:#ef4444; border-color:#fee2e2;">삭제</button>
+          `}
         </div>
       `;
       listContainer.appendChild(card);
@@ -312,14 +327,12 @@ function renderListView(container, showView) {
           localStorage.removeItem(`ryzin_products_${id}`);
           localStorage.removeItem(`ryzin_bot_${id}`);
 
-          // 삭제된 라이브 채널 리스트에 등록하여 원격 복원 차단
           const deleted = JSON.parse(localStorage.getItem('ryzin_deleted_lives') || '[]');
           if (!deleted.includes(id)) {
             deleted.push(id);
             localStorage.setItem('ryzin_deleted_lives', JSON.stringify(deleted));
           }
           
-          // Supabase 데이터도 완전히 지우기
           if (db) {
             Promise.all([
               db.from('live_control').delete().eq('live_id', id),
@@ -332,7 +345,6 @@ function renderListView(container, showView) {
       });
     });
 
-    // 카드 자체 클릭
     listContainer.querySelectorAll('.live-card').forEach(card => {
       card.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
@@ -344,7 +356,9 @@ function renderListView(container, showView) {
 
   renderList();
 
-  header.querySelector('#btn-create-live').addEventListener('click', () => {
+  const btnCreateLive = header.querySelector('#btn-create-live');
+  if (btnCreateLive) {
+    btnCreateLive.addEventListener('click', () => {
     const id = nextLiveId();
     const lives = getLives();
     lives.push({ id, createdAt: Date.now() });
@@ -378,6 +392,7 @@ function renderListView(container, showView) {
     renderList();
     showView(id);
   });
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════

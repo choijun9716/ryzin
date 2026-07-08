@@ -15,6 +15,13 @@ export function setCurrentRole(role) {
 // 특정 권한 보유 여부 확인
 export function hasPermission(permission) {
   const role = getCurrentRole();
+  if (!role) return false;
+
+  // 동적 라이브 전용 관리자 역할 처리 (live_stream:liveId)
+  if (role.startsWith('live_stream:')) {
+    return permission === 'live_stream' || permission === 'settings';
+  }
+
   const roleConfig = ROLES[role];
   if (!roleConfig) return false;
 
@@ -53,15 +60,22 @@ export function canManageFinance() {
   return role === 'admin' || role === 'accountant';
 }
 
-// 설정 권한 (대표만)
+// 설정 권한 (대표 및 라이브 전용 관리자)
 export function canManageSettings() {
   const role = getCurrentRole();
-  return role === 'admin';
+  return role === 'admin' || (role && role.startsWith('live_stream:'));
 }
 
 // 역할별 접근 가능 메뉴 목록
 export function getAccessibleMenus() {
   const role = getCurrentRole();
+  if (role && role.startsWith('live_stream:')) {
+    return [
+      { key: 'live_stream', label: '라이브 송출 관리' },
+      { key: 'settings', label: '설정' }
+    ];
+  }
+
   const allMenus = [
     { key: 'dashboard', label: '대시보드' },
     { key: 'live_stream', label: '라이브 송출 관리' },

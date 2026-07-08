@@ -256,7 +256,7 @@ function renderUserList(container) {
       <td style="font-weight: var(--weight-medium);">${u.id}</td>
       <td>${u.name}</td>
       <td><span style="color:var(--text-tertiary);">***</span></td>
-      <td><span class="badge badge-default">${ROLES[u.role]?.label || u.role}</span></td>
+      <td><span class="badge badge-default">${ROLES[u.role]?.label || (u.role && u.role.startsWith('live_stream:') ? `송출 관리자 (${u.role.split(':')[1]})` : u.role)}</span></td>
       <td class="text-right">
         <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
           <button class="btn btn-secondary btn-sm edit-user-btn" data-id="${u.id}">수정</button>
@@ -294,6 +294,7 @@ function renderUserList(container) {
 }
 
 function openUserModal(existingUser = null) {
+  const lives = JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
   const content = document.createElement('div');
   content.className = 'form-grid';
   content.innerHTML = `
@@ -313,6 +314,7 @@ function openUserModal(existingUser = null) {
       <label class="required">권한</label>
       <select class="input" id="user-role">
         ${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${existingUser && existingUser.role === k ? 'selected' : ''}>${v.label} (${k})</option>`).join('')}
+        ${lives.map(l => `<option value="live_stream:${l.id}" ${existingUser && existingUser.role === `live_stream:${l.id}` ? 'selected' : ''}>송출 관리자 (${l.id})</option>`).join('')}
       </select>
     </div>
   `;
