@@ -235,6 +235,25 @@ export function renderLogin() {
           return;
         }
 
+        // 로그인 직전 Supabase 백엔드로부터 최신 계정 정보 실시간 갱신 동기화
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.textContent : '로그인';
+        if (submitBtn) {
+          submitBtn.textContent = '로그인 중...';
+          submitBtn.disabled = true;
+        }
+
+        try {
+          await store.init();
+        } catch (err) {
+          console.warn('Failed to sync users from Supabase before login', err);
+        } finally {
+          if (submitBtn) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+          }
+        }
+
         const user = store.verifyPassword(id, pw);
 
         if (user) {
