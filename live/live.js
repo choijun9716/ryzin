@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // === Supabase 및 localStorage 연동 로직 (어드민 제어) ===
   const db = window.supabaseClient;
   let userNickname = '';
+  window.__winnerCountdownSeconds = 0;
+  window.__lastWinnerTimestamp = null;
 
   // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
   const urlParams = new URLSearchParams(window.location.search);
@@ -65,9 +67,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 설정 데이터를 파싱하고 UI에 적용하는 헬퍼 함수
   function applyLiveConfig(row) {
-    // === [NEW] 소통왕 당첨자 정보 로컬스토리지 즉시 동기화 ===
+    // === [NEW] 소통왕 당첨자 정보 로컬스토리지 즉시 동기화 및 락인 검사 ===
     if (row.winner_name !== undefined) localStorage.setItem('ryzin_winner_name', row.winner_name || '');
-    if (row.winner_timestamp !== undefined) localStorage.setItem('ryzin_winner_timestamp', (row.winner_timestamp || 0).toString());
+    if (row.winner_timestamp !== undefined) {
+      const rowTS = Number(row.winner_timestamp) || 0;
+      localStorage.setItem('ryzin_winner_timestamp', rowTS.toString());
+
+      if (rowTS > 0) {
+        if (window.__lastWinnerTimestamp === null) {
+          // 최초 입장 시점에는 락 타임스탬프 동기화만 시키고 팝업 타이머는 돌리지 않음
+          window.__lastWinnerTimestamp = rowTS;
+        } else if (window.__lastWinnerTimestamp !== rowTS) {
+          // 실시간으로 새로운 발표(타임스탬프 갱신)가 발생했을 때만 카운트다운 초 장전!
+          window.__lastWinnerTimestamp = rowTS;
+          const diffSec = Math.round((rowTS - Date.now()) / 1000);
+          window.__winnerCountdownSeconds = diffSec > 0 ? diffSec : 60;
+        }
+      } else {
+        // 어드민에서 강제 종료를 누른 경우 즉시 카운트다운을 종료시킴
+        window.__winnerCountdownSeconds = 0;
+        window.__lastWinnerTimestamp = 0;
+      }
+    }
 
     const config = {
       liveId: row.live_id || 'live01',
@@ -1099,30 +1120,20 @@ setInterval(() => {
     }
   } catch (e) { }
 
-  // 2. [NEW] 소통왕 당첨 배너 1초 감시 로직 (깜짝딜과 동일한 미래 종료 시간 대조 방식)
+  // 2. [NEW] 소통왕 당첨 배너 1초 감시 로직 (스톱워치 카운트다운 방식)
   try {
-    const wName = localStorage.getItem('ryzin_winner_name') || '';
-    const rawTS = localStorage.getItem('ryzin_winner_timestamp') || '';
-    let wTS = 0;
-    if (rawTS) {
-      if (!isNaN(rawTS)) {
-        wTS = Number(rawTS);
-      } else {
-        wTS = Date.parse(rawTS);
-      }
-    }
     const winnerEl = document.getElementById('winner-alert-overlay');
     const winnerNameSpan = document.getElementById('winner-name-span');
-    const now = Date.now();
 
-    // 현재 시간이 종료 예정 타임스탬프(wTS)보다 이전일 때 배너 활성화
-    if (wTS > 0 && now < wTS) {
+    if (window.__winnerCountdownSeconds > 0) {
+      const wName = localStorage.getItem('ryzin_winner_name') || '당첨자';
       if (winnerEl && winnerNameSpan) {
         winnerNameSpan.textContent = wName;
         if (winnerEl.style.display === 'none') {
           winnerEl.style.display = 'flex';
         }
       }
+      window.__winnerCountdownSeconds -= 1; // 1초씩 차감
     } else {
       if (winnerEl && winnerEl.style.display !== 'none') {
         winnerEl.style.display = 'none';
