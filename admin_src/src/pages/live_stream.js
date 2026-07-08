@@ -1081,6 +1081,36 @@ function renderLiveEditView(container, liveId, showView) {
           <button id="btn-winner-cancel" style="padding:8px 16px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
         </div>
       </div>
+
+      <!-- 🏆 실시간 당첨 정보 수집 현황판 -->
+      <div class="section-card" style="margin-top: 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #f1f5f9; padding-bottom:12px; margin-bottom:16px;">
+          <h3 style="margin:0; border:none; padding:0; display:flex; align-items:center; gap:6px;">
+            <span>🏆 당첨 경품 배송 정보 현황판</span>
+          </h3>
+          <button id="btn-refresh-winners" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px; font-weight:700;">새로고침</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+            <thead>
+              <tr style="border-bottom:2px solid #e2e8f0; color:#475569; font-weight:700;">
+                <th style="padding:10px 12px;">닉네임</th>
+                <th style="padding:10px 12px;">수령인</th>
+                <th style="padding:10px 12px;">연락처</th>
+                <th style="padding:10px 12px;">상세 배송 주소</th>
+                <th style="padding:10px 12px; text-align:right;">제출시간</th>
+              </tr>
+            </thead>
+            <tbody id="winner-table-body">
+              <tr>
+                <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8; font-weight:500;">
+                  당첨자 제출 목록을 불러오는 중...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     `;
 
     // 관리자 채팅 전송
@@ -1092,37 +1122,7 @@ function renderLiveEditView(container, liveId, showView) {
     const bgColorInput = document.getElementById('admin-bg-color-input');
     const bgColorCode = document.getElementById('admin-bg-color-code');
 
-    // 소통왕 당첨자 데이터베이스 업데이트 공포
-    const announceBtn = document.getElementById('btn-announce-winner');
-    if (announceBtn) {
-      announceBtn.addEventListener('click', async () => {
-        const wName = document.getElementById('winner-nickname-input').value.trim();
-        if (!wName) {
-          alert('소통왕 당첨자 닉네임을 입력해 주세요.');
-          return;
-        }
 
-        announceBtn.disabled = true;
-        announceBtn.textContent = '발표 중...';
-
-        try {
-          if (!db) return;
-          const { error } = await db.from('live_control').update({
-            winner_name: wName,
-            winner_timestamp: Date.now(),
-            updated_at: new Date().toISOString()
-          }).eq('live_id', liveId);
-
-          if (error) throw error;
-          alert(`🎉 [${wName}]님을 소통왕 당첨자로 공포했습니다!\n시청자 화면에 실시간 폭죽 팝업이 출력됩니다.`);
-        } catch (err) {
-          alert('소통왕 발표에 실패했습니다: ' + err.message);
-        } finally {
-          announceBtn.disabled = false;
-          announceBtn.textContent = '당첨자 발표';
-        }
-      });
-    }
 
     // 당첨자 경품 배송 주소 데이터 조회
     const fetchWinnersList = async () => {

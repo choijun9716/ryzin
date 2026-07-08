@@ -102,6 +102,22 @@ document.addEventListener('DOMContentLoaded', () => {
           window.__winnerCountdownSeconds = diffSec > 0 ? diffSec : 60;
           // 실시간 당첨 발표가 처음 울리는 시점에 꽃가루 폭사 2회 카운터를 예약 장전!
           window.__confettiTriggerCount = 2;
+
+          // 실시간으로 당첨되었을 때, 본인이라면 자동으로 배송 정보 입력 팝업 띄우기
+          setTimeout(() => {
+            const currentNick = (userNickname || localStorage.getItem('ryzin_chat_nickname') || '').trim();
+            const wName = row.winner_name || '';
+            const parts = wName.split('|');
+            const cleanNick = (parts.length > 1 ? parts[1] : wName).trim();
+
+            if (currentNick && cleanNick && currentNick === cleanNick) {
+              const alreadySubmitted = localStorage.getItem('ryzin_submitted_winner_' + rowTS);
+              if (!alreadySubmitted) {
+                const addrModal = document.getElementById('winner-address-modal');
+                if (addrModal) addrModal.style.display = 'flex';
+              }
+            }
+          }, 300);
         }
       } else {
         // 어드민에서 강제 종료를 누른 경우 즉시 카운트다운을 종료시킴
@@ -1222,5 +1238,81 @@ function spawnConfettiContinuous(count = 8) {
 
     setTimeout(() => p.remove(), (dur + delay) * 1000 + 100);
   }
+}
+
+// === [NEW] 당첨자 배송지 주소 입력 모달 제어 및 Supabase 제출 ===
+const addrModal = document.getElementById('winner-address-modal');
+const btnCloseAddr = document.getElementById('btn-close-address-modal');
+const btnSubmitAddr = document.getElementById('btn-submit-address');
+const winnerAlertOverlay = document.getElementById('winner-alert-overlay');
+
+// 당첨 캡슐 배너 클릭 시, 본인인 경우 주소 수집 모달 수동 토글
+if (winnerAlertOverlay) {
+  winnerAlertOverlay.style.cursor = 'pointer';
+  winnerAlertOverlay.addEventListener('click', () => {
+    const currentNick = (userNickname || localStorage.getItem('ryzin_chat_nickname') || '').trim();
+    const wName = localStorage.getItem('ryzin_winner_name') || '';
+    const parts = wName.split('|');
+    const cleanNick = (parts.length > 1 ? parts[1] : wName).trim();
+
+    if (currentNick && cleanNick && currentNick === cleanNick) {
+      if (addrModal) addrModal.style.display = 'flex';
+    } else {
+      alert('이 알림은 당첨자 본인 전용 배송 정보 입력 배너입니다. 🎉');
+    }
+  });
+}
+
+// 모달 닫기
+if (btnCloseAddr) {
+  btnCloseAddr.addEventListener('click', () => {
+    if (addrModal) addrModal.style.display = 'none';
+  });
+}
+
+// 배송지 정보 제출
+if (btnSubmitAddr) {
+  btnSubmitAddr.addEventListener('click', async () => {
+    const nameVal = document.getElementById('address-name').value.trim();
+    const phoneVal = document.getElementById('address-phone').value.trim();
+    const addrVal = document.getElementById('address-main').value.trim();
+
+    if (!nameVal || !phoneVal || !addrVal) {
+      alert('수령인 이름, 전화번호, 상세 주소를 모두 입력해 주세요.');
+      return;
+    }
+
+    btnSubmitAddr.disabled = true;
+    btnSubmitAddr.textContent = '제출 처리 중...';
+
+    const wName = localStorage.getItem('ryzin_winner_name') || '';
+    const parts = wName.split('|');
+    const cleanNick = parts.length > 1 ? parts[1] : wName;
+    const rowTS = localStorage.getItem('ryzin_winner_timestamp') || '0';
+
+    try {
+      if (!db) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+      const { error } = await db.from('live_winners').insert({
+        live_id: LIVE_ID,
+        nickname: cleanNick,
+        name: nameVal,
+        phone: phoneVal,
+        address: addrVal,
+        created_at: new Date().toISOString()
+      });
+
+      if (error) throw error;
+
+      // 성공 플래그 셋
+      localStorage.setItem('ryzin_submitted_winner_' + rowTS, 'true');
+      alert('🎉 배송 정보가 성공적으로 제출되었습니다. 감사합니다!');
+      if (addrModal) addrModal.style.display = 'none';
+    } catch (err) {
+      alert('제출 도중 에러가 발생했습니다: ' + err.message);
+    } finally {
+      btnSubmitAddr.disabled = false;
+      btnSubmitAddr.textContent = '배송 정보 제출하기';
+    }
+  });
 }
 
