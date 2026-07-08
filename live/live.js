@@ -58,9 +58,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function subscribeConfig() {
     if (!db) return;
     db.channel('live-control-channel')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, payload => {
-        if (payload.new) {
-          applyLiveConfig(payload.new);
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, async payload => {
+        // Supabase 실시간 UPDATE 시, 누락된 필드로 인한 UI 오염을 막기 위해 DB에서 100% 온전한 전체 레코드를 다시 조회해서 안전하게 적용
+        try {
+          const { data, error } = await db
+            .from('live_control')
+            .select('*')
+            .eq('live_id', LIVE_ID)
+            .maybeSingle();
+          if (!error && data) {
+            applyLiveConfig(data);
+          }
+        } catch (e) {
+          if (payload.new) {
+            applyLiveConfig(payload.new);
+          }
         }
       })
       .subscribe();
