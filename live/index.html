@@ -9,7 +9,7 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <link rel="stylesheet" href="live.css?v=1782989999000">
+  <link rel="stylesheet" href="live.css?v=1782990000000">
 </head>
 
 <body>
@@ -70,14 +70,14 @@
       </div>
 
       <!-- 채팅 영역 -->
-      <div class="chat-section chat-hidden">
+      <div class="chat-section">
         <div class="chat-messages" id="chat-messages">
           <!-- JS에서 렌더링됨 -->
         </div>
       </div>
 
       <!-- 사이드 액션 버튼 (우측 하단 플로팅) -->
-      <div class="side-actions chat-hidden">
+      <div class="side-actions">
 
         <button class="action-btn" id="btn-like">
           <span class="icon">
@@ -117,7 +117,7 @@
       </div>
 
       <!-- 입력 영역 (최하단) -->
-      <div class="input-section chat-hidden" id="chat-section-wrap" style="display:none;">
+      <div class="input-section" id="chat-section-wrap" style="display:none;">
         <div class="input-wrapper">
           <input type="text" id="chat-input" placeholder="실시간 채팅에 참여하세요..." autocomplete="off">
           <button id="btn-send">전송</button>
@@ -139,7 +139,7 @@
   <!-- Supabase JS SDK & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_config.js"></script>
-  <script src="live.js?v=1782989999000"></script>
+  <script src="live.js?v=1782990000000"></script>
 </body>
 
 </html>
