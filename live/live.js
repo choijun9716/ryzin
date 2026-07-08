@@ -32,6 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // 백그라운드 5초 폴링 백업 연동 (실시간 채널 끊김 및 캐시 딜레이 무력화)
+  setInterval(async () => {
+    if (!db) return;
+    try {
+      const { data, error } = await db
+        .from('live_control')
+        .select('*')
+        .eq('live_id', LIVE_ID)
+        .maybeSingle();
+
+      if (!error && data) {
+        applyLiveConfig(data);
+      }
+    } catch (e) {
+      console.warn("Polling fallback failed:", e);
+    }
+  }, 5000);
+
   // 2. 실시간 라이브 제어 감지 설정
   function subscribeConfig() {
     if (!db) return;
