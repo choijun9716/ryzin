@@ -24,25 +24,37 @@ Deno.serve(async (req) => {
   const shareDesc = data?.share_desc || data?.subtitle || "실시간 라이브 특가 방송 진행 중!";
   const shareImage = data?.share_image || data?.thumbnail_url || "https://via.placeholder.com/600x315";
   
-  // 사용자의 라이브 시청 주소 (GitHub Pages 본진 도메인)
-  const targetUrl = `https://choijun9716.github.io/ryzin/live/?id=${liveId}`;
+  // ✅ 실제 서비스 도메인으로 수정
+  const targetUrl = `https://ryzincorp.com/live/?id=${liveId}`;
 
-  // 1. User-Agent 판별을 통해 크롤러 봇인지 실제 사람 브라우저인지 감지
   const ua = req.headers.get("user-agent") || "";
-  const isBot = /bot|crawl|spider|facebook|kakao|naver|slack|twitter|scrap/i.test(ua);
+  const sec = req.headers.get("sec-fetch-dest") || "";
+  const fetchMode = req.headers.get("sec-fetch-mode") || "";
 
-  if (!isBot) {
-    // 2. 실제 사용자는 Deno 단에서 즉각 302 Found 리다이렉션으로 진짜 시청 주소로 워프시킴
+  // iframe, embed, script 요청이거나 일반 브라우저는 무조건 실제 URL로 리다이렉트
+  const isEmbedOrBrowser =
+    sec === "iframe" ||
+    sec === "embed" ||
+    sec === "frame" ||
+    fetchMode === "navigate" ||
+    /mozilla|chrome|safari|webkit|gecko/i.test(ua);
+
+  // 카카오/네이버/슬랙 등 SNS 크롤러 봇 판별 (브라우저 UA가 없는 경우)
+  const isSnsBot = !isEmbedOrBrowser && /bot|crawl|spider|facebook|kakao|naver|slack|twitter|scrap|preview/i.test(ua);
+
+  if (!isSnsBot) {
+    // 일반 사용자 및 iframe → 실제 시청 주소로 302 리다이렉트
     return new Response(null, {
       status: 302,
       headers: {
         "location": targetUrl,
-        "access-control-allow-origin": "*"
+        "access-control-allow-origin": "*",
+        "x-frame-options": "ALLOWALL"
       }
     });
   }
 
-  // 3. 카카오톡/페이스북/슬랙 등 메타 데이터 수집 봇은 이 HTML 태그를 파싱해 썸네일 카드를 생성함
+  // SNS 크롤러 봇에게만 OG 메타 태그 HTML 응답
   const html = `<!DOCTYPE html>
 <html>
   <head>
@@ -60,16 +72,21 @@ Deno.serve(async (req) => {
     <meta name="twitter:title" content="${shareTitle}">
     <meta name="twitter:description" content="${shareDesc}">
     <meta name="twitter:image" content="${shareImage}">
+
+    <!-- 봇이 아닌 경우 자동 이동 -->
+    <meta http-equiv="refresh" content="0;url=${targetUrl}">
   </head>
   <body>
-    <p>Crawling index data...</p>
+    <p>잠시 후 라이브 방송 페이지로 이동합니다...</p>
   </body>
 </html>`;
 
   return new Response(html, {
     headers: { 
       "content-type": "text/html; charset=UTF-8",
-      "access-control-allow-origin": "*"
+      "access-control-allow-origin": "*",
+      "x-frame-options": "ALLOWALL"
     },
   });
 })
+

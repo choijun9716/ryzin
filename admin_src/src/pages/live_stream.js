@@ -602,19 +602,21 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
 
       <div style="margin-bottom:10px;">
-        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">모바일 세로형 임베드 (390×693)</div>
+        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">모바일 세로형 임베드 URL (390×693)</div>
         <div style="position:relative;">
-          <textarea id="embed-code-mobile" readonly style="width:100%; height:68px; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px; resize:none; color:#334155; line-height:1.5; box-sizing:border-box;">${embedCodeMobile}</textarea>
+          <input type="text" id="embed-url-mobile" readonly style="width:100%; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 64px 8px 8px; color:#334155; line-height:1.5; box-sizing:border-box; outline:none;" value="${viewerUrl}">
           <button id="btn-copy-embed-mobile" style="position:absolute; top:6px; right:6px; background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">복사</button>
         </div>
+        <div style="font-size:10px; color:#94a3b8; margin-top:4px;">위 URL을 iframe src="..." 에 붙여넣으세요</div>
       </div>
 
       <div>
-        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">와이드형 임베드 (전체너비×600)</div>
+        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">와이드형 임베드 URL (전체너비×600)</div>
         <div style="position:relative;">
-          <textarea id="embed-code-wide" readonly style="width:100%; height:68px; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px; resize:none; color:#334155; line-height:1.5; box-sizing:border-box;">${embedCodeWide}</textarea>
+          <input type="text" id="embed-url-wide" readonly style="width:100%; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 64px 8px 8px; color:#334155; line-height:1.5; box-sizing:border-box; outline:none;" value="${viewerUrl}">
           <button id="btn-copy-embed-wide" style="position:absolute; top:6px; right:6px; background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">복사</button>
         </div>
+        <div style="font-size:10px; color:#94a3b8; margin-top:4px;">위 URL을 iframe src="..." 에 붙여넣으세요</div>
       </div>
     </div>
   `;
@@ -639,9 +641,26 @@ function renderLiveEditView(container, liveId, showView) {
       setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#3b82f6'; }, 2000);
     });
   };
-  document.getElementById('btn-copy-share-gateway').addEventListener('click', () => copyEmbed('share-gateway-url', 'btn-copy-share-gateway'));
-  document.getElementById('btn-copy-embed-mobile').addEventListener('click', () => copyEmbed('embed-code-mobile', 'btn-copy-embed-mobile'));
-  document.getElementById('btn-copy-embed-wide').addEventListener('click', () => copyEmbed('embed-code-wide', 'btn-copy-embed-wide'));
+  document.getElementById('btn-copy-share-gateway').addEventListener('click', () => {
+    const el = document.getElementById('share-gateway-url');
+    const btn = document.getElementById('btn-copy-share-gateway');
+    if (!el || !btn) return;
+    const freshShareUrl = `https://vybrnhyaeugfwezbygdt.supabase.co/functions/v1/share?id=${liveId}&t=${Date.now()}`;
+    navigator.clipboard.writeText(freshShareUrl).then(() => {
+      btn.textContent = '복사됨!';
+      btn.style.background = '#22c55e';
+      setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#ef4444'; }, 2000);
+    }).catch(() => {
+      el.value = freshShareUrl;
+      el.select();
+      document.execCommand('copy');
+      btn.textContent = '복사됨!';
+      btn.style.background = '#22c55e';
+      setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#ef4444'; }, 2000);
+    });
+  });
+  document.getElementById('btn-copy-embed-mobile').addEventListener('click', () => copyEmbed('embed-url-mobile', 'btn-copy-embed-mobile'));
+  document.getElementById('btn-copy-embed-wide').addEventListener('click', () => copyEmbed('embed-url-wide', 'btn-copy-embed-wide'));
 
   // ── 탭 패널 렌더 함수들 ───────────────────────────────────
   const renderConfigTab = () => {
