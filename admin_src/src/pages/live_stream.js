@@ -37,6 +37,11 @@ let syncTimers = {};
 const db = window.supabaseClient;
 
 function syncToSheetDB(liveId, config, stats, products, force = false) {
+  // 데이터 로드가 완료되지 않았다면 임시 데이터로 원격 DB를 덮어쓰는 사고 방지
+  if (window[`live_loaded_${liveId}`] === false) {
+    console.log(`[${liveId}] Skip sync: data not loaded yet.`);
+    return;
+  }
   if (syncTimers[liveId]) clearTimeout(syncTimers[liveId]);
   const doSync = async () => {
     if (!db) return;
@@ -384,13 +389,17 @@ function renderLiveEditView(container, liveId, showView) {
     });
   };
 
+  if (window[`live_loaded_${liveId}`] === undefined) {
+    window[`live_loaded_${liveId}`] = false;
+  }
+
   let config = getLiveConfig(liveId) || {};
   let stats = getLiveStats(liveId);
   let products = getLiveProducts(liveId);
   let botCfg = getBotConfig(liveId);
 
-  // Supabase로부터 설정 정보 역동기화 (로컬 캐시가 비어있을 경우 대응)
-  if (db && (!config.brandName || Object.keys(config).length <= 2)) {
+  // Supabase로부터 설정 정보 무조건 1순위 역동기화
+  if (db && !window[`live_loaded_${liveId}`]) {
     db.from('live_control')
       .select('*')
       .eq('live_id', liveId)
@@ -422,9 +431,17 @@ function renderLiveEditView(container, liveId, showView) {
           saveLiveConfig(liveId, config);
           saveLiveStats(liveId, stats);
           saveLiveProductsLocal(liveId, products);
+          window[`live_loaded_${liveId}`] = true;
           showView(liveId);
+        } else {
+          window[`live_loaded_${liveId}`] = true;
         }
+      })
+      .catch(() => {
+        window[`live_loaded_${liveId}`] = true;
       });
+  } else {
+    window[`live_loaded_${liveId}`] = true;
   }
 
   const saveConfig = () => {
