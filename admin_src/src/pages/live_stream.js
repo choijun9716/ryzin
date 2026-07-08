@@ -432,32 +432,51 @@ function renderListView(container, showView) {
 //  LIVE EDIT VIEW — 개별 라이브 설정
 // ═══════════════════════════════════════════════════════════════
 function renderLiveEditView(container, liveId, showView) {
-  const IMGBB_KEYS = [
-    '117dfb947bc9e0045774b193d1eef7b6',
-    'd2b512c9bf10e4a3bfec604be1218579',
-    '6049a4f479f67a26eb3ccb8823b1eef7'
-  ];
+  const base64ToBlob = (base64Data) => {
+    const parts = base64Data.split(';base64,');
+    const contentType = parts[0].split(':')[1] || 'image/png';
+    const raw = window.atob(parts[1] || parts[0]);
+    const rawLength = raw.length;
+    const uInt8Array = new Uint8Array(rawLength);
+    for (let i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+    return new Blob([uInt8Array], { type: contentType });
+  };
 
   const uploadToImgBB = async (base64Data) => {
-    let lastError = null;
-    for (const key of IMGBB_KEYS) {
-      try {
-        const fd = new FormData();
-        fd.append('key', key);
-        fd.append('image', base64Data);
-        const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
-        const json = await res.json();
-        if (json.success && json.data && json.data.url) {
-          return json.data.url;
-        } else {
-          throw new Error(json.error ? json.error.message : 'API 응답 실패');
-        }
-      } catch (err) {
-        console.warn(`ImgBB API Key (${key}) upload failed:`, err);
-        lastError = err;
-      }
+    if (!db) {
+      throw new Error('Supabase client가 존재하지 않습니다.');
     }
-    throw lastError || new Error('모든 이미지 업로드 서버 키가 만료되거나 실패했습니다.');
+    try {
+      const blob = base64ToBlob(base64Data);
+      let ext = 'png';
+      if (blob.type && blob.type.includes('/')) {
+        ext = blob.type.split('/')[1] || 'png';
+      }
+      const fileName = `${liveId}_${Date.now()}_${Math.floor(Math.random() * 10000)}.${ext}`;
+      const filePath = `uploads/${fileName}`;
+
+      // Supabase Storage 'images' 버킷에 이미지 업로드
+      const { data, error } = await db.storage
+        .from('images')
+        .upload(filePath, blob, {
+          contentType: blob.type,
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      // 공개적으로 접근 가능한 CDN 주소 획득
+      const { data: { publicUrl } } = db.storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (err) {
+      console.error('Supabase Storage 업로드 에러:', err);
+      throw new Error('이미지 서버 전송 실패: ' + err.message);
+    }
   };
 
   const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
