@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 백그라운드 5초 폴링 백업 연동 (실시간 채널 끊김 및 캐시 딜레이 무력화)
+  // 백그라운드 1.2초 폴링 백업 연동 (실시간 채널 끊김 및 캐시 딜레이 무력화)
   setInterval(async () => {
     if (!db) return;
     try {
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.warn("Polling fallback failed:", e);
     }
-  }, 5000);
+  }, 1200);
 
   // 2. 실시간 라이브 제어 감지 설정
   function subscribeConfig() {

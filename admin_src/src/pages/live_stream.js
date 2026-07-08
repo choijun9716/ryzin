@@ -1064,11 +1064,17 @@ function renderLiveEditView(container, liveId, showView) {
         <p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.4;">
           당첨 종류(유형)를 선택하고 닉네임을 적은 뒤 노출 시간(분)을 입력하고 시작을 누르면 배너가 활성화됩니다.
         </p>
+        
+        <!-- 당첨 유형 세그먼트 스위치 그룹 -->
+        <div style="display:flex; gap:10px; margin-bottom:14px; align-items:center;">
+          <span style="font-size:13px; font-weight:700; color:#495057;">당첨 유형:</span>
+          <div id="winner-type-segmented" style="display:inline-flex; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:10px; padding:3px; overflow:hidden; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
+            <button type="button" class="type-segment-btn ${!config.winner_name || !config.winner_name.startsWith('구매인증') ? 'active' : ''}" data-type="소통왕" style="padding:6px 16px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; outline:none; transition:all 0.15s; background:${!config.winner_name || !config.winner_name.startsWith('구매인증') ? '#fab005' : 'transparent'}; color:${!config.winner_name || !config.winner_name.startsWith('구매인증') ? '#fff' : '#64748b'};">🏆 소통왕</button>
+            <button type="button" class="type-segment-btn ${config.winner_name && config.winner_name.startsWith('구매인증') ? 'active' : ''}" data-type="구매인증" style="padding:6px 16px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; outline:none; transition:all 0.15s; background:${config.winner_name && config.winner_name.startsWith('구매인증') ? '#fab005' : 'transparent'}; color:${config.winner_name && config.winner_name.startsWith('구매인증') ? '#fff' : '#64748b'};">🎁 구매인증</button>
+          </div>
+        </div>
+
         <div style="display:flex; gap:8px; align-items:center;">
-          <select id="winner-type-select" class="modern-input" style="width:100px; padding:8px; font-size:13px; font-weight:700;">
-            <option value="소통왕">소통왕</option>
-            <option value="구매인증">구매인증</option>
-          </select>
           <input type="text" class="modern-input" style="flex:2; padding:8px 12px; font-size:13px;" id="winner-announce-text" placeholder="당첨자 닉네임 입력 (예: 라이진)" value="${config.winner_name && config.winner_name.includes('|') ? config.winner_name.split('|')[1] : config.winner_name || ''}">
           <input type="number" class="modern-input" style="width:54px; padding:8px; font-size:13px;" id="winner-announce-min" placeholder="분" value="1">
           <button id="btn-winner-start" style="padding:8px 16px; background:#fab005; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
@@ -1365,14 +1371,27 @@ function renderLiveEditView(container, liveId, showView) {
     // 소통왕/구매인증 당첨 배너 제어 바인딩
     const btnWStart = document.getElementById('btn-winner-start');
     const btnWCancel = document.getElementById('btn-winner-cancel');
-    if (btnWStart) {
-      const winnerTypeSelect = document.getElementById('winner-type-select');
-      if (winnerTypeSelect && config.winner_name && config.winner_name.includes('|')) {
-        winnerTypeSelect.value = config.winner_name.split('|')[0];
-      }
+    
+    let selectedType = (config.winner_name && config.winner_name.startsWith('구매인증') ? '구매인증' : '소통왕');
 
+    // 세그먼트 버튼 클릭 이벤트 바인딩
+    const segmentBtns = document.querySelectorAll('.type-segment-btn');
+    segmentBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        segmentBtns.forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'transparent';
+          b.style.color = '#64748b';
+        });
+        btn.classList.add('active');
+        btn.style.background = '#fab005';
+        btn.style.color = '#fff';
+        selectedType = btn.dataset.type;
+      });
+    });
+
+    if (btnWStart) {
       btnWStart.addEventListener('click', async () => {
-        const typeSelect = document.getElementById('winner-type-select').value;
         const nameVal = document.getElementById('winner-announce-text').value.trim();
         const minVal = parseInt(document.getElementById('winner-announce-min').value) || 1;
         if (!nameVal) {
@@ -1382,7 +1401,7 @@ function renderLiveEditView(container, liveId, showView) {
         btnWStart.disabled = true;
         btnWStart.textContent = '적용 중...';
         
-        const compositeName = `${typeSelect}|${nameVal}`;
+        const compositeName = `${selectedType}|${nameVal}`;
         const endTS = Date.now() + minVal * 60 * 1000;
         
         try {
@@ -1395,7 +1414,7 @@ function renderLiveEditView(container, liveId, showView) {
           if (error) throw error;
           config.winner_name = compositeName;
           config.winner_timestamp = endTS;
-          alert(`🎉 ${typeSelect} 당첨 배너 노출이 시작되었습니다!`);
+          alert(`🎉 ${selectedType} 당첨 배너 노출이 시작되었습니다!`);
           renderChatTab();
         } catch (err) {
           alert('시작 처리에 실패했습니다.');
