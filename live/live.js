@@ -788,22 +788,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-  // 4. 좋아요 버튼 연출 (시각적 효과만, DB 연동 X)
+  // 4. 좋아요 버튼 연출 (Supabase 60초 배치 가산 및 로컬 보존 연동)
   const btnLike = document.getElementById('btn-like');
   const likeCountEl = document.getElementById('like-count');
   let likeCount = 12040;
+  let pendingLikeCount = parseInt(localStorage.getItem(`ryzin_pending_likes_${LIVE_ID}`)) || 0;
+
+  try {
+    const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
+    if (s && s.hearts) {
+      likeCount = parseInt(s.hearts) || 12040;
+    }
+  } catch (e) {}
 
   if (btnLike && likeCountEl) {
-    // 주기적으로 하트 증가 연출
+    likeCount += pendingLikeCount;
     likeCountEl.textContent = likeCount.toLocaleString();
 
+    // 60초(1분)마다 누적된 클릭 수를 Supabase DB에 일괄 가산(RPC 호출)
+    setInterval(async () => {
+      if (pendingLikeCount > 0 && db) {
+        const sendVal = pendingLikeCount;
+        pendingLikeCount = 0; // 전송 중 중복 연산 방지를 위해 선제 리셋
+        localStorage.setItem(`ryzin_pending_likes_${LIVE_ID}`, 0);
+        try {
+          const { error } = await db.rpc('increment_hearts', {
+            live_id_param: LIVE_ID,
+            increment_val: sendVal
+          });
+          if (error) {
+            pendingLikeCount += sendVal; // 실패 시 버퍼에 복원
+            localStorage.setItem(`ryzin_pending_likes_${LIVE_ID}`, pendingLikeCount);
+            console.warn('Hearts sync failed:', error);
+          }
+        } catch (err) {
+          pendingLikeCount += sendVal;
+          localStorage.setItem(`ryzin_pending_likes_${LIVE_ID}`, pendingLikeCount);
+          console.warn(err);
+        }
+      }
+    }, 60000);
+
+    // 시각적 카운트 업 연출 유지
     setInterval(() => {
-      likeCount += Math.floor(Math.random() * 5);
+      likeCount += Math.floor(Math.random() * 3);
       likeCountEl.textContent = likeCount.toLocaleString();
-    }, 3000);
+    }, 4000);
 
     btnLike.addEventListener('click', () => {
       likeCount += 1;
+      pendingLikeCount += 1; // 1분 배치 버퍼에 가산
+      localStorage.setItem(`ryzin_pending_likes_${LIVE_ID}`, pendingLikeCount);
       likeCountEl.textContent = likeCount.toLocaleString();
 
       const rect = btnLike.getBoundingClientRect();
