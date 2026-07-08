@@ -856,6 +856,22 @@ function renderLiveEditView(container, liveId, showView) {
           <h3 style="margin:0; border:none; padding:0;">관리자 채팅 발송</h3>
           <button id="btn-clear-chats" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px; color:#ef4444; border-color:#fee2e2; background:#fff5f5;">채팅 내역 초기화</button>
         </div>
+        
+        <!-- 관리자 닉네임 / 컬러 설정 영역 -->
+        <div style="display:flex; gap:16px; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0; align-items:flex-end;">
+          <div style="flex:1;">
+            <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">관리자 닉네임</label>
+            <input type="text" id="admin-nickname-input" class="modern-input" value="${localStorage.getItem('ryzin_admin_nickname') || '관리자'}" placeholder="관리자 닉네임..." style="padding:8px 12px; font-size:13px; height:36px; box-sizing:border-box;">
+          </div>
+          <div style="width:120px;">
+            <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">닉네임 컬러</label>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="color" id="admin-color-input" value="${localStorage.getItem('ryzin_admin_color') || '#ffca28'}" style="width:36px; height:36px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:0; background:none; box-sizing:border-box; flex-shrink:0;">
+              <span id="admin-color-code" style="font-size:11px; font-family:monospace; font-weight:700; color:#475569;">${localStorage.getItem('ryzin_admin_color') || '#ffca28'}</span>
+            </div>
+          </div>
+        </div>
+
         <div id="admin-chat-list" style="height:200px; overflow-y:auto; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:16px; font-size:14px;">
           <div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
             <div style="font-size:24px; margin-bottom:8px;">💭</div>
@@ -891,15 +907,37 @@ function renderLiveEditView(container, liveId, showView) {
     // 관리자 채팅 전송
     const chatInput = document.getElementById('admin-chat-input');
     const chatList = document.getElementById('admin-chat-list');
+    const nickInput = document.getElementById('admin-nickname-input');
+    const colorInput = document.getElementById('admin-color-input');
+    const colorCode = document.getElementById('admin-color-code');
+
+    if (nickInput) {
+      nickInput.addEventListener('input', () => {
+        localStorage.setItem('ryzin_admin_nickname', nickInput.value.trim());
+      });
+    }
+    if (colorInput) {
+      colorInput.addEventListener('input', () => {
+        localStorage.setItem('ryzin_admin_color', colorInput.value);
+        if (colorCode) colorCode.textContent = colorInput.value;
+      });
+    }
+
     let isSending = false;
     const sendAdminChat = async () => {
       const text = chatInput.value.trim();
       if (!text || isSending) return;
       isSending = true;
+
+      const adminNick = (nickInput ? nickInput.value.trim() : '') || '관리자';
+      const adminColor = colorInput ? colorInput.value : '#ffca28';
+      const dbNickname = `${adminNick}|${adminColor}`;
+
       const msgId = Date.now();
       const div = document.createElement('div');
-      div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;';
-      div.innerHTML = `<span style="font-weight:700; color:#3b82f6;">관리자:</span> ${text}`;
+      div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9; display:flex; flex-direction:column; gap:2px;';
+      div.innerHTML = `<span style="font-weight:700; color:${adminColor}; font-size:12px;">${adminNick}</span><span style="font-size:13px; color:#1e293b;">${text}</span>`;
+      
       if (chatList.innerHTML.includes('실시간 채팅')) chatList.innerHTML = '';
       chatList.appendChild(div);
       chatList.scrollTop = chatList.scrollHeight;
@@ -909,7 +947,7 @@ function renderLiveEditView(container, liveId, showView) {
         await db.from('live_chats').insert([{
           live_id: liveId,
           created_at: msgId,
-          nickname: '관리자',
+          nickname: dbNickname,
           content: text
         }]);
       } catch (e) { console.warn('Admin chat send failed', e); }

@@ -707,15 +707,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   function addMessage(name, text, isAdmin = false, isHistory = false) {
+    let displayName = name;
+    let nameColor = '';
+
+    if (name && name.includes('|')) {
+      const parts = name.split('|');
+      displayName = parts[0];
+      nameColor = parts[1] || '';
+      isAdmin = true;
+    }
+
     const el = document.createElement('div');
     el.className = 'chat-msg' + (isAdmin ? ' me' : '');
     if (isHistory) el.style.opacity = '0.72';
+
+    const colorStyle = nameColor ? ` style="color: ${nameColor};"` : '';
     el.innerHTML = `
-      <span class="chat-name">${name}</span>
+      <span class="chat-name"${colorStyle}>${displayName}</span>
       <span class="chat-text">${text}</span>
     `;
     chatMessages.appendChild(el);
-    // 히스토리 로드 중엔 자동스크롤 없음, 새 메시지만 아래로 스크롤
     if (!isHistory) chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
