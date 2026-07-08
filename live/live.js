@@ -655,17 +655,30 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => nicknameInput.focus(), 100);
   };
 
-  // 채팅 입력창 클릭 시 닉네임 없으면 모달 팝업
-  chatInput.addEventListener('focus', () => {
+  // 채팅 구역 클릭 시 닉네임 없으면 무조건 모달 강제 팝업 (포커스 씹힘 방지)
+  const handleChatInteract = (e) => {
     if (!userNickname) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       chatInput.blur();
       openNicknameModal();
     }
-  });
+  };
+
+  // 입력창 및 주변 구역 클릭/터치 시 닉네임 검사 인터셉터
+  chatInput.addEventListener('click', handleChatInteract);
+  chatInput.addEventListener('focus', handleChatInteract);
+  if (chatSectionWrap) {
+    chatSectionWrap.addEventListener('click', handleChatInteract);
+  }
 
   // 전송 버튼 클릭 시 닉네임 없으면 모달 팝업
-  btnSend.addEventListener('click', () => {
-    if (!userNickname) { openNicknameModal(); }
+  btnSend.addEventListener('click', (e) => {
+    if (!userNickname) {
+      handleChatInteract(e);
+    }
   });
 
   btnSetNickname.addEventListener('click', () => {
@@ -674,7 +687,10 @@ document.addEventListener('DOMContentLoaded', () => {
       userNickname = n;
       localStorage.setItem('ryzin_nickname', n);
       nicknameModal.style.display = 'none';
-      chatInput.focus();
+      setTimeout(() => {
+        chatInput.disabled = false;
+        chatInput.focus();
+      }, 100);
     }
   });
 
