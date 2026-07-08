@@ -169,8 +169,9 @@ function renderListView(container, showView) {
         const { data, error } = await db.from('live_control').select('live_id, updated_at');
         if (!error && data && Array.isArray(data)) {
           const localLives = getLives();
+          const deletedLives = JSON.parse(localStorage.getItem('ryzin_deleted_lives') || '[]');
           data.forEach(row => {
-            if (row.live_id && !localLives.some(l => l.id === row.live_id)) {
+            if (row.live_id && !localLives.some(l => l.id === row.live_id) && !deletedLives.includes(row.live_id)) {
               localLives.push({ id: row.live_id, createdAt: new Date(row.updated_at).getTime() });
             }
           });
@@ -248,6 +249,13 @@ function renderListView(container, showView) {
           localStorage.removeItem(`ryzin_stats_${id}`);
           localStorage.removeItem(`ryzin_products_${id}`);
           localStorage.removeItem(`ryzin_bot_${id}`);
+
+          // 삭제된 라이브 채널 리스트에 등록하여 원격 복원 차단
+          const deleted = JSON.parse(localStorage.getItem('ryzin_deleted_lives') || '[]');
+          if (!deleted.includes(id)) {
+            deleted.push(id);
+            localStorage.setItem('ryzin_deleted_lives', JSON.stringify(deleted));
+          }
           
           // Supabase 데이터도 완전히 지우기
           if (db) {
@@ -279,6 +287,13 @@ function renderListView(container, showView) {
     const lives = getLives();
     lives.push({ id, createdAt: Date.now() });
     saveLives(lives);
+
+    // 신규 생성하는 ID는 삭제 목록에서 제거
+    let deleted = JSON.parse(localStorage.getItem('ryzin_deleted_lives') || '[]');
+    if (deleted.includes(id)) {
+      deleted = deleted.filter(d => d !== id);
+      localStorage.setItem('ryzin_deleted_lives', JSON.stringify(deleted));
+    }
 
     const defaultConfig = {
       brandName: `라이브 ${id}`,
