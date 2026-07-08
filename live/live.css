@@ -674,3 +674,164 @@ body {
 .thumbnail-overlay.hidden {
   display: none;
 }
+
+/* 하단 플로팅 롤링 상품 배너 */
+.bottom-product-banner {
+  position: absolute;
+  bottom: 80px; /* input-section 위에 안정적으로 안착하도록 높이 조절 */
+  left: 16px;
+  right: 16px;
+  height: 84px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  pointer-events: auto; /* 클릭 가능하도록 */
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* 롤링을 위한 뷰포트 및 트랙 */
+.banner-product-viewport {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.banner-product-track {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.5s ease-in-out;
+}
+
+/* 개별 상품 카드 (롤링 단위) */
+.banner-product-card {
+  display: flex;
+  align-items: center;
+  height: 84px;
+  min-height: 84px;
+  width: 100%;
+  text-decoration: none;
+  color: #111827;
+  padding: 8px 12px;
+}
+
+.banner-img-box {
+  width: 68px;
+  height: 68px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  border: 1px solid #f3f4f6;
+}
+
+.banner-img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.banner-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.banner-info-box {
+  flex: 1;
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0; /* text ellipsis 작동용 */
+}
+
+.banner-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.banner-price-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.2;
+}
+
+.banner-discount {
+  color: #ef4444;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.banner-price {
+  color: #111827;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+/* 네이버 쇼핑 N배송 느낌의 라벨 */
+.banner-delivery-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.banner-delivery-badge img {
+  height: 16px;
+  object-fit: contain;
+}
+
+/* 우측 더보기 버튼 */
+.banner-more-btn {
+  width: 64px;
+  height: 100%;
+  border-left: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #ffffff;
+  flex-shrink: 0;
+  padding: 4px;
+  transition: background-color 0.2s;
+}
+
+.banner-more-btn:active {
+  background-color: #f9fafb;
+}
+
+.more-count {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4b5563;
+  line-height: 1.1;
+}
+
+.more-text {
+  font-size: 9px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-top: 2px;
+}

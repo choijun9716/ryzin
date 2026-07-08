@@ -474,7 +474,7 @@ function renderLiveEditView(container, liveId, showView) {
   const embedCodeMobile = `<iframe src="${viewerUrl}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden;"></iframe>`;
   const embedCodeWide = `<iframe src="${viewerUrl}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none;"></iframe>`;
 
-  const shareGatewayUrl = `https://ryzincorp.com/live/${liveId}.html`;
+  const shareGatewayUrl = `https://vybrnhyaeugfwezbygdt.supabase.co/functions/v1/share?id=${liveId}`;
 
   rightPanel.innerHTML = `
     <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; align-self:flex-start;">모바일 미리보기</div>

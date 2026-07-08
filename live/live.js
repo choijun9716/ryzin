@@ -326,6 +326,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { }
   }
 
+  let rollingInterval = null;
+
   function loadLiveProducts() {
     try {
       const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
@@ -333,11 +335,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalProductsList = document.getElementById('modal-products-list');
         modalProductsList.innerHTML = '';
         const now = Date.now();
-        p.forEach(item => {
-          // 깜짝딜 만료 시 상품 숨김
+        
+        // 롤링 배너에 노출될 수 있는 유효한 상품 목록 필터링
+        const activeProducts = p.filter(item => {
           if (item.dealEndTime && item.dealEndTime > 0 && now >= item.dealEndTime) {
-            return;
+            return false;
           }
+          return true;
+        });
+
+        // 1. 기존 모달 리스트 렌더링
+        activeProducts.forEach(item => {
           const el = document.createElement('a');
           el.href = item.url || "#";
           el.className = 'product-card';
@@ -363,12 +371,10 @@ document.addEventListener('DOMContentLoaded', () => {
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
             if (!item.url || item.url === '#') e.preventDefault();
-            // 상품 클릭수 (조회수) 트래킹 - Supabase에서 실시간 상품목록을 조회한 뒤 안전하게 누적합산 UPDATE
             try {
               const targetLiveId = LIVE_ID || 'live01';
               if (!targetLiveId || !db) return;
 
-              // 1. 최신 데이터 조회
               const { data, error } = await db
                 .from('live_control')
                 .select('products')
@@ -379,12 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
                 const targetProd = remoteProducts.find(p => p.name === item.name);
                 if (targetProd) {
-                  // 원격 데이터에서 가져온 값에 1 누적
                   targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
-
-                  // 2. 누적된 신규 데이터를 로컬 스토리지에 즉시 반영 및 UPDATE
                   localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
-
                   await db
                     .from('live_control')
                     .update({ 
@@ -400,6 +402,108 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           modalProductsList.appendChild(el);
         });
+
+        // 2. 하단 플로팅 롤링 배너 렌더링
+        const bottomBanner = document.getElementById('bottom-product-banner');
+        const track = document.getElementById('banner-product-track');
+        const moreCount = document.getElementById('banner-more-count');
+        const chatSection = document.querySelector('.chat-section');
+
+        if (bottomBanner && track && moreCount) {
+          if (activeProducts.length === 0) {
+            bottomBanner.style.display = 'none';
+            if (chatSection) chatSection.classList.remove('banner-active');
+          } else {
+            bottomBanner.style.display = 'flex';
+            if (chatSection) chatSection.classList.add('banner-active');
+            moreCount.textContent = activeProducts.length;
+
+            track.innerHTML = '';
+            activeProducts.forEach((item) => {
+              const card = document.createElement('a');
+              card.href = item.url || "#";
+              card.className = 'banner-product-card';
+              
+              const currentPriceStr = item.price ? item.price.toString().replace(/[^0-9]/g, '') : '';
+              const normalPriceStr = item.normalPrice ? item.normalPrice.toString().replace(/[^0-9]/g, '') : '';
+              const current = Number(currentPriceStr) || 0;
+              
+              let rate = parseInt(item.discountRate) || 0;
+              if (!rate && normalPriceStr) {
+                const normal = Number(normalPriceStr);
+                if (normal > current) {
+                  rate = Math.round(((normal - current) / normal) * 100);
+                }
+              }
+
+              let rateHtml = '';
+              if (rate > 0) {
+                rateHtml = `<span class="banner-discount">${rate}%</span>`;
+              }
+
+              card.innerHTML = `
+                <div class="banner-img-box">
+                  <img src="${item.image}" alt="product">
+                  <span class="banner-badge">특가</span>
+                </div>
+                <div class="banner-info-box">
+                  <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
+                  <div class="banner-price-row">
+                    ${rateHtml}
+                    <span class="banner-price">${current.toLocaleString()}원</span>
+                  </div>
+                  <div class="banner-delivery-badge">
+                    <span style="background:#03c75a; color:#fff; font-size:8px; font-weight:800; padding:1px 3px; border-radius:2px; line-height:1.2; letter-spacing:-0.05em; display:inline-block;">N 배송</span>
+                  </div>
+                </div>
+              `;
+              
+              card.addEventListener('click', async (e) => {
+                if (!item.url || item.url === '#') e.preventDefault();
+                try {
+                  const targetLiveId = LIVE_ID || 'live01';
+                  if (!targetLiveId || !db) return;
+
+                  const { data, error } = await db
+                    .from('live_control')
+                    .select('products')
+                    .eq('live_id', targetLiveId)
+                    .maybeSingle();
+
+                  if (data && data.products) {
+                    const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+                    const targetProd = remoteProducts.find(p => p.name === item.name);
+                    if (targetProd) {
+                      targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
+                      localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
+                      await db
+                        .from('live_control')
+                        .update({ 
+                          products: remoteProducts,
+                          updated_at: new Date().toISOString()
+                        })
+                        .eq('live_id', targetLiveId);
+                    }
+                  }
+                } catch (err) { }
+              });
+
+              track.appendChild(card);
+            });
+
+            // 여러 개일 경우 수직 롤링 타이머 셋업
+            if (rollingInterval) clearInterval(rollingInterval);
+            if (activeProducts.length > 1) {
+              let currentIdx = 0;
+              rollingInterval = setInterval(() => {
+                currentIdx = (currentIdx + 1) % activeProducts.length;
+                track.style.transform = `translateY(-${currentIdx * 84}px)`;
+              }, 3000);
+            } else {
+              track.style.transform = 'translateY(0)';
+            }
+          }
+        }
       }
     } catch (e) { }
   }
@@ -495,14 +599,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnShop = document.getElementById('btn-shop');
   const productModal = document.getElementById('product-modal');
   const btnCloseModal = document.getElementById('btn-close-modal');
+  const bannerMoreBtn = document.getElementById('banner-more-btn');
 
-  btnShop.addEventListener('click', () => {
-    productModal.classList.remove('hidden');
-  });
+  if (btnShop) {
+    btnShop.addEventListener('click', () => {
+      productModal.classList.remove('hidden');
+    });
+  }
 
-  btnCloseModal.addEventListener('click', () => {
-    productModal.classList.add('hidden');
-  });
+  if (bannerMoreBtn) {
+    bannerMoreBtn.addEventListener('click', () => {
+      productModal.classList.remove('hidden');
+    });
+  }
+
+  if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', () => {
+      productModal.classList.add('hidden');
+    });
+  }
 
   // 3. 채팅 로직 (더미)
   const chatMessages = document.getElementById('chat-messages');
