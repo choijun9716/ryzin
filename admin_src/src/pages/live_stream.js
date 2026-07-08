@@ -863,11 +863,18 @@ function renderLiveEditView(container, liveId, showView) {
             <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">관리자 닉네임</label>
             <input type="text" id="admin-nickname-input" class="modern-input" value="${localStorage.getItem('ryzin_admin_nickname') || '관리자'}" placeholder="관리자 닉네임..." style="padding:8px 12px; font-size:13px; height:36px; box-sizing:border-box;">
           </div>
-          <div style="width:120px;">
+          <div style="width:110px;">
             <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">닉네임 컬러</label>
             <div style="display:flex; align-items:center; gap:6px;">
               <input type="color" id="admin-color-input" value="${localStorage.getItem('ryzin_admin_color') || '#ffca28'}" style="width:36px; height:36px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:0; background:none; box-sizing:border-box; flex-shrink:0;">
               <span id="admin-color-code" style="font-size:11px; font-family:monospace; font-weight:700; color:#475569;">${localStorage.getItem('ryzin_admin_color') || '#ffca28'}</span>
+            </div>
+          </div>
+          <div style="width:110px;">
+            <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">말풍선 배경색</label>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="color" id="admin-bg-color-input" value="${localStorage.getItem('ryzin_admin_bg_color') || '#e50914'}" style="width:36px; height:36px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:0; background:none; box-sizing:border-box; flex-shrink:0;">
+              <span id="admin-bg-color-code" style="font-size:11px; font-family:monospace; font-weight:700; color:#475569;">${localStorage.getItem('ryzin_admin_bg_color') || '#e50914'}</span>
             </div>
           </div>
         </div>
@@ -910,6 +917,8 @@ function renderLiveEditView(container, liveId, showView) {
     const nickInput = document.getElementById('admin-nickname-input');
     const colorInput = document.getElementById('admin-color-input');
     const colorCode = document.getElementById('admin-color-code');
+    const bgColorInput = document.getElementById('admin-bg-color-input');
+    const bgColorCode = document.getElementById('admin-bg-color-code');
 
     if (nickInput) {
       nickInput.addEventListener('input', () => {
@@ -922,6 +931,12 @@ function renderLiveEditView(container, liveId, showView) {
         if (colorCode) colorCode.textContent = colorInput.value;
       });
     }
+    if (bgColorInput) {
+      bgColorInput.addEventListener('input', () => {
+        localStorage.setItem('ryzin_admin_bg_color', bgColorInput.value);
+        if (bgColorCode) bgColorCode.textContent = bgColorInput.value;
+      });
+    }
 
     let isSending = false;
     const sendAdminChat = async () => {
@@ -931,11 +946,12 @@ function renderLiveEditView(container, liveId, showView) {
 
       const adminNick = (nickInput ? nickInput.value.trim() : '') || '관리자';
       const adminColor = colorInput ? colorInput.value : '#ffca28';
-      const dbNickname = `${adminNick}|${adminColor}`;
+      const adminBg = bgColorInput ? bgColorInput.value : '#e50914';
+      const dbNickname = `${adminNick}|${adminColor}|${adminBg}`;
 
       const msgId = Date.now();
       const div = document.createElement('div');
-      div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9; display:flex; flex-direction:column; gap:2px;';
+      div.style.cssText = `margin-bottom:8px; padding:8px 12px; border-radius:10px; background:${adminBg}22; border-left:4px solid ${adminColor}; display:flex; flex-direction:column; gap:2px;`;
       div.innerHTML = `<span style="font-weight:700; color:${adminColor}; font-size:12px;">${adminNick}</span><span style="font-size:13px; color:#1e293b;">${text}</span>`;
       
       if (chatList.innerHTML.includes('실시간 채팅')) chatList.innerHTML = '';

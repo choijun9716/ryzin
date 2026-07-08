@@ -706,25 +706,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  // 닉네임에서 색상 코드 정보 분리 헬퍼 함수
+  // 닉네임에서 이름 색상 및 말풍선 배경색 분리 헬퍼 함수
   function parseNick(rawNick) {
-    if (!rawNick || typeof rawNick !== 'string') return { name: rawNick || '', color: '' };
+    if (!rawNick || typeof rawNick !== 'string') return { name: rawNick || '', color: '', bg: '' };
     if (rawNick.includes('|')) {
       const parts = rawNick.split('|');
-      return { name: parts[0], color: parts[1] || '' };
+      return { 
+        name: parts[0], 
+        color: parts[1] || '', 
+        bg: parts[2] || '' 
+      };
     }
-    return { name: rawNick, color: '' };
+    return { name: rawNick, color: '', bg: '' };
   }
 
   function addMessage(name, text, isAdmin = false, isHistory = false) {
     const parsed = parseNick(name);
     const displayName = parsed.name;
     const nameColor = parsed.color;
+    const bgColor = parsed.bg;
     if (nameColor) isAdmin = true;
 
     const el = document.createElement('div');
     el.className = 'chat-msg' + (isAdmin ? ' me' : '');
     if (isHistory) el.style.opacity = '0.72';
+
+    if (bgColor) {
+      let finalBg = bgColor;
+      if (bgColor.startsWith('#') && bgColor.length === 7) {
+        finalBg = bgColor + 'b3';
+      }
+      el.style.backgroundColor = finalBg;
+    }
 
     const colorStyle = nameColor ? ` style="color: ${nameColor};"` : '';
     el.innerHTML = `
