@@ -65,6 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 설정 데이터를 파싱하고 UI에 적용하는 헬퍼 함수
   function applyLiveConfig(row) {
+    // === [NEW] 소통왕 당첨자 정보 로컬스토리지 즉시 동기화 ===
+    if (row.winner_name !== undefined) localStorage.setItem('ryzin_winner_name', row.winner_name || '');
+    if (row.winner_timestamp !== undefined) localStorage.setItem('ryzin_winner_timestamp', (row.winner_timestamp || 0).toString());
+
     const config = {
       liveId: row.live_id || 'live01',
       brandName: row.title || 'Ryzin Corp', // '제목'을 title 필드로 맵핑
@@ -332,10 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSendEl.style.cursor = 'not-allowed';
           }
         }
-
-        // === [NEW] 소통왕 당첨자 정보 로컬스토리지 동기화 ===
-        if (row.winner_name) localStorage.setItem('ryzin_winner_name', row.winner_name);
-        if (row.winner_timestamp) localStorage.setItem('ryzin_winner_timestamp', row.winner_timestamp.toString());
       }
     } catch (e) { }
   }
