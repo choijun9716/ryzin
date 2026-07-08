@@ -9,7 +9,7 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <link rel="stylesheet" href="live.css?v=1782983333000">
+  <link rel="stylesheet" href="live.css?v=1782984444000">
 </head>
 
 <body>
@@ -124,12 +124,22 @@
         </div>
       </div>
     </div>
+
+    <!-- 닉네임 설정 모달 (독립 레이어로 끄집어냄) -->
+    <div id="nickname-modal" class="nickname-modal" style="display:none; pointer-events:auto; z-index:9999;">
+      <div class="nickname-modal-content">
+        <h3>라이브 채팅 참여하기</h3>
+        <p>채팅에 사용할 닉네임을 설정해주세요.</p>
+        <input type="text" id="nickname-input" placeholder="닉네임 입력 (예: 라이진)" autocomplete="off">
+        <button id="btn-set-nickname">입장하기</button>
+      </div>
+    </div>
   </div>
 
   <!-- Supabase JS SDK & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_config.js"></script>
-  <script src="live.js?v=1782983333000"></script>
+  <script src="live.js?v=1782984444000"></script>
 </body>
 
 </html>
