@@ -1,5 +1,12 @@
 [
     {
+        "title": "만나강정",
+        "category": "food",
+        "tagKey": "tag_beauty",
+        "image": "./assets/1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png",
+        "link": "#"
+    },
+    {
         "title": "트루쿡",
         "category": "life",
         "tagKey": "tag_beauty",
