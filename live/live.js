@@ -315,10 +315,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // === [NEW] 실시간 소통왕 당첨 오버레이 팝업 리액터 ===
-        if (c.winner_timestamp && window.__lastWinnerTimestamp !== c.winner_timestamp) {
-          window.__lastWinnerTimestamp = c.winner_timestamp;
-          if (c.winner_name) {
-            triggerWinnerAward(c.winner_name);
+        if (row.winner_timestamp && window.__lastWinnerTimestamp !== row.winner_timestamp) {
+          window.__lastWinnerTimestamp = row.winner_timestamp;
+          if (row.winner_name) {
+            triggerWinnerAward(row.winner_name);
           }
         }
       }
