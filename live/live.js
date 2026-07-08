@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.__winnerCountdownSeconds = 0;
   window.__lastWinnerTimestamp = null;
   window.__confettiTriggerCount = 0;
+  window.__triggeringSurpriseDeal = false;
 
   // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
   const urlParams = new URLSearchParams(window.location.search);
@@ -1161,6 +1162,70 @@ setInterval(() => {
       }
     }
   } catch (e) { }
+
+  // 3. [NEW] 좋아요 수 달성 시 깜짝딜 자동 오픈 감시 로직
+  try {
+    const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
+    const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
+    if (p && Array.isArray(p) && s && s.hearts !== undefined && db && !window.__triggeringSurpriseDeal) {
+      const currentHearts = parseInt(s.hearts) || 0;
+      const targetProduct = p.find(item => 
+        item.targetLikes && 
+        parseInt(item.targetLikes) > 0 && 
+        currentHearts >= parseInt(item.targetLikes) && 
+        (!item.dealEndTime || item.dealEndTime === 0)
+      );
+
+      if (targetProduct) {
+        window.__triggeringSurpriseDeal = true;
+        (async () => {
+          try {
+            const { data: row, error: selectErr } = await db
+              .from('live_control')
+              .select('products')
+              .eq('live_id', LIVE_ID)
+              .maybeSingle();
+
+            if (!selectErr && row && row.products) {
+              const remoteProducts = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
+              if (Array.isArray(remoteProducts)) {
+                const remoteMatchIdx = remoteProducts.findIndex(rp => rp.name === targetProduct.name);
+                if (remoteMatchIdx !== -1) {
+                  const rp = remoteProducts[remoteMatchIdx];
+                  if (!rp.dealEndTime || rp.dealEndTime === 0) {
+                    const min = parseInt(rp.targetDealMin) || 10;
+                    rp.dealEndTime = Date.now() + min * 60 * 1000;
+                    rp.dealText = rp.dealText || `${parseInt(rp.targetLikes).toLocaleString()}개 좋아요 달성 특가!`;
+                    
+                    const { error: updateErr } = await db
+                      .from('live_control')
+                      .update({
+                        products: remoteProducts,
+                        updated_at: new Date().toISOString()
+                      })
+                      .eq('live_id', LIVE_ID);
+
+                    if (!updateErr) {
+                      if (typeof spawnConfettiContinuous === 'function') {
+                        spawnConfettiContinuous(40);
+                      }
+                      if (typeof addMessage === 'function') {
+                        addMessage('🔔 알림', `🎉 좋아요 ${parseInt(rp.targetLikes).toLocaleString()}개 달성! [${rp.name}] 깜짝딜이 오픈되었습니다! 🎉`, true, false);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Auto surprise deal trigger failed:', err);
+          } finally {
+            window.__triggeringSurpriseDeal = false;
+          }
+        })();
+      }
+    }
+  } catch (err) { }
 
   // 2. [NEW] 소통왕/구매인증 당첨 배너 1초 감시 로직 (스톱워치 카운트다운 방식)
   try {

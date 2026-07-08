@@ -1651,6 +1651,13 @@ function renderLiveEditView(container, liveId, showView) {
           <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
           ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
         </div>
+        <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:10px; border:1px solid #bbf7d0; margin-top:6px;">
+          <span style="font-size:12px; font-weight:700; color:#16a34a;">🎯 좋아요 해금</span>
+          <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetLikes" placeholder="목표 좋아요" value="${p.targetLikes || ''}">
+          <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
+          <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
+          <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
+        </div>
       </div>
     </div>
     `;
