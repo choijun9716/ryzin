@@ -75,8 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (rowTS > 0) {
         if (window.__lastWinnerTimestamp === null) {
-          // 최초 입장 시점에는 락 타임스탬프 동기화만 시키고 팝업 타이머는 돌리지 않음
+          // 최초 입장(새로고침) 시점!
           window.__lastWinnerTimestamp = rowTS;
+          // 아직 종료 시간이 지나지 않은 미래 시간 상태라면, 새로고침 시에도 남은 초만큼 이어서 활성화!
+          const diffSec = Math.round((rowTS - Date.now()) / 1000);
+          if (diffSec > 0) {
+            window.__winnerCountdownSeconds = diffSec;
+          }
         } else if (window.__lastWinnerTimestamp !== rowTS) {
           // 실시간으로 새로운 발표(타임스탬프 갱신)가 발생했을 때만 카운트다운 초 장전!
           window.__lastWinnerTimestamp = rowTS;
