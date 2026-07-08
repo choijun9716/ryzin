@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // === Supabase 및 localStorage 연동 로직 (어드민 제어) ===
   const db = window.supabaseClient;
+  let userNickname = '';
 
   // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
   const urlParams = new URLSearchParams(window.location.search);
@@ -705,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const nicknameInput = document.getElementById('nickname-input');
   const btnSetNickname = document.getElementById('btn-set-nickname');
 
-  let userNickname = localStorage.getItem('ryzin_nickname') || '';
+  userNickname = localStorage.getItem('ryzin_nickname') || '';
 
   // 채팅 입력창은 항상 보여줌 (닉네임 여부와 무관)
   chatSectionWrap.style.display = 'block';
@@ -1185,6 +1186,7 @@ setInterval(() => {
 function spawnConfetti() {
   const colors = ['#fcc419', '#ff8787', '#74c0fc', '#63e6be', '#da77f3', '#ff922b'];
   const container = document.body;
+  if (!container) return;
 
   for (let i = 0; i < 70; i++) {
     const p = document.createElement('div');
