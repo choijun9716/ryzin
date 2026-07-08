@@ -1056,6 +1056,52 @@ function renderLiveEditView(container, liveId, showView) {
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
       </div>
+
+      <!-- [NEW] 소통왕 선정 및 당첨 발표 섹션 -->
+      <div class="section-card">
+        <h3 style="margin:0 0 8px 0; border:none; padding:0;">🎉 최우수 소통왕 당첨 발표</h3>
+        <p style="font-size:13px; color:#64748b; margin:0 0 16px 0; line-height:1.5;">
+          실시간 채팅에 활발하게 참여한 유저 중 소통왕을 선정해 발표합니다.<br>
+          발표 버튼을 클릭하면 시청자 화면 전체에 <strong>오색 폭죽 종이가루</strong>가 터지며 당첨 배너가 연출되고, 당첨된 시청자에게는 즉시 <strong>경품 배송지 입력 팝업</strong>이 나타납니다.
+        </p>
+        
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+          <input type="text" id="winner-nickname-input" class="modern-input" placeholder="당첨자 닉네임을 입력하세요..." style="flex:1;">
+          <button id="btn-announce-winner" class="action-btn btn-primary-solid" style="white-space:nowrap; background:#fab005; border-color:#fab005;">당첨자 발표</button>
+        </div>
+
+        <!-- 실시간 채팅 참여자 닉네임 리스트 (빠른 선택용) -->
+        <div style="margin-bottom:20px;">
+          <label style="font-size:12px; font-weight:700; color:#64748b; display:block; margin-bottom:6px;">최근 채팅 참여 고객 (클릭 시 자동 입력)</label>
+          <div id="recent-chatters-container" style="display:flex; flex-wrap:wrap; gap:8px; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; min-height:36px; align-items:center;">
+            <span style="font-size:12px; color:#94a3b8; width:100%; text-align:center;">채팅 메시지가 올라오면 참여자 목록이 자동 표시됩니다.</span>
+          </div>
+        </div>
+
+        <!-- 소통왕 배송지 주소 리스트 현황판 -->
+        <h4 style="margin:20px 0 8px 0; font-size:14px; font-weight:700; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
+          <span>🎁 당첨자 경품 배송지 수집 현황</span>
+          <button id="btn-refresh-winners" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; height:24px;">수동 갱신</button>
+        </h4>
+        <div style="overflow-x:auto; background:#fff; border:1.5px solid #e2e8f0; border-radius:10px;">
+          <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+            <thead>
+              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-weight:700; color:#475569;">
+                <th style="padding:10px 12px;">참여 닉네임</th>
+                <th style="padding:10px 12px;">수령인 실명</th>
+                <th style="padding:10px 12px;">연락처</th>
+                <th style="padding:10px 12px;">배송 주소</th>
+                <th style="padding:10px 12px; text-align:right;">등록 시각</th>
+              </tr>
+            </thead>
+            <tbody id="winner-table-body">
+              <tr>
+                <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">당첨자 제출 목록이 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     `;
 
     // 관리자 채팅 전송
@@ -1066,6 +1112,108 @@ function renderLiveEditView(container, liveId, showView) {
     const colorCode = document.getElementById('admin-color-code');
     const bgColorInput = document.getElementById('admin-bg-color-input');
     const bgColorCode = document.getElementById('admin-bg-color-code');
+
+    // 채팅 참여자 닉네임 트래킹
+    window.__activeChatters = new Set();
+
+    const parseNickSimple = (raw) => {
+      if (!raw || typeof raw !== 'string') return raw || '';
+      return raw.includes('|') ? raw.split('|')[0] : raw;
+    };
+
+    const updateRecentChattersUI = () => {
+      const container = document.getElementById('recent-chatters-container');
+      if (!container) return;
+      if (window.__activeChatters.size === 0) {
+        container.innerHTML = `<span style="font-size:12px; color:#94a3b8; width:100%; text-align:center;">채팅 메시지가 올라오면 참여자 목록이 자동 표시됩니다.</span>`;
+        return;
+      }
+      container.innerHTML = Array.from(window.__activeChatters).map(name => {
+        return `<button class="action-btn btn-neutral btn-chatter-pick" data-name="${name}" style="padding:4px 8px; font-size:11px; height:24px; line-height:1; border-radius:4px; font-weight:700; cursor:pointer;">${name}</button>`;
+      }).join('');
+      
+      container.querySelectorAll('.btn-chatter-pick').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const inp = document.getElementById('winner-nickname-input');
+          if (inp) {
+            inp.value = btn.dataset.name;
+            inp.focus();
+          }
+        });
+      });
+    };
+
+    // 소통왕 당첨자 데이터베이스 업데이트 공포
+    const announceBtn = document.getElementById('btn-announce-winner');
+    if (announceBtn) {
+      announceBtn.addEventListener('click', async () => {
+        const wName = document.getElementById('winner-nickname-input').value.trim();
+        if (!wName) {
+          alert('소통왕 당첨자 닉네임을 입력하거나 아래 목록에서 선택해 주세요.');
+          return;
+        }
+
+        announceBtn.disabled = true;
+        announceBtn.textContent = '발표 중...';
+
+        try {
+          if (!db) return;
+          const { error } = await db.from('live_control').update({
+            winner_name: wName,
+            winner_timestamp: Date.now(),
+            updated_at: new Date().toISOString()
+          }).eq('live_id', liveId);
+
+          if (error) throw error;
+          alert(`🎉 [${wName}]님을 소통왕 당첨자로 공포했습니다!\n시청자 화면에 실시간 폭죽 팝업이 출력됩니다.`);
+        } catch (err) {
+          alert('소통왕 발표에 실패했습니다: ' + err.message);
+        } finally {
+          announceBtn.disabled = false;
+          announceBtn.textContent = '당첨자 발표';
+        }
+      });
+    }
+
+    // 당첨자 경품 배송 주소 데이터 조회
+    const fetchWinnersList = async () => {
+      const tableBody = document.getElementById('winner-table-body');
+      if (!tableBody) return;
+
+      try {
+        if (!db) return;
+        const { data: list, error } = await db.from('live_winners')
+          .select('*')
+          .eq('live_id', liveId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!list || list.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">당첨자 제출 목록이 없습니다.</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = list.map(item => {
+          const dateStr = new Date(item.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          return `
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="padding:10px 12px; font-weight:700; color:#0f172a;">${item.nickname}</td>
+              <td style="padding:10px 12px; font-weight:600; color:#374151;">${item.name || '-'}</td>
+              <td style="padding:10px 12px; font-family:monospace; color:#374151;">${item.phone || '-'}</td>
+              <td style="padding:10px 12px; color:#475569; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.address || ''}">${item.address || ''}</td>
+              <td style="padding:10px 12px; text-align:right; color:#94a3b8; font-size:11px;">${dateStr}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.warn('Failed to fetch winners', err);
+      }
+    };
+
+    document.getElementById('btn-refresh-winners')?.addEventListener('click', fetchWinnersList);
+    fetchWinnersList();
+    const winnersPollingInterval = setInterval(fetchWinnersList, 10000);
 
     if (nickInput) {
       nickInput.addEventListener('input', () => {
@@ -1213,6 +1361,13 @@ function renderLiveEditView(container, liveId, showView) {
       div.innerHTML = `<span style="font-weight:700; color:${nameColor};">${name}:</span> ${text}`;
       chatList.appendChild(div);
       if (!isHistory) chatList.scrollTop = chatList.scrollHeight;
+
+      // 채팅 참여 고객 닉네임 수집
+      const cleanName = parseNickSimple(name);
+      if (cleanName && cleanName !== '관리자' && cleanName !== '?') {
+        window.__activeChatters.add(cleanName);
+        updateRecentChattersUI();
+      }
     };
 
     // 1. 최초 이력 로드
@@ -1264,6 +1419,9 @@ function renderLiveEditView(container, liveId, showView) {
       }
       if (botTimer) {
         clearInterval(botTimer);
+      }
+      if (winnersPollingInterval) {
+        clearInterval(winnersPollingInterval);
       }
     });
   };

@@ -313,6 +313,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSendEl.style.cursor = 'not-allowed';
           }
         }
+
+        // === [NEW] 실시간 소통왕 당첨 오버레이 팝업 리액터 ===
+        if (c.winner_timestamp && window.__lastWinnerTimestamp !== c.winner_timestamp) {
+          window.__lastWinnerTimestamp = c.winner_timestamp;
+          if (c.winner_name) {
+            triggerWinnerAward(c.winner_name);
+          }
+        }
       }
     } catch (e) { }
   }
@@ -970,13 +978,81 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 브라우저 포커스가 돌아왔을 때 무조건 다시 재생
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      video.play().catch(e => console.warn(e));
-    }
   });
 
+  // === [NEW] 소통왕 당첨자 정보 입력 리스너 및 애니메이션 연계 ===
+  window.__lastWinnerTimestamp = 0;
 
+  function triggerWinnerAward(winnerName) {
+    spawnConfetti();
+
+    const alertOverlay = document.getElementById('winner-alert-overlay');
+    const nameSpan = document.getElementById('winner-name-span');
+    if (alertOverlay && nameSpan) {
+      nameSpan.textContent = winnerName;
+      alertOverlay.style.display = 'flex';
+      setTimeout(() => {
+        alertOverlay.style.opacity = '0';
+        setTimeout(() => {
+          alertOverlay.style.display = 'none';
+          alertOverlay.style.opacity = '1';
+        }, 500);
+      }, 5000);
+    }
+
+    if (userNickname && userNickname === winnerName) {
+      setTimeout(() => {
+        const addressModal = document.getElementById('winner-address-modal');
+        if (addressModal) {
+          document.getElementById('winner-real-name').value = '';
+          document.getElementById('winner-phone').value = '';
+          document.getElementById('winner-address').value = '';
+          addressModal.style.display = 'flex';
+        }
+      }, 3500);
+    }
+  }
+
+  const btnSubmitAddress = document.getElementById('btn-submit-address');
+  if (btnSubmitAddress) {
+    btnSubmitAddress.addEventListener('click', async () => {
+      const realName = document.getElementById('winner-real-name').value.trim();
+      const phone = document.getElementById('winner-phone').value.trim();
+      const address = document.getElementById('winner-address').value.trim();
+
+      if (!realName || !phone || !address) {
+        alert('배송 정보를 모든 칸에 정확히 입력해주세요.');
+        return;
+      }
+
+      btnSubmitAddress.disabled = true;
+      btnSubmitAddress.textContent = '제출 중...';
+
+      try {
+        if (!db) return;
+        const { error } = await db.from('live_winners').insert([{
+          live_id: LIVE_ID,
+          nickname: userNickname,
+          name: realName,
+          phone: phone,
+          address: address,
+          created_at: Date.now()
+        }]);
+
+        if (error) throw error;
+
+        alert('🎉 경품 배송 정보가 성공적으로 제출되었습니다. 감사합니다!');
+        const addressModal = document.getElementById('winner-address-modal');
+        if (addressModal) addressModal.style.display = 'none';
+      } catch (err) {
+        console.warn(err);
+        alert('정보 제출에 실패했습니다. 다시 시도해주세요.');
+      } finally {
+        btnSubmitAddress.disabled = false;
+        btnSubmitAddress.textContent = '정보 제출하기';
+      }
+    });
+  }
 
 });
 
@@ -1075,4 +1151,40 @@ setInterval(() => {
     }
   } catch (e) { }
 }, 1000);
+
+// Confetti 오색폭죽 흩날림 물리 가속 연출 함수
+function spawnConfetti() {
+  const colors = ['#fcc419', '#ff8787', '#74c0fc', '#63e6be', '#da77f3', '#ff922b'];
+  const container = document.body;
+
+  for (let i = 0; i < 70; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = '-20px';
+    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const w = 6 + Math.random() * 8;
+    const h = 6 + Math.random() * 8;
+    p.style.width = w + 'px';
+    p.style.height = h + 'px';
+
+    const rotation = Math.random() * 360;
+    p.style.transform = `rotate(${rotation}deg)`;
+
+    const dur = 2.5 + Math.random() * 2.5;
+    const delay = Math.random() * 1.5;
+
+    p.style.transition = `transform ${dur}s linear ${delay}s, top ${dur}s linear ${delay}s, opacity ${dur}s ease-in ${delay}s`;
+    container.appendChild(p);
+
+    setTimeout(() => {
+      p.style.top = '105vh';
+      p.style.transform = `rotate(${rotation + (Math.random() - 0.5) * 720}deg) translate(${(Math.random() - 0.5) * 150}px, 0)`;
+      p.style.opacity = '0';
+    }, 50);
+
+    setTimeout(() => p.remove(), (dur + delay) * 1000 + 100);
+  }
+}
 
