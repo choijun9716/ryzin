@@ -515,6 +515,12 @@ body {
   transform: translateY(20px);
 }
 
+/* 채팅이 숨겨졌을 때 상품 배너를 화면 하단에 바짝 붙임 */
+body.ui-hidden .bottom-product-banner {
+  bottom: 12px;
+  transition: bottom 0.3s ease, opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+}
+
 /* 닉네임 설정 모달 */
 .nickname-modal {
   position: absolute;

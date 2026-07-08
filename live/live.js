@@ -682,6 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chatSection.classList.toggle('chat-hidden');
     inputSection.classList.toggle('chat-hidden');
     if (sideActions) sideActions.classList.toggle('chat-hidden');
+    document.body.classList.toggle('ui-hidden');
   });
 
   // 화면 첫 터치/클릭 시 자동 음소거 해제 (브라우저 정책 우회)
