@@ -1057,43 +1057,6 @@ function renderLiveEditView(container, liveId, showView) {
         </button>
       </div>
 
-      <!-- [NEW] 소통왕 선정 및 당첨 발표 섹션 -->
-      <div class="section-card">
-        <h3 style="margin:0 0 8px 0; border:none; padding:0;">🎉 최우수 소통왕 당첨 발표</h3>
-        <p style="font-size:13px; color:#64748b; margin:0 0 16px 0; line-height:1.5;">
-          실시간 채팅에 활발하게 참여한 유저 중 소통왕을 선정해 발표합니다.<br>
-          발표 버튼을 클릭하면 시청자 화면 전체에 <strong>오색 폭죽 종이가루</strong>가 터지며 당첨 배너가 연출되고, 당첨된 시청자에게는 즉시 <strong>경품 배송지 입력 팝업</strong>이 나타납니다.
-        </p>
-        
-        <div style="display:flex; gap:10px; margin-bottom:16px;">
-          <input type="text" id="winner-nickname-input" class="modern-input" placeholder="당첨자 닉네임을 입력하세요..." style="flex:1;">
-          <button id="btn-announce-winner" class="action-btn btn-primary-solid" style="white-space:nowrap; background:#fab005; border-color:#fab005;">당첨자 발표</button>
-        </div>
-
-        <!-- 소통왕 배송지 주소 리스트 현황판 -->
-        <h4 style="margin:20px 0 8px 0; font-size:14px; font-weight:700; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
-          <span>🎁 당첨자 경품 배송지 수집 현황</span>
-          <button id="btn-refresh-winners" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; height:24px;">수동 갱신</button>
-        </h4>
-        <div style="overflow-x:auto; background:#fff; border:1.5px solid #e2e8f0; border-radius:10px;">
-          <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
-            <thead>
-              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-weight:700; color:#475569;">
-                <th style="padding:10px 12px;">참여 닉네임</th>
-                <th style="padding:10px 12px;">수령인 실명</th>
-                <th style="padding:10px 12px;">연락처</th>
-                <th style="padding:10px 12px;">배송 주소</th>
-                <th style="padding:10px 12px; text-align:right;">등록 시각</th>
-              </tr>
-            </thead>
-            <tbody id="winner-table-body">
-              <tr>
-                <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">당첨자 제출 목록이 없습니다.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     `;
 
     // 관리자 채팅 전송
@@ -1419,6 +1382,23 @@ function renderLiveEditView(container, liveId, showView) {
 
   const renderProductTab = () => {
     contentArea.innerHTML = `
+      <!-- 🏆 소통왕 알림 배너 제어 (깜짝딜과 동일한 설계) -->
+      <div class="section-card" style="margin-bottom: 24px; border: 1.5px solid #fab005; background: #fffdf5;">
+        <h3 style="margin:0 0 8px 0; border:none; padding:0; color:#d9480f; display:flex; align-items:center; gap:6px;">
+          <span>🏆 소통왕 당첨 배너 제어</span>
+          ${config.winner_timestamp && Number(config.winner_timestamp) > Date.now() ? `<span style="font-size:11px; font-weight:700; background:#fab005; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>` : ''}
+        </h3>
+        <p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.4;">
+          당첨자 닉네임과 노출 시간(분)을 입력하고 시작을 누르면, 시청자 화면 상단에 플로팅 캡슐 알림 배너가 켜집니다.
+        </p>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" class="modern-input" style="flex:2; padding:8px 12px; font-size:13px;" id="winner-announce-text" placeholder="당첨자 닉네임 입력 (예: 라이진)" value="${config.winner_name || ''}">
+          <input type="number" class="modern-input" style="width:72px; padding:8px; font-size:13px;" id="winner-announce-min" placeholder="분" value="1">
+          <button id="btn-winner-start" style="padding:8px 16px; background:#fab005; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+          <button id="btn-winner-cancel" style="padding:8px 16px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+        </div>
+      </div>
+
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
@@ -1566,6 +1546,64 @@ function renderLiveEditView(container, liveId, showView) {
       syncToSheetDB(liveId, config, stats, products, true);
       alert('상품 목록이 적용되었습니다!');
     });
+
+    // 소통왕 알림 배너 제어 바인딩
+    const btnWStart = document.getElementById('btn-winner-start');
+    const btnWCancel = document.getElementById('btn-winner-cancel');
+    if (btnWStart) {
+      btnWStart.addEventListener('click', async () => {
+        const nameVal = document.getElementById('winner-announce-text').value.trim();
+        const minVal = parseInt(document.getElementById('winner-announce-min').value) || 1;
+        if (!nameVal) {
+          alert('소통왕 당첨자 닉네임을 입력해 주세요.');
+          return;
+        }
+        btnWStart.disabled = true;
+        btnWStart.textContent = '적용 중...';
+        const endTS = Date.now() + minVal * 60 * 1000;
+        try {
+          if (!db) return;
+          const { error } = await db.from('live_control').update({
+            winner_name: nameVal,
+            winner_timestamp: endTS,
+            updated_at: new Date().toISOString()
+          }).eq('live_id', liveId);
+          if (error) throw error;
+          config.winner_name = nameVal;
+          config.winner_timestamp = endTS;
+          alert('🎉 소통왕 당첨 배너 노출이 시작되었습니다!');
+          renderProductTab();
+        } catch (err) {
+          alert('시작 처리에 실패했습니다.');
+        } finally {
+          btnWStart.disabled = false;
+          btnWStart.textContent = '시작';
+        }
+      });
+    }
+
+    if (btnWCancel) {
+      btnWCancel.addEventListener('click', async () => {
+        btnWCancel.disabled = true;
+        btnWCancel.textContent = '종료 중...';
+        try {
+          if (!db) return;
+          const { error } = await db.from('live_control').update({
+            winner_timestamp: 0,
+            updated_at: new Date().toISOString()
+          }).eq('live_id', liveId);
+          if (error) throw error;
+          config.winner_timestamp = 0;
+          alert('소통왕 당첨 배너 노출이 종료되었습니다.');
+          renderProductTab();
+        } catch (err) {
+          alert('종료 처리에 실패했습니다.');
+        } finally {
+          btnWCancel.disabled = false;
+          btnWCancel.textContent = '종료';
+        }
+      });
+    }
   };
 
   // ── 탭 전환 로직 ──────────────────────────────────────────

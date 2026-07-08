@@ -1099,7 +1099,7 @@ setInterval(() => {
     }
   } catch (e) { }
 
-  // 2. [NEW] 소통왕 당첨 배너 1초 감시 로직 (깜짝딜과 동일한 단순 구조)
+  // 2. [NEW] 소통왕 당첨 배너 1초 감시 로직 (깜짝딜과 동일한 미래 종료 시간 대조 방식)
   try {
     const wName = localStorage.getItem('ryzin_winner_name') || '';
     const rawTS = localStorage.getItem('ryzin_winner_timestamp') || '';
@@ -1113,9 +1113,10 @@ setInterval(() => {
     }
     const winnerEl = document.getElementById('winner-alert-overlay');
     const winnerNameSpan = document.getElementById('winner-name-span');
+    const now = Date.now();
 
-    // 시간 오차 및 딜레이 완충을 위해 발표 시각 앞뒤 30초 이내에 해당할 때 배너 노출
-    if (wTS > 0 && Math.abs(Date.now() - wTS) < 30000) {
+    // 현재 시간이 종료 예정 타임스탬프(wTS)보다 이전일 때 배너 활성화
+    if (wTS > 0 && now < wTS) {
       if (winnerEl && winnerNameSpan) {
         winnerNameSpan.textContent = wName;
         if (winnerEl.style.display === 'none') {
