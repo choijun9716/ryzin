@@ -597,23 +597,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const productModal = document.getElementById('product-modal');
   const btnCloseModal = document.getElementById('btn-close-modal');
   const bannerMoreBtn = document.getElementById('banner-more-btn');
+  const bottomProductBanner = document.getElementById('bottom-product-banner');
+  const chatSectionForModal = document.querySelector('.chat-section');
+
+  const openProductModal = () => {
+    if (productModal) productModal.classList.remove('hidden');
+    if (bottomProductBanner) bottomProductBanner.style.display = 'none';
+    if (chatSectionForModal) chatSectionForModal.classList.remove('banner-active');
+  };
+
+  const closeProductModal = () => {
+    if (productModal) productModal.classList.add('hidden');
+    try {
+      const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
+      const now = Date.now();
+      const activeProducts = (p && Array.isArray(p)) ? p.filter(item => {
+        if (item.dealEndTime && item.dealEndTime > 0 && now >= item.dealEndTime) return false;
+        return true;
+      }) : [];
+
+      if (activeProducts.length > 0) {
+        if (bottomProductBanner) bottomProductBanner.style.display = 'flex';
+        if (chatSectionForModal) chatSectionForModal.classList.add('banner-active');
+      }
+    } catch (e) {}
+  };
 
   if (btnShop) {
-    btnShop.addEventListener('click', () => {
-      productModal.classList.remove('hidden');
-    });
+    btnShop.addEventListener('click', openProductModal);
   }
 
   if (bannerMoreBtn) {
-    bannerMoreBtn.addEventListener('click', () => {
-      productModal.classList.remove('hidden');
-    });
+    bannerMoreBtn.addEventListener('click', openProductModal);
   }
 
   if (btnCloseModal) {
-    btnCloseModal.addEventListener('click', () => {
-      productModal.classList.add('hidden');
-    });
+    btnCloseModal.addEventListener('click', closeProductModal);
   }
 
   // 3. 채팅 로직 (더미)
