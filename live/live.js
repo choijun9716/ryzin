@@ -804,30 +804,67 @@ document.addEventListener('DOMContentLoaded', () => {
       likeCount += 1;
       likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
 
-      const heart = document.createElement('div');
-      heart.className = 'floating-heart';
-      heart.style.position = 'absolute';
-      heart.style.pointerEvents = 'none';
-      heart.style.zIndex = '9999';
+      const rect = btnLike.getBoundingClientRect();
 
+      // === [NEW] 조그마한 색폭죽 파티클 폭발 효과 추가 ===
+      const particleCount = 8;
+      const particleColors = ['#ff4081', '#ffea00', '#00e5ff', '#651fff', '#ff3d00', '#00e676'];
+      for (let i = 0; i < particleCount; i++) {
+        const p = document.createElement('div');
+        p.className = 'like-particle';
+        p.style.position = 'absolute';
+        p.style.width = '6px';
+        p.style.height = '6px';
+        p.style.borderRadius = '50%';
+        p.style.backgroundColor = particleColors[Math.floor(Math.random() * particleColors.length)];
+        p.style.pointerEvents = 'none';
+        p.style.zIndex = '9999';
+        
+        // 폭죽 시작 위치 (좋아요 버튼 중앙 부근)
+        p.style.left = rect.left + (rect.width / 2) - 3 + 'px';
+        p.style.top = rect.top + 10 + 'px';
+
+        // 360도 방향으로 파바박 번지는 거리각 산출
+        const angle = (i / particleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const distance = 30 + Math.random() * 40; // 30px ~ 70px 반경
+        const px = Math.cos(angle) * distance;
+        const py = Math.sin(angle) * distance - 15; // 살짝 공중으로 튀게
+
+        p.style.setProperty('--px', px + 'px');
+        p.style.setProperty('--py', py + 'px');
+        p.style.animation = 'particleExplode 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards';
+
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+      }
+
+      // === [NEW] 랜덤 믹스 엔진: 커스텀 이미지가 등록되어 있으면 50% 확률로 섞어서 띄움 ===
       let likeImgUrl = '';
       try {
         const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
         if (c && c.likeImageUrl) likeImgUrl = c.likeImageUrl;
       } catch (e) {}
 
-      if (likeImgUrl) {
-        // 커스텀 업로드 애니메이션 이미지 연출
+      const heart = document.createElement('div');
+      heart.className = 'floating-heart';
+      heart.style.position = 'absolute';
+      heart.style.pointerEvents = 'none';
+      heart.style.zIndex = '9999';
+
+      const showCustomIcon = likeImgUrl && (Math.random() < 0.5);
+
+      if (showCustomIcon) {
+        // 50% 확률로 커스텀 PNG/GIF 애니메이션 이미지 발사
         heart.innerHTML = `<img src="${likeImgUrl}" style="width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.22));">`;
       } else {
-        // 고퀄리티 그라데이션 하트 랜덤 연출
+        // 50% 확률로 다채로운 그라데이션 하트 랜덤 발사
         const colors = [
-          ['#ff4081', '#ff1744'], // 체리 핑크
-          ['#ff9100', '#ffea00'], // 오렌지 골드
-          ['#00e5ff', '#00e676'], // 민트 시안
-          ['#651fff', '#d500f9'], // 네온 바이올렛
-          ['#ff3d00', '#ff9100'], // 파이어 오렌지
-          ['#e040fb', '#00e5ff']  // 퍼플 시안 그라디언트
+          ['#ff4081', '#ff1744'],
+          ['#ff9100', '#ffea00'],
+          ['#00e5ff', '#00e676'],
+          ['#651fff', '#d500f9'],
+          ['#ff3d00', '#ff9100'],
+          ['#e040fb', '#00e5ff']
         ];
         const randGrad = colors[Math.floor(Math.random() * colors.length)];
         const gradId = `heart-grad-${Math.floor(Math.random() * 1000000)}`;
@@ -845,11 +882,9 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
       }
 
-      const rect = btnLike.getBoundingClientRect();
       heart.style.left = rect.left + (rect.width / 2) - 14 + 'px';
       heart.style.top = rect.top + 'px';
 
-      // 궤적 물리 물리엔진 적용 (좌우 스윙 및 회전 물리각 산출)
       const randomX = (Math.random() - 0.5) * 120;
       const rot1 = (Math.random() - 0.5) * 45;
       const rot2 = (Math.random() - 0.5) * 90;
@@ -933,6 +968,19 @@ style.innerHTML = `
   15% { opacity: 1; transform: translate(-50%, 0); }
   85% { opacity: 1; transform: translate(-50%, 0); }
   100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+@keyframes particleExplode {
+  0% {
+    transform: translate(0, 0) scale(1.2);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--px), var(--py)) scale(0.2);
+    opacity: 0;
+  }
 }
 `;
 document.head.appendChild(style);
