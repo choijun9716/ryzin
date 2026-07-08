@@ -798,6 +798,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 채팅창에 마우스/터치 올릴 시 상품 배너 일시 숨김 처리 (UX 향상)
+  const chatMessagesEl = document.getElementById('chat-messages');
+  const bannerEl = document.getElementById('bottom-product-banner');
+
+  if (chatMessagesEl && bannerEl) {
+    // PC 마우스 호버
+    chatMessagesEl.addEventListener('mouseenter', () => {
+      bannerEl.classList.add('banner-hidden');
+    });
+    chatMessagesEl.addEventListener('mouseleave', () => {
+      bannerEl.classList.remove('banner-hidden');
+    });
+
+    // 모바일 터치 대응 (스크롤 등 터치 시 잠깐 사라졌다 1.5초 후 스르륵 복구)
+    let touchTimeout = null;
+    chatMessagesEl.addEventListener('touchstart', () => {
+      bannerEl.classList.add('banner-hidden');
+      if (touchTimeout) clearTimeout(touchTimeout);
+      touchTimeout = setTimeout(() => {
+        bannerEl.classList.remove('banner-hidden');
+      }, 1500);
+    }, { passive: true });
+  }
+
 });
 
 // 커스텀 토스트 알림 함수 (alert 대체용)

@@ -692,6 +692,17 @@ body {
   overflow: hidden;
   pointer-events: auto; /* 클릭 가능하도록 */
   border: 1px solid rgba(0, 0, 0, 0.04);
+  /* 페이드 아웃/인 전환 효과 */
+  transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* 채팅 호버 시 상품 배너 페이드 아웃 */
+.bottom-product-banner.banner-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(8px);
 }
 
 /* 롤링을 위한 뷰포트 및 트랙 */
