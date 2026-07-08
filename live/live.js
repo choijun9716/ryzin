@@ -430,7 +430,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatSection = document.querySelector('.chat-section');
 
         if (bottomBanner && track && moreCount) {
-          if (activeProducts.length === 0) {
+          const pModal = document.getElementById('product-modal');
+          const isModalOpen = pModal && !pModal.classList.contains('hidden');
+
+          if (activeProducts.length === 0 || isModalOpen) {
             bottomBanner.style.display = 'none';
             if (chatSection) chatSection.classList.remove('banner-active');
           } else {
