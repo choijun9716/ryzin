@@ -758,28 +758,60 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
       </div>
 
-      <div class="section-card">
-        <h3>공유 링크 설정 (SNS 임베드 메타 태그)</h3>
-        <p style="margin:-12px 0 16px 0; font-size:12px; color:#64748b;">카카오톡, 라인 등 SNS에 라이브 링크를 보낼 때 노출되는 카드 임베드 정보입니다.</p>
-        <div style="display:grid; grid-template-columns:1fr; gap:18px; margin-bottom:18px;">
-          <div>
-            <label class="modern-label">공유 제목 (Title)</label>
-            <input type="text" class="modern-input" id="cfg-shareTitle" value="${config.shareTitle || ''}" placeholder="공유 시 노출할 제목 (예: [딘시] 단 하루 특가 라이브)">
-          </div>
-          <div>
-            <label class="modern-label">공유 설명문 (Description)</label>
-            <textarea class="modern-input" id="cfg-shareDesc" style="height:64px; resize:none; padding:10px 14px;" placeholder="공유 시 노출할 상세 설명글">${config.shareDesc || ''}</textarea>
+      <div class="section-card" id="share-og-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <h3 style="margin:0; border:none; padding:0;">카카오톡 공유 카드 설정</h3>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-preview-og" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700;">🔍 링크 테스트</button>
+            <button id="btn-kakao-cache" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700; color:#f0a000; border-color:#fde68a;">🔄 카카오 캐시 초기화</button>
           </div>
         </div>
-        <div class="file-upload-wrapper" style="margin-bottom:12px;">
-          <div style="width:72px; height:72px; border-radius:8px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0; background:#f8fafc;">
-            <img id="share-image-preview" src="${config.shareImageUrl || 'https://via.placeholder.com/72'}" style="width:100%; height:100%; object-fit:cover;">
+        <p style="margin:0 0 20px 0; font-size:12px; color:#64748b; line-height:1.5;">카카오톡·슬랙·라인 등 SNS에서 링크를 공유할 때 나타나는 미리보기 카드를 커스텀합니다. 설정 후 반드시 <strong>[설정 저장]</strong>을 눌러주세요.</p>
+
+        <div style="display:flex; gap:24px; align-items:flex-start;">
+          <!-- 입력 영역 -->
+          <div style="flex:1; display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label class="modern-label">공유 제목 (Title)</label>
+              <input type="text" class="modern-input" id="cfg-shareTitle" value="${config.shareTitle || ''}" placeholder="예: 🔴 지금 라이브 중! 단하루 특가">
+            </div>
+            <div>
+              <label class="modern-label">공유 설명 (Description)</label>
+              <textarea class="modern-input" id="cfg-shareDesc" style="height:60px; resize:none; padding:10px 14px;" placeholder="예: 지금 입장하면 추가 5% 할인! 재고 소진 임박">${config.shareDesc || ''}</textarea>
+            </div>
+            <div>
+              <label class="modern-label">공유 대표 이미지 (1200×630 권장)</label>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div id="og-img-wrap" style="width:80px; height:56px; border-radius:8px; overflow:hidden; border:1.5px solid #e2e8f0; flex-shrink:0; background:#f8fafc; cursor:pointer; position:relative;" onclick="document.getElementById('cfg-shareImageFile').click()">
+                  <img id="share-image-preview" src="${config.shareImageUrl || ''}" style="width:100%; height:100%; object-fit:cover; display:${config.shareImageUrl ? 'block' : 'none'};">
+                  <div id="og-img-placeholder" style="display:${config.shareImageUrl ? 'none' : 'flex'}; align-items:center; justify-content:center; height:100%; font-size:22px; color:#cbd5e1;">🖼</div>
+                </div>
+                <div>
+                  <label class="file-upload-btn" for="cfg-shareImageFile" style="display:inline-flex; margin-bottom:6px;">이미지 업로드</label>
+                  <input type="file" id="cfg-shareImageFile" accept="image/*" style="display:none;">
+                  <div style="font-size:10px; color:#94a3b8;">JPG/PNG, 최소 200×200px<br>미등록 시 방송 썸네일 자동 사용</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label class="modern-label">공유용 대표 이미지 (Image)</label>
-            <label class="file-upload-btn" for="cfg-shareImageFile">이미지 업로드</label>
-            <input type="file" id="cfg-shareImageFile" accept="image/*" style="display:none;">
-            <div style="margin-top:6px; font-size:11px; color:#94a3b8;">미등록 시 기본 방송 썸네일이 대표 이미지로 노출됩니다.</div>
+
+          <!-- 카카오톡 스타일 미리보기 카드 -->
+          <div style="width:220px; flex-shrink:0;">
+            <div style="font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px;">미리보기</div>
+            <div style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">
+              <div id="og-preview-img-wrap" style="width:100%; height:116px; background:#f1f5f9; overflow:hidden; position:relative;">
+                <img id="og-preview-img" src="${config.shareImageUrl || ''}" style="width:100%; height:100%; object-fit:cover; display:${config.shareImageUrl ? 'block' : 'none'};">
+                <div id="og-preview-img-placeholder" style="display:${config.shareImageUrl ? 'none' : 'flex'}; align-items:center; justify-content:center; height:100%; font-size:32px; color:#cbd5e1;">🖼</div>
+              </div>
+              <div style="padding:10px 12px;">
+                <div id="og-preview-title" style="font-size:13px; font-weight:700; color:#0f172a; line-height:1.3; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${config.shareTitle || '공유 제목을 입력하세요'}</div>
+                <div id="og-preview-desc" style="font-size:11px; color:#64748b; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${config.shareDesc || '공유 설명을 입력하세요'}</div>
+                <div style="font-size:10px; color:#94a3b8; margin-top:6px;">ryzincorp.com</div>
+              </div>
+            </div>
+            <div style="margin-top:8px; padding:8px; background:#fefce8; border:1px solid #fde68a; border-radius:8px; font-size:10px; color:#713f12; line-height:1.5;">
+              💡 <strong>이미지 변경 후</strong> 카카오가 이전 이미지를 계속 보여주면 <strong>[카카오 캐시 초기화]</strong> 버튼을 눌러주세요.
+            </div>
           </div>
         </div>
       </div>
@@ -829,8 +861,47 @@ function renderLiveEditView(container, liveId, showView) {
           console.warn('로컬 API 서버 연결 안 됨 (실서버 동작 시 무시):', err);
         });
 
-      alert('설정이 저장되었습니다!');
+      alert('설정이 저장되었습니다! 카카오톡 공유 카드에 즉시 반영됩니다.');
     });
+
+    // ── OG 미리보기 실시간 업데이트 ──
+    const ogPreviewTitle = document.getElementById('og-preview-title');
+    const ogPreviewDesc = document.getElementById('og-preview-desc');
+    const ogPreviewImg = document.getElementById('og-preview-img');
+    const ogPreviewImgPh = document.getElementById('og-preview-img-placeholder');
+    const shareTitleInput = document.getElementById('cfg-shareTitle');
+    const shareDescInput = document.getElementById('cfg-shareDesc');
+
+    if (shareTitleInput && ogPreviewTitle) {
+      shareTitleInput.addEventListener('input', () => {
+        ogPreviewTitle.textContent = shareTitleInput.value || '공유 제목을 입력하세요';
+      });
+    }
+    if (shareDescInput && ogPreviewDesc) {
+      shareDescInput.addEventListener('input', () => {
+        ogPreviewDesc.textContent = shareDescInput.value || '공유 설명을 입력하세요';
+      });
+    }
+
+    // ── 카카오 캐시 초기화 버튼 ──
+    const kakaoShareUrl = `https://vybrnhyaeugfwezbygdt.supabase.co/functions/v1/share?id=${liveId}&t=${Date.now()}`;
+    const kakaoCacheBtn = document.getElementById('btn-kakao-cache');
+    if (kakaoCacheBtn) {
+      kakaoCacheBtn.addEventListener('click', () => {
+        // 카카오 공유 링크 미리보기 캐시 초기화 도구
+        const cacheUrl = `https://developers.kakao.com/tool/clear/og?url=${encodeURIComponent(kakaoShareUrl)}`;
+        window.open(cacheUrl, '_blank');
+      });
+    }
+
+    // ── 링크 테스트 버튼 ──
+    const previewOgBtn = document.getElementById('btn-preview-og');
+    if (previewOgBtn) {
+      previewOgBtn.addEventListener('click', () => {
+        const testUrl = `https://vybrnhyaeugfwezbygdt.supabase.co/functions/v1/share?id=${liveId}&t=${Date.now()}`;
+        window.open(testUrl, '_blank');
+      });
+    }
 
     // +추가 버튼: Supabase에서 현재 시청자수를 조회 후 입력값만큼 더해서 UPDATE
     document.getElementById('btn-add-viewers').addEventListener('click', async () => {
@@ -916,7 +987,19 @@ function renderLiveEditView(container, liveId, showView) {
 
         const url = await uploadToImgBB(base64);
         config[configKey] = url;
-        document.getElementById(previewId).src = url;
+        const prevEl = document.getElementById(previewId);
+        prevEl.src = url;
+        prevEl.style.display = 'block';
+
+        // 공유 이미지 업로드 시 OG 미리보기 카드도 즉시 반영
+        if (configKey === 'shareImageUrl') {
+          const ogImg = document.getElementById('og-preview-img');
+          const ogImgPh = document.getElementById('og-preview-img-placeholder');
+          const ogThumb = document.getElementById('og-img-placeholder');
+          if (ogImg) { ogImg.src = url; ogImg.style.display = 'block'; }
+          if (ogImgPh) ogImgPh.style.display = 'none';
+          if (ogThumb) ogThumb.style.display = 'none';
+        }
         saveConfig();
       } catch (err) {
         console.error('이미지 업로드 오류:', err);
