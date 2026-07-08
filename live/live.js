@@ -791,13 +791,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. 좋아요 버튼 연출 (Supabase 60초 배치 가산 및 로컬 보존 연동)
   const btnLike = document.getElementById('btn-like');
   const likeCountEl = document.getElementById('like-count');
-  let likeCount = 12040;
+  let likeCount = 0;
   let pendingLikeCount = parseInt(localStorage.getItem(`ryzin_pending_likes_${LIVE_ID}`)) || 0;
 
   try {
     const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
-    if (s && s.hearts) {
-      likeCount = parseInt(s.hearts) || 12040;
+    if (s && s.hearts !== undefined) {
+      likeCount = parseInt(s.hearts) || 0;
     }
   } catch (e) {}
 
