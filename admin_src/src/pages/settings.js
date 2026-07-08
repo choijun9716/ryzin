@@ -233,8 +233,8 @@ export function renderSettings() {
       renderUserList(container);
 
       // 계정 추가 버튼
-      container.querySelector('#btn-create-user')?.addEventListener('click', () => {
-        openUserModal();
+      container.querySelector('#btn-create-user')?.addEventListener('click', async () => {
+        await openUserModal();
       });
     }
   }, 0);
@@ -269,9 +269,9 @@ function renderUserList(container) {
 
   // 수정 버튼
   tbody.querySelectorAll('.edit-user-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const u = store.getById('users', btn.getAttribute('data-id'));
-      if (u) openUserModal(u);
+      if (u) await openUserModal(u);
     });
   });
 
@@ -294,8 +294,23 @@ function renderUserList(container) {
   });
 }
 
-function openUserModal(existingUser = null) {
-  const lives = JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
+async function openUserModal(existingUser = null) {
+  let lives = [];
+  try {
+    const db = window.supabaseClient;
+    if (db) {
+      const { data, error } = await db.from('live_control').select('live_id');
+      if (!error && data) {
+        lives = data.map(d => ({ id: d.live_id }));
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load lives from Supabase in settings.js', e);
+  }
+  if (lives.length === 0) {
+    lives = JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
+  }
+
   const content = document.createElement('div');
   content.className = 'form-grid';
   content.innerHTML = `
