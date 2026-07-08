@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let userNickname = '';
   window.__winnerCountdownSeconds = 0;
   window.__lastWinnerTimestamp = null;
+  window.__confettiTriggerCount = 0;
 
   // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
   const urlParams = new URLSearchParams(window.location.search);
@@ -87,7 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
           window.__lastWinnerTimestamp = rowTS;
           const diffSec = Math.round((rowTS - Date.now()) / 1000);
           window.__winnerCountdownSeconds = diffSec > 0 ? diffSec : 60;
-          spawnConfettiContinuous(30); // === [NEW] 당첨자 선포 최초 감지 시 오색 폭죽 30개 시원하게 폭발! ===
+          // 실시간 당첨 발표가 처음 울리는 시점에 꽃가루 폭사 2회 카운터를 예약 장전!
+          window.__confettiTriggerCount = 2;
         }
       } else {
         // 어드민에서 강제 종료를 누른 경우 즉시 카운트다운을 종료시킴
@@ -1126,22 +1128,43 @@ setInterval(() => {
     }
   } catch (e) { }
 
-  // 2. [NEW] 소통왕 당첨 배너 1초 감시 로직 (스톱워치 카운트다운 방식)
+  // 2. [NEW] 소통왕/구매인증 당첨 배너 1초 감시 로직 (스톱워치 카운트다운 방식)
   try {
     const winnerEl = document.getElementById('winner-alert-overlay');
-    const winnerNameSpan = document.getElementById('winner-name-span');
+    const emojiSpan = document.getElementById('winner-emoji-span');
+    const textSpan = document.getElementById('winner-text-span');
 
     if (window.__winnerCountdownSeconds > 0) {
       const wName = localStorage.getItem('ryzin_winner_name') || '당첨자';
-      if (winnerEl && winnerNameSpan) {
-        winnerNameSpan.textContent = wName;
+      
+      // 닉네임 문자열에 '|' 기호가 포함되어 있다면 [유형|닉네임] 파싱 처리
+      const parts = wName.split('|');
+      let awardType = '소통왕';
+      let cleanNick = wName;
+      if (parts.length > 1) {
+        awardType = parts[0];
+        cleanNick = parts[1];
+      }
+
+      if (winnerEl && emojiSpan && textSpan) {
+        if (awardType === '구매인증') {
+          emojiSpan.textContent = '🎁';
+          textSpan.innerHTML = `구매인증 당첨: <span style="text-decoration:underline; font-weight:900; font-size:14px; margin-right:2px; color:#fff;">${cleanNick}</span>님! 축하드립니다! 🎉`;
+        } else {
+          emojiSpan.textContent = '🏆';
+          textSpan.innerHTML = `소통왕 당첨: <span style="text-decoration:underline; font-weight:900; font-size:14px; margin-right:2px; color:#fff;">${cleanNick}</span>님! 축하드립니다! 🎉`;
+        }
+
         if (winnerEl.style.display === 'none') {
           winnerEl.style.display = 'flex';
         }
       }
       
-      // === [NEW] 배너 노출 기간 동안 매 초마다 6~8개의 꽃가루 파티클을 은은하게 지속 낙하 ===
-      spawnConfettiContinuous(8);
+      // === [NEW] 꽃가루 폭죽 파티클은 배너 개시 후 정확히 2회만 팡 팡 쏟아지도록 설계 ===
+      if (window.__confettiTriggerCount > 0) {
+        spawnConfettiContinuous(35); // 35개의 화려한 묶음 폭발!
+        window.__confettiTriggerCount -= 1;
+      }
 
       window.__winnerCountdownSeconds -= 1; // 1초씩 차감
     } else {

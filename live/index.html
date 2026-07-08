@@ -9,7 +9,7 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <link rel="stylesheet" href="live.css?v=1783015555000">
+  <link rel="stylesheet" href="live.css?v=1783501697681">
 </head>
 
 <body>
@@ -58,12 +58,12 @@
         </div>
       </div>
 
-      <!-- 소통왕 전체 당첨 축하 플로팅 배너 (깜짝딜 배너 밑에 배치) -->
+      <!-- 소통왕/구매인증 전체 당첨 축하 플로팅 배너 (깜짝딜 배너 밑에 배치) -->
       <div style="display:flex; justify-content:center; width:100%; pointer-events:none; padding-top:6px;">
         <div id="winner-alert-overlay"
           style="display:none; background:linear-gradient(135deg, #fab005, #ff8787); color:white; padding:8px 18px; border-radius:24px; font-weight:bold; font-size:14px; align-items:center; gap:8px; box-shadow:0 4px 15px rgba(250,176,5,0.4); animation: pulse 2s infinite; pointer-events:auto; z-index:9999;">
-          <span style="font-size:15px; line-height:1;">🏆</span>
-          <span>소통왕 당첨: <span id="winner-name-span" style="text-decoration:underline; font-weight:900; font-size:14px; margin-right:2px; color:#fff;"></span>님! 축하드립니다! 🎉</span>
+          <span id="winner-emoji-span" style="font-size:15px; line-height:1;">🏆</span>
+          <span id="winner-text-span">소통왕 당첨: <span id="winner-name-span" style="text-decoration:underline; font-weight:900; font-size:14px; margin-right:2px; color:#fff;"></span>님! 축하드립니다! 🎉</span>
         </div>
       </div>
 
@@ -148,7 +148,7 @@
   <!-- Supabase JS SDK & Config -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_config.js"></script>
-  <script src="live.js?v=1783015555000"></script>
+  <script src="live.js?v=1783501697681"></script>
 </body>
 
 </html>

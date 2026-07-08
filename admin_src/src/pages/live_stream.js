@@ -1055,8 +1055,26 @@ function renderLiveEditView(container, liveId, showView) {
         <button id="btn-toggle-bot" class="action-btn btn-primary-solid" style="width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;">
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
+      <!-- 🏆 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
+      <div class="section-card" style="margin-top: 24px; border: 1.5px solid #fab005; background: #fffdf5;">
+        <h3 style="margin:0 0 8px 0; border:none; padding:0; color:#d9480f; display:flex; align-items:center; gap:6px;">
+          <span>🏆 당첨 알림 배너 제어 (소통왕/구매인증)</span>
+          ${config.winner_timestamp && Number(config.winner_timestamp) > Date.now() ? `<span style="font-size:11px; font-weight:700; background:#fab005; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>` : ''}
+        </h3>
+        <p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.4;">
+          당첨 종류(유형)를 선택하고 닉네임을 적은 뒤 노출 시간(분)을 입력하고 시작을 누르면 배너가 활성화됩니다.
+        </p>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select id="winner-type-select" class="modern-input" style="width:100px; padding:8px; font-size:13px; font-weight:700;">
+            <option value="소통왕">소통왕</option>
+            <option value="구매인증">구매인증</option>
+          </select>
+          <input type="text" class="modern-input" style="flex:2; padding:8px 12px; font-size:13px;" id="winner-announce-text" placeholder="당첨자 닉네임 입력 (예: 라이진)" value="${config.winner_name && config.winner_name.includes('|') ? config.winner_name.split('|')[1] : config.winner_name || ''}">
+          <input type="number" class="modern-input" style="width:54px; padding:8px; font-size:13px;" id="winner-announce-min" placeholder="분" value="1">
+          <button id="btn-winner-start" style="padding:8px 16px; background:#fab005; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+          <button id="btn-winner-cancel" style="padding:8px 16px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+        </div>
       </div>
-
     `;
 
     // 관리자 채팅 전송
@@ -1343,6 +1361,73 @@ function renderLiveEditView(container, liveId, showView) {
         clearInterval(winnersPollingInterval);
       }
     });
+
+    // 소통왕/구매인증 당첨 배너 제어 바인딩
+    const btnWStart = document.getElementById('btn-winner-start');
+    const btnWCancel = document.getElementById('btn-winner-cancel');
+    if (btnWStart) {
+      const winnerTypeSelect = document.getElementById('winner-type-select');
+      if (winnerTypeSelect && config.winner_name && config.winner_name.includes('|')) {
+        winnerTypeSelect.value = config.winner_name.split('|')[0];
+      }
+
+      btnWStart.addEventListener('click', async () => {
+        const typeSelect = document.getElementById('winner-type-select').value;
+        const nameVal = document.getElementById('winner-announce-text').value.trim();
+        const minVal = parseInt(document.getElementById('winner-announce-min').value) || 1;
+        if (!nameVal) {
+          alert('당첨자 닉네임을 입력해 주세요.');
+          return;
+        }
+        btnWStart.disabled = true;
+        btnWStart.textContent = '적용 중...';
+        
+        const compositeName = `${typeSelect}|${nameVal}`;
+        const endTS = Date.now() + minVal * 60 * 1000;
+        
+        try {
+          if (!db) return;
+          const { error } = await db.from('live_control').update({
+            winner_name: compositeName,
+            winner_timestamp: endTS,
+            updated_at: new Date().toISOString()
+          }).eq('live_id', liveId);
+          if (error) throw error;
+          config.winner_name = compositeName;
+          config.winner_timestamp = endTS;
+          alert(`🎉 ${typeSelect} 당첨 배너 노출이 시작되었습니다!`);
+          renderChatTab();
+        } catch (err) {
+          alert('시작 처리에 실패했습니다.');
+        } finally {
+          btnWStart.disabled = false;
+          btnWStart.textContent = '시작';
+        }
+      });
+    }
+
+    if (btnWCancel) {
+      btnWCancel.addEventListener('click', async () => {
+        btnWCancel.disabled = true;
+        btnWCancel.textContent = '종료 중...';
+        try {
+          if (!db) return;
+          const { error } = await db.from('live_control').update({
+            winner_timestamp: 0,
+            updated_at: new Date().toISOString()
+          }).eq('live_id', liveId);
+          if (error) throw error;
+          config.winner_timestamp = 0;
+          alert('당첨 배너 노출이 종료되었습니다.');
+          renderChatTab();
+        } catch (err) {
+          alert('종료 처리에 실패했습니다.');
+        } finally {
+          btnWCancel.disabled = false;
+          btnWCancel.textContent = '종료';
+        }
+      });
+    }
   };
 
   const renderProductList = () => products.map((p, idx) => {
@@ -1382,23 +1467,6 @@ function renderLiveEditView(container, liveId, showView) {
 
   const renderProductTab = () => {
     contentArea.innerHTML = `
-      <!-- 🏆 소통왕 알림 배너 제어 (깜짝딜과 동일한 설계) -->
-      <div class="section-card" style="margin-bottom: 24px; border: 1.5px solid #fab005; background: #fffdf5;">
-        <h3 style="margin:0 0 8px 0; border:none; padding:0; color:#d9480f; display:flex; align-items:center; gap:6px;">
-          <span>🏆 소통왕 당첨 배너 제어</span>
-          ${config.winner_timestamp && Number(config.winner_timestamp) > Date.now() ? `<span style="font-size:11px; font-weight:700; background:#fab005; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>` : ''}
-        </h3>
-        <p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.4;">
-          당첨자 닉네임과 노출 시간(분)을 입력하고 시작을 누르면, 시청자 화면 상단에 플로팅 캡슐 알림 배너가 켜집니다.
-        </p>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <input type="text" class="modern-input" style="flex:2; padding:8px 12px; font-size:13px;" id="winner-announce-text" placeholder="당첨자 닉네임 입력 (예: 라이진)" value="${config.winner_name || ''}">
-          <input type="number" class="modern-input" style="width:72px; padding:8px; font-size:13px;" id="winner-announce-min" placeholder="분" value="1">
-          <button id="btn-winner-start" style="padding:8px 16px; background:#fab005; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
-          <button id="btn-winner-cancel" style="padding:8px 16px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-        </div>
-      </div>
-
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
@@ -1547,63 +1615,7 @@ function renderLiveEditView(container, liveId, showView) {
       alert('상품 목록이 적용되었습니다!');
     });
 
-    // 소통왕 알림 배너 제어 바인딩
-    const btnWStart = document.getElementById('btn-winner-start');
-    const btnWCancel = document.getElementById('btn-winner-cancel');
-    if (btnWStart) {
-      btnWStart.addEventListener('click', async () => {
-        const nameVal = document.getElementById('winner-announce-text').value.trim();
-        const minVal = parseInt(document.getElementById('winner-announce-min').value) || 1;
-        if (!nameVal) {
-          alert('소통왕 당첨자 닉네임을 입력해 주세요.');
-          return;
-        }
-        btnWStart.disabled = true;
-        btnWStart.textContent = '적용 중...';
-        const endTS = Date.now() + minVal * 60 * 1000;
-        try {
-          if (!db) return;
-          const { error } = await db.from('live_control').update({
-            winner_name: nameVal,
-            winner_timestamp: endTS,
-            updated_at: new Date().toISOString()
-          }).eq('live_id', liveId);
-          if (error) throw error;
-          config.winner_name = nameVal;
-          config.winner_timestamp = endTS;
-          alert('🎉 소통왕 당첨 배너 노출이 시작되었습니다!');
-          renderProductTab();
-        } catch (err) {
-          alert('시작 처리에 실패했습니다.');
-        } finally {
-          btnWStart.disabled = false;
-          btnWStart.textContent = '시작';
-        }
-      });
-    }
 
-    if (btnWCancel) {
-      btnWCancel.addEventListener('click', async () => {
-        btnWCancel.disabled = true;
-        btnWCancel.textContent = '종료 중...';
-        try {
-          if (!db) return;
-          const { error } = await db.from('live_control').update({
-            winner_timestamp: 0,
-            updated_at: new Date().toISOString()
-          }).eq('live_id', liveId);
-          if (error) throw error;
-          config.winner_timestamp = 0;
-          alert('소통왕 당첨 배너 노출이 종료되었습니다.');
-          renderProductTab();
-        } catch (err) {
-          alert('종료 처리에 실패했습니다.');
-        } finally {
-          btnWCancel.disabled = false;
-          btnWCancel.textContent = '종료';
-        }
-      });
-    }
   };
 
   // ── 탭 전환 로직 ──────────────────────────────────────────
