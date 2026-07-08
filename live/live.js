@@ -706,16 +706,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  function addMessage(name, text, isAdmin = false, isHistory = false) {
-    let displayName = name;
-    let nameColor = '';
-
-    if (name && name.includes('|')) {
-      const parts = name.split('|');
-      displayName = parts[0];
-      nameColor = parts[1] || '';
-      isAdmin = true;
+  // 닉네임에서 색상 코드 정보 분리 헬퍼 함수
+  function parseNick(rawNick) {
+    if (!rawNick || typeof rawNick !== 'string') return { name: rawNick || '', color: '' };
+    if (rawNick.includes('|')) {
+      const parts = rawNick.split('|');
+      return { name: parts[0], color: parts[1] || '' };
     }
+    return { name: rawNick, color: '' };
+  }
+
+  function addMessage(name, text, isAdmin = false, isHistory = false) {
+    const parsed = parseNick(name);
+    const displayName = parsed.name;
+    const nameColor = parsed.color;
+    if (nameColor) isAdmin = true;
 
     const el = document.createElement('div');
     el.className = 'chat-msg' + (isAdmin ? ' me' : '');
