@@ -3,6 +3,7 @@ import { store } from '../data/store.js';
 import { ROLES } from '../data/models.js';
 import { showSuccess, showError } from '../components/toast.js';
 import { confirmDialog, openModal, closeModal } from '../components/modal.js';
+import CryptoJS from 'crypto-js';
 
 export function renderSettings() {
   const container = document.createElement('div');
@@ -341,15 +342,20 @@ function openUserModal(existingUser = null) {
       return;
     }
 
+    let finalPw = pw;
     if (existingUser) {
-      store.update('users', id, { password: pw, name, role });
+      if (pw !== existingUser.password) {
+        finalPw = CryptoJS.SHA256(pw).toString();
+      }
+      store.update('users', id, { password: finalPw, name, role });
       showSuccess('사용자 정보가 수정되었습니다.');
     } else {
       if (store.getById('users', id)) {
         showError('이미 존재하는 아이디입니다.');
         return;
       }
-      store.create('users', { id, password: pw, name, role });
+      finalPw = CryptoJS.SHA256(pw).toString();
+      store.create('users', { id, password: finalPw, name, role });
       showSuccess('새로운 사용자가 등록되었습니다.');
     }
     
