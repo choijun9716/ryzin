@@ -315,10 +315,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // === [NEW] 실시간 소통왕 당첨 오버레이 팝업 리액터 ===
-        if (row.winner_timestamp && window.__lastWinnerTimestamp !== row.winner_timestamp) {
-          window.__lastWinnerTimestamp = row.winner_timestamp;
-          if (row.winner_name) {
-            triggerWinnerAward(row.winner_name);
+        const rowTS = row.winner_timestamp ? Number(row.winner_timestamp) : 0;
+        if (rowTS > 0) {
+          if (window.__lastWinnerTimestamp === null) {
+            // 최초 로드 시점에는 현재 당첨 타임스탬프를 초기값으로 잠정 동기화만 해둠 (폭죽 스킵)
+            window.__lastWinnerTimestamp = rowTS;
+          } else if (window.__lastWinnerTimestamp !== rowTS) {
+            // 최초 로드 이후에 새로 갱신(발표)이 이뤄졌을 때만 실시간 반응 발현!
+            window.__lastWinnerTimestamp = rowTS;
+            if (row.winner_name) {
+              triggerWinnerAward(row.winner_name);
+            }
           }
         }
       }
@@ -985,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // === [NEW] 소통왕 당첨자 정보 입력 리스너 및 애니메이션 연계 ===
-  window.__lastWinnerTimestamp = 0;
+  window.__lastWinnerTimestamp = null;
 
   function triggerWinnerAward(winnerName) {
     spawnConfetti();
