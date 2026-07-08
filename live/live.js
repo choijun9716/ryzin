@@ -1,6 +1,10 @@
+// === Global Supabase & State Variables ===
+let db = null;
+let LIVE_ID = 'live01';
+
 document.addEventListener('DOMContentLoaded', () => {
   // === Supabase 및 localStorage 연동 로직 (어드민 제어) ===
-  const db = window.supabaseClient;
+  db = window.supabaseClient;
   let userNickname = '';
   window.__winnerCountdownSeconds = 0;
   window.__lastWinnerTimestamp = null;
@@ -8,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
   const urlParams = new URLSearchParams(window.location.search);
-  const LIVE_ID = urlParams.get('id') || 'live01';
+  LIVE_ID = urlParams.get('id') || 'live01';
 
   let lastChatTime = 0; // 0으로 설정하면 최초 로드 시 전체 채팅 이력 로드
   let chatHistoryLoaded = false; // 최초 전체 이력 로드 여부 추적
