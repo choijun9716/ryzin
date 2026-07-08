@@ -609,9 +609,7 @@ body {
   background-color: #000;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: 38%;
-  box-sizing: border-box;
+  align-items: center;
 }
 
 /* ui-layer보다 뒤에 썸네일이 오게 하려면 z-index: 1 */
