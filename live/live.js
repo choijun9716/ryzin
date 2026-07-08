@@ -139,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
       showViewers: row.show_viewers !== false,
       thumbnailUrl: row.thumbnail_url || '',
       liveStartTime: row.start_time || '',
-      isLive: row.status === 'ON'
+      isLive: row.status === 'ON',
+      likeImageUrl: row.like_image_url || ''
     };
 
     const stats = {
@@ -983,7 +984,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => p.remove(), 800);
       }
 
-      // === [NEW] 랜덤 믹스 엔진: 커스텀 이미지가 등록되어 있으면 50% 확률로 섞어서 띄움 ===
+      // === [NEW] 랜덤 믹스 엔진: 커스텀 이미지가 등록되어 있으면 85% 확률로 섞어서 띄움 ===
       let likeImgUrl = '';
       try {
         const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
@@ -996,13 +997,13 @@ document.addEventListener('DOMContentLoaded', () => {
       heart.style.pointerEvents = 'none';
       heart.style.zIndex = '9999';
 
-      const showCustomIcon = likeImgUrl && (Math.random() < 0.5);
+      const showCustomIcon = likeImgUrl && (Math.random() < 0.85);
 
       if (showCustomIcon) {
-        // 50% 확률로 커스텀 PNG/GIF 애니메이션 이미지 발사
+        // 85% 확률로 커스텀 PNG/GIF 애니메이션 이미지 발사
         heart.innerHTML = `<img src="${likeImgUrl}" style="width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.22));">`;
       } else {
-        // 50% 확률로 다채로운 그라데이션 하트 랜덤 발사
+        // 15% 확률로 다채로운 그라데이션 하트 랜덤 발사
         const colors = [
           ['#ff4081', '#ff1744'],
           ['#ff9100', '#ffea00'],
