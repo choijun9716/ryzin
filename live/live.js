@@ -608,19 +608,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const closeProductModal = () => {
     if (productModal) productModal.classList.add('hidden');
-    try {
-      const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
-      const now = Date.now();
-      const activeProducts = (p && Array.isArray(p)) ? p.filter(item => {
-        if (item.dealEndTime && item.dealEndTime > 0 && now >= item.dealEndTime) return false;
-        return true;
-      }) : [];
+    // 모달이 완전히 화면 밖으로 퇴장(슬라이드 다운 300ms)한 뒤 시간차를 두고 상품 배너 복구
+    setTimeout(() => {
+      if (productModal && productModal.classList.contains('hidden')) {
+        try {
+          const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
+          const now = Date.now();
+          const activeProducts = (p && Array.isArray(p)) ? p.filter(item => {
+            if (item.dealEndTime && item.dealEndTime > 0 && now >= item.dealEndTime) return false;
+            return true;
+          }) : [];
 
-      if (activeProducts.length > 0) {
-        if (bottomProductBanner) bottomProductBanner.style.display = 'flex';
-        if (chatSectionForModal) chatSectionForModal.classList.add('banner-active');
+          if (activeProducts.length > 0) {
+            if (bottomProductBanner) bottomProductBanner.style.display = 'flex';
+            if (chatSectionForModal) chatSectionForModal.classList.add('banner-active');
+          }
+        } catch (e) {}
       }
-    } catch (e) {}
+    }, 300);
   };
 
   if (btnShop) {
