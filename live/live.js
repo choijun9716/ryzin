@@ -978,6 +978,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 브라우저 포커스가 돌아왔을 때 무조건 다시 재생
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      video.play().catch(e => console.warn(e));
+    }
   });
 
   // === [NEW] 소통왕 당첨자 정보 입력 리스너 및 애니메이션 연계 ===
