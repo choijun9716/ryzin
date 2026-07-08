@@ -802,26 +802,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnLike.addEventListener('click', () => {
       likeCount += 1;
-      likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\\.0$/, '') + 'K';
+      likeCountEl.textContent = (likeCount / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
 
       const heart = document.createElement('div');
       heart.className = 'floating-heart';
-      heart.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="#e50914" stroke="#e50914" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
       heart.style.position = 'absolute';
-
-      const rect = btnLike.getBoundingClientRect();
-      heart.style.left = rect.left + (rect.width / 2) - 12 + 'px';
-      heart.style.top = rect.top + 'px';
       heart.style.pointerEvents = 'none';
       heart.style.zIndex = '9999';
 
-      const randomX = (Math.random() - 0.5) * 100;
-      heart.style.setProperty('--tx', randomX + 'px');
+      let likeImgUrl = '';
+      try {
+        const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
+        if (c && c.likeImageUrl) likeImgUrl = c.likeImageUrl;
+      } catch (e) {}
 
-      heart.style.animation = 'dynamicFloatUp 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+      if (likeImgUrl) {
+        // 커스텀 업로드 애니메이션 이미지 연출
+        heart.innerHTML = `<img src="${likeImgUrl}" style="width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.22));">`;
+      } else {
+        // 고퀄리티 그라데이션 하트 랜덤 연출
+        const colors = [
+          ['#ff4081', '#ff1744'], // 체리 핑크
+          ['#ff9100', '#ffea00'], // 오렌지 골드
+          ['#00e5ff', '#00e676'], // 민트 시안
+          ['#651fff', '#d500f9'], // 네온 바이올렛
+          ['#ff3d00', '#ff9100'], // 파이어 오렌지
+          ['#e040fb', '#00e5ff']  // 퍼플 시안 그라디언트
+        ];
+        const randGrad = colors[Math.floor(Math.random() * colors.length)];
+        const gradId = `heart-grad-${Math.floor(Math.random() * 1000000)}`;
+
+        heart.innerHTML = `
+          <svg width="28" height="28" viewBox="0 0 24 24" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));">
+            <defs>
+              <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="${randGrad[0]}" />
+                <stop offset="100%" stop-color="${randGrad[1]}" />
+              </linearGradient>
+            </defs>
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="url(#${gradId})"></path>
+          </svg>
+        `;
+      }
+
+      const rect = btnLike.getBoundingClientRect();
+      heart.style.left = rect.left + (rect.width / 2) - 14 + 'px';
+      heart.style.top = rect.top + 'px';
+
+      // 궤적 물리 물리엔진 적용 (좌우 스윙 및 회전 물리각 산출)
+      const randomX = (Math.random() - 0.5) * 120;
+      const rot1 = (Math.random() - 0.5) * 45;
+      const rot2 = (Math.random() - 0.5) * 90;
+      const rot3 = (Math.random() - 0.5) * 140;
+
+      heart.style.setProperty('--tx', randomX + 'px');
+      heart.style.setProperty('--rot1', rot1 + 'deg');
+      heart.style.setProperty('--rot2', rot2 + 'deg');
+      heart.style.setProperty('--rot3', rot3 + 'deg');
+
+      heart.style.animation = 'dynamicFloatUp 1.8s cubic-bezier(0.1, 0.8, 0.3, 1) forwards';
       document.body.appendChild(heart);
 
-      setTimeout(() => heart.remove(), 1500);
+      setTimeout(() => heart.remove(), 1800);
     });
   }
   // 모바일 키보드 열림 등으로 인해 비디오가 일시정지되는 현상 방지
@@ -870,15 +912,19 @@ const style = document.createElement('style');
 style.innerHTML = `
 @keyframes dynamicFloatUp {
   0% { 
-    transform: translate(0, 0) scale(0.5); 
+    transform: translate(0, 0) scale(0.4) rotate(0deg); 
     opacity: 0; 
   }
-  20% { 
-    transform: translate(calc(var(--tx) * 0.2), -30px) scale(1.2); 
-    opacity: 1; 
+  15% { 
+    transform: translate(calc(var(--tx) * 0.15), -40px) scale(1.3) rotate(var(--rot1)); 
+    opacity: 0.95; 
+  }
+  50% {
+    transform: translate(calc(var(--tx) * 0.5), -120px) scale(1.1) rotate(var(--rot2)); 
+    opacity: 0.85;
   }
   100% { 
-    transform: translate(var(--tx), -200px) scale(1); 
+    transform: translate(var(--tx), -260px) scale(0.6) rotate(var(--rot3)); 
     opacity: 0; 
   }
 }

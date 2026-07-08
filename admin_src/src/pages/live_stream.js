@@ -62,6 +62,7 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       share_title: config.shareTitle || '',
       share_desc: config.shareDesc || '',
       share_image: config.shareImageUrl || '',
+      like_image_url: config.likeImageUrl || '',
       updated_at: new Date().toISOString()
     };
     try {
@@ -418,7 +419,8 @@ function renderLiveEditView(container, liveId, showView) {
             botEnabled: false,
             shareTitle: data.share_title || '',
             shareDesc: data.share_desc || '',
-            shareImageUrl: data.share_image || ''
+            shareImageUrl: data.share_image || '',
+            likeImageUrl: data.like_image_url || ''
           };
           stats = {
             viewers: data.viewers || 0,
@@ -589,7 +591,7 @@ function renderLiveEditView(container, liveId, showView) {
           <label class="modern-label">방송 시작 예정 일시 (카운트다운용)</label>
           <input type="datetime-local" class="modern-input" id="cfg-liveStartTime" value="${config.liveStartTime || ''}">
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-bottom:18px;">
           <div class="file-upload-wrapper">
             <div style="width:56px; height:56px; border-radius:50%; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0;">
               <img id="logo-preview" src="${config.logoUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
@@ -608,6 +610,20 @@ function renderLiveEditView(container, liveId, showView) {
               <label class="modern-label">썸네일 (9:16)</label>
               <label class="file-upload-btn" for="cfg-thumbnailFile">이미지 업로드</label>
               <input type="file" id="cfg-thumbnailFile" accept="image/*" style="display:none;">
+            </div>
+          </div>
+          <div class="file-upload-wrapper">
+            <div style="width:56px; height:56px; border-radius:8px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0; position:relative; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+              <img id="like-preview" src="${config.likeImageUrl || ''}" style="width:100%; height:100%; object-fit:contain; display:${config.likeImageUrl ? 'block' : 'none'};">
+              <span id="like-preview-placeholder" style="font-size:24px; display:${config.likeImageUrl ? 'none' : 'block'};">❤️</span>
+            </div>
+            <div>
+              <label class="modern-label">응원콘 (GIF/PNG)</label>
+              <div style="display:flex; gap:6px;">
+                <label class="file-upload-btn" style="margin:0;" for="cfg-likeFile">업로드</label>
+                <button id="btn-clear-like-icon" class="action-btn btn-neutral" style="padding:4px 8px; font-size:11px; height:28px; border-color:#fee2e2; background:#fff5f5; color:#ef4444; display:${config.likeImageUrl ? 'block' : 'none'};">삭제</button>
+              </div>
+              <input type="file" id="cfg-likeFile" accept="image/gif, image/png, image/jpeg, image/webp" style="display:none;">
             </div>
           </div>
         </div>
@@ -811,9 +827,60 @@ function renderLiveEditView(container, liveId, showView) {
       }
     };
 
+    const uploadLikeImage = async (file) => {
+      if (!file) return;
+      const preview = document.getElementById('like-preview');
+      const placeholder = document.getElementById('like-preview-placeholder');
+      const clearBtn = document.getElementById('btn-clear-like-icon');
+      
+      preview.style.opacity = '0.5';
+      try {
+        let base64 = '';
+        if (file.size < 1.2 * 1024 * 1024) {
+          base64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+            reader.readAsDataURL(file);
+          });
+        } else {
+          base64 = await compressImage(file, 512, 512, 0.9);
+        }
+
+        const url = await uploadToImgBB(base64);
+        config.likeImageUrl = url;
+        preview.src = url;
+        preview.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        if (clearBtn) clearBtn.style.display = 'block';
+        saveConfig();
+      } catch (err) {
+        console.error('응원 이미지 업로드 오류:', err);
+        alert('응원 이미지 업로드 실패: ' + err.message);
+      } finally {
+        preview.style.opacity = '1';
+      }
+    };
+
     document.getElementById('cfg-logoFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'logo-preview', 'logoUrl'));
     document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
     document.getElementById('cfg-shareImageFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'share-image-preview', 'shareImageUrl'));
+    document.getElementById('cfg-likeFile').addEventListener('change', (e) => uploadLikeImage(e.target.files[0]));
+
+    // 응원 이미지 삭제 버튼 바인딩
+    document.getElementById('btn-clear-like-icon').addEventListener('click', () => {
+      config.likeImageUrl = '';
+      const preview = document.getElementById('like-preview');
+      const placeholder = document.getElementById('like-preview-placeholder');
+      const clearBtn = document.getElementById('btn-clear-like-icon');
+      
+      if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+      if (placeholder) placeholder.style.display = 'block';
+      if (clearBtn) clearBtn.style.display = 'none';
+      saveConfig();
+    });
 
     // 라이브관제에서 실시간 통계 정보 패치 후 노출
     if (db) {
