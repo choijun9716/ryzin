@@ -65,6 +65,8 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       share_desc: config.shareDesc || '',
       share_image: config.shareImageUrl || '',
       like_image_url: config.likeImageUrl || '',
+      banned_words: config.bannedWords || '',
+      banned_users: config.bannedUsers || '',
       updated_at: new Date().toISOString()
     };
     try {
@@ -928,6 +930,25 @@ function renderLiveEditView(container, liveId, showView) {
         <input type="password" id="cfg-github-token" placeholder="ghp_xxxxxxxxxxxx" value="${localStorage.getItem('ryzin_github_token') || ''}" style="width:180px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; outline:none; background:#fff;">
       </div>
 
+      <!-- 💬 채팅 정책 설정 (금칙어 및 차단) -->
+      <div class="section-card" style="margin-top: 18px;">
+        <h3 style="margin:0 0 4px 0; border:none; padding:0;">💬 채팅 정책 설정</h3>
+        <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">방송 중 채팅 금칙어를 설정하고, 차단된 사용자 목록을 관리할 수 있습니다.</p>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+          <div>
+            <label class="modern-label">채팅 금칙어 (쉼표로 구분)</label>
+            <textarea class="modern-input" id="cfg-bannedWords" style="height:80px; resize:none; padding:10px 14px; font-size:13px;" placeholder="예: 욕설,바보,비속어,광고">${config.bannedWords || ''}</textarea>
+            <div style="font-size:10px; color:#94a3b8; margin-top:4px;">쉼표(,)로 구분해 입력해 주세요. 시청자가 전송 시 차단됩니다.</div>
+          </div>
+          <div>
+            <label class="modern-label">차단된 시청자 닉네임 목록 (쉼표로 구분)</label>
+            <textarea class="modern-input" id="cfg-bannedUsers" style="height:80px; resize:none; padding:10px 14px; font-size:13px;" placeholder="차단된 사용자가 없습니다.">${config.bannedUsers || ''}</textarea>
+            <div style="font-size:10px; color:#94a3b8; margin-top:4px;">쉼표(,)로 구분하여 직접 추가하거나, 채팅방에서 바로 차단할 수 있습니다.</div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex; gap:12px;">
         <button id="btn-save-config" class="action-btn btn-primary-solid" style="flex:1; justify-content:center; padding:14px; font-size:15px;">설정 저장</button>
         <button id="btn-toggle-live" class="action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}" style="flex:1; justify-content:center; padding:14px; font-size:15px;">
@@ -956,6 +977,8 @@ function renderLiveEditView(container, liveId, showView) {
       config.showViewers = document.getElementById('cfg-showViewers').checked;
       config.shareTitle = document.getElementById('cfg-shareTitle').value;
       config.shareDesc = document.getElementById('cfg-shareDesc').value;
+      config.bannedWords = document.getElementById('cfg-bannedWords').value.trim();
+      config.bannedUsers = document.getElementById('cfg-bannedUsers').value.trim();
       saveConfig();
       saveStats();
       topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
@@ -1523,12 +1546,50 @@ function renderLiveEditView(container, liveId, showView) {
     const addAdminChatItem = (name, text, isHistory = false) => {
       if (chatList.innerHTML.includes('실시간 채팅 내역이 여기에')) chatList.innerHTML = '';
       const div = document.createElement('div');
-      div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;' + (isHistory ? 'opacity:0.72;' : '');
-      const nameColor = name === '관리자' ? '#3b82f6' : '#64748b';
-      div.innerHTML = `<span style="font-weight:700; color:${nameColor};">${name}:</span> ${text}`;
+      div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;' + (isHistory ? 'opacity:0.72;' : '');
+      const nameColor = name === '관리자' || name.includes('|') ? '#3b82f6' : '#64748b';
+      
+      let cleanName = name;
+      let isAdmin = false;
+      if (name.includes('|')) {
+        cleanName = name.split('|')[0];
+        isAdmin = true;
+      } else if (name === '관리자') {
+        isAdmin = true;
+      }
+
+      const banBtnHtml = (!isAdmin && cleanName !== '?') 
+        ? `<button class="btn-ban-user" data-nickname="${cleanName}" style="background:#ef4444; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer; margin-left:8px; line-height:1.4; flex-shrink:0;">차단</button>` 
+        : '';
+
+      div.innerHTML = `
+        <div style="flex:1; min-width:0; word-break:break-all; font-size:13px;">
+          <span style="font-weight:700; color:${nameColor};">${cleanName}:</span> ${text}
+        </div>
+        ${banBtnHtml}
+      `;
+
+      const banBtn = div.querySelector('.btn-ban-user');
+      if (banBtn) {
+        banBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetNick = banBtn.dataset.nickname;
+          if (confirm(`📡 [${targetNick}] 시청자를 차단하시겠습니까?\n차단 이후에는 이 시청자의 채팅 전송이 제한됩니다.`)) {
+            let bans = config.bannedUsers ? config.bannedUsers.split(',').map(u => u.trim()).filter(u => u) : [];
+            if (!bans.includes(targetNick)) {
+              bans.push(targetNick);
+              config.bannedUsers = bans.join(',');
+              saveConfig();
+              syncToSheetDB(liveId, config, stats, products, true);
+              alert(`[${targetNick}] 님이 정상 차단되었습니다.`);
+              renderChatTab();
+            }
+          }
+        });
+      }
+
       chatList.appendChild(div);
       if (!isHistory) chatList.scrollTop = chatList.scrollHeight;
-
     };
 
     // 1. 최초 이력 로드

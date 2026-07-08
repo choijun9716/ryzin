@@ -131,10 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // [NEW] 채팅 금칙어 및 차단 유저 정보 전역 변수에 실시간 갱신
+    window.bannedWords = row.banned_words || '';
+    window.bannedUsers = row.banned_users || '';
+    if (typeof checkUserBanStatus === 'function') {
+      checkUserBanStatus();
+    }
+
     const config = {
       liveId: row.live_id || 'live01',
-      brandName: row.title || 'Ryzin Corp', // '제목'을 title 필드로 맵핑
-      title: row.subtitle || '단독 특가 라이브 방송 중!', // '부제목'을 subtitle 필드로 맵핑
+      brandName: row.title || 'Ryzin Corp',
+      title: row.subtitle || '단독 특가 라이브 방송 중!',
       logoUrl: row.profile_image || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
       streamUrl: row.stream_url || '',
       showViewers: row.show_viewers !== false,
@@ -776,6 +783,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   userNickname = localStorage.getItem('ryzin_nickname') || '';
 
+  // 페이지 초기 로드 시 차단 여부 선제 적용
+  setTimeout(() => {
+    if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
+  }, 300);
+
   // 채팅 입력창은 항상 보여줌 (닉네임 여부와 무관)
   chatSectionWrap.style.display = 'block';
 
@@ -819,9 +831,11 @@ document.addEventListener('DOMContentLoaded', () => {
       userNickname = n;
       localStorage.setItem('ryzin_nickname', n);
       nicknameModal.style.display = 'none';
+      if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
       setTimeout(() => {
-        chatInput.disabled = false;
-        chatInput.focus();
+        if (chatInput && !chatInput.disabled) {
+          chatInput.focus();
+        }
       }, 100);
     }
   });
@@ -877,27 +891,63 @@ document.addEventListener('DOMContentLoaded', () => {
   let isChatSending = false;
   async function sendMessage() {
     const text = chatInput.value.trim();
-    if (text && userNickname && !isChatSending) {
-      isChatSending = true;
-      // 로컬에 먼저 보여주기
-      addMessage(userNickname, text);
-      mySentTexts.push(text);
-      chatInput.value = '';
+    if (!text || !userNickname || isChatSending) return;
 
-      // Supabase 'live_chats' 전송
-      try {
-        if (!db) return;
-        const chatData = { 
-          'live_id': LIVE_ID, 
-          'created_at': new Date().getTime(), 
-          'nickname': userNickname, 
-          'content': text 
-        };
-        await db.from('live_chats').insert([chatData]);
-      } catch (e) { console.warn(e); }
-      finally { isChatSending = false; }
+    // 1. 차단 유저 실시간 검사
+    const bans = (window.bannedUsers || '').split(',').map(u => u.trim()).filter(u => u);
+    if (bans.includes(userNickname)) {
+      alert('채팅이 제한된 사용자입니다.');
+      chatInput.value = '';
+      if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
+      return;
     }
+
+    // 2. 금칙어 실시간 필터링 검사
+    const badWords = (window.bannedWords || '').split(',').map(w => w.trim()).filter(w => w);
+    for (const word of badWords) {
+      if (text.includes(word)) {
+        alert('금칙어 혹은 비속어가 포함되어 있어 전송할 수 없습니다.');
+        chatInput.value = '';
+        return;
+      }
+    }
+
+    isChatSending = true;
+    // 로컬에 먼저 보여주기
+    addMessage(userNickname, text);
+    mySentTexts.push(text);
+    chatInput.value = '';
+
+    // Supabase 'live_chats' 전송
+    try {
+      if (!db) return;
+      const chatData = { 
+        'live_id': LIVE_ID, 
+        'created_at': new Date().getTime(), 
+        'nickname': userNickname, 
+        'content': text 
+      };
+      await db.from('live_chats').insert([chatData]);
+    } catch (e) { console.warn(e); }
+    finally { isChatSending = false; }
   }
+
+  // 차단 상태 체크 및 입력 인풋 잠금(disabled) 제어
+  window.checkUserBanStatus = function() {
+    const currentNick = (userNickname || '').trim();
+    const bans = (window.bannedUsers || '').split(',').map(u => u.trim()).filter(u => u);
+    const inputEl = document.getElementById('chat-input');
+    if (!inputEl) return;
+    
+    if (currentNick && bans.includes(currentNick)) {
+      inputEl.disabled = true;
+      inputEl.placeholder = '채팅이 제한된 사용자입니다.';
+      inputEl.blur();
+    } else {
+      inputEl.disabled = false;
+      inputEl.placeholder = '실시간 채팅에 참여하세요...';
+    }
+  };
 
   // 엔터 키 입력 시 모바일/PC 100% 호환 전송 보장
   chatInput.addEventListener('keydown', (e) => {
