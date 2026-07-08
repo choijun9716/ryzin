@@ -674,10 +674,12 @@ document.addEventListener('DOMContentLoaded', () => {
     chatSectionWrap.addEventListener('click', handleChatInteract);
   }
 
-  // 전송 버튼 클릭 시 닉네임 없으면 모달 팝업
+  // 전송 버튼 클릭 시 닉네임 없으면 모달 팝업, 있으면 채팅 전송!
   btnSend.addEventListener('click', (e) => {
     if (!userNickname) {
       handleChatInteract(e);
+    } else {
+      sendMessage();
     }
   });
 
@@ -738,9 +740,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  chatInput.addEventListener('keypress', (e) => {
+  // 엔터 키 입력 시 모바일/PC 100% 호환 전송 보장
+  chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!userNickname) { openNicknameModal(); return; }
+      e.preventDefault();
+      if (!userNickname) {
+        handleChatInteract(e);
+        return;
+      }
       sendMessage();
     }
   });
