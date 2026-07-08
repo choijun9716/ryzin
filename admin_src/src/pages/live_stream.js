@@ -852,7 +852,10 @@ function renderLiveEditView(container, liveId, showView) {
   const renderChatTab = () => {
     contentArea.innerHTML = `
       <div class="section-card">
-        <h3>관리자 채팅 발송</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9;">
+          <h3 style="margin:0; border:none; padding:0;">관리자 채팅 발송</h3>
+          <button id="btn-clear-chats" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px; color:#ef4444; border-color:#fee2e2; background:#fff5f5;">채팅 내역 초기화</button>
+        </div>
         <div id="admin-chat-list" style="height:200px; overflow-y:auto; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:16px; font-size:14px;">
           <div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
             <div style="font-size:24px; margin-bottom:8px;">💭</div>
@@ -914,6 +917,33 @@ function renderLiveEditView(container, liveId, showView) {
     };
     document.getElementById('btn-send-chat').addEventListener('click', sendAdminChat);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAdminChat(); });
+
+    // 채팅 내역 초기화
+    document.getElementById('btn-clear-chats').addEventListener('click', async () => {
+      if (confirm('📡 이 라이브 방송의 모든 실시간 채팅 내역을 초기화(영구 삭제)하시겠습니까?\n이 작업은 복구할 수 없습니다.')) {
+        const btn = document.getElementById('btn-clear-chats');
+        btn.disabled = true;
+        btn.textContent = '초기화 중...';
+        try {
+          if (!db) throw new Error('Supabase client가 로드되지 않았습니다.');
+          const { error } = await db
+            .from('live_chats')
+            .delete()
+            .eq('live_id', liveId);
+          if (error) throw error;
+          alert('채팅 내역이 성공적으로 초기화되었습니다!');
+          chatList.innerHTML = `<div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
+            <div style="font-size:24px; margin-bottom:8px;">💭</div>
+            실시간 채팅 내역이 여기에 표시됩니다.
+          </div>`;
+        } catch (err) {
+          alert('채팅 내역 초기화 실패: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '채팅 내역 초기화';
+        }
+      }
+    });
 
     // 채팅 봇
     const botListEl = document.getElementById('bot-chat-list');
