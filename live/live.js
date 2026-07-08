@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.__lastWinnerTimestamp = rowTS;
           const diffSec = Math.round((rowTS - Date.now()) / 1000);
           window.__winnerCountdownSeconds = diffSec > 0 ? diffSec : 60;
+          spawnConfetti(); // === [NEW] 당첨자 선포에 맞추어 오색 폭죽 파티클 분사! ===
         }
       } else {
         // 어드민에서 강제 종료를 누른 경우 즉시 카운트다운을 종료시킴
@@ -1141,4 +1142,41 @@ setInterval(() => {
     }
   } catch (err) { }
 }, 1000);
+
+// Confetti 오색폭죽 흩날림 물리 가속 연출 함수 (안전 가드 장착)
+function spawnConfetti() {
+  const container = document.body;
+  if (!container) return; // 철벽 가드
+
+  const colors = ['#fcc419', '#ff8787', '#74c0fc', '#63e6be', '#da77f3', '#ff922b'];
+  for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = '-20px';
+    p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const w = 6 + Math.random() * 8;
+    const h = 6 + Math.random() * 8;
+    p.style.width = w + 'px';
+    p.style.height = h + 'px';
+
+    const rotation = Math.random() * 360;
+    p.style.transform = `rotate(${rotation}deg)`;
+
+    const dur = 2.5 + Math.random() * 2.5;
+    const delay = Math.random() * 1.0;
+
+    p.style.transition = `transform ${dur}s linear ${delay}s, top ${dur}s linear ${delay}s, opacity ${dur}s ease-in ${delay}s`;
+    container.appendChild(p);
+
+    setTimeout(() => {
+      p.style.top = '105vh';
+      p.style.transform = `rotate(${rotation + (Math.random() - 0.5) * 720}deg) translate(${(Math.random() - 0.5) * 150}px, 0)`;
+      p.style.opacity = '0';
+    }, 50);
+
+    setTimeout(() => p.remove(), (dur + delay) * 1000 + 100);
+  }
+}
 
