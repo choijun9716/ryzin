@@ -1002,53 +1002,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // === [NEW] 소통왕 당첨자 정보 입력 리스너 및 애니메이션 연계 ===
   window.__lastWinnerTimestamp = null;
 
-  const btnSubmitAddress = document.getElementById('btn-submit-address');
-  if (btnSubmitAddress) {
-    btnSubmitAddress.addEventListener('click', async () => {
-      const realName = document.getElementById('winner-real-name').value.trim();
-      const phone = document.getElementById('winner-phone').value.trim();
-      const address = document.getElementById('winner-address').value.trim();
-
-      if (!realName || !phone || !address) {
-        alert('배송 정보를 모든 칸에 정확히 입력해주세요.');
-        return;
-      }
-
-      btnSubmitAddress.disabled = true;
-      btnSubmitAddress.textContent = '제출 중...';
-
-      try {
-        if (!db) return;
-        const { error } = await db.from('live_winners').insert([{
-          live_id: LIVE_ID,
-          nickname: userNickname,
-          name: realName,
-          phone: phone,
-          address: address,
-          created_at: Date.now()
-        }]);
-
-        if (error) throw error;
-
-        // 제출 완료 로컬 마킹
-        const wTS = Number(localStorage.getItem('ryzin_winner_timestamp')) || 0;
-        if (wTS > 0) {
-          localStorage.setItem(`ryzin_winner_submitted_${wTS}`, 'true');
-        }
-
-        alert('🎉 경품 배송 정보가 성공적으로 제출되었습니다. 감사합니다!');
-        const addressModal = document.getElementById('winner-address-modal');
-        if (addressModal) addressModal.style.display = 'none';
-      } catch (err) {
-        console.warn(err);
-        alert('정보 제출에 실패했습니다. 다시 시도해주세요.');
-      } finally {
-        btnSubmitAddress.disabled = false;
-        btnSubmitAddress.textContent = '정보 제출하기';
-      }
-    });
-  }
-
 });
 
 // 커스텀 토스트 알림 함수 (alert 대체용)
@@ -1146,31 +1099,27 @@ setInterval(() => {
     }
   } catch (e) { }
 
-  // 2. [NEW] 소통왕 당첨 배너 및 배송지 정보 수집 1초 감시 로직 (깜짝딜과 동일한 단순 구조)
+  // 2. [NEW] 소통왕 당첨 배너 1초 감시 로직 (깜짝딜과 동일한 단순 구조)
   try {
     const wName = localStorage.getItem('ryzin_winner_name') || '';
-    const wTS = Number(localStorage.getItem('ryzin_winner_timestamp')) || 0;
+    const rawTS = localStorage.getItem('ryzin_winner_timestamp') || '';
+    let wTS = 0;
+    if (rawTS) {
+      if (!isNaN(rawTS)) {
+        wTS = Number(rawTS);
+      } else {
+        wTS = Date.parse(rawTS);
+      }
+    }
     const winnerEl = document.getElementById('winner-alert-overlay');
     const winnerNameSpan = document.getElementById('winner-name-span');
 
-    if (wTS > 0 && (Date.now() - wTS) < 10000) { // 당첨 발표 후 10초간 배너 유지
+    // 시간 오차 및 딜레이 완충을 위해 발표 시각 앞뒤 30초 이내에 해당할 때 배너 노출
+    if (wTS > 0 && Math.abs(Date.now() - wTS) < 30000) {
       if (winnerEl && winnerNameSpan) {
         winnerNameSpan.textContent = wName;
         if (winnerEl.style.display === 'none') {
           winnerEl.style.display = 'flex';
-        }
-      }
-
-      // 만약 내가 당첨자라면, 수령 정보 수집 모달창 띄움
-      const myNick = localStorage.getItem('ryzin_nickname') || '';
-      const addressModal = document.getElementById('winner-address-modal');
-      if (myNick && myNick === wName && addressModal) {
-        const isSubmitted = localStorage.getItem(`ryzin_winner_submitted_${wTS}`) === 'true';
-        if (!isSubmitted && addressModal.style.display === 'none') {
-          document.getElementById('winner-real-name').value = '';
-          document.getElementById('winner-phone').value = '';
-          document.getElementById('winner-address').value = '';
-          addressModal.style.display = 'flex';
         }
       }
     } else {
