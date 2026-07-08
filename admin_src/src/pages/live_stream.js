@@ -470,21 +470,29 @@ function renderLiveEditView(container, liveId, showView) {
 
   // 탑바
   const topBar = document.createElement('div');
-  topBar.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px 28px; background:#fff; border-bottom:1.5px solid #e2e8f0; flex-shrink:0;';
+  topBar.style.cssText = 'display:flex; align-items:center; gap:18px; padding:14px 28px; background:#fff; border-bottom:1.5px solid #e2e8f0; flex-shrink:0;';
+  
+  const statusBadge = config.isLive 
+    ? '<span style="font-size:10px; font-weight:800; color:#ef4444; background:#fee2e2; border:1px solid #fecaca; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center;">라이브 중</span>'
+    : '<span style="font-size:10px; font-weight:800; color:#64748b; background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center;">송출 대기</span>';
+
   topBar.innerHTML = `
-    <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px;">← 목록</button>
-    <div style="display:flex; align-items:center; gap:10px; flex:1;">
-      <span style="font-size:13px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 12px; border-radius:8px; font-family:monospace;">${liveId}</span>
-      <span style="font-size:16px; font-weight:700; color:#0f172a;">${config.brandName || ''}</span>
+    <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:4px;"><span style="font-size:14px; line-height:1;">←</span> 목록</button>
+    <div style="display:flex; align-items:center; gap:10px; min-width: 160px; max-width: 280px; flex-shrink:0;">
+      <span style="font-size:12px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-family:monospace; line-height:1; flex-shrink:0;">${liveId}</span>
+      <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px; line-height:1.2;" title="${config.brandName || ''}">${config.brandName || ''}</span>
+      ${statusBadge}
     </div>
-    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px;">
-      <button class="tab-btn active" data-tab="config">라이브 기본설정</button>
-      <button class="tab-btn" data-tab="chat">채팅 / 봇 관리</button>
-      <button class="tab-btn" data-tab="product">상품 관리</button>
+    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:420px; margin:0 auto;">
+      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
+      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
+      <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
     </div>
-    <div style="display:flex; align-items:center; gap:8px; margin-left:8px;">
-      <span style="font-size:12px; color:#64748b; font-weight:600;">시청자 URL</span>
-      <a href="https://ryzincorp.com/live?id=${liveId}" target="_blank" style="font-size:12px; color:#3b82f6; font-weight:600; font-family:monospace;">ryzincorp.com/live?id=${liveId} ↗</a>
+    <div style="display:flex; align-items:center; gap:8px; background:#eff6ff; border:1px dashed #bfdbfe; padding:6px 14px; border-radius:8px; flex-shrink:0;">
+      <span style="font-size:11px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
+      <a href="https://ryzincorp.com/live?id=${liveId}" target="_blank" style="font-size:11px; color:#2563eb; font-weight:700; font-family:monospace; text-decoration:none; display:flex; align-items:center; gap:2px; white-space:nowrap;">
+        ryzincorp.com/live?id=${liveId} <span style="font-size:12px; line-height:1;">↗</span>
+      </a>
     </div>
   `;
   leftPanel.appendChild(topBar);
