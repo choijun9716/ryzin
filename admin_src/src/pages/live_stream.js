@@ -1644,7 +1644,7 @@ function renderLiveEditView(container, liveId, showView) {
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
         <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:10px; border:1px solid #fecdd3;">
-          <span style="font-size:12px; font-weight:700; color:#e11d48;">⚡ 깜짝딜</span>
+          <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
           <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
           <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
           <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
@@ -1652,11 +1652,16 @@ function renderLiveEditView(container, liveId, showView) {
           ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
         </div>
         <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:10px; border:1px solid #bbf7d0; margin-top:6px;">
-          <span style="font-size:12px; font-weight:700; color:#16a34a;">🎯 좋아요 해금</span>
+          <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
           <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetLikes" placeholder="목표 좋아요" value="${p.targetLikes || ''}">
           <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
           <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
           <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
+          <div style="flex:1;"></div>
+          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none;">
+            <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
+            평소 숨김
+          </label>
         </div>
       </div>
     </div>
@@ -1720,7 +1725,11 @@ function renderLiveEditView(container, liveId, showView) {
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const field = e.target.dataset.field;
-          products[idx][field] = e.target.value;
+          if (e.target.type === 'checkbox') {
+            products[idx][field] = e.target.checked;
+          } else {
+            products[idx][field] = e.target.value;
+          }
           if (field === 'price' || field === 'normalPrice') {
             const n = Number((products[idx].normalPrice || '').toString().replace(/[^0-9]/g, ''));
             const p = Number((products[idx].price || '').toString().replace(/[^0-9]/g, ''));
@@ -1793,10 +1802,13 @@ function renderLiveEditView(container, liveId, showView) {
       plc.querySelectorAll('.btn-del-product').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);
-          products.splice(idx, 1);
-          saveProducts();
-          plc.innerHTML = renderProductList();
-          bindProductEvents();
+          const prodName = products[idx]?.name || '이 상품';
+          if (confirm(`정말 "${prodName}" 상품을 삭제하시겠습니까?`)) {
+            products.splice(idx, 1);
+            saveProducts();
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+          }
         });
       });
     };

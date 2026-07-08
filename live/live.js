@@ -444,9 +444,24 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 롤링 배너에 노출될 수 있는 유효한 상품 목록 필터링
         const activeProducts = p.filter(item => {
+          const isDealActive = item.dealEndTime && item.dealEndTime > now;
+
+          // A. 좋아요 목표 수가 설정되어 있는 상품인 경우 -> 깜짝딜 활성 시에만 노출
+          if (item.targetLikes && parseInt(item.targetLikes) > 0) {
+            return isDealActive;
+          }
+
+          // B. 어드민에서 "평소 숨김" 체크를 해둔 상품인 경우 -> 깜짝딜 활성 시에만 노출
+          if (item.hideByDefault === true || item.hideByDefault === 'true') {
+            return isDealActive;
+          }
+
+          // C. 깜짝딜 기간이 설정되었으나 이미 만료된 상품인 경우 -> 미노출
           if (item.dealEndTime && item.dealEndTime > 0 && now >= item.dealEndTime) {
             return false;
           }
+
+          // 일반 상품은 상시 노출
           return true;
         });
 
@@ -1210,7 +1225,7 @@ setInterval(() => {
                         spawnConfettiContinuous(40);
                       }
                       if (typeof addMessage === 'function') {
-                        addMessage('🔔 알림', `🎉 좋아요 ${parseInt(rp.targetLikes).toLocaleString()}개 달성! [${rp.name}] 깜짝딜이 오픈되었습니다! 🎉`, true, false);
+                        addMessage('알림', `좋아요 ${parseInt(rp.targetLikes).toLocaleString()}개 달성! [${rp.name}] 깜짝딜이 오픈되었습니다.`, true, false);
                       }
                     }
                   }
