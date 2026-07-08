@@ -76,6 +76,62 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
   else syncTimers[liveId] = setTimeout(doSync, 1200);
 }
 
+// ─── GitHub API: live/index.html OG 태그 자동 업데이트 ────────────
+async function updateGitHubOgTags(shareTitle, shareDesc, shareImageUrl) {
+  const token = localStorage.getItem('ryzin_github_token');
+  if (!token) {
+    console.warn('[GitHub OG] 토큰 없음 - 스킵');
+    return { skipped: true };
+  }
+  const owner = 'choijun9716';
+  const repo = 'ryzin';
+  const path = 'live/index.html';
+  const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const headers = {
+    'Authorization': `token ${token}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
+  };
+
+  const fileRes = await fetch(apiBase, { headers });
+  if (!fileRes.ok) throw new Error('GitHub API 파일 조회 실패: ' + fileRes.status);
+  const fileData = await fileRes.json();
+  const sha = fileData.sha;
+  const currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
+
+  const safeTitle = (shareTitle || 'RYZIN 라이브 방송 중').replace(/"/g, '&quot;');
+  const safeDesc = (shareDesc || '지금 바로 입장해서 라이브 특가를 놓치지 마세요!').replace(/"/g, '&quot;');
+  const safeImg = shareImageUrl || 'https://ryzincorp.com/live/og-default.jpg';
+
+  const newContent = currentContent
+    .replace(/<meta property="og:title" content="[^"]*">/,
+             `<meta property="og:title" content="${safeTitle}">`)
+    .replace(/<meta property="og:description" content="[^"]*">/,
+             `<meta property="og:description" content="${safeDesc}">`)
+    .replace(/<meta property="og:image" content="[^"]*">/,
+             `<meta property="og:image" content="${safeImg}">`)
+    .replace(/<meta name="twitter:title" content="[^"]*">/,
+             `<meta name="twitter:title" content="${safeTitle}">`)
+    .replace(/<meta name="twitter:description" content="[^"]*">/,
+             `<meta name="twitter:description" content="${safeDesc}">`)
+    .replace(/<meta name="twitter:image" content="[^"]*">/,
+             `<meta name="twitter:image" content="${safeImg}">`);
+
+  const encoded = btoa(unescape(encodeURIComponent(newContent)));
+  const pushRes = await fetch(apiBase, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({
+      message: `chore: OG 태그 업데이트 - ${safeTitle}`,
+      content: encoded,
+      sha
+    })
+  });
+  if (!pushRes.ok) throw new Error('GitHub API 커밋 실패: ' + pushRes.status);
+  return { success: true };
+}
+
+
 // ─── 공통 CSS 스타일 ─────────────────────────────────────────
 function injectGlobalStyles(container) {
   const style = document.createElement('style');
@@ -811,9 +867,19 @@ function renderLiveEditView(container, liveId, showView) {
             </div>
             <div style="margin-top:8px; padding:8px; background:#fefce8; border:1px solid #fde68a; border-radius:8px; font-size:10px; color:#713f12; line-height:1.5;">
               💡 <strong>이미지 변경 후</strong> 카카오가 이전 이미지를 계속 보여주면 <strong>[카카오 캐시 초기화]</strong> 버튼을 눌러주세요.
-            </div>
+        </div>
           </div>
         </div>
+      </div>
+
+      <!-- GitHub 연동 (OG 자동 커밋) -->
+      <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:18px;">🔗</span>
+        <div style="flex:1;">
+          <div style="font-size:12px; font-weight:700; color:#374151; margin-bottom:4px;">GitHub Token (OG 자동 반영)</div>
+          <div style="font-size:10px; color:#94a3b8;">설정 저장 시 ryzincorp.com 공유 카드도 자동 업데이트됩니다.</div>
+        </div>
+        <input type="password" id="cfg-github-token" placeholder="ghp_xxxxxxxxxxxx" value="${localStorage.getItem('ryzin_github_token') || ''}" style="width:180px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; outline:none; background:#fff;">
       </div>
 
       <div style="display:flex; gap:12px;">
@@ -824,8 +890,17 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
     `;
 
+
     // 이벤트
-    document.getElementById('btn-save-config').addEventListener('click', () => {
+    document.getElementById('btn-save-config').addEventListener('click', async () => {
+      const saveBtn = document.getElementById('btn-save-config');
+      saveBtn.disabled = true;
+      saveBtn.textContent = '저장 중...';
+
+      // GitHub 토큰 저장
+      const ghToken = document.getElementById('cfg-github-token').value.trim();
+      if (ghToken) localStorage.setItem('ryzin_github_token', ghToken);
+
       config.brandName = document.getElementById('cfg-brandName').value;
       config.title = document.getElementById('cfg-title').value;
       config.streamUrl = document.getElementById('cfg-stream').value;
@@ -837,32 +912,27 @@ function renderLiveEditView(container, liveId, showView) {
       config.shareDesc = document.getElementById('cfg-shareDesc').value;
       saveConfig();
       saveStats();
-      // topbar 브랜드명 업데이트
       topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
 
-      // 로컬 개발 서버가 떠있을 경우, 동적 OG 리다이렉트 HTML 생성/커밋/푸시 API 발송
-      fetch('/api/sync-live-og', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          liveId: liveId,
-          shareTitle: config.shareTitle,
-          shareDesc: config.shareDesc,
-          shareImageUrl: config.shareImageUrl || config.thumbnailUrl
-        })
-      }).then(res => res.json())
-        .then(res => {
-          if (res.success) {
-            console.log('공유 정적 HTML 파일 동기화 성공:', res.message);
-          } else {
-            console.warn('공유 정적 HTML 파일 빌드 경고:', res.error);
-          }
-        }).catch(err => {
-          console.warn('로컬 API 서버 연결 안 됨 (실서버 동작 시 무시):', err);
-        });
-
-      alert('설정이 저장되었습니다! 카카오톡 공유 카드에 즉시 반영됩니다.');
+      // GitHub API로 live/index.html OG 태그 자동 업데이트
+      const shareImageUrl = config.shareImageUrl || config.thumbnailUrl || '';
+      try {
+        saveBtn.textContent = 'GitHub 업데이트 중...';
+        const result = await updateGitHubOgTags(config.shareTitle, config.shareDesc, shareImageUrl);
+        if (result && result.success) {
+          alert('✅ 설정 저장 완료!\n\nryzincorp.com/live 공유 카드도 자동 업데이트되었습니다.\n(GitHub Pages 반영까지 1~2분 소요)');
+        } else if (result && result.skipped) {
+          alert('설정이 저장되었습니다!\n\n💡 GitHub Token을 입력하면 공유 카드 이미지도 자동 업데이트됩니다.');
+        }
+      } catch (err) {
+        console.error('[GitHub OG]', err);
+        alert('설정은 저장되었습니다.\n⚠️ GitHub 자동 업데이트 실패: ' + err.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '설정 저장';
+      }
     });
+
 
     // ── OG 미리보기 실시간 업데이트 ──
     const ogPreviewTitle = document.getElementById('og-preview-title');
