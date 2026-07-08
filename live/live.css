@@ -331,16 +331,15 @@ body {
 }
 
 .chat-msg {
-  display: flex;
-  flex-direction: column; /* 세로 일렬 정렬 (이름 위, 내용 아래) */
-  align-items: flex-start;
-  gap: 2px; /* 이름과 내용 사이 간격 촘촘하게 */
+  display: block; /* 인라인 자식들이 줄바꿈 없이 흐르도록 block으로 지정 */
   background: rgba(0, 0, 0, 0.4);
-  padding: 8px 14px; /* 말풍선 패딩 확장 */
-  border-radius: 16px;
+  padding: 6px 12px;
+  border-radius: 14px;
   max-width: 85%;
   align-self: flex-start;
   animation: slideIn 0.3s ease-out;
+  word-break: break-all;
+  line-height: 1.4;
 }
 
 .chat-msg.me {
@@ -349,9 +348,16 @@ body {
 
 .chat-name {
   font-weight: 700;
-  font-size: 11px; /* 이름 폰트는 조금 아담하게 */
+  font-size: 13px;
   color: #ffca28;
-  white-space: nowrap;
+  margin-right: 6px;
+  display: inline; /* 텍스트와 줄바꿈 없이 일렬 정렬 */
+}
+
+.chat-text {
+  font-size: 13px;
+  color: #ffffff;
+  display: inline; /* 닉네임 바로 뒤에 이어지도록 인라인화 */
 }
 
 .chat-msg.me .chat-name {
