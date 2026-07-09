@@ -433,9 +433,27 @@ function renderListView(container, showView) {
 // ═══════════════════════════════════════════════════════════════
 function renderLiveEditView(container, liveId, showView) {
   const base64ToBlob = (base64Data) => {
-    const parts = base64Data.split(';base64,');
-    const contentType = parts[0].split(':')[1] || 'image/png';
-    const raw = window.atob(parts[1] || parts[0]);
+    let contentType = 'image/png';
+    let base64 = base64Data;
+    
+    if (base64Data.includes(';base64,')) {
+      const parts = base64Data.split(';base64,');
+      contentType = parts[0].split(':')[1] || 'image/png';
+      base64 = parts[1];
+    } else {
+      // 순수 base64 문자열의 시작 패턴 기반으로 MIME 타입 추정
+      if (base64.startsWith('/9j/')) {
+        contentType = 'image/jpeg';
+      } else if (base64.startsWith('R0lG')) {
+        contentType = 'image/gif';
+      } else if (base64.startsWith('iVBOR')) {
+        contentType = 'image/png';
+      } else if (base64.startsWith('UklGR')) {
+        contentType = 'image/webp';
+      }
+    }
+    
+    const raw = window.atob(base64);
     const rawLength = raw.length;
     const uInt8Array = new Uint8Array(rawLength);
     for (let i = 0; i < rawLength; ++i) {
@@ -445,38 +463,39 @@ function renderLiveEditView(container, liveId, showView) {
   };
 
   const uploadToImgBB = async (base64Data) => {
-    if (!db) {
-      throw new Error('Supabase client가 존재하지 않습니다.');
+    // 0. 전송할 Blob 및 확장자 획득
+    const blob = base64ToBlob(base64Data);
+    let ext = 'png';
+    if (blob.type && blob.type.includes('/')) {
+      ext = blob.type.split('/')[1] || 'png';
     }
-    try {
-      const blob = base64ToBlob(base64Data);
-      let ext = 'png';
-      if (blob.type && blob.type.includes('/')) {
-        ext = blob.type.split('/')[1] || 'png';
+
+    // Supabase Storage 시도를 건너뛰고 바로 ImgBB로 업로드 실행
+    console.log('⚡ 이미지 서버(ImgBB)로 바로 업로드를 진행합니다.');
+    const IMGBB_KEYS = [
+      '117dfb947bc9e0045774b193d1eef7b6',
+      'd2b512c9bf10e4a3bfec604be1218579',
+      '6049a4f479f67a26eb3ccb8823b1eef7'
+    ];
+    let lastError = null;
+    for (const key of IMGBB_KEYS) {
+      try {
+        const fd = new FormData();
+        fd.append('key', key);
+        fd.append('image', blob, `image.${ext}`); // base64 문자열 대신 blob을 바이너리 파일 형태로 전송
+        const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success && json.data && json.data.url) {
+          return json.data.url;
+        } else {
+          throw new Error(json.error ? json.error.message : 'API 응답 실패');
+        }
+      } catch (err) {
+        console.warn(`[ImgBB] API Key (${key}) 업로드 실패:`, err);
+        lastError = err;
       }
-      const fileName = `${liveId}_${Date.now()}_${Math.floor(Math.random() * 10000)}.${ext}`;
-      const filePath = `uploads/${fileName}`;
-
-      // Supabase Storage 'images' 버킷에 이미지 업로드
-      const { data, error } = await db.storage
-        .from('images')
-        .upload(filePath, blob, {
-          contentType: blob.type,
-          upsert: true
-        });
-
-      if (error) throw error;
-
-      // 공개적으로 접근 가능한 CDN 주소 획득
-      const { data: { publicUrl } } = db.storage
-        .from('images')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
-    } catch (err) {
-      console.error('Supabase Storage 업로드 에러:', err);
-      throw new Error('이미지 서버 전송 실패: ' + err.message);
     }
+    throw lastError || new Error('모든 이미지 업로드 서버(ImgBB) 전송이 실패했습니다.');
   };
 
   const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
