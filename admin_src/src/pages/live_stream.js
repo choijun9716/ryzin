@@ -470,14 +470,20 @@ function renderLiveEditView(container, liveId, showView) {
       ext = blob.type.split('/')[1] || 'png';
     }
 
-    // Supabase Storage 시도를 건너뛰고 바로 ImgBB로 업로드 실행
-    console.log('⚡ 이미지 서버(ImgBB)로 바로 업로드를 진행합니다.');
-    const IMGBB_KEYS = [
+    // 1. 개인 설정 API 키 1순위 설정 및 백업 키 어레이 구성
+    const userKey = localStorage.getItem('ryzin_imgbb_key') || '';
+    const IMGBB_KEYS = [];
+    if (userKey) IMGBB_KEYS.push(userKey);
+    IMGBB_KEYS.push(
       '117dfb947bc9e0045774b193d1eef7b6',
       'd2b512c9bf10e4a3bfec604be1218579',
       '6049a4f479f67a26eb3ccb8823b1eef7'
-    ];
+    );
+
+    console.log('⚡ 이미지 서버(ImgBB) 업로드를 진행합니다. 시도할 키 개수:', IMGBB_KEYS.length);
     let lastError = null;
+    const errors = [];
+
     for (const key of IMGBB_KEYS) {
       try {
         const fd = new FormData();
@@ -491,11 +497,13 @@ function renderLiveEditView(container, liveId, showView) {
           throw new Error(json.error ? json.error.message : 'API 응답 실패');
         }
       } catch (err) {
-        console.warn(`[ImgBB] API Key (${key}) 업로드 실패:`, err);
+        const maskedKey = key ? `${key.substring(0, 4)}...` : 'none';
+        console.warn(`[ImgBB] API Key (${maskedKey}) 업로드 실패:`, err);
+        errors.push(`Key (${maskedKey}): ${err.message}`);
         lastError = err;
       }
     }
-    throw lastError || new Error('모든 이미지 업로드 서버(ImgBB) 전송이 실패했습니다.');
+    throw new Error('모든 이미지 업로드 서버(ImgBB) 전송이 실패했습니다.\n\n[상세 원인 리스트]\n' + errors.join('\n'));
   };
 
   const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
@@ -968,6 +976,16 @@ function renderLiveEditView(container, liveId, showView) {
         <input type="password" id="cfg-github-token" placeholder="ghp_xxxxxxxxxxxx" value="${localStorage.getItem('ryzin_github_token') || ''}" style="width:180px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; outline:none; background:#fff;">
       </div>
 
+      <!-- ImgBB API Key 설정 -->
+      <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:10px; margin-top: 10px;">
+        <span style="font-size:18px;">🖼️</span>
+        <div style="flex:1;">
+          <div style="font-size:12px; font-weight:700; color:#374151; margin-bottom:4px;">ImgBB API Key (이미지 업로드용)</div>
+          <div style="font-size:10px; color:#94a3b8;"><a href="https://api.imgbb.com/" target="_blank" style="color:#2563eb; text-decoration:underline; font-weight: 600;">여기</a>에서 무료로 발급받아 입력하시면 안정적인 이미지 업로드가 가능합니다.</div>
+        </div>
+        <input type="password" id="cfg-imgbb-key" placeholder="API Key 입력" value="${localStorage.getItem('ryzin_imgbb_key') || ''}" style="width:180px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; outline:none; background:#fff;">
+      </div>
+
       <!-- 💬 채팅 정책 설정 (금칙어 및 차단) -->
       <div class="section-card" style="margin-top: 18px;">
         <h3 style="margin:0 0 4px 0; border:none; padding:0;">💬 채팅 정책 설정</h3>
@@ -1005,6 +1023,10 @@ function renderLiveEditView(container, liveId, showView) {
       // GitHub 토큰 저장
       const ghToken = document.getElementById('cfg-github-token').value.trim();
       if (ghToken) localStorage.setItem('ryzin_github_token', ghToken);
+
+      // ImgBB API Key 저장
+      const imgbbKey = document.getElementById('cfg-imgbb-key').value.trim();
+      localStorage.setItem('ryzin_imgbb_key', imgbbKey);
 
       config.brandName = document.getElementById('cfg-brandName').value;
       config.title = document.getElementById('cfg-title').value;
