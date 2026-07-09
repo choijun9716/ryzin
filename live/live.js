@@ -498,6 +498,12 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
+            const currentConfig = JSON.parse(localStorage.getItem('ryzin_live_config') || '{}');
+            if (!currentConfig.isLive) {
+              e.preventDefault();
+              alert('라이브 방송 중에만 구매 가능합니다.');
+              return;
+            }
             if (!item.url || item.url === '#') e.preventDefault();
             try {
               const targetLiveId = LIVE_ID || 'live01';
@@ -587,6 +593,12 @@ document.addEventListener('DOMContentLoaded', () => {
               `;
               
               card.addEventListener('click', async (e) => {
+                const currentConfig = JSON.parse(localStorage.getItem('ryzin_live_config') || '{}');
+                if (!currentConfig.isLive) {
+                  e.preventDefault();
+                  alert('라이브 방송 중에만 구매 가능합니다.');
+                  return;
+                }
                 if (!item.url || item.url === '#') e.preventDefault();
                 try {
                   const targetLiveId = LIVE_ID || 'live01';
