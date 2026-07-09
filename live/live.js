@@ -355,7 +355,11 @@ document.addEventListener('DOMContentLoaded', () => {
             startText.textContent = c.liveStartTime;
           }
         } else if (startText) {
-          startText.textContent = '';
+          if (!c.isLive) {
+            startText.textContent = '라이브가 종료되었습니다.';
+          } else {
+            startText.textContent = '';
+          }
         }
 
         if (brandNameEl && c.brandName) brandNameEl.textContent = c.brandName;
