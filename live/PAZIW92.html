@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ryzin Live Commerce</title>
+
+  <!-- ── SNS 공유 카드 기본 OG 메타태그 ── -->
+  <!-- 카카오톡/슬랙/라인에서 ryzincorp.com/live?id=... 를 공유할 때 기본 카드 표시 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RYZIN LIVE">
+  <meta property="og:title" content="RYZIN 라이브 방송 중">
+  <meta property="og:description" content="지금 바로 입장해서 라이브 특가를 놓치지 마세요!">
+  <meta property="og:image" content="https://i.ibb.co/nNmPGC9T/image.jpg">
+  <meta property="og:url" content="https://ryzincorp.com/live/">
+  <meta property="og:locale" content="ko_KR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RYZIN 라이브 방송 중">
+  <meta name="twitter:description" content="지금 바로 입장해서 라이브 특가를 놓치지 마세요!">
+  <meta name="twitter:image" content="https://i.ibb.co/nNmPGC9T/image.jpg">
+
+  <!-- HLS.js for m3u8 playback -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <link rel="stylesheet" href="live.css?v=1783505550000">
+
+
+    <!-- RYZIN Live Redirector -->
+    <script>
+      const ua = navigator.userAgent || "";
+      if (!/bot|crawl|spider|facebook|kakao|naver|slack|twitter|scrap|preview/i.test(ua)) {
+        window.location.replace('./?id=PAZIW92');
+      }
+    </script>
+    </head>
+
+<body>
+  <div class="live-container">
+    <!-- 비디오 영역 -->
+    <div class="video-wrapper">
+      <video id="live-video" autoplay muted playsinline></video>
+
+      <!-- 썸네일 오버레이 (어드민에서 방송 시작 시 숨김 처리됨) -->
+      <div id="thumbnail-overlay" class="thumbnail-overlay">
+        <img id="thumbnail-img" class="thumbnail-img" src="" alt="Live Thumbnail" style="display:none;">
+        <div class="thumbnail-content">
+          <div id="live-start-text" class="live-start-text"></div>
+        </div>
+      </div>
+
+
+      <!-- 하단 그라데이션 오버레이 (텍스트 가독성) -->
+      <div class="bottom-gradient"></div>
+    </div>
+
+    <!-- UI 레이어 (비디오 위에 띄워지는 정보들) -->
+    <div class="ui-layer">
+      <!-- 상단 방송 정보 -->
+      <div class="header">
+        <div class="brand-info">
+          <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
+          <div class="text-side">
+            <h1 class="brand-name"></h1>
+            <p class="broadcast-title"></p>
+          </div>
+        </div>
+        <!-- 대기/LIVE 뱃지 + 시청자수 (프로필 아래 인라인 배치) -->
+        <div class="video-overlay">
+          <div class="live-badge">LIVE</div>
+          <div class="view-count"><span id="view-count"></span></div>
+        </div>
+      </div>
+
+      <!-- 깜짝딜 타이머 배너 (제목 아래 가운데 배치) -->
+      <div style="display:flex; justify-content:center; width:100%; pointer-events:none; padding-top:4px;">
+        <div id="surprise-deal-timer"
+          style="display:none; background:rgba(225,29,72,0.95); color:white; padding:8px 16px; border-radius:24px; font-weight:bold; font-size:14px; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(225,29,72,0.4); animation: pulse 2s infinite; pointer-events:auto;">
+
+          <span id="surprise-deal-text">깜짝딜 종료까지 00:00</span>
+        </div>
+      </div>
+
+      <!-- 소통왕/구매인증 전체 당첨 축하 플로팅 배너 (깜짝딜 배너 밑에 배치) -->
+      <div style="display:flex; justify-content:center; width:100%; pointer-events:none; padding-top:6px;">
+        <div id="winner-alert-overlay"
+          style="display:none; background:linear-gradient(135deg, #fab005, #ff8787); color:white; padding:8px 18px; border-radius:24px; font-weight:bold; font-size:14px; align-items:center; gap:8px; box-shadow:0 4px 15px rgba(250,176,5,0.4); animation: pulse 2s infinite; pointer-events:auto; z-index:9999;">
+          <span id="winner-emoji-span" style="font-size:15px; line-height:1;">🏆</span>
+          <span id="winner-text-span">소통왕 당첨: <span id="winner-name-span"
+              style="text-decoration:underline; font-weight:900; font-size:14px; margin-right:2px; color:#fff;"></span>님!
+            축하드립니다! 🎉</span>
+        </div>
+      </div>
+
+      <!-- 상품 모달 (숨김 상태) -->
+      <div id="product-modal" class="product-modal hidden">
+        <div class="modal-header">
+          <h2>방송 중 특가 상품</h2>
+          <button id="btn-close-modal" class="btn-close">✕</button>
+        </div>
+        <div class="modal-body" id="modal-products-list">
+          <!-- JS에서 렌더링됨 -->
+        </div>
+      </div>
+
+      <!-- 채팅 영역 -->
+      <div class="chat-section">
+        <div class="chat-messages" id="chat-messages">
+          <!-- JS에서 렌더링됨 -->
+        </div>
+      </div>
+
+      <!-- 사이드 액션 버튼 (우측 하단 플로팅) -->
+      <div class="side-actions">
+
+        <button class="action-btn" id="btn-like">
+          <span class="icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
+            </svg>
+          </span>
+          <span class="label" id="like-count">0</span>
+        </button>
+      </div>
+
+      <!-- 닉네임 설정 모달 -->
+      <div id="nickname-modal" class="nickname-modal" style="display:none;">
+        <div class="nickname-modal-content">
+          <h3>라이브 채팅 참여하기</h3>
+          <p>채팅에 사용할 닉네임을 설정해주세요.</p>
+          <input type="text" id="nickname-input" placeholder="닉네임 입력" autocomplete="off">
+          <button id="btn-set-nickname">입장하기</button>
+        </div>
+      </div>
+
+      <!-- 하단 플로팅 롤링 상품 배너 -->
+      <div id="bottom-product-banner" class="bottom-product-banner" style="display:none;">
+        <div class="banner-product-viewport">
+          <div class="banner-product-track" id="banner-product-track">
+            <!-- JS로 동적 렌더링 -->
+          </div>
+        </div>
+        <div class="banner-more-btn" id="banner-more-btn">
+          <span class="more-count" id="banner-more-count">0</span>
+          <span class="more-text">더보기</span>
+        </div>
+      </div>
+
+      <!-- 입력 영역 (최하단) -->
+      <div class="input-section" id="chat-section-wrap" style="display:none;">
+        <div class="input-wrapper">
+          <input type="text" id="chat-input" placeholder="실시간 채팅에 참여하세요..." autocomplete="off">
+          <button id="btn-send">전송</button>
+        </div>
+      </div>
+
+      <!-- 닉네임 설정 모달 (독립 레이어로 끄집어냄) -->
+      <div id="nickname-modal" class="nickname-modal" style="display:none; pointer-events:auto; z-index:9999;">
+        <div class="nickname-modal-content">
+          <h3>라이브 채팅 참여하기</h3>
+          <p>채팅에 사용할 닉네임을 설정해주세요.</p>
+          <input type="text" id="nickname-input" placeholder="닉네임 입력" autocomplete="off">
+          <button id="btn-set-nickname">입장하기</button>
+        </div>
+      </div> <!-- 당첨자 배송지 주소 수집 모달창 (터치 포커스 및 흰색 테마 UXUI 톤앤매너 매치) -->
+      <div id="winner-address-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); justify-content:center; align-items:center; z-index:100000; padding:20px; pointer-events:auto;">
+        <div
+          style="background:#ffffff; width:100%; max-width:340px; border-radius:20px; padding:30px 24px; box-shadow:0 20px 40px rgba(0,0,0,0.2); position:relative; animation: modalScaleUp 0.3s ease-out; color:#0f172a; border:1px solid #e2e8f0; text-align:left;">
+          <button id="btn-close-address-modal"
+            style="position:absolute; top:22px; right:22px; background:none; border:none; font-size:22px; font-weight:400; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.2s;"
+            onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">✕</button>
+          <h3 id="winner-modal-title"
+            style="margin:0 0 8px 0; font-size:18px; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:6px; line-height:1.2;">
+            <span>🎉 당첨을 축하드립니다!</span>
+          </h3>
+          <p style="font-size:13px; color:#64748b; margin:0 0 24px 0; line-height:1.5; font-weight:500;">
+            사은품 배송을 위해 정확한 배송지 정보를 입력해 주세요.
+          </p>
+          <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+            <div>
+              <label
+                style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px; letter-spacing:-0.3px;">이름
+                (수령인)</label>
+              <input type="text" id="address-name" placeholder="실명을 입력해 주세요"
+                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#0f172a; background:#f8fafc; outline:none; transition:all 0.2s; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#fab005'; this.style.boxShadow='0 0 0 3px rgba(250,176,5,0.15)'"
+                onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'">
+            </div>
+            <div>
+              <label
+                style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px; letter-spacing:-0.3px;">전화번호</label>
+              <input type="text" id="address-phone" placeholder="예: 010-1234-5678"
+                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#0f172a; background:#f8fafc; outline:none; transition:all 0.2s; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#fab005'; this.style.boxShadow='0 0 0 3px rgba(250,176,5,0.15)'"
+                onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'">
+            </div>
+            <div>
+              <label
+                style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px; letter-spacing:-0.3px;">상세
+                배송지 주소</label>
+              <input type="text" id="address-main" placeholder="상세 주소를 입력해 주세요"
+                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#0f172a; background:#f8fafc; outline:none; transition:all 0.2s; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#fab005'; this.style.boxShadow='0 0 0 3px rgba(250,176,5,0.15)'"
+                onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'">
+            </div>
+          </div>
+          <button id="btn-submit-address"
+            style="width:100%; padding:14px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(15,23,42,0.15); transition:all 0.2s; outline:none;"
+            onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'"
+            onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+            제출하기
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Supabase JS SDK & Config -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_config.js"></script>
+    <script src="live.js?v=1783505550000"></script>
+
+</body>
+
+</html>
