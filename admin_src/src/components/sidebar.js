@@ -39,7 +39,7 @@ export function renderSidebar() {
   const userName = currentUser ? currentUser.name : roleLabel;
   const accessibleMenus = getAccessibleMenus();
   const accessibleKeys = accessibleMenus.map(m => m.key);
-  const isDemoUser = currentUser && (currentUser.id === 'demo' || currentUser.role === 'demo');
+  const isDemoUser = store.isDemoMode || (currentUser && (currentUser.id === 'demo' || currentUser.role === 'demo'));
 
   const sidebar = document.createElement('aside');
   sidebar.className = 'sidebar';
