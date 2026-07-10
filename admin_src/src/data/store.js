@@ -1,10 +1,35 @@
 // ===== 중앙 데이터 스토어 (Observer 패턴 + LocalStorage + SheetDB) =====
 import { getBroadcastStatus, getSettleStatus, getBroadcastStatusLabel, getSettleStatusLabel } from './models.js';
 import CryptoJS from 'crypto-js';
+import { getSeedData } from './seed.js';
 
 const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
 const SECRET_SALT = 'ryzin_super_secret_salt_2026';
+
+function createDemoInitialData() {
+  const seed = getSeedData();
+  return {
+    users: [
+      { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' },
+      { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'demo' }
+    ], 
+    currentUser: null,
+    hosts: seed.hosts || [],
+    brands: seed.brands || [],
+    projects: seed.projects || [],
+    tasks: seed.tasks || [],
+    liveHosts: seed.liveHosts || [],
+    contracts: seed.contracts || [],
+    products: seed.products || [],
+    designs: seed.designs || [],
+    results: seed.results || [],
+    finances: seed.finances || [],
+    crmClients: seed.crmClients || [],
+    crmActivities: seed.crmActivities || [],
+    currentRole: 'admin'
+  };
+}
 
 class DataStore {
   constructor() {
@@ -47,7 +72,8 @@ class DataStore {
   async init() {
     if (this.isDemoMode) {
       if (this._data.users.length === 0) {
-        this._data.users = [{ id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' }];
+        const seedData = createDemoInitialData();
+        this._data = { ...this._data, ...seedData };
         this._save();
       }
       return true; // 데모 모드일 경우 시트 동기화 스킵
@@ -788,14 +814,7 @@ class DataStore {
     localStorage.setItem('ryzin_is_demo_mode', 'true');
     let targetData = JSON.parse(localStorage.getItem('livecommerce_erp_demo_data') || 'null');
     if (!targetData) {
-      targetData = {
-        users: [
-          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' },
-          { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'admin' }
-        ], 
-        currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
-        products: [], designs: [], results: [], finances: [], currentRole: 'admin'
-      };
+      targetData = createDemoInitialData();
     }
     const demoUser = targetData.users.find(u => u.id === 'admin');
     targetData.currentUser = demoUser;
@@ -816,14 +835,7 @@ class DataStore {
     let targetData = JSON.parse(localStorage.getItem(targetKey) || 'null');
     
     if (!targetData) {
-      targetData = {
-        users: [
-          { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' },
-          { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'admin' }
-        ], 
-        currentUser: null, hosts: [], brands: [], projects: [], tasks: [], liveHosts: [], contracts: [],
-        products: [], designs: [], results: [], finances: [], currentRole: 'admin'
-      };
+      targetData = createDemoInitialData();
     }
 
     if (currentSession) {
