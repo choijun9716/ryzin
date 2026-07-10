@@ -85,6 +85,14 @@ async function initApp() {
       return '/';
     }
 
+    // 데모 계정은 라이브 송출관리(/live_stream) 페이지 접근 제한
+    if (isLoggedIn && to === '/live_stream') {
+      const currentUser = store.getCurrentUser();
+      if (currentUser && (currentUser.id === 'demo' || currentUser.role === 'demo')) {
+        return '/';
+      }
+    }
+
     if (to === '/login') {
       app.innerHTML = '';
       app.className = '';

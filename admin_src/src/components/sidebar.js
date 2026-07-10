@@ -39,6 +39,7 @@ export function renderSidebar() {
   const userName = currentUser ? currentUser.name : roleLabel;
   const accessibleMenus = getAccessibleMenus();
   const accessibleKeys = accessibleMenus.map(m => m.key);
+  const isDemoUser = currentUser && (currentUser.id === 'demo' || currentUser.role === 'demo');
 
   const sidebar = document.createElement('aside');
   sidebar.className = 'sidebar';
@@ -54,6 +55,7 @@ export function renderSidebar() {
       <div class="sidebar-section">
         ${menuConfig
           .filter(m => accessibleKeys.includes(m.key))
+          .filter(m => !(isDemoUser && m.key === 'live_stream'))
           .map(m => `
             <div class="sidebar-item" data-href="${m.path}" id="nav-${m.key}">
               ${icons[m.icon] || ''}
@@ -63,11 +65,16 @@ export function renderSidebar() {
       </div>
     </nav>
     <div class="sidebar-footer">
-      ${store.isDemoMode ? `
+      ${isDemoUser ? `
+      <div id="demo-timer-box" style="font-size: 11px; color: var(--status-error); text-align: center; margin-bottom: var(--space-3); font-weight: 600; background: rgba(239,68,68,0.1); padding: 8px; border-radius: var(--radius-sm); border: 1px dashed rgba(239,68,68,0.3);">
+        <div style="margin-bottom: 2px;">데모 체험 시간 제한</div>
+        <div id="demo-remaining-time" style="font-size: 14px; font-weight: 800; margin-top: 4px; font-family: monospace; letter-spacing: 0.5px;">30:00</div>
+      </div>
+      ` : (store.isDemoMode ? `
       <div style="font-size: 11px; color: var(--status-error); text-align: center; margin-bottom: var(--space-3); font-weight: 600; background: rgba(239,68,68,0.1); padding: 6px; border-radius: var(--radius-sm); border: 1px dashed rgba(239,68,68,0.3);">
         데모 샌드박스 활성화됨
       </div>
-      ` : ''}
+      ` : '')}
       <div class="sidebar-user">
         <div class="sidebar-user-avatar">${userName[0]}</div>
         <div class="sidebar-user-info">
@@ -100,9 +107,49 @@ export function renderSidebar() {
   const logoutBtn = sidebar.querySelector('#btn-logout');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+      if (window.demoTimerInterval) {
+        clearInterval(window.demoTimerInterval);
+        window.demoTimerInterval = null;
+      }
       store.logout();
       router.navigate('/login');
     });
+  }
+
+  // 데모 체험용 타이머 구동
+  if (isDemoUser) {
+    if (window.demoTimerInterval) {
+      clearInterval(window.demoTimerInterval);
+    }
+    setTimeout(() => {
+      const remainingTimeEl = sidebar.querySelector('#demo-remaining-time');
+      if (remainingTimeEl) {
+        const updateTimer = () => {
+          const expireTimeStr = localStorage.getItem('ryzin_demo_expire_time');
+          if (!expireTimeStr) return;
+          const expireTime = parseInt(expireTimeStr, 10);
+          const now = Date.now();
+          const diff = expireTime - now;
+
+          if (diff <= 0) {
+            clearInterval(window.demoTimerInterval);
+            window.demoTimerInterval = null;
+            alert('데모 체험 시간이 만료되었습니다. 로그아웃됩니다.');
+            store.logout();
+            router.navigate('/login');
+            return;
+          }
+
+          const totalSeconds = Math.floor(diff / 1000);
+          const min = Math.floor(totalSeconds / 60);
+          const sec = totalSeconds % 60;
+          remainingTimeEl.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        };
+
+        updateTimer();
+        window.demoTimerInterval = setInterval(updateTimer, 1000);
+      }
+    }, 0);
   }
 
   return sidebar;

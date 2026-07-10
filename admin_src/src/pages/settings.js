@@ -53,18 +53,7 @@ export function renderSettings() {
       </div>
       ` : ''}
 
-      <!-- 데이터 관리 -->
-      <div class="card" style="margin-bottom: var(--space-5);">
-        <div class="card-header"><h3>데이터 동기화</h3></div>
-        <div class="card-body">
-          <p style="font-size: var(--text-sm); color: var(--text-tertiary); margin-bottom: var(--space-4);">
-            구글 시트에 수동으로 입력된 최신 데이터를 강제로 다시 불러옵니다.
-          </p>
-          <div style="display: flex; gap: var(--space-3);">
-            <button class="btn btn-primary" id="btn-sync-data">구글 시트 동기화</button>
-          </div>
-        </div>
-      </div>
+
 
       <!-- 외부 API 연동 설정 -->
       ${currentRole === 'admin' ? `
@@ -179,30 +168,7 @@ export function renderSettings() {
       });
     }
 
-    // 동기화 버튼
-    container.querySelector('#btn-sync-data')?.addEventListener('click', async () => {
-      const btn = container.querySelector('#btn-sync-data');
-      btn.textContent = '동기화 중...';
-      btn.disabled = true;
-      try {
-        const success = await store.init();
-        if (success) {
-          showSuccess('데이터 동기화가 완료되었습니다.');
-          const pageContent = document.getElementById('page-content');
-          if (pageContent) {
-            pageContent.innerHTML = '';
-            pageContent.appendChild(renderSettings());
-          }
-        } else {
-          showError('동기화에 실패했습니다.');
-        }
-      } catch (e) {
-        showError('초기화 실패');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '구글 시트 동기화';
-      }
-    });
+
 
     // 외부 API 설정 로드 및 저장
     if (currentRole === 'admin') {
