@@ -1,32 +1,69 @@
 // ===== 중앙 데이터 스토어 (Observer 패턴 + LocalStorage + SheetDB) =====
 import { getBroadcastStatus, getSettleStatus, getBroadcastStatusLabel, getSettleStatusLabel } from './models.js';
 import CryptoJS from 'crypto-js';
-import { getSeedData } from './seed.js';
 
 const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
 const SECRET_SALT = 'ryzin_super_secret_salt_2026';
 
 function createDemoInitialData() {
-  const seed = getSeedData();
   return {
     users: [
       { id: 'admin', name: '최고관리자 (데모)', password: CryptoJS.SHA256('1234').toString(), role: 'admin' },
       { id: 'demo', name: '데모 시연 계정', password: CryptoJS.SHA256('demo').toString(), role: 'demo' }
     ], 
     currentUser: null,
-    hosts: seed.hosts || [],
-    brands: seed.brands || [],
-    projects: seed.projects || [],
-    tasks: seed.tasks || [],
-    liveHosts: seed.liveHosts || [],
-    contracts: seed.contracts || [],
-    products: seed.products || [],
-    designs: seed.designs || [],
-    results: seed.results || [],
-    finances: seed.finances || [],
-    crmClients: seed.crmClients || [],
-    crmActivities: seed.crmActivities || [],
+    hosts: [
+      { id: 'h_demo_1', name: '김주호', phone: '010-1234-5678', bank: '신한', account: '110-123-456789', ssn: '920101-1234567', address: '서울시 강남구 테헤란로', createdAt: '2026-07-01', memo: { features: '활발함, 패션/가전 전문', comment: '시연용 쇼호스트 A' } },
+      { id: 'h_demo_2', name: '이미소', phone: '010-5555-6666', bank: '국민', account: '4567-02-123456', ssn: '950505-2345678', address: '경기도 성남시 분당구', createdAt: '2026-07-01', memo: { features: '목소리 톤 좋음, 뷰티/리빙 전문', comment: '시연용 쇼호스트 B' } },
+      { id: 'h_demo_3', name: '최성우', phone: '010-9999-8888', bank: '우리', account: '1002-123-456789', ssn: '900808-1357924', address: '인천시 부평구', createdAt: '2026-07-01', memo: { features: '신뢰감 있는 진행, 테크/식품 전문', comment: '시연용 쇼호스트 C' } }
+    ],
+    brands: [
+      { id: 'b_demo_1', name: '아우라뷰티', category: '뷰티', manager: '홍길동 팀장', phone: '010-1111-2222', email: 'aura@beauty.com', taxInvoice: true, createdAt: '2026-07-01' },
+      { id: 'b_demo_2', name: '헬시푸드코리아', category: '식품', manager: '김철수 과장', phone: '010-3333-4444', email: 'healthy@food.com', taxInvoice: true, createdAt: '2026-07-01' },
+      { id: 'b_demo_3', name: '모던테크컴퍼니', category: '가전', manager: '박영희 대리', phone: '010-5555-7777', email: 'modern@tech.com', taxInvoice: false, createdAt: '2026-07-01' }
+    ],
+    projects: [
+      { id: 'p_demo_1', brandId: 'b_demo_1', adName: '아우라뷰티 수분크림 런칭', category: '뷰티', broadcastDate: '2026-07-20', broadcastTime: '20:00', broadcastMonth: '2026-07', platform: 'NAVER', liveUrl: 'https://shoppinglive.naver.com', pd: '강동원 PD', designer: '김태희 디자이너', cuesheetLink: '', note: '신제품 출시 시연 방송', status: 'settle_done', createdAt: '2026-07-10' },
+      { id: 'p_demo_2', brandId: 'b_demo_2', adName: '헬시푸드 밀키트 초특가전', category: '식품', broadcastDate: '2026-07-21', broadcastTime: '19:00', broadcastMonth: '2026-07', platform: 'GRIP', liveUrl: 'https://grip.show', pd: '송중기 PD', designer: '', cuesheetLink: '', note: '캠핑 특가 패키지', status: 'settle_done', createdAt: '2026-07-10' },
+      { id: 'p_demo_3', brandId: 'b_demo_3', adName: '모던테크 무선청소기 시연', category: '가전', broadcastDate: '2026-07-25', broadcastTime: '21:00', broadcastMonth: '2026-07', platform: 'NAVER', liveUrl: 'https://shoppinglive.naver.com', pd: '강동원 PD', designer: '김태희 디자이너', cuesheetLink: '', note: '흡입력 테스트 시연 방송', status: 'design', createdAt: '2026-07-10' },
+      { id: 'p_demo_4', brandId: 'b_demo_1', adName: '뷰티 에센스 2차 앵콜 방송', category: '뷰티', broadcastDate: '2026-07-28', broadcastTime: '11:00', broadcastMonth: '2026-07', platform: 'NAVER', liveUrl: 'https://shoppinglive.naver.com', pd: '송중기 PD', designer: '', cuesheetLink: '', note: '앵콜 요청에 따른 추가 방송', status: 'cue_sheet', createdAt: '2026-07-10' },
+      { id: 'p_demo_5', brandId: 'b_demo_2', adName: '헬시푸드 단백질 쉐이크 쇼', category: '식품', broadcastDate: '2026-07-30', broadcastTime: '15:00', broadcastMonth: '2026-07', platform: 'GRIP', liveUrl: 'https://grip.show', pd: '강동원 PD', designer: '', cuesheetLink: '', note: '단백질 보충제 시연', status: 'host_cast', createdAt: '2026-07-10' }
+    ],
+    tasks: [
+      { id: 't_demo_1', projectId: 'p_demo_3', title: '청소기 배너 이미지 디자인', assignee: 'designer', dueDate: '2026-07-22', status: 'pending' },
+      { id: 't_demo_2', projectId: 'p_demo_4', title: '에센스 2차 큐시트 작성', assignee: 'pd', dueDate: '2026-07-26', status: 'completed' }
+    ],
+    liveHosts: [
+      { id: 'lh_demo_1', projectId: 'p_demo_1', hostId: 'h_demo_2', fee: 300000, type: 'main' },
+      { id: 'lh_demo_2', projectId: 'p_demo_2', hostId: 'h_demo_3', fee: 250000, type: 'main' },
+      { id: 'lh_demo_3', projectId: 'p_demo_3', hostId: 'h_demo_1', fee: 400000, type: 'main' }
+    ],
+    contracts: [
+      { id: 'c_demo_1', projectId: 'p_demo_1', hostId: 'h_demo_2', status: 'signed', signDate: '2026-07-11' },
+      { id: 'c_demo_2', projectId: 'p_demo_2', hostId: 'h_demo_3', status: 'signed', signDate: '2026-07-11' }
+    ],
+    products: [
+      { id: 'pr_demo_1', projectId: 'p_demo_1', name: '아우라 수분크림 50ml', price: 29000, commission: 15 },
+      { id: 'pr_demo_2', projectId: 'p_demo_2', name: '부대찌개 캠핑 밀키트 3인분', price: 18900, commission: 10 }
+    ],
+    designs: [
+      { id: 'd_demo_1', projectId: 'p_demo_3', title: '메인 썸네일', link: 'https://example.com/thumb.jpg', status: 'confirm' }
+    ],
+    results: [
+      { id: 'r_demo_1', projectId: 'p_demo_1', salesAmount: 4500000, viewerCount: 1200, buyerCount: 150 },
+      { id: 'r_demo_2', projectId: 'p_demo_2', salesAmount: 3200000, viewerCount: 850, buyerCount: 110 }
+    ],
+    finances: [
+      { id: 'f_demo_1', month: '2026-07', sales: 7700000, cost: 3500000, profit: 4200000 },
+      { id: 'f_demo_2', month: '2026-06', sales: 6200000, cost: 2800000, profit: 3400000 }
+    ],
+    crmClients: [
+      { id: 'crm_demo_1', companyName: '(주)데모코스메틱', contactName: '원빈 부장', phone: '010-4444-3333', email: 'wb@democos.com', source: '자사몰 인바운드', interestedService: '라이브 풀패키지', status: 'new', category: 'A', memo: '신규 런칭 브랜드 시연용 데이터', lastContactDate: '2026-07-09', createdAt: '2026-07-09' }
+    ],
+    crmActivities: [
+      { id: 'act_demo_1', clientId: 'crm_demo_1', date: '2026-07-09', type: 'phone', content: '첫 전화 통화 상담 완료. 가상 견적서 송부 요청 받음.', followUpDate: '2026-07-15', createdAt: '2026-07-09' }
+    ],
     currentRole: 'admin'
   };
 }
