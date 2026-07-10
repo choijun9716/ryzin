@@ -21,15 +21,6 @@ class DataStore {
     this._listeners = {};
     this._sheetDBReady = false;
     this._load();
-
-    // 데모 계정인 경우 로드 후 세이프가드로 만료 시간 설정
-    const currentUser = this.getCurrentUser();
-    if (currentUser && (currentUser.id === 'demo' || currentUser.role === 'demo')) {
-      if (!localStorage.getItem('ryzin_demo_expire_time')) {
-        const expireTime = Date.now() + 30 * 60 * 1000;
-        localStorage.setItem('ryzin_demo_expire_time', expireTime.toString());
-      }
-    }
   }
 
   _load() {
@@ -770,15 +761,6 @@ class DataStore {
     this._data.currentRole = user.role;
     // 세션 서명 생성 및 저장
     this._data.authSignature = CryptoJS.SHA256(user.id + SECRET_SALT).toString();
-
-    // 데모 체험용 계정 시간타이머 설정 (30분)
-    if (user.id === 'demo' || user.role === 'demo') {
-      const expireTime = Date.now() + 30 * 60 * 1000;
-      localStorage.setItem('ryzin_demo_expire_time', expireTime.toString());
-    } else {
-      localStorage.removeItem('ryzin_demo_expire_time');
-    }
-
     this._save();
     this._emit('auth:login', user);
   }
@@ -788,10 +770,6 @@ class DataStore {
     this._data.currentRole = 'admin'; // 안전을 위해 초기화하지만, 어차피 로그인 튕김
     this._data.authSignature = null;
     this._save();
-
-    // 데모 체험 만료 시간 제거
-    localStorage.removeItem('ryzin_demo_expire_time');
-
     this._emit('auth:logout');
     localStorage.removeItem(this.STORAGE_KEY);
   }
