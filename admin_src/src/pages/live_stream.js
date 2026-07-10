@@ -27,10 +27,17 @@ const saveBotConfig = (liveId, data) => localStorage.setItem(`ryzin_bot_${liveId
 
 function nextLiveId() {
   const lives = getLives();
-  if (lives.length === 0) return 'live01';
-  const nums = lives.map(l => parseInt(l.id.replace('live', '')) || 0);
-  const max = Math.max(...nums);
-  return `live${String(max + 1).padStart(2, '0')}`;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let newId;
+  let isDuplicate = true;
+  while (isDuplicate) {
+    newId = '';
+    for (let i = 0; i < 7; i++) {
+      newId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    isDuplicate = lives.some(l => l.id === newId);
+  }
+  return newId;
 }
 
 // ─── SheetDB 동기화 ─────────────────────────────────────────
@@ -289,12 +296,8 @@ function renderListView(container, showView) {
       lives = lives.filter(l => l.id === targetLiveId);
     }
 
-    // live_id 순서대로 정렬 (예: live01, live02, live03...)
-    lives.sort((a, b) => {
-      const numA = parseInt(a.id.replace('live', '')) || 0;
-      const numB = parseInt(b.id.replace('live', '')) || 0;
-      return numA - numB;
-    });
+    // 생성된 시간(createdAt) 순으로 정렬
+    lives.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
     listContainer.innerHTML = '';
 
     if (lives.length === 0) {
@@ -308,21 +311,22 @@ function renderListView(container, showView) {
       return;
     }
 
-    lives.forEach((live) => {
+    lives.forEach((live, idx) => {
       const config = getLiveConfig(live.id) || {};
       const badgeClass = config.isLive ? 'badge-live' : 'badge-ready';
       const badgeText = config.isLive ? 'LIVE' : '대기';
       const viewerUrl = `https://ryzincorp.com/live?id=${live.id}`;
+      const displayIndex = idx + 1;
 
       const card = document.createElement('div');
       card.className = 'live-card';
       card.innerHTML = `
         <div style="width:48px; height:48px; background:linear-gradient(135deg,#3b82f6,#2563eb); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:800; flex-shrink:0;">
-          ${live.id.replace('live', '')}
+          ${displayIndex}
         </div>
         <div style="flex:1; min-width:0;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-            <span style="font-size:16px; font-weight:700; color:#0f172a;">${config.brandName || live.id}</span>
+            <span style="font-size:16px; font-weight:700; color:#0f172a;">${config.brandName && !config.brandName.startsWith('라이브 ') ? config.brandName : `라이브 ${displayIndex}`}</span>
             <span class="live-badge ${badgeClass}">${badgeText}</span>
           </div>
           <div style="font-size:13px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${config.title || '방송 제목 미설정'}</div>
@@ -405,7 +409,7 @@ function renderListView(container, showView) {
     }
 
     const defaultConfig = {
-      brandName: `라이브 ${id}`,
+      brandName: `라이브 ${lives.length}`,
       title: '단독 특가 라이브 방송 중!',
       streamUrl: '',
       logoUrl: '',
@@ -557,8 +561,11 @@ function renderLiveEditView(container, liveId, showView) {
       .maybeSingle()
       .then(({ data, error }) => {
         if (!error && data) {
+          const lives = getLives();
+          const liveIndex = lives.findIndex(l => l.id === liveId);
+          const displayIdx = liveIndex !== -1 ? (liveIndex + 1) : 1;
           config = {
-            brandName: data.title || `라이브 ${liveId}`,
+            brandName: data.title || `라이브 ${displayIdx}`,
             title: data.subtitle || '단독 특가 라이브 방송 중!',
             streamUrl: data.stream_url || '',
             logoUrl: data.profile_image || '',
