@@ -72,6 +72,11 @@ export default async function handler(req, res) {
   // OG 태그 치환
   // 기존 index.html에 있는 <meta property="og:title" ...> 등을 치환합니다.
   
+  // 클라이언트 측 JS(live.js)가 URL 쿼리스트링 없이도 현재 라이브 ID를 알 수 있도록 전역 변수 주입
+  if (id) {
+    html = html.replace('<head>', `<head>\n  <script>window.INJECTED_LIVE_ID = "${id}";</script>`);
+  }
+  
   // 정규식으로 meta 속성 교체
   html = html.replace(/<meta property="og:title" content="[^"]*">/g, `<meta property="og:title" content="${title}">`);
   html = html.replace(/<meta property="og:description" content="[^"]*">/g, `<meta property="og:description" content="${description}">`);
