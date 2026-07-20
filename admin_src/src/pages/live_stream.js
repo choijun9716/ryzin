@@ -703,24 +703,7 @@ function renderLiveEditView(container, liveId, showView) {
       setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#3b82f6'; }, 2000);
     });
   };
-  document.getElementById('btn-copy-share-gateway').addEventListener('click', () => {
-    const el = document.getElementById('share-gateway-url');
-    const btn = document.getElementById('btn-copy-share-gateway');
-    if (!el || !btn) return;
-    const freshShareUrl = `https://ryzincorp.com/live/${liveId}`;
-    navigator.clipboard.writeText(freshShareUrl).then(() => {
-      btn.textContent = '복사됨!';
-      btn.style.background = '#22c55e';
-      setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#ef4444'; }, 2000);
-    }).catch(() => {
-      el.value = freshShareUrl;
-      el.select();
-      document.execCommand('copy');
-      btn.textContent = '복사됨!';
-      btn.style.background = '#22c55e';
-      setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#ef4444'; }, 2000);
-    });
-  });
+
   document.getElementById('btn-copy-embed-mobile').addEventListener('click', () => copyEmbed('embed-url-mobile', 'btn-copy-embed-mobile'));
   document.getElementById('btn-copy-embed-wide').addEventListener('click', () => copyEmbed('embed-url-wide', 'btn-copy-embed-wide'));
 
