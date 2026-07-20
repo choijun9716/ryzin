@@ -1,4 +1,6 @@
 // ===== 라이브커머스 ERP - 메인 진입점 =====
+import { inject } from '@vercel/analytics';
+inject();
 import './styles/index.css';
 import './styles/components.css';
 import './styles/sidebar.css';
