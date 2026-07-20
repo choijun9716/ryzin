@@ -1498,8 +1498,9 @@ if (btnCloseLead && leadModal) {
 function openLeadModal(productName) {
   if (leadModal) {
     leadModal.style.display = 'flex';
-    // 필요 시 타이틀이나 데이터를 숨겨서 저장 가능
-    leadModal.dataset.productName = productName || '상담문의';
+    leadModal.dataset.productName = productName || '상담 문의 남기기';
+    const titleSpan = leadModal.querySelector('#lead-modal-title span');
+    if (titleSpan) titleSpan.textContent = productName || '상담 문의 남기기';
     document.getElementById('lead-name').value = '';
     document.getElementById('lead-phone').value = '';
   }
