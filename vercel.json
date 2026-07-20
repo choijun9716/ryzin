@@ -1,0 +1,9 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/live/:id([^.]+)",
+      "destination": "/api/live"
+    }
+  ]
+}
