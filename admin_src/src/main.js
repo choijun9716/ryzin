@@ -1,6 +1,8 @@
 // ===== 라이브커머스 ERP - 메인 진입점 =====
 import { inject } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 inject();
+injectSpeedInsights();
 import './styles/index.css';
 import './styles/components.css';
 import './styles/sidebar.css';
