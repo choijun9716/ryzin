@@ -6,6 +6,8 @@ import './styles/table.css';
 import './styles/form.css';
 import './styles/dashboard.css';
 
+import { injectSpeedInsights } from '@vercel/speed-insights';
+
 import { router } from './router.js';
 import { store } from './data/store.js';
 import { renderSidebar } from './components/sidebar.js';
@@ -133,6 +135,9 @@ async function initApp() {
     }
   });
 }
+
+// Initialize Speed Insights
+injectSpeedInsights();
 
 // 앱 시작
 initApp();
