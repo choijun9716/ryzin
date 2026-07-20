@@ -1,5 +1,23 @@
 {
   "framework": null,
+  "redirects": [
+    {
+      "source": "/live",
+      "has": [
+        { "type": "query", "key": "id" }
+      ],
+      "destination": "/live/:id",
+      "permanent": true
+    },
+    {
+      "source": "/live/",
+      "has": [
+        { "type": "query", "key": "id" }
+      ],
+      "destination": "/live/:id",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/live/:id([^.]+)",
