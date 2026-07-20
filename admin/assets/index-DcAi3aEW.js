@@ -693,13 +693,16 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
             📞 상담 DB (리드)
           </h2>
-          <button id="btn-refresh-leads" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-download-csv-leads" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none;">CSV 다운로드</button>
+            <button id="btn-refresh-leads" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+          </div>
         </div>
         <div id="leads-list-container">
           <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">불러오는 중...</div>
         </div>
       </div>
-    `;let e=async()=>{try{if(!Z)throw Error(`Supabase 미연동`);let{data:e,error:n}=await Z.from(`live_leads`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});if(n)throw n;let r=document.getElementById(`leads-list-container`);if(!r)return;if(!e||e.length===0){r.innerHTML=`<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">아직 접수된 상담문의가 없습니다.</div>`;return}let i=`
+    `;let e=[],n=async()=>{try{if(!Z)throw Error(`Supabase 미연동`);let{data:n,error:r}=await Z.from(`live_leads`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});if(r)throw r;e=n||[];let i=document.getElementById(`leads-list-container`),a=document.getElementById(`btn-download-csv-leads`);if(a&&(a.style.display=e.length>0?`block`:`none`),!i)return;if(e.length===0){i.innerHTML=`<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">아직 접수된 상담문의가 없습니다.</div>`;return}let o=`
           <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
             <thead style="background:#f1f5f9; color:#475569;">
               <tr>
@@ -709,13 +712,14 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               </tr>
             </thead>
             <tbody>
-        `;e.forEach(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`);i+=`
+        `;e.forEach(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`);o+=`
             <tr style="border-bottom:1px solid #e2e8f0;">
               <td style="padding:10px; color:#64748b;">${t}</td>
               <td style="padding:10px; font-weight:700; color:#0f172a;">${e.name}</td>
               <td style="padding:10px; font-family:monospace; color:#3b82f6;">${e.phone}</td>
             </tr>
-          `}),i+=`</tbody></table>`,r.innerHTML=i}catch(e){console.warn(`Failed to load leads`,e);let t=document.getElementById(`leads-list-container`);t&&(t.innerHTML=`<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">데이터를 불러오는 데 실패했습니다. (테이블 생성 여부를 확인하세요)</div>`)}};e(),document.getElementById(`btn-refresh-leads`).addEventListener(`click`,e)};setTimeout(()=>{document.getElementById(`btn-back`).addEventListener(`click`,()=>{b(),n(null)}),document.getElementById(`btn-refresh-preview`).addEventListener(`click`,()=>{document.getElementById(`live-preview-iframe`).src=C});let e=g.querySelectorAll(`.tab-btn`),t=t=>{e.forEach(e=>e.classList.toggle(`active`,e.dataset.tab===t)),t===`config`?E():t===`chat`?D():t===`product`?k():t===`leads`&&A()};e.forEach(e=>{e.addEventListener(`click`,()=>t(e.dataset.tab))}),E()},0)}function Ft(){let e=document.createElement(`div`),t=``;function n(){let r=H.getAll(`hosts`);if(t){let e=t.toLowerCase();r=r.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let i=r.map(e=>{let t=H.getHostStats(e.id);return{...e,stats:t}});e.innerHTML=`
+          `}),o+=`</tbody></table>`,i.innerHTML=o}catch(e){console.warn(`Failed to load leads`,e);let t=document.getElementById(`leads-list-container`);t&&(t.innerHTML=`<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">데이터를 불러오는 데 실패했습니다. (테이블 생성 여부를 확인하세요)</div>`)}};n(),document.getElementById(`btn-refresh-leads`).addEventListener(`click`,n),document.getElementById(`btn-download-csv-leads`).addEventListener(`click`,()=>{if(e.length===0)return;let n=`접수일시,이름,전화번호
+`;e.forEach(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`).replace(/,/g,``),r=(e.name||``).replace(/,/g,` `),i=(e.phone||``).replace(/,/g,` `);n+=`${t},${r},${i}\n`});let r=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),i=URL.createObjectURL(r),a=document.createElement(`a`);a.href=i,a.download=`상담DB_${t}.csv`,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(i)})};setTimeout(()=>{document.getElementById(`btn-back`).addEventListener(`click`,()=>{b(),n(null)}),document.getElementById(`btn-refresh-preview`).addEventListener(`click`,()=>{document.getElementById(`live-preview-iframe`).src=C});let e=g.querySelectorAll(`.tab-btn`),t=t=>{e.forEach(e=>e.classList.toggle(`active`,e.dataset.tab===t)),t===`config`?E():t===`chat`?D():t===`product`?k():t===`leads`&&A()};e.forEach(e=>{e.addEventListener(`click`,()=>t(e.dataset.tab))}),E()},0)}function Ft(){let e=document.createElement(`div`),t=``;function n(){let r=H.getAll(`hosts`);if(t){let e=t.toLowerCase();r=r.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let i=r.map(e=>{let t=H.getHostStats(e.id);return{...e,stats:t}});e.innerHTML=`
       <div class="page-header">
         <div class="page-header-left">
           <div>

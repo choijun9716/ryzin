@@ -1957,13 +1957,18 @@ function renderLiveEditView(container, liveId, showView) {
           <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
             📞 상담 DB (리드)
           </h2>
-          <button id="btn-refresh-leads" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-download-csv-leads" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none;">CSV 다운로드</button>
+            <button id="btn-refresh-leads" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+          </div>
         </div>
         <div id="leads-list-container">
           <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">불러오는 중...</div>
         </div>
       </div>
     `;
+
+    let currentLeads = [];
 
     const loadLeads = async () => {
       try {
@@ -1974,10 +1979,17 @@ function renderLiveEditView(container, liveId, showView) {
           .order('created_at', { ascending: false });
         if (error) throw error;
 
+        currentLeads = list || [];
         const container = document.getElementById('leads-list-container');
+        const btnCsv = document.getElementById('btn-download-csv-leads');
+        
+        if (btnCsv) {
+          btnCsv.style.display = currentLeads.length > 0 ? 'block' : 'none';
+        }
+
         if (!container) return;
 
-        if (!list || list.length === 0) {
+        if (currentLeads.length === 0) {
           container.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">아직 접수된 상담문의가 없습니다.</div>`;
           return;
         }
@@ -1993,7 +2005,7 @@ function renderLiveEditView(container, liveId, showView) {
             </thead>
             <tbody>
         `;
-        list.forEach(lead => {
+        currentLeads.forEach(lead => {
           const dateStr = new Date(lead.created_at).toLocaleString('ko-KR');
           html += `
             <tr style="border-bottom:1px solid #e2e8f0;">
@@ -2012,8 +2024,29 @@ function renderLiveEditView(container, liveId, showView) {
       }
     };
 
+    const downloadCsv = () => {
+      if (currentLeads.length === 0) return;
+      let csv = '접수일시,이름,전화번호\n';
+      currentLeads.forEach(lead => {
+        const dateStr = new Date(lead.created_at).toLocaleString('ko-KR').replace(/,/g, '');
+        const name = (lead.name || '').replace(/,/g, ' ');
+        const phone = (lead.phone || '').replace(/,/g, ' ');
+        csv += `${dateStr},${name},${phone}\n`;
+      });
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `상담DB_${liveId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
     loadLeads();
     document.getElementById('btn-refresh-leads').addEventListener('click', loadLeads);
+    document.getElementById('btn-download-csv-leads').addEventListener('click', downloadCsv);
   };
 
   // ── 탭 전환 로직 ──────────────────────────────────────────
