@@ -909,9 +909,12 @@ function renderLiveEditView(container, liveId, showView) {
             </div>
           </div>
         </div>
-        <div style="margin-top:18px; display:flex; align-items:center; gap:8px;">
-          <input type="checkbox" id="cfg-showViewers" style="width:18px; height:18px; accent-color:#3b82f6;" ${config.showViewers ? 'checked' : ''}>
-          <label for="cfg-showViewers" style="font-size:14px; font-weight:600; color:#374151; cursor:pointer;">시청자 수 화면에 노출</label>
+        <div style="margin-top:18px; display:flex; align-items:center; justify-content:space-between;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="cfg-showViewers" style="width:18px; height:18px; accent-color:#3b82f6;" ${config.showViewers ? 'checked' : ''}>
+            <label for="cfg-showViewers" style="font-size:14px; font-weight:600; color:#374151; cursor:pointer;">시청자 수 화면에 노출</label>
+          </div>
+          <button id="btn-reset-stats" class="action-btn btn-danger-solid" style="padding:8px 14px; font-size:13px;">통계 초기화</button>
         </div>
       </div>
 
@@ -1149,6 +1152,72 @@ function renderLiveEditView(container, liveId, showView) {
         btn.textContent = '+추가';
       }
     });
+
+    // ── 통계 초기화 버튼 이벤트 리스너 ──
+    const resetStatsBtn = document.getElementById('btn-reset-stats');
+    if (resetStatsBtn) {
+      resetStatsBtn.addEventListener('click', async () => {
+        if (!confirm('현재 라이브의 모든 통계 데이터(실시간 시청자 수, 누적 시청자 수, 하트 수, 상품 클릭 수)를 초기화하시겠습니까?')) {
+          return;
+        }
+
+        resetStatsBtn.disabled = true;
+        resetStatsBtn.textContent = '초기화 중...';
+
+        try {
+          // 1. 로컬 데이터 초기화
+          stats.viewers = 0;
+          stats.hearts = 0;
+          stats.cumViewers = 0;
+          
+          if (Array.isArray(products)) {
+            products.forEach(p => {
+              p.clicks = 0;
+            });
+          }
+
+          saveStats();
+          saveProducts();
+
+          // 2. Supabase DB 업데이트
+          if (db) {
+            const { error } = await db
+              .from('live_control')
+              .update({
+                viewers: 0,
+                hearts: 0,
+                cum_viewers: 0,
+                products: products,
+                updated_at: new Date().toISOString()
+              })
+              .eq('live_id', liveId);
+
+            if (error) throw error;
+          }
+
+          // 3. UI 업데이트
+          const viewersDisplay = document.getElementById('cfg-viewers-display');
+          if (viewersDisplay) viewersDisplay.textContent = '0명';
+
+          const cumViewersInput = document.getElementById('cfg-cumViewers');
+          if (cumViewersInput) cumViewersInput.value = 0;
+
+          const heartsInput = document.getElementById('cfg-hearts');
+          if (heartsInput) heartsInput.value = 0;
+
+          const totalClicksDisplay = document.getElementById('cfg-total-clicks');
+          if (totalClicksDisplay) totalClicksDisplay.textContent = '0회';
+
+          alert('✅ 통계 데이터가 성공적으로 초기화되었습니다.');
+        } catch (err) {
+          console.error('통계 초기화 오류:', err);
+          alert('❌ 통계 초기화에 실패했습니다: ' + err.message);
+        } finally {
+          resetStatsBtn.disabled = false;
+          resetStatsBtn.textContent = '통계 초기화';
+        }
+      });
+    }
 
     document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
       // 라이브 시작 전 스트리밍 URL 필수 확인
