@@ -508,7 +508,15 @@ document.addEventListener('DOMContentLoaded', () => {
               alert('라이브 방송 중에만 구매 가능합니다.');
               return;
             }
-            if (!item.url || item.url === '#') e.preventDefault();
+            if (item.url === '__LEAD_FORM__') {
+              e.preventDefault();
+              openLeadModal(item.name);
+              // don't return, let it sync clicks!
+            } else if (!item.url || item.url === '#') {
+              e.preventDefault();
+            } else {
+              el.target = '_blank';
+            }
             try {
               const targetLiveId = LIVE_ID || 'live01';
               if (!targetLiveId || !db) return;
@@ -603,7 +611,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   alert('라이브 방송 중에만 구매 가능합니다.');
                   return;
                 }
-                if (!item.url || item.url === '#') e.preventDefault();
+                if (item.url === '__LEAD_FORM__') {
+                  e.preventDefault();
+                  openLeadModal(item.name);
+                } else if (!item.url || item.url === '#') {
+                  e.preventDefault();
+                } else {
+                  card.target = '_blank';
+                }
                 try {
                   const targetLiveId = LIVE_ID || 'live01';
                   if (!targetLiveId || !db) return;
@@ -1468,3 +1483,56 @@ if (btnSubmitAddr) {
   });
 }
 
+
+// --- 상담문의 (리드 폼) 관련 로직 ---
+const leadModal = document.getElementById('lead-form-modal');
+const btnCloseLead = document.getElementById('btn-close-lead-modal');
+const btnSubmitLead = document.getElementById('btn-submit-lead');
+
+if (btnCloseLead && leadModal) {
+  btnCloseLead.addEventListener('click', () => {
+    leadModal.style.display = 'none';
+  });
+}
+
+function openLeadModal(productName) {
+  if (leadModal) {
+    leadModal.style.display = 'flex';
+    // 필요 시 타이틀이나 데이터를 숨겨서 저장 가능
+    leadModal.dataset.productName = productName || '상담문의';
+    document.getElementById('lead-name').value = '';
+    document.getElementById('lead-phone').value = '';
+  }
+}
+
+if (btnSubmitLead) {
+  btnSubmitLead.addEventListener('click', async () => {
+    const nameVal = document.getElementById('lead-name').value.trim();
+    const phoneVal = document.getElementById('lead-phone').value.trim();
+    if (!nameVal || !phoneVal) {
+      alert('이름과 전화번호를 모두 입력해 주세요.');
+      return;
+    }
+    btnSubmitLead.disabled = true;
+    btnSubmitLead.textContent = '제출 처리 중...';
+
+    try {
+      if (!db) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+      const { error } = await db.from('live_leads').insert({
+        live_id: LIVE_ID,
+        name: nameVal,
+        phone: phoneVal,
+        created_at: new Date().toISOString()
+      });
+      if (error) throw error;
+      alert('✅ 상담 문의가 정상적으로 접수되었습니다!');
+      if (leadModal) leadModal.style.display = 'none';
+    } catch (err) {
+      console.error(err);
+      alert('오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      btnSubmitLead.disabled = false;
+      btnSubmitLead.textContent = '문의 접수하기';
+    }
+  });
+}

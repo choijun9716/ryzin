@@ -265,10 +265,11 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       ${_}
       ${v}
     </div>
-    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:420px; margin:0 auto;">
+    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:480px; margin:0 auto;">
       <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
@@ -639,7 +640,13 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             조회수 (클릭수): ${n.toLocaleString()}회
           </span>
         </div>
-        <input type="text" class="modern-input" value="${e.url||``}" data-idx="${t}" data-field="url" placeholder="구매 링크 URL">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="text" class="modern-input" style="flex:1;" value="${e.url||``}" data-idx="${t}" data-field="url" placeholder="구매 링크 URL (상담문의 폼인 경우 자동 처리됨)" ${e.isLeadForm?`disabled`:``}>
+          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+            <input type="checkbox" data-idx="${t}" data-field="isLeadForm" ${e.isLeadForm===!0||e.isLeadForm===`true`?`checked`:``} style="width:14px; height:14px; accent-color:#3b82f6;">
+            상담문의 폼
+          </label>
+        </div>
         <div class="product-prices">
           <input type="number" class="modern-input" value="${(e.price||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="price" placeholder="라이브가">
           <input type="number" class="modern-input" value="${(e.normalPrice||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="normalPrice" placeholder="정상가">
@@ -679,8 +686,36 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
         <div id="product-list-container">${O()}</div>
       </div>
-    `,Z&&Z.from(`live_control`).select(`products`).eq(`live_id`,t).maybeSingle().then(({data:t,error:n})=>{if(n)throw n;if(t&&t.products)try{let n=typeof t.products==`string`?JSON.parse(t.products):t.products;if(Array.isArray(n)){!c||c.length===0?c=n:c.forEach(e=>{let t=n.find(t=>t.name===e.name);t&&(e.clicks=parseInt(t.clicks)||0,!e.image&&t.image&&(e.image=t.image))}),f();let t=document.getElementById(`product-list-container`);t&&(t.innerHTML=O(),e())}}catch{}}).catch(e=>console.warn(`Failed to load product clicks from Supabase`,e));let e=()=>{let n=document.getElementById(`product-list-container`);n.querySelectorAll(`input[data-field]`).forEach(e=>{e.addEventListener(`change`,e=>{let t=parseInt(e.target.dataset.idx),r=e.target.dataset.field;if(e.target.type===`checkbox`?c[t][r]=e.target.checked:c[t][r]=e.target.value,r===`price`||r===`normalPrice`){let e=Number((c[t].normalPrice||``).toString().replace(/[^0-9]/g,``)),r=Number((c[t].price||``).toString().replace(/[^0-9]/g,``));if(e>0&&e>=r){c[t].discountRate=Math.floor((e-r)/e*100);let i=n.querySelector(`input[data-idx="${t}"][data-field="discountRate"]`);i&&(i.value=c[t].discountRate)}}f()})}),n.querySelectorAll(`.prod-img-upload`).forEach(t=>{t.addEventListener(`change`,async t=>{let r=t.target.files[0];if(!r)return;let a=parseInt(t.target.dataset.idx),o=document.getElementById(`img-prev-${a}`);o&&(o.style.opacity=`0.5`);try{let t=await i(await new Promise((e,t)=>{let n=new FileReader;n.onload=()=>e(n.result.split(`,`)[1]),n.onerror=t,n.readAsDataURL(r)}));if(!t)throw Error(`서버로부터 다운로드 URL을 받지 못했습니다.`);c[a].image=t,o&&(o.src=t),f(),n.innerHTML=O(),e(),alert(`🎉 상품 이미지 변경 성공!`)}catch(e){console.error(e),alert(`❌ 상품 이미지 업로드 에러:
-`+e.message)}finally{o&&(o.style.opacity=`1`)}})}),n.querySelectorAll(`.btn-deal-start`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx),a=parseInt(document.getElementById(`deal-min-${i}`).value);a>0&&(c[i].dealText=document.getElementById(`deal-text-${i}`).value||`깜짝딜 종료까지`,c[i].dealEndTime=Date.now()+a*60*1e3,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0),setTimeout(()=>alert(`${a}분 깜짝딜이 시작되었습니다!`),10))})}),n.querySelectorAll(`.btn-deal-cancel`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx);c[i].dealEndTime=0,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0)})}),n.querySelectorAll(`.btn-del-product`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx),i=c[r]?.name||`이 상품`;confirm(`정말 "${i}" 상품을 삭제하시겠습니까?`)&&(c.splice(r,1),f(),n.innerHTML=O(),e())})})};e(),document.getElementById(`btn-add-product`).addEventListener(`click`,()=>{c.push({id:Date.now(),name:`새 상품`,price:``,normalPrice:``,discountRate:0,image:`https://via.placeholder.com/72`,url:`#`}),f(),document.getElementById(`product-list-container`).innerHTML=O(),e()}),document.getElementById(`btn-save-products`).addEventListener(`click`,()=>{At(t,o,s,c,!0),alert(`상품 목록이 적용되었습니다!`)})};setTimeout(()=>{document.getElementById(`btn-back`).addEventListener(`click`,()=>{b(),n(null)}),document.getElementById(`btn-refresh-preview`).addEventListener(`click`,()=>{document.getElementById(`live-preview-iframe`).src=C});let e=g.querySelectorAll(`.tab-btn`),t=t=>{e.forEach(e=>e.classList.toggle(`active`,e.dataset.tab===t)),t===`config`?E():t===`chat`?D():t===`product`&&k()};e.forEach(e=>{e.addEventListener(`click`,()=>t(e.dataset.tab))}),E()},0)}function Ft(){let e=document.createElement(`div`),t=``;function n(){let r=H.getAll(`hosts`);if(t){let e=t.toLowerCase();r=r.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let i=r.map(e=>{let t=H.getHostStats(e.id);return{...e,stats:t}});e.innerHTML=`
+    `,Z&&Z.from(`live_control`).select(`products`).eq(`live_id`,t).maybeSingle().then(({data:t,error:n})=>{if(n)throw n;if(t&&t.products)try{let n=typeof t.products==`string`?JSON.parse(t.products):t.products;if(Array.isArray(n)){!c||c.length===0?c=n:c.forEach(e=>{let t=n.find(t=>t.name===e.name);t&&(e.clicks=parseInt(t.clicks)||0,!e.image&&t.image&&(e.image=t.image))}),f();let t=document.getElementById(`product-list-container`);t&&(t.innerHTML=O(),e())}}catch{}}).catch(e=>console.warn(`Failed to load product clicks from Supabase`,e));let e=()=>{let n=document.getElementById(`product-list-container`);n.querySelectorAll(`input[data-field]`).forEach(t=>{t.addEventListener(`change`,t=>{let r=parseInt(t.target.dataset.idx),i=t.target.dataset.field;if(t.target.type===`checkbox`){if(c[r][i]=t.target.checked,i===`isLeadForm`){t.target.checked?c[r].url=`__LEAD_FORM__`:c[r].url===`__LEAD_FORM__`&&(c[r].url=``),n.innerHTML=O(),e();return}}else c[r][i]=t.target.value;if(i===`price`||i===`normalPrice`){let e=Number((c[r].normalPrice||``).toString().replace(/[^0-9]/g,``)),t=Number((c[r].price||``).toString().replace(/[^0-9]/g,``));if(e>0&&e>=t){c[r].discountRate=Math.floor((e-t)/e*100);let i=n.querySelector(`input[data-idx="${r}"][data-field="discountRate"]`);i&&(i.value=c[r].discountRate)}}f()})}),n.querySelectorAll(`.prod-img-upload`).forEach(t=>{t.addEventListener(`change`,async t=>{let r=t.target.files[0];if(!r)return;let a=parseInt(t.target.dataset.idx),o=document.getElementById(`img-prev-${a}`);o&&(o.style.opacity=`0.5`);try{let t=await i(await new Promise((e,t)=>{let n=new FileReader;n.onload=()=>e(n.result.split(`,`)[1]),n.onerror=t,n.readAsDataURL(r)}));if(!t)throw Error(`서버로부터 다운로드 URL을 받지 못했습니다.`);c[a].image=t,o&&(o.src=t),f(),n.innerHTML=O(),e(),alert(`🎉 상품 이미지 변경 성공!`)}catch(e){console.error(e),alert(`❌ 상품 이미지 업로드 에러:
+`+e.message)}finally{o&&(o.style.opacity=`1`)}})}),n.querySelectorAll(`.btn-deal-start`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx),a=parseInt(document.getElementById(`deal-min-${i}`).value);a>0&&(c[i].dealText=document.getElementById(`deal-text-${i}`).value||`깜짝딜 종료까지`,c[i].dealEndTime=Date.now()+a*60*1e3,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0),setTimeout(()=>alert(`${a}분 깜짝딜이 시작되었습니다!`),10))})}),n.querySelectorAll(`.btn-deal-cancel`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx);c[i].dealEndTime=0,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0)})}),n.querySelectorAll(`.btn-del-product`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx),i=c[r]?.name||`이 상품`;confirm(`정말 "${i}" 상품을 삭제하시겠습니까?`)&&(c.splice(r,1),f(),n.innerHTML=O(),e())})})};e(),document.getElementById(`btn-add-product`).addEventListener(`click`,()=>{c.push({id:Date.now(),name:`새 상품`,price:``,normalPrice:``,discountRate:0,image:`https://via.placeholder.com/72`,url:`#`}),f(),document.getElementById(`product-list-container`).innerHTML=O(),e()}),document.getElementById(`btn-save-products`).addEventListener(`click`,()=>{At(t,o,s,c,!0),alert(`상품 목록이 적용되었습니다!`)})},A=()=>{x.innerHTML=`
+      <div class="section-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
+          <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
+            📞 상담 DB (리드)
+          </h2>
+          <button id="btn-refresh-leads" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+        </div>
+        <div id="leads-list-container">
+          <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">불러오는 중...</div>
+        </div>
+      </div>
+    `;let e=async()=>{try{if(!Z)throw Error(`Supabase 미연동`);let{data:e,error:n}=await Z.from(`live_leads`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});if(n)throw n;let r=document.getElementById(`leads-list-container`);if(!r)return;if(!e||e.length===0){r.innerHTML=`<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">아직 접수된 상담문의가 없습니다.</div>`;return}let i=`
+          <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+            <thead style="background:#f1f5f9; color:#475569;">
+              <tr>
+                <th style="padding:10px; font-weight:700;">접수일시</th>
+                <th style="padding:10px; font-weight:700;">이름</th>
+                <th style="padding:10px; font-weight:700;">전화번호</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;e.forEach(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`);i+=`
+            <tr style="border-bottom:1px solid #e2e8f0;">
+              <td style="padding:10px; color:#64748b;">${t}</td>
+              <td style="padding:10px; font-weight:700; color:#0f172a;">${e.name}</td>
+              <td style="padding:10px; font-family:monospace; color:#3b82f6;">${e.phone}</td>
+            </tr>
+          `}),i+=`</tbody></table>`,r.innerHTML=i}catch(e){console.warn(`Failed to load leads`,e);let t=document.getElementById(`leads-list-container`);t&&(t.innerHTML=`<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">데이터를 불러오는 데 실패했습니다. (테이블 생성 여부를 확인하세요)</div>`)}};e(),document.getElementById(`btn-refresh-leads`).addEventListener(`click`,e)};setTimeout(()=>{document.getElementById(`btn-back`).addEventListener(`click`,()=>{b(),n(null)}),document.getElementById(`btn-refresh-preview`).addEventListener(`click`,()=>{document.getElementById(`live-preview-iframe`).src=C});let e=g.querySelectorAll(`.tab-btn`),t=t=>{e.forEach(e=>e.classList.toggle(`active`,e.dataset.tab===t)),t===`config`?E():t===`chat`?D():t===`product`?k():t===`leads`&&A()};e.forEach(e=>{e.addEventListener(`click`,()=>t(e.dataset.tab))}),E()},0)}function Ft(){let e=document.createElement(`div`),t=``;function n(){let r=H.getAll(`hosts`);if(t){let e=t.toLowerCase();r=r.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let i=r.map(e=>{let t=H.getHostStats(e.id);return{...e,stats:t}});e.innerHTML=`
       <div class="page-header">
         <div class="page-header-left">
           <div>

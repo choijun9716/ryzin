@@ -560,10 +560,11 @@ function renderLiveEditView(container, liveId, showView) {
       ${statusBadge}
       ${onAirTimerHtml}
     </div>
-    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:420px; margin:0 auto;">
+    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:480px; margin:0 auto;">
       <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
@@ -1740,7 +1741,13 @@ function renderLiveEditView(container, liveId, showView) {
             조회수 (클릭수): ${clickCount.toLocaleString()}회
           </span>
         </div>
-        <input type="text" class="modern-input" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="text" class="modern-input" style="flex:1;" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL (상담문의 폼인 경우 자동 처리됨)" ${p.isLeadForm ? 'disabled' : ''}>
+          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+            <input type="checkbox" data-idx="${idx}" data-field="isLeadForm" ${p.isLeadForm === true || p.isLeadForm === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#3b82f6;">
+            상담문의 폼
+          </label>
+        </div>
         <div class="product-prices">
           <input type="number" class="modern-input" value="${(p.price || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
           <input type="number" class="modern-input" value="${(p.normalPrice || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
@@ -1831,6 +1838,17 @@ function renderLiveEditView(container, liveId, showView) {
           const field = e.target.dataset.field;
           if (e.target.type === 'checkbox') {
             products[idx][field] = e.target.checked;
+            if (field === 'isLeadForm') {
+              if (e.target.checked) {
+                products[idx].url = '__LEAD_FORM__';
+              } else if (products[idx].url === '__LEAD_FORM__') {
+                products[idx].url = '';
+              }
+              // Re-render to update the URL input disabled state
+              plc.innerHTML = renderProductList();
+              bindProductEvents();
+              return;
+            }
           } else {
             products[idx][field] = e.target.value;
           }
@@ -1932,6 +1950,72 @@ function renderLiveEditView(container, liveId, showView) {
 
   };
 
+  const renderLeadsTab = () => {
+    contentArea.innerHTML = `
+      <div class="section-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
+          <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
+            📞 상담 DB (리드)
+          </h2>
+          <button id="btn-refresh-leads" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+        </div>
+        <div id="leads-list-container">
+          <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">불러오는 중...</div>
+        </div>
+      </div>
+    `;
+
+    const loadLeads = async () => {
+      try {
+        if (!db) throw new Error('Supabase 미연동');
+        const { data: list, error } = await db.from('live_leads')
+          .select('*')
+          .eq('live_id', liveId)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+
+        const container = document.getElementById('leads-list-container');
+        if (!container) return;
+
+        if (!list || list.length === 0) {
+          container.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">아직 접수된 상담문의가 없습니다.</div>`;
+          return;
+        }
+
+        let html = `
+          <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+            <thead style="background:#f1f5f9; color:#475569;">
+              <tr>
+                <th style="padding:10px; font-weight:700;">접수일시</th>
+                <th style="padding:10px; font-weight:700;">이름</th>
+                <th style="padding:10px; font-weight:700;">전화번호</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        list.forEach(lead => {
+          const dateStr = new Date(lead.created_at).toLocaleString('ko-KR');
+          html += `
+            <tr style="border-bottom:1px solid #e2e8f0;">
+              <td style="padding:10px; color:#64748b;">${dateStr}</td>
+              <td style="padding:10px; font-weight:700; color:#0f172a;">${lead.name}</td>
+              <td style="padding:10px; font-family:monospace; color:#3b82f6;">${lead.phone}</td>
+            </tr>
+          `;
+        });
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+      } catch (err) {
+        console.warn('Failed to load leads', err);
+        const container = document.getElementById('leads-list-container');
+        if (container) container.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">데이터를 불러오는 데 실패했습니다. (테이블 생성 여부를 확인하세요)</div>`;
+      }
+    };
+
+    loadLeads();
+    document.getElementById('btn-refresh-leads').addEventListener('click', loadLeads);
+  };
+
   // ── 탭 전환 로직 ──────────────────────────────────────────
   setTimeout(() => {
     document.getElementById('btn-back').addEventListener('click', () => {
@@ -1948,6 +2032,7 @@ function renderLiveEditView(container, liveId, showView) {
       if (tabName === 'config') renderConfigTab();
       else if (tabName === 'chat') renderChatTab();
       else if (tabName === 'product') renderProductTab();
+      else if (tabName === 'leads') renderLeadsTab();
     };
 
     tabBtns.forEach(btn => {
