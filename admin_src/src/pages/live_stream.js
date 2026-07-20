@@ -230,7 +230,7 @@ function renderListView(container, showView) {
       const config = getLiveConfig(live.id) || {};
       const badgeClass = config.isLive ? 'badge-live' : 'badge-ready';
       const badgeText = config.isLive ? 'LIVE' : '대기';
-      const viewerUrl = `https://ryzincorp.com/live?id=${live.id}`;
+      const viewerUrl = `https://ryzincorp.com/live/${live.id}`;
       const displayIndex = idx + 1;
 
       const card = document.createElement('div');
@@ -567,7 +567,7 @@ function renderLiveEditView(container, liveId, showView) {
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
-      <span style="font-size:12px; color:#0f172a; font-family:monospace; font-weight:600; white-space:nowrap; margin-right:4px;">ryzincorp.com/live?id=${liveId}</span>
+      <span style="font-size:12px; color:#0f172a; font-family:monospace; font-weight:600; white-space:nowrap; margin-right:4px;">ryzincorp.com/live/${liveId}</span>
       <button id="btn-copy-live-url" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; height:28px; line-height:1; border-radius:6px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; font-weight:700; white-space:nowrap;">복사</button>
     </div>
   `;
@@ -578,7 +578,7 @@ function renderLiveEditView(container, liveId, showView) {
     const btnCopyUrl = document.getElementById('btn-copy-live-url');
     if (btnCopyUrl) {
       btnCopyUrl.addEventListener('click', async () => {
-        const urlToCopy = `https://ryzincorp.com/live?id=${liveId}`;
+        const urlToCopy = `https://ryzincorp.com/live/${liveId}`;
         try {
           await navigator.clipboard.writeText(urlToCopy);
           btnCopyUrl.textContent = '복사 완료!';
@@ -647,7 +647,7 @@ function renderLiveEditView(container, liveId, showView) {
   const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
   const previewUrl = `${previewBase}?id=${liveId}`;
 
-  const viewerUrl = `https://ryzincorp.com/live/?id=${liveId}`;
+  const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
   const embedCodeMobile = `<iframe src="${viewerUrl}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden;"></iframe>`;
   const embedCodeWide = `<iframe src="${viewerUrl}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none;"></iframe>`;
 
