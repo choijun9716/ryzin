@@ -663,16 +663,6 @@ function renderLiveEditView(container, liveId, showView) {
     <div style="width:100%; border-top:1.5px solid #e2e8f0; padding-top:16px; margin-top:4px;">
       <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; margin-bottom:12px;">공유 및 임베드 설정</div>
 
-      <div style="margin-bottom:14px;">
-        <div style="font-size:11px; font-weight:700; color:#e11d48; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em; display:flex; align-items:center; gap:4px;">
-          <span>카카오톡 공유용 링크 (추천)</span>
-        </div>
-        <div style="position:relative;">
-          <input type="text" id="share-gateway-url" readonly style="width:100%; font-size:11px; font-family:monospace; background:#fff8f8; border:1.5px solid #fecdd3; border-radius:8px; padding:10px 64px 10px 8px; color:#e11d48; box-sizing:border-box; outline:none;" value="${shareGatewayUrl}">
-          <button id="btn-copy-share-gateway" style="position:absolute; top:6px; right:6px; background:#ef4444; color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:11px; font-weight:700; cursor:pointer;">복사</button>
-        </div>
-      </div>
-
       <div style="margin-bottom:10px;">
         <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">모바일 세로형 임베드 URL (390×693)</div>
         <div style="position:relative;">

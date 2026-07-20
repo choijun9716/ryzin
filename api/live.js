@@ -53,9 +53,9 @@ export default async function handler(req, res) {
   if (id) {
     const data = await fetchLiveControl(id);
     if (data) {
-      if (data.title) title = data.title;
-      if (data.description) description = data.description;
-      if (data.thumbnail) thumbnail = data.thumbnail;
+      if (data.share_title) title = data.share_title;
+      if (data.share_desc) description = data.share_desc;
+      if (data.share_image) thumbnail = data.share_image;
     }
   }
 
