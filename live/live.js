@@ -138,11 +138,20 @@ document.addEventListener('DOMContentLoaded', () => {
       checkUserBanStatus();
     }
 
+    const rawLogoUrl = row.profile_image || '';
+    const showSplash = !rawLogoUrl.endsWith('#nosplash');
+    
+    // 스플래시 제어
+    if (showSplash === false) {
+      const splash = document.getElementById('splash-screen');
+      if (splash) splash.remove();
+    }
+
     const config = {
       liveId: row.live_id || 'live01',
       brandName: row.title || 'Ryzin Corp',
       title: row.subtitle || '단독 특가 라이브 방송 중!',
-      logoUrl: row.profile_image || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
+      logoUrl: rawLogoUrl.replace('#nosplash', '') || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
       streamUrl: row.stream_url || '',
       showViewers: row.show_viewers !== false,
       thumbnailUrl: row.thumbnail_url || '',

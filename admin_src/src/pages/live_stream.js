@@ -58,7 +58,7 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       live_id: liveId,
       title: config.brandName,
       subtitle: config.title,
-      profile_image: config.logoUrl || '',
+      profile_image: (config.logoUrl || '') + (config.showSplash === false ? '#nosplash' : ''),
       stream_url: config.streamUrl || '',
       viewers: parseInt(stats.viewers) || 0,
       hearts: parseInt(stats.hearts) || 0,
@@ -483,7 +483,8 @@ function renderLiveEditView(container, liveId, showView) {
             brandName: data.title || `라이브 ${displayIdx}`,
             title: data.subtitle || '단독 특가 라이브 방송 중!',
             streamUrl: data.stream_url || '',
-            logoUrl: data.profile_image || '',
+            logoUrl: (data.profile_image || '').replace('#nosplash', ''),
+            showSplash: !(data.profile_image || '').endsWith('#nosplash'),
             thumbnailUrl: data.thumbnail_url || '',
             liveStartTime: data.start_time || '',
             showViewers: data.show_viewers !== false,
@@ -801,8 +802,13 @@ function renderLiveEditView(container, liveId, showView) {
         <div style="margin-top:18px; display:flex; align-items:center; justify-content:space-between;">
           <div style="display:flex; align-items:center; gap:8px;">
             <input type="checkbox" id="cfg-showViewers" style="width:18px; height:18px; accent-color:#3b82f6;" ${config.showViewers ? 'checked' : ''}>
-            <label for="cfg-showViewers" style="font-size:14px; font-weight:600; color:#374151; cursor:pointer;">시청자 수 화면에 노출</label>
+            <label for="cfg-showViewers" style="font-size:14px; font-weight:600; color:#374151; cursor:pointer;">시청자 수 노출</label>
           </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-left:16px;">
+            <input type="checkbox" id="cfg-showSplash" style="width:18px; height:18px; accent-color:#3b82f6;" ${config.showSplash !== false ? 'checked' : ''}>
+            <label for="cfg-showSplash" style="font-size:14px; font-weight:600; color:#374151; cursor:pointer;">스플래시 화면 켜기</label>
+          </div>
+          <div style="flex:1;"></div>
           <button id="btn-reset-stats" class="action-btn btn-danger-solid" style="padding:8px 14px; font-size:13px;">통계 초기화</button>
         </div>
       </div>
@@ -921,6 +927,7 @@ function renderLiveEditView(container, liveId, showView) {
       stats.cumViewers = parseInt(document.getElementById('cfg-cumViewers').value) || 0;
       stats.hearts = parseInt(document.getElementById('cfg-hearts').value) || 0;
       config.showViewers = document.getElementById('cfg-showViewers').checked;
+      config.showSplash = document.getElementById('cfg-showSplash').checked;
       config.shareTitle = document.getElementById('cfg-shareTitle').value;
       config.shareDesc = document.getElementById('cfg-shareDesc').value;
       config.bannedWords = document.getElementById('cfg-bannedWords').value.trim();
