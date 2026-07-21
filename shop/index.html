@@ -1028,17 +1028,22 @@
     /* ── 바텀 네비 ── */
     .bottom-nav {
       position: fixed;
-      bottom: 0; left: 50%;
+      bottom: 16px; left: 50%;
       transform: translateX(-50%);
-      width: 100%;
-      max-width: 430px;
-      height: 60px;
-      background: rgba(255,255,255,0.97);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border);
+      width: calc(100% - 32px);
+      max-width: 398px; /* 430px - 32px */
+      height: 64px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(229, 231, 235, 0.5);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
       display: flex;
+      align-items: center;
+      justify-content: space-around;
       z-index: 200;
+      padding: 0 8px;
     }
 
     .bnav-item {
@@ -1047,13 +1052,15 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 3px;
       text-decoration: none;
       color: #9ca3af;
       font-size: 10px;
       font-weight: 600;
       cursor: pointer;
-      transition: color 0.15s;
+      height: 100%;
+      position: relative;
+      transition: color 0.25s ease;
     }
 
     .bnav-item.active { color: var(--text-main); font-weight: 800; }
@@ -1063,6 +1070,29 @@
       stroke: currentColor;
       stroke-width: 2;
       fill: none;
+      transition: transform 0.25s ease, stroke-width 0.25s ease;
+    }
+
+    .bnav-item.active svg {
+      transform: translateY(-2px);
+      stroke-width: 2.2;
+    }
+
+    /* Active Indicator Dot */
+    .bnav-item::after {
+      content: '';
+      position: absolute;
+      bottom: 8px;
+      width: 4px;
+      height: 4px;
+      background: var(--text-main);
+      border-radius: 50%;
+      transform: scale(0);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .bnav-item.active::after {
+      transform: scale(1);
     }
 
     /* ── MODALS (기본 스타일 & 슬라이드 업) ── */
