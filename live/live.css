@@ -989,11 +989,10 @@ body.ui-hidden .bottom-product-banner {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* 다크 프리즘 그라데이션 */
-  background: linear-gradient(45deg, #09090b, #1e1b4b, #0f172a, #050505);
+  /* 아주 어둡지만 은은하게 무지개빛(보라, 파랑, 초록, 노랑, 빨강)이 도는 프리즘 그라데이션 */
+  background: linear-gradient(60deg, #050505, #12071a, #081220, #061410, #171405, #1a0808, #050505);
   background-size: 400% 400%;
   animation: prism-bg-anim 8s ease infinite;
-  transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
 }
 
 @keyframes prism-bg-anim {
