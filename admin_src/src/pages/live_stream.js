@@ -1898,7 +1898,7 @@ function renderLiveEditView(container, liveId, showView) {
     let selectedType = (config.winner_name && config.winner_name.startsWith('구매인증') ? '구매인증' : '소통왕');
 
     // 세그먼트 버튼 클릭 이벤트 바인딩
-    const segmentBtns = document.querySelectorAll('.type-segment-btn');
+    const segmentBtns = contentArea.querySelectorAll('.type-segment-btn');
     segmentBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         segmentBtns.forEach(b => {
@@ -1907,7 +1907,7 @@ function renderLiveEditView(container, liveId, showView) {
           b.style.color = '#64748b';
         });
         btn.classList.add('active');
-        btn.style.background = '#fab005';
+        btn.style.background = '#3b82f6';
         btn.style.color = '#fff';
         selectedType = btn.dataset.type;
       });
