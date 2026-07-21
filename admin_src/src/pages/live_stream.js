@@ -773,7 +773,7 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
 
       <div class="section-card">
-        <h3>통계 (실시간 조회 데이터)</h3>
+        <h3>통계</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:18px;">
           <div>
             <label class="modern-label">총 시청자 수 (사용자 화면 노출 기준)</label>
@@ -817,7 +817,7 @@ function renderLiveEditView(container, liveId, showView) {
 
       <div class="section-card" id="share-og-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <h3 style="margin:0; border:none; padding:0;">카카오톡 공유 카드 설정</h3>
+          <h3 style="margin:0; border:none; padding:0;">임베드 관리</h3>
           <div style="display:flex; gap:8px;">
             <button id="btn-preview-og" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700;">링크 테스트</button>
             <button id="btn-kakao-cache" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700;">카카오 캐시 초기화</button>
