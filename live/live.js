@@ -669,9 +669,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     track.classList.add('no-transition');
                     currentIdx = 0;
                     track.style.transform = 'translateY(0)';
-                  }, 500); // matches the 0.5s CSS transition
+                  }, 300); // matches the 0.3s CSS transition
                 }
-              }, 3000);
+              }, 1500);
             } else {
               track.style.transform = 'translateY(0)';
             }
