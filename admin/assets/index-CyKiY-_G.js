@@ -634,45 +634,47 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <input type="file" id="upload-prod-${t}" accept="image/*" style="display:none;" data-idx="${t}" class="prod-img-upload">
       </div>
       <div class="product-inputs">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <input type="text" class="modern-input" style="flex:1;" value="${e.name||``}" data-idx="${t}" data-field="name" placeholder="상품명">
-          <span style="margin-left:12px; font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:4px 10px; border-radius:12px; white-space:nowrap;">
-            조회수 (클릭수): ${n.toLocaleString()}회
-          </span>
-        </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <input type="text" class="modern-input" style="flex:1;" value="${e.url||``}" data-idx="${t}" data-field="url" placeholder="구매 링크 URL (상담문의 폼인 경우 자동 처리됨)" ${e.isLeadForm?`disabled`:``}>
+          <input type="text" class="modern-input" style="flex:2;" value="${e.name||``}" data-idx="${t}" data-field="name" placeholder="상품명">
+          <input type="number" class="modern-input" style="flex:1;" value="${(e.normalPrice||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="normalPrice" placeholder="정상가">
+          <input type="number" class="modern-input" style="flex:1;" value="${(e.price||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="price" placeholder="라이브가">
+          <input type="number" class="modern-input" value="${e.discountRate||0}" data-idx="${t}" data-field="discountRate" placeholder="%" readonly style="width:50px; text-align:center;">
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <input type="text" class="modern-input" style="flex:1;" value="${e.url||``}" data-idx="${t}" data-field="url" placeholder="구매 링크 URL" ${e.isLeadForm?`disabled`:``}>
           <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
             <input type="checkbox" data-idx="${t}" data-field="isLeadForm" ${e.isLeadForm===!0||e.isLeadForm===`true`?`checked`:``} style="width:14px; height:14px; accent-color:#3b82f6;">
-            상담문의 폼
+            상담문의
           </label>
-        </div>
-        <div class="product-prices">
-          <input type="number" class="modern-input" value="${(e.price||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="price" placeholder="라이브가">
-          <input type="number" class="modern-input" value="${(e.normalPrice||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="normalPrice" placeholder="정상가">
-          <input type="number" class="modern-input" value="${e.discountRate||0}" data-idx="${t}" data-field="discountRate" placeholder="%" readonly style="max-width:72px; text-align:center;">
+          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+            <input type="checkbox" data-idx="${t}" data-field="hideByDefault" ${e.hideByDefault===!0||e.hideByDefault===`true`?`checked`:``} style="width:14px; height:14px; accent-color:#16a34a;">
+            평소숨김
+          </label>
+          <span style="font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:8px 10px; border-radius:8px; white-space:nowrap;">조회: ${n.toLocaleString()}</span>
+          <button class="action-btn btn-neutral btn-move-up" data-idx="${t}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${t===0?`disabled`:``}>▲</button>
+          <button class="action-btn btn-neutral btn-move-down" data-idx="${t}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${t===c.length-1?`disabled`:``}>▼</button>
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${t}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
-        <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:10px; border:1px solid #fecdd3;">
-          <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
-          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${t}" placeholder="배너 문구" value="${e.dealText||`깜짝딜 종료까지`}">
-          <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${t}" placeholder="분">
-          <button class="btn-deal-start" data-idx="${t}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
-          <button class="btn-deal-cancel" data-idx="${t}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-          ${e.dealEndTime&&e.dealEndTime>Date.now()?`<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>`:``}
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:10px; border:1px solid #bbf7d0; margin-top:6px;">
-          <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
-          <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${t}" data-field="targetLikes" placeholder="목표 좋아요" value="${e.targetLikes||``}">
-          <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
-          <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${t}" data-field="targetDealMin" placeholder="시간(분)" value="${e.targetDealMin||``}">
-          <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
-          <div style="flex:1;"></div>
-          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none;">
-            <input type="checkbox" data-idx="${t}" data-field="hideByDefault" ${e.hideByDefault===!0||e.hideByDefault===`true`?`checked`:``} style="width:14px; height:14px; accent-color:#16a34a;">
-            평소 숨김
-          </label>
-        </div>
+        <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+          <summary style="padding:10px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none;">⚙️ 고급 설정 (깜짝딜 / 좋아요 조건)</summary>
+          <div style="padding:10px 14px; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
+              <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
+              <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${t}" placeholder="배너 문구" value="${e.dealText||`깜짝딜 종료까지`}">
+              <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${t}" placeholder="분">
+              <button class="btn-deal-start" data-idx="${t}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+              <button class="btn-deal-cancel" data-idx="${t}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+              ${e.dealEndTime&&e.dealEndTime>Date.now()?`<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>`:``}
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:8px; border:1px solid #bbf7d0;">
+              <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
+              <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${t}" data-field="targetLikes" placeholder="목표 좋아요" value="${e.targetLikes||``}">
+              <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
+              <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${t}" data-field="targetDealMin" placeholder="시간(분)" value="${e.targetDealMin||``}">
+              <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
     `}).join(``),k=()=>{x.innerHTML=`
@@ -687,7 +689,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <div id="product-list-container">${O()}</div>
       </div>
     `,Z&&Z.from(`live_control`).select(`products`).eq(`live_id`,t).maybeSingle().then(({data:t,error:n})=>{if(n)throw n;if(t&&t.products)try{let n=typeof t.products==`string`?JSON.parse(t.products):t.products;if(Array.isArray(n)){!c||c.length===0?c=n:c.forEach(e=>{let t=n.find(t=>t.name===e.name);t&&(e.clicks=parseInt(t.clicks)||0,!e.image&&t.image&&(e.image=t.image))}),f();let t=document.getElementById(`product-list-container`);t&&(t.innerHTML=O(),e())}}catch{}}).catch(e=>console.warn(`Failed to load product clicks from Supabase`,e));let e=()=>{let n=document.getElementById(`product-list-container`);n.querySelectorAll(`input[data-field]`).forEach(t=>{t.addEventListener(`change`,t=>{let r=parseInt(t.target.dataset.idx),i=t.target.dataset.field;if(t.target.type===`checkbox`){if(c[r][i]=t.target.checked,i===`isLeadForm`){t.target.checked?c[r].url=`__LEAD_FORM__`:c[r].url===`__LEAD_FORM__`&&(c[r].url=``),n.innerHTML=O(),e();return}}else c[r][i]=t.target.value;if(i===`price`||i===`normalPrice`){let e=Number((c[r].normalPrice||``).toString().replace(/[^0-9]/g,``)),t=Number((c[r].price||``).toString().replace(/[^0-9]/g,``));if(e>0&&e>=t){c[r].discountRate=Math.floor((e-t)/e*100);let i=n.querySelector(`input[data-idx="${r}"][data-field="discountRate"]`);i&&(i.value=c[r].discountRate)}}f()})}),n.querySelectorAll(`.prod-img-upload`).forEach(t=>{t.addEventListener(`change`,async t=>{let r=t.target.files[0];if(!r)return;let a=parseInt(t.target.dataset.idx),o=document.getElementById(`img-prev-${a}`);o&&(o.style.opacity=`0.5`);try{let t=await i(await new Promise((e,t)=>{let n=new FileReader;n.onload=()=>e(n.result.split(`,`)[1]),n.onerror=t,n.readAsDataURL(r)}));if(!t)throw Error(`서버로부터 다운로드 URL을 받지 못했습니다.`);c[a].image=t,o&&(o.src=t),f(),n.innerHTML=O(),e(),alert(`🎉 상품 이미지 변경 성공!`)}catch(e){console.error(e),alert(`❌ 상품 이미지 업로드 에러:
-`+e.message)}finally{o&&(o.style.opacity=`1`)}})}),n.querySelectorAll(`.btn-deal-start`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx),a=parseInt(document.getElementById(`deal-min-${i}`).value);a>0&&(c[i].dealText=document.getElementById(`deal-text-${i}`).value||`깜짝딜 종료까지`,c[i].dealEndTime=Date.now()+a*60*1e3,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0),setTimeout(()=>alert(`${a}분 깜짝딜이 시작되었습니다!`),10))})}),n.querySelectorAll(`.btn-deal-cancel`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx);c[i].dealEndTime=0,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0)})}),n.querySelectorAll(`.btn-del-product`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx),i=c[r]?.name||`이 상품`;confirm(`정말 "${i}" 상품을 삭제하시겠습니까?`)&&(c.splice(r,1),f(),n.innerHTML=O(),e())})})};e(),document.getElementById(`btn-add-product`).addEventListener(`click`,()=>{c.push({id:Date.now(),name:`새 상품`,price:``,normalPrice:``,discountRate:0,image:`https://via.placeholder.com/72`,url:`#`}),f(),document.getElementById(`product-list-container`).innerHTML=O(),e()}),document.getElementById(`btn-save-products`).addEventListener(`click`,()=>{At(t,o,s,c,!0),alert(`상품 목록이 적용되었습니다!`)})},A=()=>{x.innerHTML=`
+`+e.message)}finally{o&&(o.style.opacity=`1`)}})}),n.querySelectorAll(`.btn-deal-start`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx),a=parseInt(document.getElementById(`deal-min-${i}`).value);a>0&&(c[i].dealText=document.getElementById(`deal-text-${i}`).value||`깜짝딜 종료까지`,c[i].dealEndTime=Date.now()+a*60*1e3,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0),setTimeout(()=>alert(`${a}분 깜짝딜이 시작되었습니다!`),10))})}),n.querySelectorAll(`.btn-deal-cancel`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx);c[i].dealEndTime=0,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0)})}),n.querySelectorAll(`.btn-del-product`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx),i=c[r]?.name||`이 상품`;confirm(`정말 "${i}" 상품을 삭제하시겠습니까?`)&&(c.splice(r,1),f(),n.innerHTML=O(),e())})}),n.querySelectorAll(`.btn-move-up`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx);if(r>0){let t=c[r-1];c[r-1]=c[r],c[r]=t,f(),n.innerHTML=O(),e()}})}),n.querySelectorAll(`.btn-move-down`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx);if(r<c.length-1){let t=c[r+1];c[r+1]=c[r],c[r]=t,f(),n.innerHTML=O(),e()}})})};e(),document.getElementById(`btn-add-product`).addEventListener(`click`,()=>{c.push({id:Date.now(),name:`새 상품`,price:``,normalPrice:``,discountRate:0,image:`https://via.placeholder.com/72`,url:`#`}),f(),document.getElementById(`product-list-container`).innerHTML=O(),e()}),document.getElementById(`btn-save-products`).addEventListener(`click`,()=>{At(t,o,s,c,!0),alert(`상품 목록이 적용되었습니다!`)})},A=()=>{x.innerHTML=`
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
