@@ -482,48 +482,75 @@ function renderLiveEditView(container, liveId, showView) {
       .eq('live_id', liveId)
       .maybeSingle()
       .then(({ data, error }) => {
+        window[`live_loaded_${liveId}`] = true;
         if (!error && data) {
           const lives = getLives();
           const liveIndex = lives.findIndex(l => l.id === liveId);
           const displayIdx = liveIndex !== -1 ? (liveIndex + 1) : 1;
-          config = {
-            brandName: data.title || `라이브 ${displayIdx}`,
-            title: data.subtitle || '단독 특가 라이브 방송 중!',
-            streamUrl: data.stream_url || '',
-            logoUrl: (data.profile_image || '').replace('#nosplash', ''),
-            showSplash: !(data.profile_image || '').endsWith('#nosplash'),
-            thumbnailUrl: data.thumbnail_url || '',
-            liveStartTime: data.start_time || '',
-            showViewers: data.show_viewers !== false,
-            isLive: data.status === 'ON',
-            botEnabled: false,
-            shareTitle: data.share_title || '',
-            shareDesc: data.share_desc || '',
-            shareImageUrl: data.share_image || '',
-            likeImageUrl: data.like_image_url || ''
-          };
-          stats = {
-            viewers: data.viewers || 0,
-            hearts: data.hearts || 0,
-            cumViewers: data.cum_viewers || 0
-          };
+          config.brandName = data.title || `라이브 ${displayIdx}`;
+          config.title = data.subtitle || '단독 특가 라이브 방송 중!';
+          config.streamUrl = data.stream_url || '';
+          config.logoUrl = (data.profile_image || '').replace('#nosplash', '');
+          config.showSplash = !(data.profile_image || '').endsWith('#nosplash');
+          config.thumbnailUrl = data.thumbnail_url || '';
+          config.liveStartTime = data.start_time || '';
+          config.showViewers = data.show_viewers !== false;
+          config.isLive = data.status === 'ON';
+          config.shareTitle = data.share_title || '';
+          config.shareDesc = data.share_desc || '';
+          config.shareImageUrl = data.share_image || '';
+          config.likeImageUrl = data.like_image_url || '';
+
+          stats.viewers = data.viewers || 0;
+          stats.hearts = data.hearts || 0;
+          stats.cumViewers = data.cum_viewers || 0;
+
           if (data.products) {
-            products = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
-            if (!Array.isArray(products)) products = [];
+            let pData = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+            if (Array.isArray(pData)) {
+              products.length = 0;
+              products.push(...pData);
+            }
           }
           saveLiveConfig(liveId, config);
           saveLiveStats(liveId, stats);
           saveLiveProductsLocal(liveId, products);
-          window[`live_loaded_${liveId}`] = true;
-          showView(liveId);
-        } else {
-          window[`live_loaded_${liveId}`] = true;
-          showView(liveId);
+
+          // UI 요소 안전한 인플레이스 갱신 (화면 전체 덮어쓰기/재호출 금지!)
+          const safeUpdate = (id, val) => {
+            const el = layout.querySelector('#' + id) || document.getElementById(id);
+            if (el && document.activeElement !== el) {
+              if (el.type === 'checkbox') el.checked = Boolean(val);
+              else el.value = val;
+            }
+          };
+          safeUpdate('cfg-brandName', config.brandName);
+          safeUpdate('cfg-title', config.title);
+          safeUpdate('cfg-stream', config.streamUrl);
+          safeUpdate('cfg-showViewers', config.showViewers);
+          safeUpdate('cfg-liveStartTime', config.liveStartTime);
+          safeUpdate('cfg-shareTitle', config.shareTitle);
+          safeUpdate('cfg-shareDesc', config.shareDesc);
+
+          const logoPreview = layout.querySelector('#logo-preview') || document.getElementById('logo-preview');
+          if (logoPreview) logoPreview.src = config.logoUrl;
+          const thumbPreview = layout.querySelector('#thumbnail-preview') || document.getElementById('thumbnail-preview');
+          if (thumbPreview) thumbPreview.src = config.thumbnailUrl;
+          const likePreview = layout.querySelector('#like-preview') || document.getElementById('like-preview');
+          if (likePreview) {
+            likePreview.src = config.likeImageUrl;
+            likePreview.style.display = config.likeImageUrl ? 'block' : 'none';
+          }
+          const liveToggleBtn = layout.querySelector('#btn-toggle-live') || document.getElementById('btn-toggle-live');
+          if (liveToggleBtn && document.activeElement !== liveToggleBtn) {
+            liveToggleBtn.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
+            liveToggleBtn.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
+          }
         }
       })
-      .catch(() => {
+      .catch((e) => {
         window[`live_loaded_${liveId}`] = true;
-        showView(liveId);
+        console.warn('Initial Supabase load failed', e);
       });
   } else {
     window[`live_loaded_${liveId}`] = true;
