@@ -466,6 +466,7 @@ function renderLiveEditView(container, liveId, showView) {
   let config = getLiveConfig(liveId) || {};
   let stats = getLiveStats(liveId);
   let products = getLiveProducts(liveId);
+  if (!Array.isArray(products)) products = [];
   let botCfg = getBotConfig(liveId);
 
   // ── 채팅 봇 전역(라이브 편집기 레벨) 상태 ──
@@ -508,6 +509,7 @@ function renderLiveEditView(container, liveId, showView) {
           };
           if (data.products) {
             products = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+            if (!Array.isArray(products)) products = [];
           }
           saveLiveConfig(liveId, config);
           saveLiveStats(liveId, stats);
@@ -516,10 +518,12 @@ function renderLiveEditView(container, liveId, showView) {
           showView(liveId);
         } else {
           window[`live_loaded_${liveId}`] = true;
+          showView(liveId);
         }
       })
       .catch(() => {
         window[`live_loaded_${liveId}`] = true;
+        showView(liveId);
       });
   } else {
     window[`live_loaded_${liveId}`] = true;
@@ -803,7 +807,7 @@ function renderLiveEditView(container, liveId, showView) {
           <div>
             <label class="modern-label">총 상품 조회수 (클릭수)</label>
             <div class="modern-input" id="cfg-total-clicks" style="background:#f1f5f9; display:flex; align-items:center; font-weight:bold; color:#0f172a;">
-              ${(products || []).reduce((acc, curr) => acc + (parseInt(curr.clicks) || 0), 0).toLocaleString()}회
+              ${(Array.isArray(products) ? products : []).reduce((acc, curr) => acc + (parseInt(curr.clicks) || 0), 0).toLocaleString()}회
             </div>
           </div>
         </div>
@@ -1781,7 +1785,7 @@ function renderLiveEditView(container, liveId, showView) {
           .select('*')
           .eq('live_id', liveId)
           .order('created_at', { ascending: false })
-          .limit(100);
+          .limit(300);
 
         if (error) throw error;
         if (chats && Array.isArray(chats)) {
@@ -1833,49 +1837,22 @@ function renderLiveEditView(container, liveId, showView) {
     };
 
     // 2. 실시간 채팅 구독
-    const subscribeAdminChat = () => {
+    // UI 전용 채팅 구독 (탭이 열릴 때만 호출)
+    const subscribeAdminChatUI = () => {
       if (!db) return;
-      chatChannel = db.channel(`admin-chat-channel-${liveId}`)
+      chatChannel = db.channel(`admin-chat-ui-channel-${liveId}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_chats', filter: `live_id=eq.${liveId}` }, payload => {
           const c = payload.new;
           if (c && parseInt(c.created_at) > adminLastChatTime) {
             addAdminChatItem(c.nickname || '?', c.content || '', false);
             adminLastChatTime = parseInt(c.created_at);
-            
-            // ── 키워드 자동응답 봇 로직 ──
-            if (botCfg.autoReplyActive && botCfg.autoReplyRules && botCfg.autoReplyRules.length > 0) {
-              const sender = c.nickname || '';
-              // 관리자나 자동응답봇이 보낸 채팅에는 반응하지 않음 (무한루프 방지)
-              if (!sender.includes('|') && sender !== '관리자' && sender !== '자동응답봇') {
-                const msg = (c.content || '').toLowerCase();
-                for (const rule of botCfg.autoReplyRules) {
-                  const keywords = rule.keywords.split(',').map(k => k.trim().toLowerCase()).filter(k => k);
-                  if (keywords.some(k => msg.includes(k))) {
-                    setTimeout(async () => {
-                      try {
-                        if (!db) return;
-                        await db.from('live_chats').insert([{
-                          live_id: liveId,
-                          created_at: Date.now(),
-                          nickname: '자동응답봇',
-                          content: rule.answer
-                        }]);
-                      } catch (e) {
-                        console.warn('Auto-reply failed', e);
-                      }
-                    }, 600); // 0.6초 딜레이로 약간 자연스럽게 전송
-                    break; // 여러 규칙 중복 매칭 방지 (첫 매칭 규칙만 실행)
-                  }
-                }
-              }
-            }
           }
         })
         .subscribe();
     };
 
     loadAdminChatHistory();
-    subscribeAdminChat();
+    subscribeAdminChatUI();
     startStatsPolling();
 
     // 탭 이동 시 구독 해제 및 봇 정리
@@ -2049,7 +2026,8 @@ function renderLiveEditView(container, liveId, showView) {
           if (error) throw error;
           if (row && row.products) {
             try {
-              const remoteProducts = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
+              let remoteProducts = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
+              if (!Array.isArray(remoteProducts)) remoteProducts = [];
               if (Array.isArray(remoteProducts)) {
                 if (!products || products.length === 0) {
                   products = remoteProducts;
@@ -2345,11 +2323,50 @@ function renderLiveEditView(container, liveId, showView) {
       cleanUpOnAirTimer();
       if (botTimer) clearInterval(botTimer);
       if (adminSyncChannel) db.removeChannel(adminSyncChannel);
+      if (botChatChannel) db.removeChannel(botChatChannel);
       showView(null);
     });
     document.getElementById('btn-refresh-preview').addEventListener('click', () => {
       document.getElementById('live-preview-iframe').src = previewUrl;
     });
+
+    // ── 실시간 봇 자동응답 구독 (탭 무관 백그라운드) ──
+    let botChatChannel = null;
+    const subscribeBotSync = () => {
+      if (!db) return;
+      botChatChannel = db.channel(`bot-sync-${liveId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_chats', filter: `live_id=eq.${liveId}` }, payload => {
+          const c = payload.new;
+          if (!c) return;
+          if (botCfg.autoReplyActive && botCfg.autoReplyRules && botCfg.autoReplyRules.length > 0) {
+            const sender = c.nickname || '';
+            if (!sender.includes('|') && sender !== '관리자' && sender !== '자동응답봇') {
+              const msg = (c.content || '').toLowerCase();
+              for (const rule of botCfg.autoReplyRules) {
+                const keywords = rule.keywords.split(',').map(k => k.trim().toLowerCase()).filter(k => k);
+                if (keywords.some(k => msg.includes(k))) {
+                  setTimeout(async () => {
+                    try {
+                      if (!db) return;
+                      await db.from('live_chats').insert([{
+                        live_id: liveId,
+                        nickname: '자동응답봇',
+                        content: rule.answer,
+                        created_at: Date.now().toString()
+                      }]);
+                    } catch (e) {
+                      console.warn('Auto-reply failed', e);
+                    }
+                  }, 600);
+                  break;
+                }
+              }
+            }
+          }
+        })
+        .subscribe();
+    };
+    subscribeBotSync();
 
     // ── 실시간 어드민 동기화 (다중 접속 처리) ──
     let adminSyncChannel = null;
@@ -2426,6 +2443,7 @@ function renderLiveEditView(container, liveId, showView) {
           if (newData.products && Array.isArray(newData.products)) {
             const newProductsStr = JSON.stringify(newData.products);
             if (JSON.stringify(products) !== newProductsStr) {
+              if (!Array.isArray(products)) products = [];
               products.length = 0;
               products.push(...newData.products);
               saveLiveProductsLocal(liveId, products);

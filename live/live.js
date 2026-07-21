@@ -130,6 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.__lastWinnerTimestamp = 0;
         const winnerEl = document.getElementById('winner-alert-overlay');
         if (winnerEl) winnerEl.style.display = 'none';
+        const chatSectionForModal = document.querySelector('.chat-section');
+        if (chatSectionForModal) chatSectionForModal.classList.remove('banner-active');
       }
     }
 
@@ -202,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .select('*')
         .eq('live_id', LIVE_ID)
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(300);
 
       if (error) throw error;
       if (chats && Array.isArray(chats)) {
