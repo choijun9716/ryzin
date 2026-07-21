@@ -653,10 +653,24 @@ document.addEventListener('DOMContentLoaded', () => {
             // 여러 개일 경우 수직 롤링 타이머 셋업
             if (rollingInterval) clearInterval(rollingInterval);
             if (activeProducts.length > 1) {
+              // Clone the first card for seamless infinite loop
+              const firstCardClone = track.firstElementChild.cloneNode(true);
+              track.appendChild(firstCardClone);
+              
               let currentIdx = 0;
               rollingInterval = setInterval(() => {
-                currentIdx = (currentIdx + 1) % activeProducts.length;
+                currentIdx++;
+                track.classList.remove('no-transition');
                 track.style.transform = `translateY(-${currentIdx * 72}px)`;
+                
+                if (currentIdx === activeProducts.length) {
+                  // After transition ends, instantly reset to first item
+                  setTimeout(() => {
+                    track.classList.add('no-transition');
+                    currentIdx = 0;
+                    track.style.transform = 'translateY(0)';
+                  }, 500); // matches the 0.5s CSS transition
+                }
               }, 3000);
             } else {
               track.style.transform = 'translateY(0)';
