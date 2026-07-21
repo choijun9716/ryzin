@@ -776,9 +776,9 @@ function renderLiveEditView(container, liveId, showView) {
         <h3>통계 (실시간 조회 데이터)</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:18px;">
           <div>
-            <label class="modern-label">실시간 시청자 수 (현재값)</label>
+            <label class="modern-label">총 시청자 수 (사용자 화면 노출 기준)</label>
             <div style="display:flex; gap:6px; align-items:center;">
-              <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">${stats.viewers.toLocaleString()}명</div>
+              <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">${(stats.viewers + (stats.cumViewers || 0)).toLocaleString()}명 <span style="font-size:11px; font-weight:normal; color:#64748b; margin-left:4px;">(방송+수동: ${stats.viewers.toLocaleString()}, 누적: ${(stats.cumViewers || 0).toLocaleString()})</span></div>
             </div>
             <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
               <input type="number" class="modern-input" id="cfg-viewers-add" placeholder="+추가할 수" style="flex:1; padding:8px 10px; font-size:13px;">
@@ -1626,7 +1626,7 @@ function renderLiveEditView(container, liveId, showView) {
     window.updateAdminViewersDisplay = () => {
       const viewerDisplayEl = document.getElementById('cfg-viewers-display');
       if (viewerDisplayEl) {
-        viewerDisplayEl.textContent = `${stats.viewers.toLocaleString()}명`;
+        viewerDisplayEl.innerHTML = `${(stats.viewers + (stats.cumViewers || 0)).toLocaleString()}명 <span style="font-size:11px; font-weight:normal; color:#64748b; margin-left:4px;">(방송+수동: ${stats.viewers.toLocaleString()}, 누적: ${(stats.cumViewers || 0).toLocaleString()})</span>`;
       }
       const cumViewersInput = document.getElementById('cfg-cumViewers');
       if (cumViewersInput) {
