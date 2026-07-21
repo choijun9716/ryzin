@@ -247,6 +247,7 @@ function renderListView(container, showView) {
           <div style="font-size:13px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${config.title || '방송 제목 미설정'}</div>
           <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
             <span style="font-size:11px; font-weight:600; color:#94a3b8; background:#f1f5f9; padding:2px 8px; border-radius:6px; font-family:monospace;">${live.id}</span>
+            <span style="font-size:11px; font-weight:600; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; padding:2px 8px; border-radius:6px;">상담 <b id="card-lead-count-${live.id}" style="color:#2563eb;">0</b>건</span>
             <a href="${viewerUrl}" target="_blank" style="font-size:11px; color:#3b82f6; text-decoration:none; font-weight:600;">${viewerUrl} ↗</a>
           </div>
         </div>
@@ -258,6 +259,18 @@ function renderListView(container, showView) {
         </div>
       `;
       listContainer.appendChild(card);
+
+      if (db) {
+        db.from('live_leads')
+          .select('*', { count: 'exact', head: true })
+          .eq('live_id', live.id)
+          .then(({ count, error }) => {
+            if (!error && count !== null) {
+              const el = card.querySelector(`#card-lead-count-${live.id}`);
+              if (el) el.textContent = count;
+            }
+          });
+      }
     });
 
     listContainer.querySelectorAll('.btn-edit').forEach(btn => {
@@ -556,6 +569,33 @@ function renderLiveEditView(container, liveId, showView) {
     window[`live_loaded_${liveId}`] = true;
   }
 
+  // ── 상담 DB 건수 동기화 및 실시간 감지 ──
+  const syncLeadCount = async () => {
+    if (!db) return;
+    try {
+      const { count, error } = await db.from('live_leads')
+        .select('*', { count: 'exact', head: true })
+        .eq('live_id', liveId);
+      if (!error && count !== null) {
+        const tabCountBadge = layout.querySelector('#leads-tab-count') || document.getElementById('leads-tab-count');
+        if (tabCountBadge) {
+          tabCountBadge.textContent = `${count}건`;
+          tabCountBadge.style.background = count > 0 ? '#3b82f6' : '#e2e8f0';
+          tabCountBadge.style.color = count > 0 ? '#ffffff' : '#475569';
+        }
+      }
+    } catch (e) {}
+  };
+  syncLeadCount();
+
+  if (db) {
+    db.channel(`leads-sync-${liveId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_leads', filter: `live_id=eq.${liveId}` }, () => {
+        syncLeadCount();
+      })
+      .subscribe();
+  }
+
   const saveConfig = () => {
     saveLiveConfig(liveId, config);
     syncToSheetDB(liveId, config, stats, products);
@@ -598,10 +638,10 @@ function renderLiveEditView(container, liveId, showView) {
       ${statusBadge}
     </div>
     <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:480px; margin:0 auto;">
-      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
+      <button class="tab-btn" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
-      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB <span id="leads-tab-count" style="background:#e2e8f0; color:#475569; font-size:11px; padding:1px 6px; border-radius:10px; margin-left:2px; font-weight:800;">0건</span></button>
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
@@ -2252,7 +2292,7 @@ function renderLiveEditView(container, liveId, showView) {
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
-            상담 DB (리드)
+            상담 DB (총 <span id="leads-total-count" style="color:#2563eb; font-weight:800;">0</span>건)
           </h2>
           <div style="display:flex; gap:8px;">
             <button id="btn-download-csv-leads" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none;">CSV 다운로드</button>
@@ -2277,6 +2317,16 @@ function renderLiveEditView(container, liveId, showView) {
         if (error) throw error;
 
         currentLeads = list || [];
+        const countSpan = document.getElementById('leads-total-count');
+        if (countSpan) countSpan.textContent = currentLeads.length;
+
+        const tabCountBadge = layout.querySelector('#leads-tab-count') || document.getElementById('leads-tab-count');
+        if (tabCountBadge) {
+          tabCountBadge.textContent = `${currentLeads.length}건`;
+          tabCountBadge.style.background = currentLeads.length > 0 ? '#3b82f6' : '#e2e8f0';
+          tabCountBadge.style.color = currentLeads.length > 0 ? '#ffffff' : '#475569';
+        }
+
         const container = document.getElementById('leads-list-container');
         const btnCsv = document.getElementById('btn-download-csv-leads');
         
