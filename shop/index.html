@@ -3,605 +3,454 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>RYZIN SHOP — 라이브 커머스 쇼핑몰</title>
-  <meta name="description" content="라이진 라이브 커머스 모바일 쇼핑몰">
-  
+  <title>RYZIN SHOP — 라이브 커머스</title>
+  <meta name="description" content="라이진 라이브 커머스 — 프리미엄 뷰티 & 라이프스타일 모바일 쇼핑몰">
+
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <!-- Supabase Config -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/admin/supabase_config.js"></script>
 
   <style>
     :root {
       --primary: #ef4444;
-      --primary-dark: #dc2626;
-      --text-main: #0f172a;
-      --text-sub: #475569;
-      --text-muted: #94a3b8;
-      --bg-body: #f8fafc;
-      --surface: #ffffff;
-      --border-color: #e2e8f0;
-      --border-light: #f1f5f9;
+      --text-main: #111827;
+      --text-sub: #374151;
+      --text-muted: #9ca3af;
+      --surface: #fff;
+      --bg: #f3f4f6;
+      --border: #e5e7eb;
+      --border-light: #f9fafb;
+      --header-h: 100px; /* logo-row + tab-row */
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-      background-color: #f1f5f9;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
       color: var(--text-main);
-      line-height: 1.4;
       display: flex;
       justify-content: center;
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* 모바일 가상 컨테이너 */
-    .app-container {
+    .app {
       width: 100%;
-      max-width: 480px;
-      background-color: var(--surface);
+      max-width: 430px;
       min-height: 100vh;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.08);
-      position: relative;
+      background: var(--surface);
       display: flex;
       flex-direction: column;
-      padding-bottom: 64px;
+      padding-bottom: 68px;
+      position: relative;
     }
 
-    /* ── 카카오 선물하기 스타일 상단 헤더 ─────────────────────── */
+    /* ─────────────────────────────────────────────────────────
+       HEADER
+    ───────────────────────────────────────────────────────── */
     .header {
       position: sticky;
       top: 0;
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-light);
+      z-index: 200;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
     }
 
-    .header-top {
-      height: 52px;
-      padding: 0 18px;
+    /* 로고 row */
+    .header-logo-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 10px 18px 8px;
     }
 
-    .logo-box {
+    /* 로고 — 다크 배경에 흰 반전 */
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .logo-img-wrap {
+      background: #111827;
+      border-radius: 8px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      height: 34px;
+    }
+
+    .logo-img-wrap img {
+      height: 18px;
+      width: auto;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+
+    .logo-text-fallback {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: #fff;
+    }
+
+    .header-icons {
       display: flex;
       align-items: center;
       gap: 8px;
-      cursor: pointer;
     }
 
-    .logo-img {
-      height: 24px;
-      width: auto;
-      object-fit: contain;
-    }
-
-    .logo-fallback-text {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      color: #0f172a;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .icon-btn {
-      background: none;
+    .hdr-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f3f4f6;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #0f172a;
-      padding: 4px;
+      transition: background 0.15s;
     }
 
-    .icon-btn svg {
-      width: 22px;
-      height: 22px;
-      stroke: #0f172a;
+    .hdr-btn:active { background: #e5e7eb; }
+
+    .hdr-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: #111827;
       stroke-width: 2;
       fill: none;
     }
 
-    /* ── 카카오 선물하기 탑 네비게이션 (홈, 라이브, 오늘의딜, 체험단) ── */
-    .top-nav-bar {
+    /* 탑 네비 탭 row */
+    .top-nav {
       display: flex;
-      align-items: center;
-      padding: 0 12px;
-      border-bottom: 1px solid var(--border-light);
-      background: #fff;
+      border-top: 1px solid var(--border-light);
     }
 
-    .top-nav-item {
+    .top-nav-tab {
       flex: 1;
+      padding: 9px 0 8px;
       text-align: center;
-      padding: 12px 0 10px;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
-      color: #64748b;
+      color: #9ca3af;
       cursor: pointer;
       position: relative;
-      transition: all 0.2s ease;
+      transition: color 0.15s;
+      letter-spacing: -0.01em;
     }
 
-    .top-nav-item.active {
-      color: #0f172a;
-      font-weight: 900;
+    .top-nav-tab.active {
+      color: var(--text-main);
+      font-weight: 800;
     }
 
-    .top-nav-item.active::after {
+    .top-nav-tab.active::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 15%;
-      right: 15%;
-      height: 3px;
-      background-color: #0f172a;
+      bottom: 0; left: 10%; right: 10%;
+      height: 2.5px;
+      background: var(--text-main);
       border-radius: 2px;
     }
 
-    /* ── 카카오 선물하기 서브 카테고리 아이콘 행 ─────────────── */
-    .sub-category-row {
-      display: flex;
-      overflow-x: auto;
-      gap: 16px;
-      padding: 14px 18px;
-      background: #fff;
-      scrollbar-width: none;
-      border-bottom: 1px solid var(--border-light);
-    }
+    /* ─────────────────────────────────────────────────────────
+       TAB VIEWS
+    ───────────────────────────────────────────────────────── */
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
 
-    .sub-category-row::-webkit-scrollbar {
-      display: none;
-    }
-
-    .cat-icon-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .cat-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .cat-icon-box img {
-      width: 26px;
-      height: 26px;
-      object-fit: contain;
-    }
-
-    .cat-icon-item.active .cat-icon-box {
-      border-color: #0f172a;
-      background: #f1f5f9;
-    }
-
-    .cat-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: #475569;
-    }
-
-    .cat-icon-item.active .cat-label {
-      font-weight: 800;
-      color: #0f172a;
-    }
-
-    /* ── 메인 섹션 ─────────────────────────────────────────── */
+    /* 공통 섹션 */
     .section {
-      padding: 24px 0;
-      border-bottom: 8px solid #f8fafc;
+      padding: 22px 0 20px;
+      border-bottom: 6px solid var(--bg);
     }
 
-    .section-header {
-      padding: 0 20px 14px;
+    .section:last-child { border-bottom: none; }
+
+    .sec-header {
+      padding: 0 18px 14px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
     }
 
-    .section-title {
-      font-size: 18px;
+    .sec-title {
+      font-size: 17px;
       font-weight: 800;
       color: var(--text-main);
       letter-spacing: -0.03em;
     }
 
-    .section-more {
-      font-size: 13px;
-      font-weight: 600;
+    .sec-sub {
+      font-size: 11px;
       color: var(--text-muted);
-      text-decoration: none;
+      font-weight: 500;
     }
 
-    /* ── 탭 뷰 영역 ─────────────────────────────────────────── */
-    .tab-content-view {
-      display: none;
-    }
-
-    .tab-content-view.active {
-      display: block;
-    }
-
-    /* ── 라이브 탭: 히어로 카러셀 (이미지 2 참조) ─────────────── */
-    .live-carousel {
+    /* ─────────────────────────────────────────────────────────
+       LIVE CAROUSEL  (ON AIR / 예정 포스터 카드)
+    ───────────────────────────────────────────────────────── */
+    .live-scroll {
       display: flex;
+      gap: 10px;
+      padding: 0 18px 2px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
-      gap: 12px;
-      padding: 0 20px 4px;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
+    .live-scroll::-webkit-scrollbar { display: none; }
 
-    .live-carousel::-webkit-scrollbar {
-      display: none;
-    }
-
-    .live-card-hero {
-      flex: 0 0 210px;
-      height: 320px;
-      border-radius: 18px;
-      position: relative;
+    .live-card {
+      flex: 0 0 188px;
+      height: 300px;
+      border-radius: 16px;
       overflow: hidden;
+      position: relative;
       scroll-snap-align: start;
       cursor: pointer;
-      background-color: #0f172a;
+      background: #0f172a;
     }
 
-    .live-card-hero img.hero-bg {
-      width: 100%;
-      height: 100%;
+    .live-card img {
+      width: 100%; height: 100%;
       object-fit: cover;
       transition: transform 0.4s ease;
     }
 
-    .live-card-hero:hover img.hero-bg {
-      transform: scale(1.04);
-    }
+    .live-card:active img { transform: scale(1.03); }
 
-    .hero-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.85) 100%);
+    .live-card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.25) 0%,
+        transparent 42%,
+        rgba(0,0,0,0.82) 100%
+      );
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 14px;
+      padding: 12px;
     }
 
-    .hero-top-badge {
+    /* 상태 뱃지 */
+    .live-status-badge {
       align-self: flex-start;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 12px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 30px;
+      letter-spacing: 0.03em;
     }
 
-    .badge-onair {
-      background: #ef4444 !important;
-      color: #fff !important;
-      font-weight: 900 !important;
-    }
-
-    .dot-red {
-      width: 6px;
-      height: 6px;
-      background-color: #fff;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .hero-bottom-info {
+    .badge-live {
+      background: #ef4444;
       color: #fff;
     }
 
-    .hero-brand-title {
-      font-size: 15px;
+    .badge-upcoming {
+      background: rgba(0,0,0,0.6);
+      color: rgba(255,255,255,0.95);
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(8px);
+    }
+
+    .pulse-dot {
+      width: 5px; height: 5px;
+      background: #fff;
+      border-radius: 50%;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    .live-card-body { color: #fff; }
+
+    .live-card-title {
+      font-size: 14px;
       font-weight: 800;
-      line-height: 1.3;
-      margin-bottom: 10px;
+      line-height: 1.35;
+      margin-bottom: 8px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
 
-    .hero-action-btn {
+    .live-card-btn {
       width: 100%;
-      background: rgba(255, 255, 255, 0.22);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: #fff;
-      font-size: 12px;
+      padding: 7px 0;
+      border-radius: 30px;
+      font-size: 11px;
       font-weight: 700;
-      padding: 8px 0;
-      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.18);
+      color: #fff;
       cursor: pointer;
       text-align: center;
-      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+      transition: background 0.2s, color 0.2s;
     }
 
-    .hero-action-btn.subscribed {
-      background: #ffffff;
-      color: #0f172a;
-      border-color: #ffffff;
+    .live-card-btn.notified {
+      background: #fff;
+      color: var(--text-main);
+      border-color: #fff;
     }
 
-    /* ── 기획 라이브 다시보기 (이미지 1 참조) ────────────────── */
-    .sub-filter-scroll {
+    /* ─────────────────────────────────────────────────────────
+       VOD 기획 다시보기
+    ───────────────────────────────────────────────────────── */
+    .pill-scroll {
       display: flex;
+      gap: 6px;
+      padding: 0 18px 12px;
       overflow-x: auto;
-      gap: 8px;
-      padding: 0 20px 14px;
       scrollbar-width: none;
     }
+    .pill-scroll::-webkit-scrollbar { display: none; }
 
-    .sub-filter-scroll::-webkit-scrollbar {
-      display: none;
-    }
-
-    .pill-tab {
+    .pill {
       white-space: nowrap;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      color: #64748b;
-      background-color: #f1f5f9;
-      padding: 6px 14px;
-      border-radius: 20px;
+      color: #6b7280;
+      background: #f3f4f6;
+      padding: 5px 13px;
+      border-radius: 30px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s;
+      border: 1.5px solid transparent;
     }
 
-    .pill-tab.active {
-      color: #0f172a;
-      background-color: #e2e8f0;
+    .pill.active {
+      color: var(--text-main);
+      background: #fff;
+      border-color: var(--text-main);
       font-weight: 800;
     }
 
-    .vod-grid-scroll {
+    .vod-scroll {
       display: flex;
+      gap: 10px;
+      padding: 0 18px 2px;
       overflow-x: auto;
-      gap: 12px;
-      padding: 0 20px 4px;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
     }
-
-    .vod-grid-scroll::-webkit-scrollbar {
-      display: none;
-    }
+    .vod-scroll::-webkit-scrollbar { display: none; }
 
     .vod-card {
-      flex: 0 0 155px;
+      flex: 0 0 148px;
       scroll-snap-align: start;
       cursor: pointer;
-      display: flex;
-      flex-direction: column;
     }
 
-    .vod-thumb-box {
+    .vod-thumb {
       width: 100%;
-      height: 220px;
+      height: 210px;
       border-radius: 14px;
-      position: relative;
       overflow: hidden;
-      background-color: #000;
+      position: relative;
+      background: #111;
     }
 
-    .vod-thumb-box img.thumb-img {
-      width: 100%;
-      height: 100%;
+    .vod-thumb img {
+      width: 100%; height: 100%;
       object-fit: cover;
       transition: transform 0.3s ease;
     }
 
-    .vod-card:hover img.thumb-img {
-      transform: scale(1.05);
-    }
+    .vod-card:active .vod-thumb img { transform: scale(1.04); }
 
-    .vod-top-info {
+    .vod-meta {
       position: absolute;
-      top: 8px;
-      left: 8px;
+      top: 8px; left: 8px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      z-index: 2;
+      gap: 4px;
     }
 
-    .badge-vod {
-      background: rgba(0, 0, 0, 0.85);
-      color: #fff;
-      font-size: 10px;
+    .vod-badge {
+      font-size: 9px;
       font-weight: 900;
-      padding: 2px 6px;
+      background: rgba(0,0,0,0.82);
+      color: #fff;
+      padding: 2px 5px;
       border-radius: 4px;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
     }
 
     .vod-views {
       font-size: 10px;
-      color: rgba(255, 255, 255, 0.95);
       font-weight: 600;
+      color: rgba(255,255,255,0.9);
       text-shadow: 0 1px 2px rgba(0,0,0,0.8);
     }
 
-    /* VOD 카드 내부 하단 수평 상품 칩 (이미지 1 동일) */
-    .vod-product-chip {
+    /* 상품 칩 */
+    .product-chip {
       position: absolute;
-      bottom: 8px;
-      left: 6px;
-      right: 6px;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-radius: 8px;
+      bottom: 7px; left: 5px; right: 5px;
+      background: rgba(255,255,255,0.97);
+      border-radius: 9px;
       padding: 5px 7px;
       display: flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      z-index: 2;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.18);
     }
 
-    .vod-product-chip img {
-      width: 30px;
-      height: 30px;
+    .product-chip img {
+      width: 28px; height: 28px;
       border-radius: 4px;
       object-fit: cover;
       flex-shrink: 0;
     }
 
-    .vod-product-details {
-      flex: 1;
-      min-width: 0;
-    }
+    .chip-info { flex: 1; min-width: 0; }
 
-    .vod-product-name {
+    .chip-name {
       font-size: 10px;
       font-weight: 600;
-      color: #334155;
+      color: #374151;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 1.2;
     }
 
-    .vod-product-price {
+    .chip-price {
       font-size: 12px;
       font-weight: 900;
-      color: #0f172a;
+      color: #111827;
       line-height: 1.2;
     }
 
-    .vod-card-title {
-      font-size: 13px;
+    .vod-title {
+      font-size: 12px;
       font-weight: 700;
-      color: #0f172a;
-      margin-top: 8px;
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* ── 카카오 선물하기 스타일 랭킹 / 상품 그리드 (첨부 캡처 참조) ── */
-    .kakao-product-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      padding: 0 18px;
-    }
-
-    .kakao-product-card {
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-    }
-
-    .kakao-img-wrapper {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 14px;
-      overflow: hidden;
-      position: relative;
-      background: #f8fafc;
-    }
-
-    .kakao-img-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .rank-badge {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background: rgba(15, 23, 42, 0.85);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 900;
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .tag-badge-exclusive {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: #0f172a;
-      color: #fff;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .kakao-card-body {
-      padding: 10px 2px 4px;
-    }
-
-    .kakao-brand-name {
-      font-size: 12px;
-      font-weight: 800;
-      color: #0f172a;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .kakao-product-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #334155;
-      margin: 4px 0 6px;
+      color: var(--text-main);
+      margin-top: 7px;
       line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -609,127 +458,358 @@
       overflow: hidden;
     }
 
-    .kakao-price-row {
+    /* ─────────────────────────────────────────────────────────
+       상품 그리드 (홈 랭킹 / 오늘의딜)
+    ───────────────────────────────────────────────────────── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 18px;
+    }
+
+    .prod-card {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      cursor: pointer;
     }
 
-    .kakao-price-main {
-      font-size: 16px;
+    .prod-img-wrap {
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #f3f4f6;
+      position: relative;
+    }
+
+    .prod-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .prod-card:active .prod-img-wrap img { transform: scale(1.03); }
+
+    .rank-num {
+      position: absolute;
+      top: 7px; left: 7px;
+      width: 20px; height: 20px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      font-size: 11px;
       font-weight: 900;
-      color: #0f172a;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .kakao-benefit-price {
-      font-size: 12px;
+    .rank-num.gold { background: #f59e0b; }
+    .rank-num.silver { background: #6b7280; }
+
+    .exclusive-badge {
+      position: absolute;
+      top: 7px; right: 7px;
+      background: #111827;
+      color: #fff;
+      font-size: 9px;
       font-weight: 800;
-      color: #ef4444;
+      padding: 2px 5px;
+      border-radius: 4px;
     }
 
-    .kakao-chip-row {
+    .discount-badge {
+      position: absolute;
+      top: 7px; right: 7px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .prod-info {
+      padding: 8px 2px 4px;
+    }
+
+    .prod-brand {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+    }
+
+    .prod-brand-arrow {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    .prod-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      margin: 3px 0 5px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .prod-price {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+
+    .prod-benefit {
+      font-size: 11px;
+      font-weight: 700;
+      color: #ef4444;
+      margin-top: 1px;
+    }
+
+    .prod-origin {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .chip-row {
       display: flex;
       gap: 4px;
       margin-top: 6px;
+      flex-wrap: wrap;
     }
 
-    .chip-label {
+    .chip-tag {
       font-size: 10px;
-      font-weight: 700;
-      color: #64748b;
-      background: #f1f5f9;
+      font-weight: 600;
+      color: #6b7280;
+      background: #f3f4f6;
       padding: 2px 6px;
       border-radius: 4px;
     }
 
-    /* ── 하단 바텀 네비게이션 (카카오 선물하기 스타일) ─────────── */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      height: 56px;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      z-index: 150;
+    .chip-tag.red { color: #ef4444; background: #fee2e2; }
+    .chip-tag.blue { color: #2563eb; background: #dbeafe; }
+
+    /* ─────────────────────────────────────────────────────────
+       홈 탭: 배너 슬라이더 영역
+    ───────────────────────────────────────────────────────── */
+    .home-banner {
+      margin: 0 0 0;
+      padding: 16px 18px 0;
     }
 
-    .nav-item {
+    .banner-card {
+      width: 100%;
+      height: 130px;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .banner-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .banner-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, rgba(0,0,0,0.65) 0%, transparent 60%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 20px;
+    }
+
+    .banner-subtitle {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .banner-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.25;
+    }
+
+    .banner-cta {
+      margin-top: 8px;
+      display: inline-block;
+      background: #fff;
+      color: #111;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* ─────────────────────────────────────────────────────────
+       체험단 전용 카드
+    ───────────────────────────────────────────────────────── */
+    .trial-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 18px;
+    }
+
+    .trial-card {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .trial-img-wrap {
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      background: #f3f4f6;
+    }
+
+    .trial-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .trial-spots-badge {
+      position: absolute;
+      top: 7px; left: 7px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 4px;
+    }
+
+    .trial-free-badge {
+      position: absolute;
+      top: 7px; right: 7px;
+      background: #22c55e;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .trial-info {
+      padding: 8px 2px 4px;
+    }
+
+    .trial-brand {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .trial-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      margin: 3px 0 5px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .trial-deadline {
+      font-size: 10px;
+      font-weight: 700;
+      color: #ef4444;
+    }
+
+    /* ─────────────────────────────────────────────────────────
+       BOTTOM NAV
+    ───────────────────────────────────────────────────────── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      height: 60px;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 200;
+    }
+
+    .bnav-item {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #94a3b8;
+      gap: 2px;
       text-decoration: none;
+      color: #9ca3af;
       font-size: 10px;
       font-weight: 600;
       cursor: pointer;
-      flex: 1;
-      height: 100%;
-      gap: 2px;
+      transition: color 0.15s;
     }
 
-    .nav-item.active {
-      color: #0f172a;
-      font-weight: 800;
-    }
+    .bnav-item.active { color: var(--text-main); font-weight: 800; }
 
-    .nav-item svg {
-      width: 20px;
-      height: 20px;
+    .bnav-item svg {
+      width: 20px; height: 20px;
       stroke: currentColor;
       stroke-width: 2;
       fill: none;
     }
 
-    /* ── 비디오 모달 팝업 ─────────────────────────────────────── */
+    /* ─────────────────────────────────────────────────────────
+       MODAL (라이브 시청)
+    ───────────────────────────────────────────────────────── */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(12px);
-      z-index: 200;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(16px);
+      z-index: 500;
       display: none;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
-      padding: 16px;
     }
 
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.open { display: flex; }
 
-    .modal-content {
+    .modal-sheet {
       width: 100%;
-      max-width: 400px;
-      height: 85vh;
-      max-height: 720px;
+      max-width: 430px;
+      height: 96vh;      /* 세로 더 길게 */
       background: #000;
-      border-radius: 20px;
+      border-radius: 20px 20px 0 0;
       overflow: hidden;
       position: relative;
-      display: flex;
-      flex-direction: column;
     }
 
-    .modal-close-btn {
+    .modal-close {
       position: absolute;
-      top: 14px;
-      right: 14px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.5);
-      color: #fff;
+      top: 12px; right: 12px;
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,0.15);
       border: none;
-      font-size: 16px;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 14px;
       cursor: pointer;
       z-index: 10;
       display: flex;
@@ -738,583 +818,617 @@
     }
 
     .modal-iframe {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       border: none;
     }
 
-    /* ── 깔끔 토스트 ───────────────────────────────────────── */
+    /* ─────────────────────────────────────────────────────────
+       TOAST
+    ───────────────────────────────────────────────────────── */
     .toast {
       position: fixed;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-80px);
-      background: #0f172a;
+      top: 18px; left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #111827;
       color: #fff;
-      padding: 10px 18px;
-      border-radius: 20px;
+      padding: 10px 16px;
+      border-radius: 30px;
       font-size: 12px;
       font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      z-index: 300;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      z-index: 600;
       white-space: nowrap;
+      transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
     }
 
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
+
 <body>
+<div class="app">
 
-  <div class="app-container">
-
-    <!-- ── 상단 헤더 (라이진 로고 + 검색/장바구니) ── -->
-    <header class="header">
-      <div class="header-top">
-        <div class="logo-box" onclick="location.href='/shop/'">
-          <img src="https://ryzincorp.com/assets/logo.png" alt="RYZIN" class="logo-img" onerror="this.outerHTML='<span class=\'logo-fallback-text\'>RYZIN</span>'">
+  <!-- ───── HEADER ───── -->
+  <header class="header">
+    <!-- 로고 row -->
+    <div class="header-logo-row">
+      <a class="logo-wrap" href="/shop/">
+        <div class="logo-img-wrap">
+          <img
+            src="https://ryzincorp.com/assets/logo.png"
+            alt="RYZIN"
+            onerror="this.outerHTML='<span class=\'logo-text-fallback\'>RYZIN</span>'"
+          >
         </div>
-        <div class="header-actions">
-          <button class="icon-btn" onclick="showToast('검색 페이지로 이동합니다.')">
-            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          </button>
-          <button class="icon-btn" onclick="showToast('장바구니가 비어 있습니다.')">
-            <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- ── 탑 네비게이션 바 (요청: 홈, 라이브, 오늘의딜, 체험단) ── -->
-      <nav class="top-nav-bar">
-        <div class="top-nav-item" onclick="switchTopTab('home', this)">홈</div>
-        <div class="top-nav-item active" onclick="switchTopTab('live', this)">라이브</div>
-        <div class="top-nav-item" onclick="switchTopTab('deal', this)">오늘의딜</div>
-        <div class="top-nav-item" onclick="switchTopTab('trial', this)">체험단</div>
-      </nav>
-    </header>
-
-    <!-- ── 메인 탭 뷰 ── -->
-    <main>
-
-      <!-- ── 탭 1: 홈 (카카오 선물하기 추천 랭킹 스타일) ── -->
-      <div class="tab-content-view" id="view-home">
-        <!-- 서브 카테고리 행 -->
-        <div class="sub-category-row">
-          <div class="cat-icon-item active">
-            <div class="cat-icon-box">전체</div>
-            <span class="cat-label">전체</span>
-          </div>
-          <div class="cat-icon-item">
-            <div class="cat-icon-box">뷰티</div>
-            <span class="cat-label">뷰티</span>
-          </div>
-          <div class="cat-icon-item">
-            <div class="cat-icon-box">식품</div>
-            <span class="cat-label">식품</span>
-          </div>
-          <div class="cat-icon-item">
-            <div class="cat-icon-box">건강</div>
-            <span class="cat-label">건강</span>
-          </div>
-          <div class="cat-icon-item">
-            <div class="cat-icon-box">리빙</div>
-            <span class="cat-label">리빙</span>
-          </div>
-          <div class="cat-icon-item">
-            <div class="cat-icon-box">패션</div>
-            <span class="cat-label">패션</span>
-          </div>
-        </div>
-
-        <section class="section" style="border-bottom: none;">
-          <div class="section-header">
-            <h2 class="section-title">실시간 베스트 랭킹</h2>
-            <span style="font-size: 11px; color: #94a3b8;">무료배송 혜택</span>
-          </div>
-
-          <div class="kakao-product-grid">
-            <div class="kakao-product-card" onclick="showToast('오쏘몰 이뮨 상세 페이지로 이동합니다.')">
-              <div class="kakao-img-wrapper">
-                <img src="https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=80" alt="오쏘몰">
-                <span class="rank-badge">1</span>
-                <span class="tag-badge-exclusive">단독</span>
-              </div>
-              <div class="kakao-card-body">
-                <div class="kakao-brand-name">오쏘몰 ›</div>
-                <div class="kakao-product-title">독일 명품 비타민 오쏘몰 이뮨 멀티비타민&미네랄 8입 패키지</div>
-                <div class="kakao-price-row">
-                  <span class="kakao-price-main">34,000원</span>
-                  <span class="kakao-benefit-price">최대혜택가 31,000원</span>
-                </div>
-                <div class="kakao-chip-row">
-                  <span class="chip-label">무료배송</span>
-                  <span class="chip-label">증정</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="kakao-product-card" onclick="showToast('에버콜라겐 상세 페이지로 이동합니다.')">
-              <div class="kakao-img-wrapper">
-                <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80" alt="에버콜라겐">
-                <span class="rank-badge">2</span>
-              </div>
-              <div class="kakao-card-body">
-                <div class="kakao-brand-name">에버콜라겐 ›</div>
-                <div class="kakao-product-title">대한민국 1등 콜라겐 에버콜라겐 타임 50포 기획 세트</div>
-                <div class="kakao-price-row">
-                  <span class="kakao-price-main">44,900원</span>
-                </div>
-                <div class="kakao-chip-row">
-                  <span class="chip-label">무료배송</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- ── 탭 2: 라이브 (기존 ON AIR & 기획 라이브 다시보기) ── -->
-      <div class="tab-content-view active" id="view-live">
-        <!-- 섹션 1: 지금 ON AIR & 방송 예정 -->
-        <section class="section">
-          <div class="section-header">
-            <h2 class="section-title">지금 ON AIR & 방송 예정</h2>
-            <a href="#" class="section-more" onclick="showToast('전체 라이브 목록입니다.'); return false;">전체보기 ›</a>
-          </div>
-
-          <div class="live-carousel" id="hero-live-carousel">
-            <!-- Dynamic Live Items -->
-          </div>
-        </section>
-
-        <!-- 섹션 2: 기획 라이브 다시보기 (이미지 1 참조) -->
-        <section class="section">
-          <div class="section-header" style="padding-bottom: 8px;">
-            <h2 class="section-title">기획 라이브 다시보기</h2>
-          </div>
-
-          <div class="sub-filter-scroll">
-            <div class="pill-tab active" onclick="filterVod('all', this)">뷰티레시피</div>
-            <div class="pill-tab" onclick="filterVod('같이살래', this)">같이살래</div>
-            <div class="pill-tab" onclick="filterVod('박사임당', this)">박사임당</div>
-            <div class="pill-tab" onclick="filterVod('뷰티데스크', this)">뷰티데스크</div>
-            <div class="pill-tab" onclick="filterVod('세상예쁜것들', this)">세상예쁜것들</div>
-            <div class="pill-tab" onclick="filterVod('뷰티극장', this)">뷰티극장</div>
-          </div>
-
-          <div class="vod-grid-scroll" id="vod-cards-container">
-            <!-- Dynamic VOD Cards -->
-          </div>
-        </section>
-      </div>
-
-      <!-- ── 탭 3: 오늘의딜 ── -->
-      <div class="tab-content-view" id="view-deal">
-        <section class="section" style="border-bottom: none;">
-          <div class="section-header">
-            <h2 class="section-title">오늘의 라이브 특가 딜</h2>
-            <span style="font-size: 11px; color: #ef4444; font-weight: 700;">오늘 24:00 마감</span>
-          </div>
-
-          <div class="kakao-product-grid" id="deal-products-container">
-            <!-- Dynamic Deal Items -->
-          </div>
-        </section>
-      </div>
-
-      <!-- ── 탭 4: 체험단 ── -->
-      <div class="tab-content-view" id="view-trial">
-        <section class="section" style="border-bottom: none;">
-          <div class="section-header">
-            <h2 class="section-title">무료 체험단 모집</h2>
-            <span style="font-size: 11px; color: #94a3b8;">100% 무료 배송</span>
-          </div>
-
-          <div class="kakao-product-grid">
-            <div class="kakao-product-card" onclick="showToast('에어리 선 세럼 체험단 신청이 완료되었습니다.')">
-              <div class="kakao-img-wrapper">
-                <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80" alt="체험단1">
-                <span class="tag-badge-exclusive">100명 모집</span>
-              </div>
-              <div class="kakao-card-body">
-                <div class="kakao-brand-name">에이피뷰티 ›</div>
-                <div class="kakao-product-title">에어리 선 세럼 50ml 무료 체험단 1기</div>
-                <div class="kakao-chip-row">
-                  <span class="chip-label" style="color:#ef4444; background:#fee2e2;">무료체험</span>
-                  <span class="chip-label">무료배송</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="kakao-product-card" onclick="showToast('레티놀 세럼 체험단 신청이 완료되었습니다.')">
-              <div class="kakao-img-wrapper">
-                <img src="https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=80" alt="체험단2">
-                <span class="tag-badge-exclusive">50명 모집</span>
-              </div>
-              <div class="kakao-card-body">
-                <div class="kakao-brand-name">아이오페 ›</div>
-                <div class="kakao-product-title">레티놀 링클 세럼 30ml 뷰티 체험단</div>
-                <div class="kakao-chip-row">
-                  <span class="chip-label" style="color:#ef4444; background:#fee2e2;">무료체험</span>
-                  <span class="chip-label">무료배송</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-    </main>
-
-    <!-- ── 하단 바텀 네비게이션 (카카오 선물하기 스타일) ── -->
-    <nav class="bottom-nav">
-      <a href="#" class="nav-item active" onclick="switchTopTab('home', document.querySelectorAll('.top-nav-item')[0]); return false;">
-        <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        <span>홈</span>
       </a>
-      <a href="#" class="nav-item" onclick="switchTopTab('live', document.querySelectorAll('.top-nav-item')[1]); return false;">
-        <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-        <span>라이브</span>
-      </a>
-      <a href="#" class="nav-item" onclick="switchTopTab('deal', document.querySelectorAll('.top-nav-item')[2]); return false;">
-        <svg viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        <span>오늘의딜</span>
-      </a>
-      <a href="/admin" class="nav-item">
-        <svg viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-        <span>마이/어드민</span>
-      </a>
-    </nav>
-
-  </div>
-
-  <!-- ── VOD / 라이브 재생 모달 ── -->
-  <div class="modal-overlay" id="video-modal">
-    <div class="modal-content">
-      <button class="modal-close-btn" onclick="closeModal()">✕</button>
-      <iframe id="modal-player-iframe" class="modal-iframe" src="about:blank" allow="autoplay; fullscreen"></iframe>
+      <div class="header-icons">
+        <button class="hdr-btn" onclick="showToast('검색 기능을 준비 중입니다.')">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </button>
+        <button class="hdr-btn" onclick="showToast('장바구니가 비어있습니다.')">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        </button>
+      </div>
     </div>
-  </div>
+    <!-- 탑 네비 row -->
+    <nav class="top-nav">
+      <div class="top-nav-tab" data-tab="home" onclick="switchTab('home')">홈</div>
+      <div class="top-nav-tab active" data-tab="live" onclick="switchTab('live')">라이브</div>
+      <div class="top-nav-tab" data-tab="deal" onclick="switchTab('deal')">오늘의딜</div>
+      <div class="top-nav-tab" data-tab="group" onclick="switchTab('group')">공동구매</div>
+      <div class="top-nav-tab" data-tab="trial" onclick="switchTab('trial')">체험단</div>
+    </nav>
+  </header>
 
-  <!-- ── 토스트 ── -->
-  <div class="toast" id="toast-msg">
-    <span id="toast-text">알림 내용</span>
-  </div>
+  <!-- ───── MAIN ───── -->
+  <main>
 
-  <!-- ── 로직 ── -->
-  <script>
-    const HERO_LIVES = [
-      {
-        id: 'live_demo_1',
-        title: '에이피뷰티 에어리 선 세럼 X RYZIN',
-        time: '07.23 (목) 11:00',
-        image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
-        isLive: true,
-        viewers: '12,540'
-      },
-      {
-        id: 'live_demo_2',
-        title: '에스쁘아 더바커버BB X 에뛰드 빙그레에디션',
-        time: '07.24 (금) 11:00',
-        image: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=600&q=80',
-        isLive: false,
-        viewers: '0'
-      },
-      {
-        id: 'live_demo_3',
-        title: '[AI 라이브] 에이피뷰티 엠디 세럼 & 크림',
-        time: '07.24 (금) 15:00',
-        image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80',
-        isLive: false,
-        viewers: '0'
-      },
-      {
-        id: 'live_demo_4',
-        title: '설화수 윤조 & 자음생 세럼 특가전',
-        time: '07.27 (월) 11:00',
-        image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
-        isLive: false,
-        viewers: '0'
-      }
-    ];
-
-    const VOD_REPLAYS = [
-      {
-        id: 'live_1',
-        title: '뷰티레시피 프리메라 X 에스트라',
-        views: '5,638',
-        tag: '뷰티레시피',
-        bgImage: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80',
-        product: {
-          name: 'NEW 아토베리어365...',
-          price: '33,000원',
-          image: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=120&q=80'
-        }
-      },
-      {
-        id: 'live_2',
-        title: '[뷰티레시피] 아이오페 X 에스트라',
-        views: '5,307',
-        tag: '뷰티레시피',
-        bgImage: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80',
-        product: {
-          name: '레티놀 레티젝션 세럼',
-          price: '88,000원',
-          image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=120&q=80'
-        }
-      },
-      {
-        id: 'live_3',
-        title: '[뷰티레시피] 마몽드 X 에스쁘아',
-        views: '3,926',
-        tag: '뷰티레시피',
-        bgImage: 'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=600&q=80',
-        product: {
-          name: 'BEST 플로라 글로우 로...',
-          price: '30,000원',
-          image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=120&q=80'
-        }
-      },
-      {
-        id: 'live_4',
-        title: '[뷰티레시피] 아이오페 X 이니스프리',
-        views: '6,614',
-        tag: '뷰티레시피',
-        bgImage: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=600&q=80',
-        product: {
-          name: '비타민C 엑스퍼트 25%...',
-          price: '55,000원',
-          image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=120&q=80'
-        }
-      },
-      {
-        id: 'live_5',
-        title: '[뷰티레시피] 에스트라 X 프리메라',
-        views: '4,340',
-        tag: '뷰티레시피',
-        bgImage: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
-        product: {
-          name: '에이시카365 흔적진정...',
-          price: '38,000원',
-          image: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=120&q=80'
-        }
-      }
-    ];
-
-    const DEAL_PRODUCTS = [
-      {
-        brand: '에이피뷰티',
-        title: '에어리 선 세럼 50ml + 사은품 3종',
-        discount: '45%',
-        price: '38,500원',
-        originPrice: '70,000원',
-        image: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        brand: '아이오페',
-        title: '레티놀 레티젝션 링클 세럼 30ml',
-        discount: '30%',
-        price: '61,600원',
-        originPrice: '88,000원',
-        image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        brand: '에스쁘아',
-        title: '더바커버 BB크림 40ml 기획세트',
-        discount: '35%',
-        price: '24,700원',
-        originPrice: '38,000원',
-        image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=400&q=80'
-      },
-      {
-        brand: '이니스프리',
-        title: '히알루론 수분 선크림 SPF50+ PA++++',
-        discount: '50%',
-        price: '13,500원',
-        originPrice: '27,000원',
-        image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80'
-      }
-    ];
-
-    function showToast(msg) {
-      const toast = document.getElementById('toast-msg');
-      const toastText = document.getElementById('toast-text');
-      toastText.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2400);
-    }
-
-    function toggleNotify(btn, title) {
-      btn.classList.toggle('subscribed');
-      if (btn.classList.contains('subscribed')) {
-        btn.textContent = '알림신청 완료';
-        showToast('방송 알림이 신청되었습니다.');
-      } else {
-        btn.textContent = '알림신청';
-        showToast('알림 신청이 해제되었습니다.');
-      }
-    }
-
-    function openLiveModal(liveId) {
-      const modal = document.getElementById('video-modal');
-      const iframe = document.getElementById('modal-player-iframe');
-      const isLocal = window.location.origin.includes('localhost:5173');
-      const baseUrl = isLocal ? 'http://localhost:8080/live/' : '/live/';
-      iframe.src = `${baseUrl}?id=${liveId}`;
-      modal.classList.add('active');
-    }
-
-    function closeModal() {
-      const modal = document.getElementById('video-modal');
-      const iframe = document.getElementById('modal-player-iframe');
-      iframe.src = 'about:blank';
-      modal.classList.remove('active');
-    }
-
-    // 탑 네비게이션 탭 전환 로직 (홈, 라이브, 오늘의딜, 체험단)
-    function switchTopTab(tabName, el) {
-      document.querySelectorAll('.top-nav-item').forEach(t => t.classList.remove('active'));
-      if (el) el.classList.add('active');
-
-      document.querySelectorAll('.tab-content-view').forEach(v => v.classList.remove('active'));
-      const targetView = document.getElementById('view-' + tabName);
-      if (targetView) targetView.classList.add('active');
-
-      // 바텀 네비 연동
-      document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-      if (tabName === 'home') document.querySelectorAll('.bottom-nav .nav-item')[0]?.classList.add('active');
-      else if (tabName === 'live') document.querySelectorAll('.bottom-nav .nav-item')[1]?.classList.add('active');
-      else if (tabName === 'deal') document.querySelectorAll('.bottom-nav .nav-item')[2]?.classList.add('active');
-    }
-
-    async function initShopPage() {
-      let remoteLives = [];
-      if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
-        try {
-          const { data, error } = await window.supabaseClient
-            .from('live_control')
-            .select('*')
-            .order('updated_at', { ascending: false });
-          if (!error && data && data.length > 0) {
-            remoteLives = data;
-          }
-        } catch (e) {
-          console.warn('Supabase fetch failed:', e);
-        }
-      }
-
-      const heroContainer = document.getElementById('hero-live-carousel');
-      let heroHtml = '';
-
-      if (remoteLives.length > 0) {
-        remoteLives.forEach(row => {
-          const isLive = row.status === 'ON';
-          const bgImg = row.thumbnail_url || (row.profile_image ? row.profile_image.replace('#nosplash', '') : 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80');
-          const title = row.title || '라이브 방송';
-          const timeBadge = isLive ? '<span class="badge-onair"><span class="dot-red"></span>ON AIR</span>' : `<span>${row.start_time ? new Date(row.start_time).toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'}) : '방송 준비 중'}</span>`;
-          
-          heroHtml += `
-            <div class="live-card-hero" onclick="openLiveModal('${row.live_id}')">
-              <img class="hero-bg" src="${bgImg}" alt="${title}">
-              <div class="hero-overlay">
-                <div class="hero-top-badge ${isLive ? 'badge-onair' : ''}">
-                  ${timeBadge}
-                </div>
-                <div class="hero-bottom-info">
-                  <div class="hero-brand-title">${title}</div>
-                  <button class="hero-action-btn" onclick="event.stopPropagation(); ${isLive ? `openLiveModal('${row.live_id}')` : `toggleNotify(this, '${title}')`}">
-                    ${isLive ? '라이브 시청하기' : '알림신청'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-        });
-      }
-
-      HERO_LIVES.forEach(item => {
-        heroHtml += `
-          <div class="live-card-hero" onclick="openLiveModal('${item.id}')">
-            <img class="hero-bg" src="${item.image}" alt="${item.title}">
-            <div class="hero-overlay">
-              <div class="hero-top-badge ${item.isLive ? 'badge-onair' : ''}">
-                ${item.isLive ? '<span class="dot-red"></span>ON AIR' : item.time}
-              </div>
-              <div class="hero-bottom-info">
-                <div class="hero-brand-title">${item.title}</div>
-                <button class="hero-action-btn" onclick="event.stopPropagation(); ${item.isLive ? `openLiveModal('${item.id}')` : `toggleNotify(this, '${item.title}')`}">
-                  ${item.isLive ? '라이브 시청하기' : '알림신청'}
-                </button>
-              </div>
-            </div>
+    <!-- ── 탭: 홈 ── -->
+    <div class="tab-view" id="view-home">
+      <!-- 배너 -->
+      <div class="home-banner">
+        <div class="banner-card" onclick="showToast('라이진 멤버십 혜택 페이지로 이동합니다.')">
+          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85" alt="배너">
+          <div class="banner-overlay">
+            <span class="banner-subtitle">RYZIN LIVE</span>
+            <span class="banner-title">프리미엄<br>뷰티 특가</span>
+            <span class="banner-cta">지금 확인하기</span>
           </div>
-        `;
-      });
-      heroContainer.innerHTML = heroHtml;
+        </div>
+      </div>
 
-      renderVodCards(VOD_REPLAYS);
+      <!-- 실시간 베스트 랭킹 -->
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">실시간 베스트 랭킹</span>
+          <span class="sec-sub">무료배송 기준</span>
+        </div>
+        <div class="product-grid" id="home-ranking">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+    </div>
 
-      const dealContainer = document.getElementById('deal-products-container');
-      dealContainer.innerHTML = DEAL_PRODUCTS.map((p, idx) => `
-        <div class="kakao-product-card" onclick="showToast('${p.title} 상품 페이지로 이동합니다.')">
-          <div class="kakao-img-wrapper">
-            <img src="${p.image}" alt="${p.title}">
-            <span class="rank-badge">${idx + 1}</span>
-            <span class="tag-badge-exclusive">${p.discount}</span>
+    <!-- ── 탭: 라이브 ── -->
+    <div class="tab-view active" id="view-live">
+      <!-- ON AIR & 방송 예정 -->
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">ON AIR & 방송 예정</span>
+          <span class="sec-sub">전체보기 ›</span>
+        </div>
+        <div class="live-scroll" id="live-carousel">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+
+      <!-- 기획 라이브 다시보기 -->
+      <section class="section">
+        <div class="sec-header" style="padding-bottom:8px;">
+          <span class="sec-title">기획 라이브 다시보기</span>
+        </div>
+        <div class="pill-scroll">
+          <div class="pill active" onclick="filterVod('뷰티레시피',this)">뷰티레시피</div>
+          <div class="pill" onclick="filterVod('같이살래',this)">같이살래</div>
+          <div class="pill" onclick="filterVod('박사임당',this)">박사임당</div>
+          <div class="pill" onclick="filterVod('뷰티데스크',this)">뷰티데스크</div>
+          <div class="pill" onclick="filterVod('뷰티극장',this)">뷰티극장</div>
+        </div>
+        <div class="vod-scroll" id="vod-list">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ── 탭: 오늘의딜 ── -->
+    <div class="tab-view" id="view-deal">
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">오늘의 라이브 특가</span>
+          <span class="sec-sub" style="color:#ef4444;font-weight:700;">오늘 자정 마감</span>
+        </div>
+        <div class="product-grid" id="deal-grid">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ── 탭: 공동구매 ── -->
+    <div class="tab-view" id="view-group">
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">공동구매 진행 중</span>
+          <span class="sec-sub">참여 마감 임박</span>
+        </div>
+        <div class="product-grid" id="group-grid">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+    </div>
+
+    <!-- ── 탭: 체험단 ── -->
+    <div class="tab-view" id="view-trial">
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">무료 체험단 모집</span>
+          <span class="sec-sub">100% 무료 제공</span>
+        </div>
+        <div class="trial-grid" id="trial-grid">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ───── 바텀 네비 ───── -->
+  <nav class="bottom-nav">
+    <div class="bnav-item" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      홈
+    </div>
+    <div class="bnav-item active" onclick="switchTab('live')">
+      <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      라이브
+    </div>
+    <div class="bnav-item" onclick="switchTab('deal')">
+      <svg viewBox="0 0 24 24"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+      오늘의딜
+    </div>
+    <div class="bnav-item" onclick="switchTab('group')">
+      <svg viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      공동구매
+    </div>
+    <a href="/admin" class="bnav-item">
+      <svg viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      마이
+    </a>
+  </nav>
+
+</div>
+
+<!-- ───── 라이브 시청 모달 ───── -->
+<div class="modal-overlay" id="live-modal">
+  <div class="modal-sheet">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <iframe id="modal-iframe" class="modal-iframe" src="about:blank" allow="autoplay; fullscreen"></iframe>
+  </div>
+</div>
+
+<!-- ───── 토스트 ───── -->
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<!-- ───── 데이터 & 로직 ───── -->
+<script>
+  /* ──────────────────────────────────────────
+     더미 데이터 (퀄리티 개선)
+  ────────────────────────────────────────── */
+  const LIVES = [
+    {
+      id: 'live_beauty_01',
+      title: '설화수 X 라이진 — 자음수 리미티드 에디션 단독 특가',
+      time: 'ON AIR',
+      isLive: true,
+      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85'
+    },
+    {
+      id: 'live_beauty_02',
+      title: '에이피뷰티 에어리 선 세럼 50ml 신제품 론칭 라이브',
+      time: '07.23 (목) 11:00',
+      isLive: false,
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85'
+    },
+    {
+      id: 'live_beauty_03',
+      title: '아이오페 레티놀 링클 세럼 × 피부과 전문의 라이브 Q&A',
+      time: '07.24 (금) 14:00',
+      isLive: false,
+      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=600&q=85'
+    },
+    {
+      id: 'live_beauty_04',
+      title: '이니스프리 히알루론 에센스 바디 라인 신규 출시',
+      time: '07.25 (토) 16:00',
+      isLive: false,
+      img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=85'
+    },
+    {
+      id: 'live_beauty_05',
+      title: '마몽드 로즈워터 버스팅 세럼 X 에스쁘아 파운데이션',
+      time: '07.26 (일) 11:00',
+      isLive: false,
+      img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=85'
+    }
+  ];
+
+  const VODS = [
+    {
+      id: 'vod_01',
+      title: '[뷰티레시피] 설화수 X 프리메라 — 수분 케어 루틴',
+      views: '8,214',
+      tag: '뷰티레시피',
+      img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=85',
+      product: { name: '자음생 에센스 50ml', price: '78,000원', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=120&q=80' }
+    },
+    {
+      id: 'vod_02',
+      title: '[뷰티레시피] 아이오페 레티놀 × 이니스프리 수분 베이스',
+      views: '6,440',
+      tag: '뷰티레시피',
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85',
+      product: { name: '레티놀 링클 세럼 30ml', price: '88,000원', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=120&q=80' }
+    },
+    {
+      id: 'vod_03',
+      title: '[같이살래] 에스쁘아 더바커버 BB × 에뛰드 빙그레',
+      views: '5,027',
+      tag: '같이살래',
+      img: 'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=400&q=85',
+      product: { name: '더바커버 BB 40ml', price: '27,000원', img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=120&q=80' }
+    },
+    {
+      id: 'vod_04',
+      title: '[박사임당] 피부과 추천 선크림 5종 비교 분석',
+      views: '12,580',
+      tag: '박사임당',
+      img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85',
+      product: { name: '에어리 선 세럼 50ml', price: '35,000원', img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=120&q=80' }
+    },
+    {
+      id: 'vod_05',
+      title: '[뷰티극장] 봄 데일리 메이크업 풀 루틴 공개',
+      views: '4,913',
+      tag: '뷰티극장',
+      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=85',
+      product: { name: '젤리 글로우 쿠션', price: '22,000원', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=120&q=80' }
+    }
+  ];
+
+  const RANKING = [
+    {
+      brand: '오쏘몰', name: '독일 1위 이뮨 멀티비타민&미네랄 8입+7일분',
+      price: '34,000원', benefit: '최대혜택가 31,000원',
+      exclusive: true, tags: ['무료배송', '증정품 포함'],
+      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=85', rank: 1
+    },
+    {
+      brand: '에버콜라겐', name: '"대한민국1등" 타임 50포 기획 구성',
+      price: '44,900원', benefit: null,
+      exclusive: false, tags: ['무료배송'],
+      img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85', rank: 2
+    },
+    {
+      brand: '설화수', name: '자음생 에센스 30ml 단독 패키지',
+      price: '92,000원', benefit: '혜택가 79,000원',
+      exclusive: true, tags: ['무료배송'],
+      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85', rank: 3
+    },
+    {
+      brand: '아이오페', name: '레티놀 링클 세럼 30ml + 미니 증정',
+      price: '88,000원', benefit: null,
+      exclusive: false, tags: ['무료배송', 'NEW'],
+      img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85', rank: 4
+    }
+  ];
+
+  const DEALS = [
+    {
+      brand: '에이피뷰티', name: '에어리 선 세럼 50ml SPF50+ + 사은품 3종',
+      price: '38,500원', origin: '70,000원', discount: '45%',
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '아이오페', name: '레티놀 링클 세럼 리미티드 에디션 30ml',
+      price: '61,600원', origin: '88,000원', discount: '30%',
+      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '이니스프리', name: '히알루론 수분 선크림 SPF50+ PA++++ 50ml',
+      price: '13,500원', origin: '27,000원', discount: '50%',
+      img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '에스쁘아', name: '더바커버 NB파운데이션 40g 기획세트',
+      price: '24,700원', origin: '38,000원', discount: '35%',
+      img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=400&q=85'
+    }
+  ];
+
+  const TRIALS = [
+    {
+      brand: '에이피뷰티', name: '에어리 선 세럼 50ml 1기 체험단 모집',
+      spots: '100명 모집', deadline: '~07.28 마감',
+      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '아이오페', name: '레티놀 링클 세럼 뷰티 체험단 2기',
+      spots: '50명 모집', deadline: '~07.30 마감',
+      img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '설화수', name: '자음생 에센스 VIP 체험단',
+      spots: '30명 모집', deadline: '~08.05 마감',
+      img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '이니스프리', name: '제주 그린티 세럼 신제품 체험단',
+      spots: '200명 모집', deadline: '~08.10 마감',
+      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85'
+    }
+  ];
+
+  /* ──────────────────────────────────────────
+     유틸리티
+  ────────────────────────────────────────── */
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  function openLive(id) {
+    const modal = document.getElementById('live-modal');
+    const iframe = document.getElementById('modal-iframe');
+    const base = location.origin.includes('localhost') ? 'http://localhost:8080/live/' : '/live/';
+    iframe.src = base + '?id=' + id;
+    modal.classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('live-modal').classList.remove('open');
+    document.getElementById('modal-iframe').src = 'about:blank';
+  }
+
+  /* 탭 전환 */
+  function switchTab(name) {
+    document.querySelectorAll('.top-nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`[data-tab="${name}"]`)?.classList.add('active');
+
+    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name)?.classList.add('active');
+
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+    const navMap = { home: 0, live: 1, deal: 2, group: 3 };
+    if (navMap[name] !== undefined) {
+      document.querySelectorAll('.bnav-item')[navMap[name]]?.classList.add('active');
+    }
+  }
+
+  /* ──────────────────────────────────────────
+     렌더링 함수
+  ────────────────────────────────────────── */
+  function renderLiveCards(list) {
+    const el = document.getElementById('live-carousel');
+    el.innerHTML = list.map(item => `
+      <div class="live-card" onclick="openLive('${item.id}')">
+        <img src="${item.img}" alt="${item.title}">
+        <div class="live-card-overlay">
+          <div class="live-status-badge ${item.isLive ? 'badge-live' : 'badge-upcoming'}">
+            ${item.isLive ? `<span class="pulse-dot"></span>LIVE` : item.time}
           </div>
-          <div class="kakao-card-body">
-            <div class="kakao-brand-name">${p.brand} ›</div>
-            <div class="kakao-product-title">${p.title}</div>
-            <div class="kakao-price-row">
-              <span class="kakao-price-main">${p.price}</span>
-              <span class="kakao-benefit-price">${p.originPrice}</span>
+          <div class="live-card-body">
+            <div class="live-card-title">${item.title}</div>
+            <button class="live-card-btn" onclick="event.stopPropagation();${item.isLive ? `openLive('${item.id}')` : `notifyMe(this,'${item.title}')`}">
+              ${item.isLive ? '지금 시청하기' : '알림 신청'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function notifyMe(btn, title) {
+    btn.classList.toggle('notified');
+    if (btn.classList.contains('notified')) {
+      btn.textContent = '알림 신청 완료';
+      showToast(`방송 알림이 신청되었습니다.`);
+    } else {
+      btn.textContent = '알림 신청';
+      showToast('알림 신청이 해제되었습니다.');
+    }
+  }
+
+  function renderVod(list) {
+    const el = document.getElementById('vod-list');
+    el.innerHTML = list.map(item => `
+      <div class="vod-card" onclick="openLive('${item.id}')">
+        <div class="vod-thumb">
+          <img src="${item.img}" alt="${item.title}">
+          <div class="vod-meta">
+            <span class="vod-badge">VOD</span>
+            <span class="vod-views">${item.views}</span>
+          </div>
+          <div class="product-chip">
+            <img src="${item.product.img}" alt="${item.product.name}">
+            <div class="chip-info">
+              <div class="chip-name">${item.product.name}</div>
+              <div class="chip-price">${item.product.price}</div>
             </div>
           </div>
         </div>
-      `).join('');
-    }
+        <div class="vod-title">${item.title}</div>
+      </div>
+    `).join('');
+  }
 
-    function renderVodCards(list) {
-      const vodContainer = document.getElementById('vod-cards-container');
-      vodContainer.innerHTML = list.map(item => `
-        <div class="vod-card" onclick="openLiveModal('${item.id}')">
-          <div class="vod-thumb-box">
-            <img class="thumb-img" src="${item.bgImage}" alt="${item.title}">
-            <div class="vod-top-info">
-              <span class="badge-vod">VOD</span>
-              <span class="vod-views">${item.views}</span>
-            </div>
-            <!-- 카드 하단 수평 상품 칩 (이미지 1 참조) -->
-            <div class="vod-product-chip">
-              <img src="${item.product.image}" alt="${item.product.name}">
-              <div class="vod-product-details">
-                <div class="vod-product-name">${item.product.name}</div>
-                <div class="vod-product-price">${item.product.price}</div>
-              </div>
-            </div>
+  function filterVod(tag, btn) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered = tag === '뷰티레시피' ? VODS : VODS.filter(v => v.tag === tag);
+    renderVod(filtered.length ? filtered : VODS);
+  }
+
+  function renderRanking() {
+    const el = document.getElementById('home-ranking');
+    el.innerHTML = RANKING.map(p => {
+      const rankClass = p.rank === 1 ? 'gold' : p.rank === 2 ? 'silver' : '';
+      return `
+        <div class="prod-card" onclick="showToast('${p.brand} 상품 페이지로 이동합니다.')">
+          <div class="prod-img-wrap">
+            <img src="${p.img}" alt="${p.name}">
+            <span class="rank-num ${rankClass}">${p.rank}</span>
+            ${p.exclusive ? '<span class="exclusive-badge">단독</span>' : ''}
           </div>
-          <div class="vod-card-title">${item.title}</div>
+          <div class="prod-info">
+            <div class="prod-brand">${p.brand}<span class="prod-brand-arrow"> ›</span></div>
+            <div class="prod-name">${p.name}</div>
+            <div class="prod-price">${p.price}</div>
+            ${p.benefit ? `<div class="prod-benefit">${p.benefit}</div>` : ''}
+            <div class="chip-row">${p.tags.map(t => `<span class="chip-tag">${t}</span>`).join('')}</div>
+          </div>
         </div>
-      `).join('');
-    }
+      `;
+    }).join('');
+  }
 
-    function filterVod(tag, btn) {
-      document.querySelectorAll('.pill-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (tag === 'all') {
-        renderVodCards(VOD_REPLAYS);
-      } else {
-        const filtered = VOD_REPLAYS.filter(v => v.tag === tag);
-        renderVodCards(filtered.length > 0 ? filtered : VOD_REPLAYS);
+  function renderDeals() {
+    const el = document.getElementById('deal-grid');
+    el.innerHTML = DEALS.map((p, i) => `
+      <div class="prod-card" onclick="showToast('${p.brand} 상품 페이지로 이동합니다.')">
+        <div class="prod-img-wrap">
+          <img src="${p.img}" alt="${p.name}">
+          <span class="rank-num">${i + 1}</span>
+          <span class="discount-badge">${p.discount}</span>
+        </div>
+        <div class="prod-info">
+          <div class="prod-brand">${p.brand}<span class="prod-brand-arrow"> ›</span></div>
+          <div class="prod-name">${p.name}</div>
+          <div class="prod-price">${p.price}</div>
+          <div class="prod-origin">${p.origin}</div>
+          <div class="chip-row"><span class="chip-tag">무료배송</span><span class="chip-tag red">특가</span></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const GROUP_BUYS = [
+    {
+      brand: '설화수', name: '자음생 에센스 30ml 공동구매 — 목표 300명 달성 시 특가 적용',
+      price: '69,000원', origin: '92,000원', discount: '25%',
+      participants: '187명 참여 중', deadline: '~07.26 마감',
+      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '아이오페', name: '레티놀 링클 세럼 30ml 공동구매 2기',
+      price: '55,000원', origin: '88,000원', discount: '38%',
+      participants: '412명 참여 중', deadline: '~07.28 마감',
+      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '오쏘몰', name: '이뮨 멀티비타민 8입 공동구매 — 최대 40% 할인',
+      price: '25,900원', origin: '43,000원', discount: '40%',
+      participants: '638명 참여 중', deadline: '~07.30 마감',
+      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      brand: '이니스프리', name: '히알루론 수분 선크림 공동구매 3기',
+      price: '11,000원', origin: '27,000원', discount: '59%',
+      participants: '291명 참여 중', deadline: '~08.01 마감',
+      img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85'
+    }
+  ];
+
+  function renderGroupBuys() {
+    const el = document.getElementById('group-grid');
+    el.innerHTML = GROUP_BUYS.map((p, i) => `
+      <div class="prod-card" onclick="showToast('${p.brand} 공동구매 참여가 완료되었습니다.')">
+        <div class="prod-img-wrap">
+          <img src="${p.img}" alt="${p.name}">
+          <span class="rank-num">${i + 1}</span>
+          <span class="discount-badge">${p.discount}</span>
+        </div>
+        <div class="prod-info">
+          <div class="prod-brand">${p.brand}<span class="prod-brand-arrow"> ›</span></div>
+          <div class="prod-name">${p.name}</div>
+          <div class="prod-price">${p.price}</div>
+          <div class="prod-origin">${p.origin}</div>
+          <div class="chip-row">
+            <span class="chip-tag blue">${p.participants}</span>
+            <span class="chip-tag red">${p.deadline}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderTrials() {
+    const el = document.getElementById('trial-grid');
+    el.innerHTML = TRIALS.map(t => `
+      <div class="trial-card" onclick="showToast('${t.brand} 체험단 신청이 완료되었습니다.')">
+        <div class="trial-img-wrap">
+          <img src="${t.img}" alt="${t.name}">
+          <span class="trial-spots-badge">${t.spots}</span>
+          <span class="trial-free-badge">무료</span>
+        </div>
+        <div class="trial-info">
+          <div class="trial-brand">${t.brand}</div>
+          <div class="trial-name">${t.name}</div>
+          <div class="trial-deadline">${t.deadline}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ──────────────────────────────────────────
+     초기화
+  ────────────────────────────────────────── */
+  async function init() {
+    renderVod(VODS);
+    renderRanking();
+    renderDeals();
+    renderGroupBuys();
+    renderTrials();
+
+    let livesToShow = [...LIVES];
+
+    // Supabase 라이브 데이터 연동
+    if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
+      try {
+        const { data, error } = await window.supabaseClient
+          .from('live_control')
+          .select('*')
+          .order('updated_at', { ascending: false });
+
+        if (!error && data?.length) {
+          const remotes = data.map(row => ({
+            id: row.live_id,
+            title: row.title || '라이브 방송',
+            time: 'ON AIR',
+            isLive: row.status === 'ON',
+            img: row.thumbnail_url || (row.profile_image?.replace('#nosplash','')) || LIVES[0].img
+          }));
+          livesToShow = [...remotes, ...LIVES];
+        }
+      } catch (e) {
+        console.warn('Supabase 오류:', e);
       }
     }
 
-    document.addEventListener('DOMContentLoaded', initShopPage);
-  </script>
+    renderLiveCards(livesToShow);
+  }
 
+  document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
