@@ -1582,7 +1582,12 @@ function renderLiveEditView(container, liveId, showView) {
       if (botActive) {
         botLines = botListEl.value.split('\n').map(l => l.trim()).filter(l => l.includes('|'));
         if (botLines.length === 0) { alert('닉네임|내용 형식으로 1줄 이상 입력해주세요.'); botActive = false; return; }
-        botLineIndex = 0;
+        
+        // 일시정지 후 재시작 시, 마지막 위치부터 이어서 송출
+        if (botLineIndex >= botLines.length) {
+          botLineIndex = 0;
+        }
+        
         syncBotBtnState();
         
         const sec = parseInt(botIntervalEl.value) || 10;
