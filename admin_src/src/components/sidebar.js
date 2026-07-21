@@ -48,7 +48,7 @@ export function renderSidebar() {
   sidebar.innerHTML = `
     <div class="sidebar-header" style="padding: var(--space-4) var(--space-4); margin-bottom: var(--space-2);">
       <div id="sidebar-logo-container" style="display: flex; align-items: center; justify-content: flex-start; width: 100%; cursor: pointer;">
-        <img src="${ryzinLogo}" alt="Ryzin Logo" style="height: 32px; object-fit: contain; margin-bottom: 4px; filter: brightness(0) invert(1);" />
+        <img src="${ryzinLogo}" alt="Ryzin Logo" style="height: 32px; object-fit: contain; margin-bottom: 4px;" />
       </div>
     </div>
     <nav class="sidebar-nav">
