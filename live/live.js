@@ -307,6 +307,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // 라이브 중이거나, 라이브 종료 상태더라도 다시보기 URL(streamUrl)이 있으면 재생
           const isPlayable = c.isLive || (c.streamUrl && c.streamUrl.trim().length > 5);
+          const isVodMode = !c.isLive && (c.streamUrl && c.streamUrl.trim().length > 5);
+          const vodOverlay = document.getElementById('vod-controls-overlay');
+
+          if (vodOverlay) {
+            if (isVodMode) vodOverlay.classList.remove('hidden');
+            else vodOverlay.classList.add('hidden');
+          }
 
           if (isPlayable) {
             if (overlay) overlay.classList.add('hidden');
@@ -763,6 +770,75 @@ document.addEventListener('DOMContentLoaded', () => {
     video.src = m3u8Url;
     video.addEventListener('loadedmetadata', function () {
       video.play().catch(e => console.warn("자동 재생 차단됨", e));
+    });
+  }
+
+  // ── VOD 다시보기 전용 컨트롤러 바 로직 ──
+  const btnVodPlay = document.getElementById('btn-vod-play');
+  const vodPlayIcon = document.getElementById('vod-play-icon');
+  const vodPauseIcon = document.getElementById('vod-pause-icon');
+  const btnVodRewind = document.getElementById('btn-vod-rewind');
+  const btnVodForward = document.getElementById('btn-vod-forward');
+  const vodSeekbar = document.getElementById('vod-seekbar');
+  const vodTimeCurrent = document.getElementById('vod-time-current');
+  const vodTimeDuration = document.getElementById('vod-time-duration');
+
+  const formatTime = (seconds) => {
+    if (isNaN(seconds) || seconds < 0) return '00:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+  };
+
+  if (video) {
+    video.addEventListener('timeupdate', () => {
+      if (video.duration) {
+        const pct = (video.currentTime / video.duration) * 100;
+        if (vodSeekbar) vodSeekbar.value = pct;
+        if (vodTimeCurrent) vodTimeCurrent.textContent = formatTime(video.currentTime);
+        if (vodTimeDuration) vodTimeDuration.textContent = formatTime(video.duration);
+      }
+    });
+
+    video.addEventListener('play', () => {
+      if (vodPlayIcon) vodPlayIcon.style.display = 'none';
+      if (vodPauseIcon) vodPauseIcon.style.display = 'block';
+    });
+
+    video.addEventListener('pause', () => {
+      if (vodPlayIcon) vodPlayIcon.style.display = 'block';
+      if (vodPauseIcon) vodPauseIcon.style.display = 'none';
+    });
+  }
+
+  if (btnVodPlay && video) {
+    btnVodPlay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (video.paused) video.play();
+      else video.pause();
+    });
+  }
+
+  if (btnVodRewind && video) {
+    btnVodRewind.addEventListener('click', (e) => {
+      e.stopPropagation();
+      video.currentTime = Math.max(0, video.currentTime - 10);
+    });
+  }
+
+  if (btnVodForward && video) {
+    btnVodForward.addEventListener('click', (e) => {
+      e.stopPropagation();
+      video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
+    });
+  }
+
+  if (vodSeekbar && video) {
+    vodSeekbar.addEventListener('input', (e) => {
+      e.stopPropagation();
+      if (video.duration) {
+        video.currentTime = (vodSeekbar.value / 100) * video.duration;
+      }
     });
   }
 
