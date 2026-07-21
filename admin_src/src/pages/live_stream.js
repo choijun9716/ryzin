@@ -776,7 +776,7 @@ function renderLiveEditView(container, liveId, showView) {
           <div>
             <label class="modern-label">실시간 시청자 수 (현재값)</label>
             <div style="display:flex; gap:6px; align-items:center;">
-              <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">총 ${stats.viewers.toLocaleString()}명</div>
+              <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">${stats.viewers.toLocaleString()}명</div>
             </div>
             <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
               <input type="number" class="modern-input" id="cfg-viewers-add" placeholder="+추가할 수" style="flex:1; padding:8px 10px; font-size:13px;">
@@ -1621,28 +1621,42 @@ function renderLiveEditView(container, liveId, showView) {
       }
     };
 
-    window.realTimePresenceCount = 0;
     window.updateAdminViewersDisplay = () => {
       const viewerDisplayEl = document.getElementById('cfg-viewers-display');
       if (viewerDisplayEl) {
-        viewerDisplayEl.innerHTML = `총 <b>${(stats.viewers + window.realTimePresenceCount).toLocaleString()}</b>명 <span style="font-size:11px; font-weight:normal; color:#64748b; margin-left:4px;">(실접속: ${window.realTimePresenceCount}명, 수동: ${stats.viewers.toLocaleString()}명)</span>`;
+        viewerDisplayEl.textContent = `${stats.viewers.toLocaleString()}명`;
+      }
+      const cumViewersInput = document.getElementById('cfg-cumViewers');
+      if (cumViewersInput) {
+        cumViewersInput.value = stats.cumViewers || 0;
+      }
+      const heartsInput = document.getElementById('cfg-hearts');
+      if (heartsInput) {
+        heartsInput.value = stats.hearts || 0;
       }
     };
 
-    let adminPresenceChannel = null;
-    const subscribeAdminPresence = () => {
+    let statsPollingInterval = null;
+    const startStatsPolling = () => {
       if (!db) return;
-      adminPresenceChannel = db.channel(`presence-${liveId}`);
-      adminPresenceChannel.on('presence', { event: 'sync' }, () => {
-        const state = adminPresenceChannel.presenceState();
-        let count = 0;
-        for (const key in state) count += state[key].length;
-        window.realTimePresenceCount = count;
-        window.updateAdminViewersDisplay();
-      }).subscribe();
+      statsPollingInterval = setInterval(async () => {
+        try {
+          const { data, error } = await db
+            .from('live_control')
+            .select('viewers, cum_viewers, hearts')
+            .eq('live_id', liveId)
+            .maybeSingle();
+          if (data && !error) {
+            stats.viewers = parseInt(data.viewers) || 0;
+            stats.cumViewers = parseInt(data.cum_viewers) || 0;
+            stats.hearts = parseInt(data.hearts) || 0;
+            if (typeof window.updateAdminViewersDisplay === 'function') window.updateAdminViewersDisplay();
+          }
+        } catch (e) {}
+      }, 10000);
     };
 
-    // 2. 실시간 구독
+    // 2. 실시간 채팅 구독
     const subscribeAdminChat = () => {
       if (!db) return;
       chatChannel = db.channel(`admin-chat-channel-${liveId}`)
@@ -1658,15 +1672,15 @@ function renderLiveEditView(container, liveId, showView) {
 
     loadAdminChatHistory();
     subscribeAdminChat();
-    subscribeAdminPresence();
+    startStatsPolling();
 
     // 탭 이동 시 구독 해제 및 봇 정리
     contentArea.addEventListener('adminTabLeave', () => {
       if (chatChannel) {
         db.removeChannel(chatChannel);
       }
-      if (adminPresenceChannel) {
-        db.removeChannel(adminPresenceChannel);
+      if (statsPollingInterval) {
+        clearInterval(statsPollingInterval);
       }
       if (botTimer) {
         clearInterval(botTimer);

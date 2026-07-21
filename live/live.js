@@ -254,34 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
       .subscribe();
   }
 
-  // 4-5. 실시간 접속자 추적 설정 (구독)
-  window.realTimeViewers = 0;
-  function subscribePresence() {
-    if (!db) return;
-    const clientId = 'viewer_' + Math.random().toString(36).substr(2, 9);
-    const presenceChannel = db.channel(`presence-${LIVE_ID}`, {
-      config: { presence: { key: clientId } }
-    });
-    presenceChannel.on('presence', { event: 'sync' }, () => {
-      const state = presenceChannel.presenceState();
-      let count = 0;
-      for (const key in state) count += state[key].length;
-      window.realTimeViewers = count;
-      loadLiveStats();
-    }).subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await presenceChannel.track({ online_at: new Date().toISOString() });
-      }
-    });
-  }
-
   // 초기 1회 로드 및 실시간 구독 시작
   setTimeout(() => {
     loadConfigOnce();
     loadChatOnce();
     subscribeConfig();
     subscribeChat();
-    subscribePresence();
   }, 100);
 
   // === 페이지 로드(새로고침 포함) 시마다 누적 시청자수 +1 ===
@@ -295,15 +273,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { data, error } = await db
           .from('live_control')
-          .select('cum_viewers')
+          .select('cum_viewers, viewers, is_live')
           .eq('live_id', targetLiveId)
           .maybeSingle();
 
         if (data) {
           const newCum = (parseInt(data.cum_viewers) || 0) + 1;
+          const updateData = { cum_viewers: newCum };
+          if (data.is_live) {
+            updateData.viewers = (parseInt(data.viewers) || 0) + 1;
+          }
           await db
             .from('live_control')
-            .update({ cum_viewers: newCum })
+            .update(updateData)
             .eq('live_id', targetLiveId);
         }
       } catch (e) {
@@ -473,8 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const viewers = s ? (parseInt(s.viewers) || 0) : 0;
         viewCountEl.textContent = viewers.toLocaleString() + '명 대기중';
       } else if (s) {
-        // 라이브 중일 때는 [누적시청자수 + 실시간시청자수 + 실제 접속자수] 가산하여 노출
-        const total = (parseInt(s.cumViewers) || 0) + (parseInt(s.viewers) || 0) + (window.realTimeViewers || 0);
+        // 라이브 중일 때는 [누적시청자수 + 실시간시청자수] 가산하여 노출
+        const total = (parseInt(s.cumViewers) || 0) + (parseInt(s.viewers) || 0);
         viewCountEl.textContent = total.toLocaleString() + '명 시청중';
       }
     } catch (e) { }
