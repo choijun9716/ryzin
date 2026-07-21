@@ -579,7 +579,7 @@ function renderLiveEditView(container, liveId, showView) {
       if (!error && count !== null) {
         const tabCountBadge = layout.querySelector('#leads-tab-count') || document.getElementById('leads-tab-count');
         if (tabCountBadge) {
-          tabCountBadge.textContent = `${count}건`;
+          tabCountBadge.textContent = `${count}`;
           tabCountBadge.style.background = count > 0 ? '#3b82f6' : '#e2e8f0';
           tabCountBadge.style.color = count > 0 ? '#ffffff' : '#475569';
         }
@@ -641,7 +641,7 @@ function renderLiveEditView(container, liveId, showView) {
       <button class="tab-btn" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
-      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB <span id="leads-tab-count" style="background:#e2e8f0; color:#475569; font-size:11px; padding:1px 6px; border-radius:10px; margin-left:2px; font-weight:800;">0건</span></button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB <span id="leads-tab-count" style="background:#e2e8f0; color:#475569; font-size:11px; padding:1px 6px; border-radius:10px; margin-left:2px; font-weight:800;">0</span></button>
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
@@ -2322,7 +2322,7 @@ function renderLiveEditView(container, liveId, showView) {
 
         const tabCountBadge = layout.querySelector('#leads-tab-count') || document.getElementById('leads-tab-count');
         if (tabCountBadge) {
-          tabCountBadge.textContent = `${currentLeads.length}건`;
+          tabCountBadge.textContent = `${currentLeads.length}`;
           tabCountBadge.style.background = currentLeads.length > 0 ? '#3b82f6' : '#e2e8f0';
           tabCountBadge.style.color = currentLeads.length > 0 ? '#ffffff' : '#475569';
         }
