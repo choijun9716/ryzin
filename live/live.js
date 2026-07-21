@@ -201,12 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .from('live_chats')
         .select('*')
         .eq('live_id', LIVE_ID)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(100);
 
       if (error) throw error;
       if (chats && Array.isArray(chats)) {
-        chats.forEach(c => {
+        chats.reverse().forEach(c => {
           const nick = c.nickname || '';
           if (blockedList.includes(nick)) return;
           const isAdmin = adminList.includes(nick);

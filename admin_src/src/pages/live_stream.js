@@ -1780,12 +1780,12 @@ function renderLiveEditView(container, liveId, showView) {
           .from('live_chats')
           .select('*')
           .eq('live_id', liveId)
-          .order('created_at', { ascending: true })
+          .order('created_at', { ascending: false })
           .limit(100);
 
         if (error) throw error;
         if (chats && Array.isArray(chats)) {
-          chats.forEach(c => {
+          chats.reverse().forEach(c => {
             addAdminChatItem(c.nickname || '?', c.content || '', true);
             adminLastChatTime = parseInt(c.created_at) || 0;
           });
