@@ -1937,7 +1937,6 @@ function renderLiveEditView(container, liveId, showView) {
           if (error) throw error;
           config.winner_name = compositeName;
           config.winner_timestamp = endTS;
-          alert(`🎉 ${selectedType} 당첨 배너 노출이 시작되었습니다!`);
           renderChatTab();
         } catch (err) {
           alert('시작 처리에 실패했습니다.');
@@ -1960,7 +1959,6 @@ function renderLiveEditView(container, liveId, showView) {
           }).eq('live_id', liveId);
           if (error) throw error;
           config.winner_timestamp = 0;
-          alert('당첨 배너 노출이 종료되었습니다.');
           renderChatTab();
         } catch (err) {
           alert('종료 처리에 실패했습니다.');

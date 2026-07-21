@@ -86,10 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 설정 데이터를 파싱하고 UI에 적용하는 헬퍼 함수
   function applyLiveConfig(row) {
     // === [NEW] 소통왕 당첨자 정보 로컬스토리지 즉시 동기화 및 락인 검사 ===
-    if (row.winner_name !== undefined) localStorage.setItem('ryzin_winner_name', row.winner_name || '');
+    if (row.winner_name !== undefined) localStorage.setItem(`ryzin_winner_name_${LIVE_ID}`, row.winner_name || '');
     if (row.winner_timestamp !== undefined) {
       const rowTS = Number(row.winner_timestamp) || 0;
-      localStorage.setItem('ryzin_winner_timestamp', rowTS.toString());
+      localStorage.setItem(`ryzin_winner_timestamp_${LIVE_ID}`, rowTS.toString());
 
       if (rowTS > 0) {
         if (window.__lastWinnerTimestamp === null) {
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cleanNick = (parts.length > 1 ? parts[1] : wName).trim();
 
             if (currentNick && cleanNick && currentNick === cleanNick) {
-              const alreadySubmitted = localStorage.getItem('ryzin_submitted_winner_' + rowTS);
+              const alreadySubmitted = localStorage.getItem(`ryzin_submitted_winner_${LIVE_ID}_` + rowTS);
               if (!alreadySubmitted) {
                 const addrModal = document.getElementById('winner-address-modal');
                 if (addrModal) addrModal.style.display = 'flex';
@@ -128,6 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 어드민에서 강제 종료를 누른 경우 즉시 카운트다운을 종료시킴
         window.__winnerCountdownSeconds = 0;
         window.__lastWinnerTimestamp = 0;
+        const winnerEl = document.getElementById('winner-alert-overlay');
+        if (winnerEl) winnerEl.style.display = 'none';
       }
     }
 
@@ -1359,7 +1361,7 @@ setInterval(() => {
     const textSpan = document.getElementById('winner-text-span');
 
     if (window.__winnerCountdownSeconds > 0) {
-      const wName = localStorage.getItem('ryzin_winner_name') || '당첨자';
+      const wName = localStorage.getItem(`ryzin_winner_name_${LIVE_ID}`) || '당첨자';
       
       // 닉네임 문자열에 '|' 기호가 포함되어 있다면 [유형|닉네임] 파싱 처리
       const parts = wName.split('|');
@@ -1447,7 +1449,7 @@ if (winnerAlertOverlay) {
   winnerAlertOverlay.style.cursor = 'pointer';
   winnerAlertOverlay.addEventListener('click', () => {
     const currentNick = (userNickname || localStorage.getItem('ryzin_chat_nickname') || '').trim();
-    const wName = localStorage.getItem('ryzin_winner_name') || '';
+    const wName = localStorage.getItem(`ryzin_winner_name_${LIVE_ID}`) || '';
     const parts = wName.split('|');
     const cleanNick = (parts.length > 1 ? parts[1] : wName).trim();
 
@@ -1481,10 +1483,10 @@ if (btnSubmitAddr) {
     btnSubmitAddr.disabled = true;
     btnSubmitAddr.textContent = '제출 처리 중...';
 
-    const wName = localStorage.getItem('ryzin_winner_name') || '';
+    const wName = localStorage.getItem(`ryzin_winner_name_${LIVE_ID}`) || '';
     const parts = wName.split('|');
     const cleanNick = parts.length > 1 ? parts[1] : wName;
-    const rowTS = localStorage.getItem('ryzin_winner_timestamp') || '0';
+    const rowTS = localStorage.getItem(`ryzin_winner_timestamp_${LIVE_ID}`) || '0';
 
     try {
       if (!db) throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
@@ -1500,7 +1502,7 @@ if (btnSubmitAddr) {
       if (error) throw error;
 
       // 성공 플래그 셋
-      localStorage.setItem('ryzin_submitted_winner_' + rowTS, 'true');
+      localStorage.setItem(`ryzin_submitted_winner_${LIVE_ID}_` + rowTS, 'true');
       alert('🎉 배송 정보가 성공적으로 제출되었습니다. 감사합니다!');
       if (addrModal) addrModal.style.display = 'none';
     } catch (err) {
