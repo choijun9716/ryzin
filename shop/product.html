@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>에이피뷰티 에어리 선 세럼 — RYZIN SHOP</title>
+  <meta name="description" content="에이피뷰티 에어리 선 세럼 50ml, SPF50+ PA++++. 라이브 단독 특가로 만나보세요.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #ef4444;
+      --text-main: #111827;
+      --text-sub: #374151;
+      --text-muted: #9ca3af;
+      --surface: #fff;
+      --bg: #f3f4f6;
+      --border: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      background: var(--surface);
+      min-height: 100vh;
+      padding-bottom: 100px;
+      position: relative;
+    }
+
+    /* ── 상단 네비 ── */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 50px;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tb-icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .tb-icon-btn svg {
+      width: 18px; height: 18px;
+      stroke: #111827;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .tb-icons { display: flex; gap: 6px; }
+
+    /* ── 이미지 갤러리 ── */
+    .gallery {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #f9fafb;
+      overflow: hidden;
+    }
+
+    .gallery-slides {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .gallery-slides::-webkit-scrollbar { display: none; }
+
+    .gallery-slide {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+    }
+
+    .gallery-slide img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .gallery-dots {
+      position: absolute;
+      bottom: 14px; left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .gdot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.2s;
+    }
+
+    .gdot.active {
+      background: #fff;
+      width: 18px;
+      border-radius: 4px;
+    }
+
+    .gallery-count {
+      position: absolute;
+      top: 12px; right: 14px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    /* ── 라이브 뱃지 ── */
+    .live-banner {
+      background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .live-dot-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .live-pulse {
+      width: 7px; height: 7px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.4); }
+    }
+
+    .live-banner-text {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .live-banner-text strong { color: #fff; }
+
+    .live-banner-cta {
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      background: #ef4444;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* ── 상품 기본 정보 ── */
+    .product-info {
+      padding: 18px 18px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .wish-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .wish-btn svg {
+      width: 18px; height: 18px;
+      stroke: var(--text-muted);
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .wish-btn.active svg {
+      stroke: #ef4444;
+      fill: #ef4444;
+    }
+
+    .product-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .product-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* 가격 블록 */
+    .price-block {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .discount-rate {
+      font-size: 26px;
+      font-weight: 900;
+      color: #ef4444;
+      line-height: 1;
+    }
+
+    .price-col { display: flex; flex-direction: column; }
+
+    .sale-price {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .origin-price {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+      margin-top: 2px;
+    }
+
+    /* 혜택 칩 */
+    .benefit-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding-bottom: 16px;
+    }
+
+    .benefit-chip {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .chip-free { background: #dbeafe; color: #2563eb; }
+    .chip-gift { background: #dcfce7; color: #16a34a; }
+    .chip-live { background: #fee2e2; color: #ef4444; }
+
+    /* 평점 */
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 16px;
+    }
+
+    .stars {
+      display: flex; gap: 1px;
+    }
+
+    .star {
+      width: 14px; height: 14px;
+      fill: #facc15;
+    }
+
+    .rating-score {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .rating-count {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── 구매 옵션 섹션 ── */
+    .options-section {
+      padding: 18px;
+      border-bottom: 6px solid var(--bg);
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .option-item.selected {
+      border-color: var(--text-main);
+      background: #f9fafb;
+    }
+
+    .option-radio {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .option-item.selected .option-radio {
+      border-color: var(--text-main);
+      background: var(--text-main);
+    }
+
+    .option-radio-inner {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .option-info { flex: 1; }
+
+    .option-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .option-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .option-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    /* ── 수량 선택 ── */
+    .qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 6px solid var(--bg);
+    }
+
+    .qty-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      width: 36px; height: 36px;
+      border: none;
+      background: #f9fafb;
+      font-size: 18px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-main);
+    }
+
+    .qty-num {
+      min-width: 36px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+      border-left: 1.5px solid var(--border);
+      border-right: 1.5px solid var(--border);
+      height: 36px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── 배송 정보 ── */
+    .delivery-section {
+      padding: 18px;
+      border-bottom: 6px solid var(--bg);
+    }
+
+    .delivery-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .delivery-row:last-child { margin-bottom: 0; }
+
+    .delivery-key {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      width: 64px;
+      flex-shrink: 0;
+    }
+
+    .delivery-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .delivery-free {
+      background: #dbeafe;
+      color: #2563eb;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    /* ── 상품 상세 이미지 ── */
+    .detail-section {
+      background: #fff;
+    }
+
+    .detail-tab-bar {
+      display: flex;
+      border-bottom: 1.5px solid var(--border);
+      position: sticky;
+      top: 50px;
+      background: #fff;
+      z-index: 50;
+    }
+
+    .dtab {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .dtab.active {
+      color: var(--text-main);
+      font-weight: 800;
+    }
+
+    .dtab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 15%; right: 15%;
+      height: 2px;
+      background: var(--text-main);
+      border-radius: 2px;
+    }
+
+    .detail-img-list {
+      width: 100%;
+    }
+
+    .detail-img-list img {
+      width: 100%;
+      display: block;
+    }
+
+    /* ── 리뷰 섹션 ── */
+    .reviews-section {
+      padding: 20px 18px;
+      background: #fff;
+      border-top: 6px solid var(--bg);
+    }
+
+    .reviews-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .reviews-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .reviews-more {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .review-summary {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .review-big-score {
+      font-size: 40px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .review-score-right { display: flex; flex-direction: column; gap: 4px; }
+
+    .review-card {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .review-card:last-child { border-bottom: none; }
+
+    .review-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .reviewer {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .review-date {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .review-text {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.55;
+    }
+
+    .review-option-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* ── 하단 CTA 바 ── */
+    .bottom-cta {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+      display: flex;
+      gap: 10px;
+      z-index: 200;
+    }
+
+    .cta-total {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 90px;
+    }
+
+    .cta-total-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .cta-total-price {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
+    .cta-btn-group {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .cta-cart-btn {
+      flex: 1;
+      height: 46px;
+      border-radius: 12px;
+      border: 1.5px solid var(--text-main);
+      background: #fff;
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .cta-buy-btn {
+      flex: 1.4;
+      height: 46px;
+      border-radius: 12px;
+      border: none;
+      background: var(--text-main);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* ── 토스트 ── */
+    .toast {
+      position: fixed;
+      top: 18px; left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #111827;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      z-index: 600;
+      white-space: nowrap;
+      transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ── 상단 바 ── -->
+  <nav class="top-bar">
+    <button class="tb-icon-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="tb-icons">
+      <button class="tb-icon-btn" onclick="showToast('링크가 복사되었습니다.')">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+      </button>
+      <button class="tb-icon-btn" onclick="showToast('장바구니가 비어있습니다.')">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── 이미지 갤러리 ── -->
+  <div class="gallery">
+    <div class="gallery-slides" id="gallery-slides" onscroll="updateGalleryDots()">
+      <div class="gallery-slide">
+        <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=860&q=90" alt="상품 이미지 1">
+      </div>
+      <div class="gallery-slide">
+        <img src="https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=860&q=90" alt="상품 이미지 2">
+      </div>
+      <div class="gallery-slide">
+        <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=860&q=90" alt="상품 이미지 3">
+      </div>
+      <div class="gallery-slide">
+        <img src="https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=860&q=90" alt="상품 이미지 4">
+      </div>
+    </div>
+    <div class="gallery-dots" id="gallery-dots">
+      <div class="gdot active"></div>
+      <div class="gdot"></div>
+      <div class="gdot"></div>
+      <div class="gdot"></div>
+    </div>
+    <div class="gallery-count" id="gallery-count">1 / 4</div>
+  </div>
+
+  <!-- ── 라이브 배너 ── -->
+  <div class="live-banner" onclick="showToast('라이브 시청 페이지로 이동합니다.')">
+    <div class="live-dot-wrap">
+      <div class="live-pulse"></div>
+      <span style="font-size:11px;font-weight:900;color:#ef4444;">LIVE</span>
+    </div>
+    <span class="live-banner-text">지금 <strong>라이브 방송 중</strong> — 라이브 전용 추가 5% 할인 적용 중</span>
+    <span class="live-banner-cta">시청하기</span>
+  </div>
+
+  <!-- ── 상품 기본 정보 ── -->
+  <div class="product-info">
+    <div class="brand-row">
+      <span class="brand-name">에이피뷰티 (AP Beauty)</span>
+      <button class="wish-btn" id="wish-btn" onclick="toggleWish()">
+        <svg viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        <span id="wish-count">2,843</span>
+      </button>
+    </div>
+
+    <h1 class="product-name">에어리 선 세럼 50ml<br>SPF50+ PA++++</h1>
+    <p class="product-sub">가볍고 촉촉한 수분 선세럼 | 라이브 단독 특가</p>
+
+    <div class="price-block">
+      <span class="discount-rate">45%</span>
+      <div class="price-col">
+        <span class="sale-price">38,500원</span>
+        <span class="origin-price">70,000원</span>
+      </div>
+    </div>
+
+    <div class="benefit-row">
+      <span class="benefit-chip chip-free">무료배송</span>
+      <span class="benefit-chip chip-gift">사은품 3종 증정</span>
+      <span class="benefit-chip chip-live">라이브 단독 특가</span>
+    </div>
+
+    <div class="rating-row">
+      <div class="stars">
+        <svg class="star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <svg class="star" viewBox="0 0 24 24" style="fill:#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <span class="rating-score">4.8</span>
+      <span class="rating-count">리뷰 1,247개</span>
+    </div>
+  </div>
+
+  <!-- ── 구매 옵션 ── -->
+  <div class="options-section">
+    <div class="section-label">구성 선택</div>
+    <div class="option-list">
+      <div class="option-item selected" id="opt-1" onclick="selectOption(1, 38500)">
+        <div class="option-radio"><div class="option-radio-inner"></div></div>
+        <div class="option-info">
+          <div class="option-name">에어리 선 세럼 50ml</div>
+          <div class="option-desc">기본 구성 + 사은품 3종</div>
+        </div>
+        <span class="option-price">38,500원</span>
+      </div>
+      <div class="option-item" id="opt-2" onclick="selectOption(2, 72000)">
+        <div class="option-radio"><div class="option-radio-inner"></div></div>
+        <div class="option-info">
+          <div class="option-name">에어리 선 세럼 50ml × 2개</div>
+          <div class="option-desc">듀오 세트 + 사은품 5종</div>
+        </div>
+        <span class="option-price">72,000원</span>
+      </div>
+      <div class="option-item" id="opt-3" onclick="selectOption(3, 95000)">
+        <div class="option-radio"><div class="option-radio-inner"></div></div>
+        <div class="option-info">
+          <div class="option-name">에어리 선 세럼 + 에어리 토너 SET</div>
+          <div class="option-desc">토너 특별 세트 + 사은품 5종</div>
+        </div>
+        <span class="option-price">95,000원</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 수량 선택 ── -->
+  <div class="qty-row">
+    <span class="qty-label">수량</span>
+    <div class="qty-control">
+      <button class="qty-btn" onclick="changeQty(-1)">−</button>
+      <div class="qty-num" id="qty-display">1</div>
+      <button class="qty-btn" onclick="changeQty(1)">+</button>
+    </div>
+  </div>
+
+  <!-- ── 배송 정보 ── -->
+  <div class="delivery-section">
+    <div class="section-label" style="margin-bottom:14px;">배송 안내</div>
+    <div class="delivery-row">
+      <span class="delivery-key">배송비</span>
+      <span class="delivery-val">무료배송<span class="delivery-free">FREE</span></span>
+    </div>
+    <div class="delivery-row">
+      <span class="delivery-key">출고</span>
+      <span class="delivery-val">주문 후 1–2일 이내 출고</span>
+    </div>
+    <div class="delivery-row">
+      <span class="delivery-key">도착 예정</span>
+      <span class="delivery-val">내일 오후 도착 예정</span>
+    </div>
+    <div class="delivery-row">
+      <span class="delivery-key">반품</span>
+      <span class="delivery-val">수령 후 7일 이내</span>
+    </div>
+  </div>
+
+  <!-- ── 상품 상세 / 리뷰 탭 ── -->
+  <div class="detail-section">
+    <div class="detail-tab-bar">
+      <div class="dtab active" onclick="switchDTab('detail', this)">상품 상세</div>
+      <div class="dtab" onclick="switchDTab('review', this)">리뷰 1,247</div>
+      <div class="dtab" onclick="switchDTab('qna', this)">Q&A 38</div>
+    </div>
+
+    <!-- 상세 이미지 -->
+    <div id="dtab-detail">
+      <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=860&q=85" alt="상세 이미지 1" style="width:100%;display:block;">
+      <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=860&q=85" alt="상세 이미지 2" style="width:100%;display:block;">
+      <img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=860&q=85" alt="상세 이미지 3" style="width:100%;display:block;">
+    </div>
+
+    <!-- 리뷰 -->
+    <div id="dtab-review" style="display:none;">
+      <div class="reviews-section">
+        <div class="reviews-header">
+          <span class="reviews-title">구매 리뷰 1,247</span>
+          <span class="reviews-more">전체보기 ›</span>
+        </div>
+
+        <div class="review-summary">
+          <span class="review-big-score">4.8</span>
+          <div class="review-score-right">
+            <div class="stars">
+              <svg class="star" viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star" viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star" viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star" viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg class="star" viewBox="0 0 24 24" style="width:12px;height:12px;fill:#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <span style="font-size:12px;color:var(--text-muted);font-weight:600;">1,247명이 평가함</span>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-top">
+            <span class="reviewer">김지현</span>
+            <span class="review-date">2025.07.10</span>
+          </div>
+          <div class="stars" style="margin-bottom:6px;">
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="review-text">발림성이 너무 좋아요. 끈적임 없이 쫙 발리고 촉촉함이 하루 종일 유지돼요. 이제 이것만 쓸 것 같아요. 향도 은은해서 자극 없고 백탁도 거의 없어서 너무 만족스럽습니다!</p>
+          <p class="review-option-label">구성: 에어리 선 세럼 50ml 기본</p>
+        </div>
+
+        <div class="review-card">
+          <div class="review-top">
+            <span class="reviewer">박민서</span>
+            <span class="review-date">2025.07.08</span>
+          </div>
+          <div class="stars" style="margin-bottom:6px;">
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;fill:#e5e7eb"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="review-text">라이브 방송 보고 바로 구매했는데 정말 후회 없어요. 피부에 자극이 없고 선크림 특유의 묵직한 느낌이 전혀 없습니다. 사은품도 생각보다 구성이 알차요.</p>
+          <p class="review-option-label">구성: 에어리 선 세럼 50ml 기본</p>
+        </div>
+
+        <div class="review-card">
+          <div class="review-top">
+            <span class="reviewer">이수연</span>
+            <span class="review-date">2025.07.05</span>
+          </div>
+          <div class="stars" style="margin-bottom:6px;">
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg class="star" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="review-text">민감성 피부인데 전혀 자극 없어요. 끈적임도 없고 메이크업 베이스 위에 바르면 피부가 정말 깨끗해 보여요. 재구매 예정입니다.</p>
+          <p class="review-option-label">구성: 듀오 세트 × 2개</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q&A -->
+    <div id="dtab-qna" style="display:none;padding:40px 18px;text-align:center;">
+      <p style="font-size:14px;color:var(--text-muted);font-weight:600;">Q&A 기능 준비 중입니다.</p>
+      <button onclick="showToast('Q&A 작성 기능을 준비 중입니다.')" style="margin-top:14px;padding:10px 24px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--text-main);">문의하기</button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ── 하단 CTA 바 ── -->
+<div class="bottom-cta">
+  <div class="cta-total">
+    <span class="cta-total-label">총 결제금액</span>
+    <span class="cta-total-price" id="cta-price">38,500원</span>
+  </div>
+  <div class="cta-btn-group">
+    <button class="cta-cart-btn" onclick="showToast('장바구니에 담겼습니다.')">장바구니</button>
+    <button class="cta-buy-btn" onclick="showToast('결제 페이지로 이동합니다.')">바로 구매</button>
+  </div>
+</div>
+
+<!-- ── 토스트 ── -->
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<script>
+  let currentOpt = 1;
+  let currentOptPrice = 38500;
+  let qty = 1;
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  function selectOption(num, price) {
+    document.querySelectorAll('.option-item').forEach(el => el.classList.remove('selected'));
+    document.getElementById('opt-' + num).classList.add('selected');
+    currentOpt = num;
+    currentOptPrice = price;
+    updateTotal();
+  }
+
+  function changeQty(delta) {
+    qty = Math.max(1, Math.min(10, qty + delta));
+    document.getElementById('qty-display').textContent = qty;
+    updateTotal();
+  }
+
+  function updateTotal() {
+    const total = currentOptPrice * qty;
+    document.getElementById('cta-price').textContent = total.toLocaleString('ko-KR') + '원';
+  }
+
+  function toggleWish() {
+    const btn = document.getElementById('wish-btn');
+    btn.classList.toggle('active');
+    const cnt = document.getElementById('wish-count');
+    const current = parseInt(cnt.textContent.replace(',', ''));
+    if (btn.classList.contains('active')) {
+      cnt.textContent = (current + 1).toLocaleString('ko-KR');
+      showToast('찜 목록에 추가되었습니다.');
+    } else {
+      cnt.textContent = (current - 1).toLocaleString('ko-KR');
+      showToast('찜 목록에서 제거되었습니다.');
+    }
+  }
+
+  /* 갤러리 도트 */
+  function updateGalleryDots() {
+    const slides = document.getElementById('gallery-slides');
+    const total = 4;
+    const idx = Math.round(slides.scrollLeft / slides.offsetWidth);
+    document.querySelectorAll('.gdot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+    document.getElementById('gallery-count').textContent = `${idx + 1} / ${total}`;
+  }
+
+  /* 상세 탭 전환 */
+  function switchDTab(name, el) {
+    document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('dtab-detail').style.display = name === 'detail' ? 'block' : 'none';
+    document.getElementById('dtab-review').style.display = name === 'review' ? 'block' : 'none';
+    document.getElementById('dtab-qna').style.display = name === 'qna' ? 'block' : 'none';
+  }
+</script>
+</body>
+</html>
