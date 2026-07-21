@@ -929,44 +929,55 @@ function renderLiveEditView(container, liveId, showView) {
     `;
 
 
+    const getEl = (id) => layout.querySelector('#' + id) || document.getElementById(id);
+
     // 이벤트
-    document.getElementById('btn-save-config').addEventListener('click', async () => {
-      const saveBtn = document.getElementById('btn-save-config');
-      saveBtn.disabled = true;
-      saveBtn.textContent = '저장 중...';
+    const btnSaveCfg = getEl('btn-save-config');
+    if (btnSaveCfg) {
+      btnSaveCfg.addEventListener('click', async () => {
+        btnSaveCfg.disabled = true;
+        btnSaveCfg.textContent = '저장 중...';
 
-      
-      // ImgBB API Key 저장
-      const imgbbKey = document.getElementById('cfg-imgbb-key').value.trim();
-      localStorage.setItem('ryzin_imgbb_key', imgbbKey);
+        const imgbbKeyEl = getEl('cfg-imgbb-key');
+        if (imgbbKeyEl) localStorage.setItem('ryzin_imgbb_key', imgbbKeyEl.value.trim());
 
-      config.brandName = document.getElementById('cfg-brandName').value;
-      config.title = document.getElementById('cfg-title').value;
-      config.streamUrl = document.getElementById('cfg-stream').value;
-      config.liveStartTime = document.getElementById('cfg-liveStartTime').value;
-      stats.cumViewers = parseInt(document.getElementById('cfg-cumViewers').value) || 0;
-      stats.hearts = parseInt(document.getElementById('cfg-hearts').value) || 0;
-      config.showViewers = document.getElementById('cfg-showViewers').checked;
-      config.showSplash = document.getElementById('cfg-showSplash').checked;
-      config.shareTitle = document.getElementById('cfg-shareTitle').value;
-      config.shareDesc = document.getElementById('cfg-shareDesc').value;
-      saveConfig();
-      saveStats();
-      topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
+        const brandNameEl = getEl('cfg-brandName');
+        if (brandNameEl) config.brandName = brandNameEl.value;
+        const titleEl = getEl('cfg-title');
+        if (titleEl) config.title = titleEl.value;
+        const streamEl = getEl('cfg-stream');
+        if (streamEl) config.streamUrl = streamEl.value;
+        const liveStartTimeEl = getEl('cfg-liveStartTime');
+        if (liveStartTimeEl) config.liveStartTime = liveStartTimeEl.value;
+        const cumViewersEl = getEl('cfg-cumViewers');
+        if (cumViewersEl) stats.cumViewers = parseInt(cumViewersEl.value) || 0;
+        const heartsEl = getEl('cfg-hearts');
+        if (heartsEl) stats.hearts = parseInt(heartsEl.value) || 0;
+        const showViewersEl = getEl('cfg-showViewers');
+        if (showViewersEl) config.showViewers = showViewersEl.checked;
+        const showSplashEl = getEl('cfg-showSplash');
+        if (showSplashEl) config.showSplash = showSplashEl.checked;
+        const shareTitleEl = getEl('cfg-shareTitle');
+        if (shareTitleEl) config.shareTitle = shareTitleEl.value;
+        const shareDescEl = getEl('cfg-shareDesc');
+        if (shareDescEl) config.shareDesc = shareDescEl.value;
 
-      saveBtn.disabled = false;
-      saveBtn.textContent = '설정 저장';
-      alert('✅ 설정 저장 완료!');
-    });
+        saveConfig();
+        saveStats();
+        const brandTitleText = topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]');
+        if (brandTitleText) brandTitleText.textContent = config.brandName;
 
+        btnSaveCfg.disabled = false;
+        btnSaveCfg.textContent = '설정 저장';
+        alert('✅ 설정 저장 완료!');
+      });
+    }
 
     // ── OG 미리보기 실시간 업데이트 ──
-    const ogPreviewTitle = document.getElementById('og-preview-title');
-    const ogPreviewDesc = document.getElementById('og-preview-desc');
-    const ogPreviewImg = document.getElementById('og-preview-img');
-    const ogPreviewImgPh = document.getElementById('og-preview-img-placeholder');
-    const shareTitleInput = document.getElementById('cfg-shareTitle');
-    const shareDescInput = document.getElementById('cfg-shareDesc');
+    const ogPreviewTitle = getEl('og-preview-title');
+    const ogPreviewDesc = getEl('og-preview-desc');
+    const shareTitleInput = getEl('cfg-shareTitle');
+    const shareDescInput = getEl('cfg-shareDesc');
 
     if (shareTitleInput && ogPreviewTitle) {
       shareTitleInput.addEventListener('input', () => {
@@ -981,17 +992,16 @@ function renderLiveEditView(container, liveId, showView) {
 
     // ── 카카오 캐시 초기화 버튼 ──
     const kakaoShareUrl = `https://ryzincorp.com/live/${liveId}`;
-    const kakaoCacheBtn = document.getElementById('btn-kakao-cache');
+    const kakaoCacheBtn = getEl('btn-kakao-cache');
     if (kakaoCacheBtn) {
       kakaoCacheBtn.addEventListener('click', () => {
-        // 카카오 공유 링크 미리보기 캐시 초기화 도구
         const cacheUrl = `https://developers.kakao.com/tool/clear/og?url=${encodeURIComponent(kakaoShareUrl)}`;
         window.open(cacheUrl, '_blank');
       });
     }
 
     // ── 링크 테스트 버튼 ──
-    const previewOgBtn = document.getElementById('btn-preview-og');
+    const previewOgBtn = getEl('btn-preview-og');
     if (previewOgBtn) {
       previewOgBtn.addEventListener('click', () => {
         const testUrl = `https://ryzincorp.com/live/${liveId}`;
@@ -999,49 +1009,51 @@ function renderLiveEditView(container, liveId, showView) {
       });
     }
 
-    // +추가 버튼: Supabase에서 현재 시청자수를 조회 후 입력값만큼 더해서 UPDATE
-    document.getElementById('btn-add-viewers').addEventListener('click', async () => {
-      const addVal = parseInt(document.getElementById('cfg-viewers-add').value) || 0;
-      if (addVal === 0) {
-        alert('추가할 시청자 수를 입력해주세요.');
-        return;
-      }
-      const btn = document.getElementById('btn-add-viewers');
-      btn.disabled = true;
-      btn.textContent = '처리중...';
-      try {
-        if (!db) return;
-        // 최신 데이터 조회
-        const { data, error } = await db
-          .from('live_control')
-          .select('viewers')
-          .eq('live_id', liveId)
-          .maybeSingle();
+    // +추가 버튼
+    const btnAddViewers = getEl('btn-add-viewers');
+    if (btnAddViewers) {
+      btnAddViewers.addEventListener('click', async () => {
+        const addViewersInput = getEl('cfg-viewers-add');
+        const addVal = addViewersInput ? (parseInt(addViewersInput.value) || 0) : 0;
+        if (addVal === 0) {
+          alert('추가할 시청자 수를 입력해주세요.');
+          return;
+        }
+        btnAddViewers.disabled = true;
+        btnAddViewers.textContent = '처리중...';
+        try {
+          if (!db) return;
+          const { data, error } = await db
+            .from('live_control')
+            .select('viewers')
+            .eq('live_id', liveId)
+            .maybeSingle();
 
-        if (error) throw error;
-        const currentViewers = data ? (parseInt(data.viewers) || 0) : stats.viewers;
-        const newViewers = currentViewers + addVal;
+          if (error) throw error;
+          const currentViewers = data ? (parseInt(data.viewers) || 0) : stats.viewers;
+          const newViewers = currentViewers + addVal;
 
-        await db
-          .from('live_control')
-          .update({ viewers: newViewers })
-          .eq('live_id', liveId);
+          await db
+            .from('live_control')
+            .update({ viewers: newViewers })
+            .eq('live_id', liveId);
 
-        stats.viewers = newViewers;
-        saveStats();
-        if (typeof window.updateAdminViewersDisplay === 'function') window.updateAdminViewersDisplay();
-        document.getElementById('cfg-viewers-add').value = '';
-        alert(`시청자 수가 ${newViewers.toLocaleString()}명으로 업데이트되었습니다.`);
-      } catch (err) {
-        alert('시청자 수 업데이트 실패: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '+추가';
-      }
-    });
+          stats.viewers = newViewers;
+          saveStats();
+          if (typeof window.updateAdminViewersDisplay === 'function') window.updateAdminViewersDisplay();
+          if (addViewersInput) addViewersInput.value = '';
+          alert(`시청자 수가 ${newViewers.toLocaleString()}명으로 업데이트되었습니다.`);
+        } catch (err) {
+          alert('시청자 수 업데이트 실패: ' + err.message);
+        } finally {
+          btnAddViewers.disabled = false;
+          btnAddViewers.textContent = '+추가';
+        }
+      });
+    }
 
     // ── 통계 초기화 버튼 이벤트 리스너 ──
-    const resetStatsBtn = document.getElementById('btn-reset-stats');
+    const resetStatsBtn = getEl('btn-reset-stats');
     if (resetStatsBtn) {
       resetStatsBtn.addEventListener('click', async () => {
         if (!confirm('현재 라이브의 모든 통계 데이터(실시간 시청자 수, 누적 시청자 수, 하트 수, 상품 클릭 수)를 초기화하시겠습니까?')) {
@@ -1052,7 +1064,6 @@ function renderLiveEditView(container, liveId, showView) {
         resetStatsBtn.textContent = '초기화 중...';
 
         try {
-          // 1. 로컬 데이터 초기화
           stats.viewers = 0;
           stats.hearts = 0;
           stats.cumViewers = 0;
@@ -1066,7 +1077,6 @@ function renderLiveEditView(container, liveId, showView) {
           saveStats();
           saveProducts();
 
-          // 2. Supabase DB 업데이트
           if (db) {
             const { error } = await db
               .from('live_control')
@@ -1082,16 +1092,15 @@ function renderLiveEditView(container, liveId, showView) {
             if (error) throw error;
           }
 
-          // 3. UI 업데이트
           if (typeof window.updateAdminViewersDisplay === 'function') window.updateAdminViewersDisplay();
 
-          const cumViewersInput = document.getElementById('cfg-cumViewers');
+          const cumViewersInput = getEl('cfg-cumViewers');
           if (cumViewersInput) cumViewersInput.value = 0;
 
-          const heartsInput = document.getElementById('cfg-hearts');
+          const heartsInput = getEl('cfg-hearts');
           if (heartsInput) heartsInput.value = 0;
 
-          const totalClicksDisplay = document.getElementById('cfg-total-clicks');
+          const totalClicksDisplay = getEl('cfg-total-clicks');
           if (totalClicksDisplay) totalClicksDisplay.textContent = '0회';
 
           alert('✅ 통계 데이터가 성공적으로 초기화되었습니다.');
@@ -1105,40 +1114,45 @@ function renderLiveEditView(container, liveId, showView) {
       });
     }
 
-    document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
-      // 라이브 시작 전 스트리밍 URL 필수 확인
-      const currentStreamUrl = document.getElementById('cfg-stream').value.trim();
-      if (!config.isLive && !currentStreamUrl) {
-        alert('⚠️ 스트리밍 URL을 먼저 입력해주세요.\n설정을 저장한 후 라이브를 시작할 수 있습니다.');
-        document.getElementById('cfg-stream').focus();
-        document.getElementById('cfg-stream').style.borderColor = '#ef4444';
-        document.getElementById('cfg-stream').style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
-        setTimeout(() => {
-          document.getElementById('cfg-stream').style.borderColor = '';
-          document.getElementById('cfg-stream').style.boxShadow = '';
-        }, 3000);
-        return;
-      }
-      config.isLive = !config.isLive;
-      if (config.isLive) {
-        // 실제 라이브 시작 버튼을 누른 바로 그 시점의 타임스탬프를 DB에 영구 고정 저장
-        config.liveStartTime = new Date().toISOString();
-        const startTextEl = document.getElementById('cfg-liveStartTime');
-        if (startTextEl) {
-          const localISO = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-          startTextEl.value = localISO;
+    const btnToggleLive = getEl('btn-toggle-live');
+    if (btnToggleLive) {
+      btnToggleLive.addEventListener('click', (e) => {
+        const streamInput = getEl('cfg-stream');
+        const currentStreamUrl = streamInput ? streamInput.value.trim() : '';
+        if (!config.isLive && !currentStreamUrl) {
+          alert('⚠️ 스트리밍 URL을 먼저 입력해주세요.\n설정을 저장한 후 라이브를 시작할 수 있습니다.');
+          if (streamInput) {
+            streamInput.focus();
+            streamInput.style.borderColor = '#ef4444';
+            streamInput.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+            setTimeout(() => {
+              streamInput.style.borderColor = '';
+              streamInput.style.boxShadow = '';
+            }, 3000);
+          }
+          return;
         }
-      }
-      e.target.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
-      e.target.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
-      e.target.style.cssText = 'flex:1; justify-content:center; padding:14px; font-size:15px;';
-      saveConfig();
-      syncToSheetDB(liveId, config, stats, products, true);
-    });
+        config.isLive = !config.isLive;
+        if (config.isLive) {
+          config.liveStartTime = new Date().toISOString();
+          const startTextEl = getEl('cfg-liveStartTime');
+          if (startTextEl) {
+            const localISO = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            startTextEl.value = localISO;
+          }
+        }
+        e.target.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
+        e.target.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
+        e.target.style.cssText = 'flex:1; justify-content:center; padding:14px; font-size:15px;';
+        saveConfig();
+        syncToSheetDB(liveId, config, stats, products, true);
+      });
+    }
 
     const uploadImage = async (file, previewId, configKey) => {
       if (!file) return;
-      document.getElementById(previewId).style.opacity = '0.5';
+      const prevEl = getEl(previewId);
+      if (prevEl) prevEl.style.opacity = '0.5';
       try {
         const isLogo = configKey === 'logoUrl';
         const maxWidth = isLogo ? 256 : 1080;
@@ -1148,15 +1162,15 @@ function renderLiveEditView(container, liveId, showView) {
 
         const url = await uploadToImgBB(base64);
         config[configKey] = url;
-        const prevEl = document.getElementById(previewId);
-        prevEl.src = url;
-        prevEl.style.display = 'block';
+        if (prevEl) {
+          prevEl.src = url;
+          prevEl.style.display = 'block';
+        }
 
-        // 공유 이미지 업로드 시 OG 미리보기 카드도 즉시 반영
         if (configKey === 'shareImageUrl') {
-          const ogImg = document.getElementById('og-preview-img');
-          const ogImgPh = document.getElementById('og-preview-img-placeholder');
-          const ogThumb = document.getElementById('og-img-placeholder');
+          const ogImg = getEl('og-preview-img');
+          const ogImgPh = getEl('og-preview-img-placeholder');
+          const ogThumb = getEl('og-img-placeholder');
           if (ogImg) { ogImg.src = url; ogImg.style.display = 'block'; }
           if (ogImgPh) ogImgPh.style.display = 'none';
           if (ogThumb) ogThumb.style.display = 'none';
@@ -1166,17 +1180,17 @@ function renderLiveEditView(container, liveId, showView) {
         console.error('이미지 업로드 오류:', err);
         alert('이미지 업로드 실패: ' + err.message);
       } finally {
-        document.getElementById(previewId).style.opacity = '1';
+        if (prevEl) prevEl.style.opacity = '1';
       }
     };
 
     const uploadLikeImage = async (file) => {
       if (!file) return;
-      const preview = document.getElementById('like-preview');
-      const placeholder = document.getElementById('like-preview-placeholder');
-      const clearBtn = document.getElementById('btn-clear-like-icon');
+      const preview = getEl('like-preview');
+      const placeholder = getEl('like-preview-placeholder');
+      const clearBtn = getEl('btn-clear-like-icon');
       
-      preview.style.opacity = '0.5';
+      if (preview) preview.style.opacity = '0.5';
       try {
         let base64 = '';
         if (file.size < 1.2 * 1024 * 1024) {
@@ -1191,8 +1205,10 @@ function renderLiveEditView(container, liveId, showView) {
 
         const url = await uploadToImgBB(base64);
         config.likeImageUrl = url;
-        preview.src = url;
-        preview.style.display = 'block';
+        if (preview) {
+          preview.src = url;
+          preview.style.display = 'block';
+        }
         if (placeholder) placeholder.style.display = 'none';
         if (clearBtn) clearBtn.style.display = 'block';
         saveConfig();
@@ -1200,30 +1216,35 @@ function renderLiveEditView(container, liveId, showView) {
         console.error('응원 이미지 업로드 오류:', err);
         alert('응원 이미지 업로드 실패: ' + err.message);
       } finally {
-        preview.style.opacity = '1';
+        if (preview) preview.style.opacity = '1';
       }
     };
 
-    document.getElementById('cfg-logoFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'logo-preview', 'logoUrl'));
-    document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
-    document.getElementById('cfg-shareImageFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'share-image-preview', 'shareImageUrl'));
-    document.getElementById('cfg-likeFile').addEventListener('change', (e) => uploadLikeImage(e.target.files[0]));
+    const cfgLogoFile = getEl('cfg-logoFile');
+    if (cfgLogoFile) cfgLogoFile.addEventListener('change', (e) => uploadImage(e.target.files[0], 'logo-preview', 'logoUrl'));
+    const cfgThumbnailFile = getEl('cfg-thumbnailFile');
+    if (cfgThumbnailFile) cfgThumbnailFile.addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
+    const cfgShareImageFile = getEl('cfg-shareImageFile');
+    if (cfgShareImageFile) cfgShareImageFile.addEventListener('change', (e) => uploadImage(e.target.files[0], 'share-image-preview', 'shareImageUrl'));
+    const cfgLikeFile = getEl('cfg-likeFile');
+    if (cfgLikeFile) cfgLikeFile.addEventListener('change', (e) => uploadLikeImage(e.target.files[0]));
 
-    // 응원 이미지 삭제 버튼 바인딩
-    document.getElementById('btn-clear-like-icon').addEventListener('click', () => {
-      config.likeImageUrl = '';
-      const preview = document.getElementById('like-preview');
-      const placeholder = document.getElementById('like-preview-placeholder');
-      const clearBtn = document.getElementById('btn-clear-like-icon');
-      
-      if (preview) {
-        preview.src = '';
-        preview.style.display = 'none';
-      }
-      if (placeholder) placeholder.style.display = 'block';
-      if (clearBtn) clearBtn.style.display = 'none';
-      saveConfig();
-    });
+    const btnClearLikeIcon = getEl('btn-clear-like-icon');
+    if (btnClearLikeIcon) {
+      btnClearLikeIcon.addEventListener('click', () => {
+        config.likeImageUrl = '';
+        const preview = getEl('like-preview');
+        const placeholder = getEl('like-preview-placeholder');
+        
+        if (preview) {
+          preview.src = '';
+          preview.style.display = 'none';
+        }
+        if (placeholder) placeholder.style.display = 'block';
+        btnClearLikeIcon.style.display = 'none';
+        saveConfig();
+      });
+    }
 
     // 라이브관제에서 실시간 통계 정보 패치 후 노출
     if (db) {
