@@ -247,7 +247,6 @@ function renderListView(container, showView) {
           <div style="font-size:13px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${config.title || '방송 제목 미설정'}</div>
           <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
             <span style="font-size:11px; font-weight:600; color:#94a3b8; background:#f1f5f9; padding:2px 8px; border-radius:6px; font-family:monospace;">${live.id}</span>
-            <span style="font-size:11px; font-weight:600; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; padding:2px 8px; border-radius:6px;">상담 <b id="card-lead-count-${live.id}" style="color:#2563eb;">0</b>건</span>
             <a href="${viewerUrl}" target="_blank" style="font-size:11px; color:#3b82f6; text-decoration:none; font-weight:600;">${viewerUrl} ↗</a>
           </div>
         </div>
@@ -259,18 +258,6 @@ function renderListView(container, showView) {
         </div>
       `;
       listContainer.appendChild(card);
-
-      if (db) {
-        db.from('live_leads')
-          .select('*', { count: 'exact', head: true })
-          .eq('live_id', live.id)
-          .then(({ count, error }) => {
-            if (!error && count !== null) {
-              const el = card.querySelector(`#card-lead-count-${live.id}`);
-              if (el) el.textContent = count;
-            }
-          });
-      }
     });
 
     listContainer.querySelectorAll('.btn-edit').forEach(btn => {
@@ -569,33 +556,6 @@ function renderLiveEditView(container, liveId, showView) {
     window[`live_loaded_${liveId}`] = true;
   }
 
-  // ── 상담 DB 건수 동기화 및 실시간 감지 ──
-  const syncLeadCount = async () => {
-    if (!db) return;
-    try {
-      const { count, error } = await db.from('live_leads')
-        .select('*', { count: 'exact', head: true })
-        .eq('live_id', liveId);
-      if (!error && count !== null) {
-        const tabCountBadge = layout.querySelector('#leads-tab-count') || document.getElementById('leads-tab-count');
-        if (tabCountBadge) {
-          tabCountBadge.textContent = `${count}`;
-          tabCountBadge.style.background = count > 0 ? '#3b82f6' : '#e2e8f0';
-          tabCountBadge.style.color = count > 0 ? '#ffffff' : '#475569';
-        }
-      }
-    } catch (e) {}
-  };
-  syncLeadCount();
-
-  if (db) {
-    db.channel(`leads-sync-${liveId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_leads', filter: `live_id=eq.${liveId}` }, () => {
-        syncLeadCount();
-      })
-      .subscribe();
-  }
-
   const saveConfig = () => {
     saveLiveConfig(liveId, config);
     syncToSheetDB(liveId, config, stats, products);
@@ -626,10 +586,6 @@ function renderLiveEditView(container, liveId, showView) {
     ? '<span style="font-size:10px; font-weight:800; color:#ef4444; background:#fee2e2; border:1px solid #fecaca; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center; gap:4px;"><span style="width:5px; height:5px; background:#ef4444; border-radius:50%; display:inline-block;"></span>라이브 중</span>'
     : '<span style="font-size:10px; font-weight:800; color:#64748b; background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center;">송출 대기</span>';
 
-  const onAirTimerHtml = config.isLive
-    ? `<div id="onair-timer-wrapper" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px; border:1px solid #fecaca; white-space:nowrap;"> <div style="width:6px; height:6px; background:#ef4444; border-radius:50%; box-shadow:0 0 0 2px #fee2e2;"></div> 방송 중 <span id="onair-timer-text" style="font-family:monospace; margin-left:2px; letter-spacing:0.02em;">00:00:00</span> </div>`
-    : '';
-
   topBar.innerHTML = `
     <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:4px;"><span style="font-size:14px; line-height:1;">←</span> 목록</button>
     <div style="display:flex; align-items:center; gap:10px; min-width: 200px; max-width: 580px; flex-shrink:0;">
@@ -641,7 +597,7 @@ function renderLiveEditView(container, liveId, showView) {
       <button class="tab-btn" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
-      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB <span id="leads-tab-count" style="background:#e2e8f0; color:#475569; font-size:11px; padding:1px 6px; border-radius:10px; margin-left:2px; font-weight:800;">0</span></button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
@@ -2319,13 +2275,6 @@ function renderLiveEditView(container, liveId, showView) {
         currentLeads = list || [];
         const countSpan = document.getElementById('leads-total-count');
         if (countSpan) countSpan.textContent = currentLeads.length;
-
-        const tabCountBadge = layout.querySelector('#leads-tab-count') || document.getElementById('leads-tab-count');
-        if (tabCountBadge) {
-          tabCountBadge.textContent = `${currentLeads.length}`;
-          tabCountBadge.style.background = currentLeads.length > 0 ? '#3b82f6' : '#e2e8f0';
-          tabCountBadge.style.color = currentLeads.length > 0 ? '#ffffff' : '#475569';
-        }
 
         const container = document.getElementById('leads-list-container');
         const btnCsv = document.getElementById('btn-download-csv-leads');
