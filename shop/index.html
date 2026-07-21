@@ -170,6 +170,151 @@
     .tab-view { display: none; }
     .tab-view.active { display: block; }
 
+    /* ─────────────────────────────────────────────────────────
+       MY PAGE
+    ───────────────────────────────────────────────────────── */
+    .my-profile-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 18px;
+      border-bottom: 6px solid var(--bg);
+    }
+
+    .my-avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .my-avatar svg {
+      width: 26px; height: 26px;
+      stroke: #9ca3af;
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    .my-profile-info { flex: 1; min-width: 0; }
+
+    .my-username {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .my-usersub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.35;
+    }
+
+    .my-edit-btn {
+      flex-shrink: 0;
+      background: var(--text-main);
+      color: #fff;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    /* 빠른 현황 row */
+    .my-quick-row {
+      display: flex;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 6px solid var(--bg);
+    }
+
+    .my-quick-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .my-quick-num {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+
+    .my-quick-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .my-quick-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+    }
+
+    /* 메뉴 그룹 */
+    .my-menu-group {
+      border-bottom: 6px solid var(--bg);
+      padding: 8px 0;
+    }
+
+    .my-menu-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 8px 18px 4px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .my-menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 18px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .my-menu-item:active { background: #f9fafb; }
+
+    .my-menu-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .my-menu-left svg {
+      width: 18px; height: 18px;
+      stroke: #6b7280;
+      stroke-width: 1.8;
+      fill: none;
+      flex-shrink: 0;
+    }
+
+    .my-menu-arrow {
+      font-size: 16px;
+      color: #d1d5db;
+      font-weight: 400;
+    }
+
+    .my-logout .my-menu-left {
+      color: #ef4444;
+    }
+
+    .my-logout .my-menu-left svg {
+      stroke: #ef4444;
+    }
+
     /* 공통 섹션 */
     .section {
       padding: 22px 0 20px;
@@ -979,6 +1124,105 @@
       </section>
     </div>
 
+    <!-- ── 탭: 마이 ── -->
+    <div class="tab-view" id="view-my">
+      <!-- 프로필 카드 -->
+      <div class="my-profile-card">
+        <div class="my-avatar">
+          <svg viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </div>
+        <div class="my-profile-info">
+          <div class="my-username">로그인이 필요합니다</div>
+          <div class="my-usersub">라이진 회원으로 더 많은 혜택을 누려보세요</div>
+        </div>
+        <button class="my-edit-btn" onclick="showToast('로그인 페이지로 이동합니다.')">로그인</button>
+      </div>
+
+      <!-- 주문/배송 빠른 현황 -->
+      <div class="my-quick-row">
+        <div class="my-quick-item" onclick="showToast('주문내역 페이지로 이동합니다.')">
+          <span class="my-quick-num">0</span>
+          <span class="my-quick-label">주문</span>
+        </div>
+        <div class="my-quick-divider"></div>
+        <div class="my-quick-item" onclick="showToast('배송조회 페이지로 이동합니다.')">
+          <span class="my-quick-num">0</span>
+          <span class="my-quick-label">배송 중</span>
+        </div>
+        <div class="my-quick-divider"></div>
+        <div class="my-quick-item" onclick="showToast('찜 목록 페이지로 이동합니다.')">
+          <span class="my-quick-num">0</span>
+          <span class="my-quick-label">찜</span>
+        </div>
+        <div class="my-quick-divider"></div>
+        <div class="my-quick-item" onclick="showToast('체험단 신청내역 페이지로 이동합니다.')">
+          <span class="my-quick-num">0</span>
+          <span class="my-quick-label">체험단</span>
+        </div>
+      </div>
+
+      <!-- 메뉴 리스트 -->
+      <div class="my-menu-group">
+        <div class="my-menu-section-label">쇼핑</div>
+        <div class="my-menu-item" onclick="showToast('주문내역 페이지로 이동합니다.')">
+          <div class="my-menu-left">
+            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            주문내역
+          </div>
+          <span class="my-menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="showToast('찜 목록 페이지로 이동합니다.')">
+          <div class="my-menu-left">
+            <svg viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            찜
+          </div>
+          <span class="my-menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="showToast('체험단 신청내역 페이지로 이동합니다.')">
+          <div class="my-menu-left">
+            <svg viewBox="0 0 24 24"><path d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+            체험단 신청내역
+          </div>
+          <span class="my-menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="showToast('배송조회 페이지로 이동합니다.')">
+          <div class="my-menu-left">
+            <svg viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l4 0M13 16l2-4h4l2 4H13z"/></svg>
+            배송조회
+          </div>
+          <span class="my-menu-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="my-menu-group">
+        <div class="my-menu-section-label">고객지원</div>
+        <div class="my-menu-item" onclick="showToast('공지사항 페이지로 이동합니다.')">
+          <div class="my-menu-left">
+            <svg viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+            공지사항
+          </div>
+          <span class="my-menu-arrow">›</span>
+        </div>
+        <div class="my-menu-item" onclick="showToast('고객센터로 연결됩니다.')">
+          <div class="my-menu-left">
+            <svg viewBox="0 0 24 24"><path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            고객센터
+          </div>
+          <span class="my-menu-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="my-menu-group">
+        <div class="my-menu-item my-logout" onclick="showToast('로그아웃 되었습니다.')">
+          <div class="my-menu-left">
+            <svg viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            로그아웃
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </main>
 
   <!-- ───── 바텀 네비 ───── -->
@@ -999,10 +1243,10 @@
       <svg viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       공동구매
     </div>
-    <a href="/admin" class="bnav-item">
+    <div class="bnav-item" onclick="switchTab('my')">
       <svg viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
       마이
-    </a>
+    </div>
   </nav>
 
 </div>
@@ -1209,7 +1453,7 @@
     document.getElementById('view-' + name)?.classList.add('active');
 
     document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
-    const navMap = { home: 0, live: 1, deal: 2, group: 3 };
+    const navMap = { home: 0, live: 1, deal: 2, group: 3, my: 4 };
     if (navMap[name] !== undefined) {
       document.querySelectorAll('.bnav-item')[navMap[name]]?.classList.add('active');
     }
