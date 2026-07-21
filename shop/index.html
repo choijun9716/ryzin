@@ -171,6 +171,228 @@
     .tab-view.active { display: block; }
 
     /* ─────────────────────────────────────────────────────────
+       HOME: 카테고리 아이콘 그리드
+    ───────────────────────────────────────────────────────── */
+    .home-cat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px 0;
+      padding: 16px 14px 14px;
+      border-bottom: 6px solid var(--bg);
+    }
+
+    .home-cat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .home-cat-item span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-sub);
+      letter-spacing: -0.02em;
+    }
+
+    .home-cat-icon {
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-cat-icon svg {
+      width: 22px; height: 22px;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    /* HOME: 오늘의딜 가로 스크롤 */
+    .home-deal-scroll {
+      display: flex;
+      gap: 10px;
+      padding: 0 18px 2px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .home-deal-scroll::-webkit-scrollbar { display: none; }
+
+    .home-deal-card {
+      flex: 0 0 140px;
+      scroll-snap-align: start;
+      cursor: pointer;
+    }
+
+    .home-deal-img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      background: #f3f4f6;
+    }
+
+    .home-deal-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .hd-discount {
+      position: absolute;
+      top: 7px; left: 7px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .hd-info { padding: 6px 2px 0; }
+
+    .hd-brand {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .hd-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin: 2px 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+    }
+
+    .hd-price {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--text-main);
+    }
+
+    .hd-origin {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    /* HOME: 매거진 가로 스크롤 */
+    .magazine-scroll {
+      display: flex;
+      gap: 12px;
+      padding: 0 18px 2px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .magazine-scroll::-webkit-scrollbar { display: none; }
+
+    .mag-card {
+      flex: 0 0 260px;
+      scroll-snap-align: start;
+      cursor: pointer;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #111827;
+      position: relative;
+    }
+
+    .mag-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      opacity: 0.7;
+    }
+
+    .mag-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 14px;
+    }
+
+    .mag-tag {
+      align-self: flex-start;
+      font-size: 9px;
+      font-weight: 800;
+      color: #fff;
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .mag-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+
+    .mag-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    /* HOME: 최저가보장제 카드 */
+    .lowest-price-card {
+      margin: 0 18px;
+      padding: 20px;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .lp-left { display: flex; flex-direction: column; gap: 4px; }
+
+    .lp-badge {
+      align-self: flex-start;
+      font-size: 9px;
+      font-weight: 900;
+      color: #2563eb;
+      background: rgba(37,99,235,0.12);
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.06em;
+    }
+
+    .lp-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #1e3a5f;
+    }
+
+    .lp-desc {
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .lp-right {
+      flex-shrink: 0;
+    }
+
+
+    /* ─────────────────────────────────────────────────────────
        MY PAGE
     ───────────────────────────────────────────────────────── */
     .my-profile-card {
@@ -1030,28 +1252,135 @@
 
     <!-- ── 탭: 홈 ── -->
     <div class="tab-view" id="view-home">
-      <!-- 배너 -->
+
+      <!-- 메인 배너 -->
       <div class="home-banner">
         <div class="banner-card" onclick="showToast('라이진 멤버십 혜택 페이지로 이동합니다.')">
           <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85" alt="배너">
           <div class="banner-overlay">
-            <span class="banner-subtitle">RYZIN LIVE</span>
+            <span class="banner-subtitle">RYZIN LIVE COMMERCE</span>
             <span class="banner-title">프리미엄<br>뷰티 특가</span>
             <span class="banner-cta">지금 확인하기</span>
           </div>
         </div>
       </div>
 
-      <!-- 실시간 베스트 랭킹 -->
+      <!-- 카테고리 아이콘 그리드 -->
+      <div class="home-cat-grid">
+        <div class="home-cat-item" onclick="showToast('건기식 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#fef3c7;">
+            <svg viewBox="0 0 24 24" style="stroke:#d97706;"><path d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+          </div>
+          <span>건기식</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('뷰티 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#fce7f3;">
+            <svg viewBox="0 0 24 24" style="stroke:#db2777;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          </div>
+          <span>뷰티</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('식품 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#dcfce7;">
+            <svg viewBox="0 0 24 24" style="stroke:#16a34a;"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          </div>
+          <span>식품</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('생활 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#dbeafe;">
+            <svg viewBox="0 0 24 24" style="stroke:#2563eb;"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          </div>
+          <span>생활</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('주방 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#e0e7ff;">
+            <svg viewBox="0 0 24 24" style="stroke:#4f46e5;"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          </div>
+          <span>주방</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('헤어 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#fae8ff;">
+            <svg viewBox="0 0 24 24" style="stroke:#a21caf;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          </div>
+          <span>헤어</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('바디 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#ccfbf1;">
+            <svg viewBox="0 0 24 24" style="stroke:#0d9488;"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+          </div>
+          <span>바디</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('패션 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#fee2e2;">
+            <svg viewBox="0 0 24 24" style="stroke:#dc2626;"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          </div>
+          <span>패션</span>
+        </div>
+        <div class="home-cat-item" onclick="showToast('디지털가전 카테고리입니다.')">
+          <div class="home-cat-icon" style="background:#f3f4f6;">
+            <svg viewBox="0 0 24 24" style="stroke:#374151;"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <span>디지털가전</span>
+        </div>
+      </div>
+
+      <!-- 베스트 상품 -->
       <section class="section">
         <div class="sec-header">
-          <span class="sec-title">실시간 베스트 랭킹</span>
-          <span class="sec-sub">무료배송 기준</span>
+          <span class="sec-title">BEST 실시간 랭킹</span>
+          <span class="sec-sub" style="cursor:pointer;" onclick="showToast('전체 랭킹 페이지로 이동합니다.')">전체보기 ›</span>
         </div>
         <div class="product-grid" id="home-ranking">
           <!-- JS로 렌더 -->
         </div>
       </section>
+
+      <!-- 예정 라이브 -->
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">예정 라이브</span>
+          <span class="sec-sub" style="cursor:pointer;" onclick="switchTab('live')">전체보기 ›</span>
+        </div>
+        <div class="live-scroll" id="home-upcoming-lives">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+
+      <!-- 오늘의딜 -->
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">오늘의딜</span>
+          <span class="sec-sub" style="color:#ef4444;font-weight:700;cursor:pointer;" onclick="switchTab('deal')">전체보기 ›</span>
+        </div>
+        <div class="home-deal-scroll" id="home-deals">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+
+      <!-- 매거진 -->
+      <section class="section">
+        <div class="sec-header">
+          <span class="sec-title">매거진</span>
+          <span class="sec-sub" style="cursor:pointer;">전체보기 ›</span>
+        </div>
+        <div class="magazine-scroll" id="magazine-list">
+          <!-- JS로 렌더 -->
+        </div>
+      </section>
+
+      <!-- 최저가보장제 -->
+      <section class="section" style="border-bottom:none;">
+        <div class="lowest-price-card" onclick="showToast('최저가보장제 상세 안내 페이지로 이동합니다.')">
+          <div class="lp-left">
+            <span class="lp-badge">GUARANTEE</span>
+            <span class="lp-title">최저가 보장제</span>
+            <span class="lp-desc">타 플랫폼 대비 비싸면<br>차액의 110% 적립금 지급</span>
+          </div>
+          <div class="lp-right">
+            <svg viewBox="0 0 24 24" style="width:44px;height:44px;stroke:#2563eb;stroke-width:1.5;fill:none;"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+        </div>
+      </section>
+
     </div>
 
     <!-- ── 탭: 라이브 ── -->
@@ -1634,6 +1963,82 @@
     `).join('');
   }
 
+  const MAGAZINES = [
+    {
+      tag: 'BEAUTY TIPS',
+      title: '여름철 자외선 차단의 모든 것',
+      sub: '피부과 전문의가 알려주는 선케어 루틴',
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85'
+    },
+    {
+      tag: 'WELLNESS',
+      title: '멀티비타민, 어떻게 고를까?',
+      sub: '연령별 맞춤 건기식 가이드',
+      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=600&q=85'
+    },
+    {
+      tag: 'TREND',
+      title: '2025 여름 뷰티 트렌드 총정리',
+      sub: '글로우 스킨부터 선 세럼까지',
+      img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=85'
+    },
+    {
+      tag: 'HOW TO',
+      title: '라이브 방송으로 똑똑하게 쇼핑하기',
+      sub: '라이브 커머스 초보자 완벽 가이드',
+      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=600&q=85'
+    }
+  ];
+
+  function renderHomeUpcomingLives() {
+    const upcoming = LIVES.filter(l => !l.isLive);
+    const el = document.getElementById('home-upcoming-lives');
+    el.innerHTML = upcoming.map(item => `
+      <div class="live-card" onclick="openLive('${item.id}')">
+        <img src="${item.img}" alt="${item.title}">
+        <div class="live-card-overlay">
+          <div class="live-status-badge badge-upcoming">${item.time}</div>
+          <div class="live-card-body">
+            <div class="live-card-title">${item.title}</div>
+            <button class="live-card-btn" onclick="event.stopPropagation();notifyMe(this,'${item.title}')">알림 신청</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderHomeDeals() {
+    const el = document.getElementById('home-deals');
+    el.innerHTML = DEALS.map(p => `
+      <div class="home-deal-card" onclick="showToast('${p.brand} 상품 페이지로 이동합니다.')">
+        <div class="home-deal-img">
+          <img src="${p.img}" alt="${p.name}">
+          <span class="hd-discount">${p.discount}</span>
+        </div>
+        <div class="hd-info">
+          <div class="hd-brand">${p.brand}</div>
+          <div class="hd-name">${p.name}</div>
+          <div class="hd-price">${p.price}</div>
+          <div class="hd-origin">${p.origin}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderMagazine() {
+    const el = document.getElementById('magazine-list');
+    el.innerHTML = MAGAZINES.map(m => `
+      <div class="mag-card" onclick="showToast('매거진 상세 페이지로 이동합니다.')">
+        <img src="${m.img}" alt="${m.title}">
+        <div class="mag-overlay">
+          <span class="mag-tag">${m.tag}</span>
+          <span class="mag-title">${m.title}</span>
+          <span class="mag-sub">${m.sub}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
   /* ──────────────────────────────────────────
      초기화
   ────────────────────────────────────────── */
@@ -1643,6 +2048,9 @@
     renderDeals();
     renderGroupBuys();
     renderTrials();
+    renderHomeUpcomingLives();
+    renderHomeDeals();
+    renderMagazine();
 
     let livesToShow = [...LIVES];
 
