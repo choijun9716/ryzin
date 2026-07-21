@@ -22,7 +22,7 @@ const saveLiveStats = (liveId, data) => localStorage.setItem(`ryzin_stats_${live
 const getLiveProducts = (liveId) => JSON.parse(localStorage.getItem(`ryzin_products_${liveId}`) || '[]');
 const saveLiveProductsLocal = (liveId, data) => localStorage.setItem(`ryzin_products_${liveId}`, JSON.stringify(data));
 
-const getBotConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_bot_${liveId}`) || JSON.stringify({ list: '', interval: 10 }));
+const getBotConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_bot_${liveId}`) || JSON.stringify({ list: '', interval: 10, autoReplyRules: [], autoReplyActive: true }));
 const saveBotConfig = (liveId, data) => localStorage.setItem(`ryzin_bot_${liveId}`, JSON.stringify(data));
 
 function nextLiveId() {
@@ -1320,6 +1320,31 @@ function renderLiveEditView(container, liveId, showView) {
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
         </div>
+        
+        <div class="section-card" style="margin-top:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9;">
+            <h3 style="margin:0; border:none; padding:0;">키워드 자동응답 봇</h3>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; font-weight:700;">
+              <input type="checkbox" id="auto-reply-active" ${botCfg.autoReplyActive ? 'checked' : ''} style="width:16px; height:16px; accent-color:#3b82f6;"> 자동응답 활성화
+            </label>
+          </div>
+          <p style="font-size:12px; color:#64748b; margin:0 0 16px 0; line-height:1.5;">시청자가 특정 키워드를 입력하면 '자동응답봇'이 설정된 답변을 실시간으로 즉시 발송합니다.</p>
+          
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+              <input type="text" id="ar-title" class="modern-input" placeholder="질문 (예: 얼마예요?)" style="flex:1; font-size:13px;">
+              <input type="text" id="ar-keywords" class="modern-input" placeholder="감지 키워드 (쉼표 구분, 예: 가격,얼마,비용)" style="flex:2; font-size:13px;">
+            </div>
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="ar-answer" class="modern-input" placeholder="답변 내용 (예: 오늘 특가 39,900원입니다.)" style="flex:1; font-size:13px;">
+              <button id="btn-add-ar" class="action-btn btn-primary-solid" style="white-space:nowrap;">추가하기</button>
+            </div>
+          </div>
+
+          <div id="ar-list-container" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- 자동응답 규칙 목록 렌더링 -->
+          </div>
+        </div>
       </div>
 
       <!-- 이벤트 관리 뷰 -->
@@ -1630,6 +1655,69 @@ function renderLiveEditView(container, liveId, showView) {
       }
     });
 
+    // ── 자동응답 봇 로직 ──
+    const arActiveCheckbox = document.getElementById('auto-reply-active');
+    const btnAddAr = document.getElementById('btn-add-ar');
+    const arTitleInput = document.getElementById('ar-title');
+    const arKeywordsInput = document.getElementById('ar-keywords');
+    const arAnswerInput = document.getElementById('ar-answer');
+    const arListContainer = document.getElementById('ar-list-container');
+
+    const renderArRules = () => {
+      if (!arListContainer) return;
+      if (!botCfg.autoReplyRules || botCfg.autoReplyRules.length === 0) {
+        arListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:13px; font-weight:500;">등록된 자동응답 규칙이 없습니다.</div>';
+        return;
+      }
+      arListContainer.innerHTML = botCfg.autoReplyRules.map((r, i) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:12px 14px; border:1px solid #cbd5e1; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+          <div style="flex:1; overflow:hidden;">
+            <div style="font-weight:700; font-size:14px; color:#0f172a; margin-bottom:6px;">${r.title || '규칙 ' + (i+1)}</div>
+            <div style="font-size:12px; color:#64748b; margin-bottom:4px; line-height:1.4;"><span style="font-weight:700; color:#3b82f6;">키워드:</span> ${r.keywords}</div>
+            <div style="font-size:12px; color:#475569; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.4;"><span style="font-weight:700; color:#10b981;">답변:</span> ${r.answer}</div>
+          </div>
+          <button class="btn-del-ar action-btn" data-index="${i}" style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:6px 12px; font-size:12px; margin-left:12px; flex-shrink:0;">삭제</button>
+        </div>
+      `).join('');
+
+      arListContainer.querySelectorAll('.btn-del-ar').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.index);
+          botCfg.autoReplyRules.splice(idx, 1);
+          saveBotCfg();
+          renderArRules();
+        });
+      });
+    };
+
+    if (arActiveCheckbox) {
+      arActiveCheckbox.addEventListener('change', (e) => {
+        botCfg.autoReplyActive = e.target.checked;
+        saveBotCfg();
+      });
+    }
+
+    if (btnAddAr) {
+      btnAddAr.addEventListener('click', () => {
+        const title = arTitleInput.value.trim();
+        const keywords = arKeywordsInput.value.trim();
+        const answer = arAnswerInput.value.trim();
+        if (!keywords || !answer) {
+          alert('키워드와 답변 내용을 모두 입력해주세요.');
+          return;
+        }
+        if (!botCfg.autoReplyRules) botCfg.autoReplyRules = [];
+        botCfg.autoReplyRules.push({ title, keywords, answer });
+        saveBotCfg();
+        
+        arTitleInput.value = '';
+        arKeywordsInput.value = '';
+        arAnswerInput.value = '';
+        renderArRules();
+      });
+    }
+    renderArRules();
+
     // === 어드민 채팅 실시간 감지 (이력 로드 및 Realtime 구독) ===
     let adminLastChatTime = 0;
     let adminChatLoaded = false;
@@ -1753,6 +1841,34 @@ function renderLiveEditView(container, liveId, showView) {
           if (c && parseInt(c.created_at) > adminLastChatTime) {
             addAdminChatItem(c.nickname || '?', c.content || '', false);
             adminLastChatTime = parseInt(c.created_at);
+            
+            // ── 키워드 자동응답 봇 로직 ──
+            if (botCfg.autoReplyActive && botCfg.autoReplyRules && botCfg.autoReplyRules.length > 0) {
+              const sender = c.nickname || '';
+              // 관리자나 자동응답봇이 보낸 채팅에는 반응하지 않음 (무한루프 방지)
+              if (!sender.includes('|') && sender !== '관리자' && sender !== '자동응답봇') {
+                const msg = (c.content || '').toLowerCase();
+                for (const rule of botCfg.autoReplyRules) {
+                  const keywords = rule.keywords.split(',').map(k => k.trim().toLowerCase()).filter(k => k);
+                  if (keywords.some(k => msg.includes(k))) {
+                    setTimeout(async () => {
+                      try {
+                        if (!db) return;
+                        await db.from('live_chats').insert([{
+                          live_id: liveId,
+                          created_at: Date.now(),
+                          nickname: '자동응답봇',
+                          content: rule.answer
+                        }]);
+                      } catch (e) {
+                        console.warn('Auto-reply failed', e);
+                      }
+                    }, 600); // 0.6초 딜레이로 약간 자연스럽게 전송
+                    break; // 여러 규칙 중복 매칭 방지 (첫 매칭 규칙만 실행)
+                  }
+                }
+              }
+            }
           }
         })
         .subscribe();
