@@ -172,13 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
       cumViewers: parseInt(row.cum_viewers) || 0
     };
 
-    localStorage.setItem('ryzin_live_config', JSON.stringify(config));
-    localStorage.setItem('ryzin_live_stats', JSON.stringify(stats));
+    localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(config));
+    localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(stats));
 
     if (row.products) {
       try {
         const productsList = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
-        localStorage.setItem('ryzin_live_products', JSON.stringify(productsList));
+        localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(productsList));
         loadLiveProducts();
       } catch (e) {}
     }
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadLiveConfig() {
     try {
-      const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
+      const c = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`));
       if (c) {
         const overlay = document.getElementById('thumbnail-overlay');
 
@@ -431,8 +431,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadLiveStats() {
     try {
-      const c = JSON.parse(localStorage.getItem('ryzin_live_config')) || {};
-      const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
+      const c = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`)) || {};
+      const s = JSON.parse(localStorage.getItem(`ryzin_live_stats_${LIVE_ID}`));
       
       const viewCountEl = document.getElementById('view-count');
       if (!viewCountEl) return;
@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadLiveProducts() {
     try {
-      const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
+      const p = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
       if (p && Array.isArray(p)) {
         const modalProductsList = document.getElementById('modal-products-list');
         modalProductsList.innerHTML = '';
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
-            const currentConfig = JSON.parse(localStorage.getItem('ryzin_live_config') || '{}');
+            const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
             if (!currentConfig.isLive) {
               e.preventDefault();
               alert('라이브 방송 중에만 구매 가능합니다.');
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const targetProd = remoteProducts.find(p => p.name === item.name);
                 if (targetProd) {
                   targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
-                  localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
+                  localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(remoteProducts));
                   await db
                     .from('live_control')
                     .update({ 
@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
               `;
               
               card.addEventListener('click', async (e) => {
-                const currentConfig = JSON.parse(localStorage.getItem('ryzin_live_config') || '{}');
+                const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
                 if (!currentConfig.isLive) {
                   e.preventDefault();
                   alert('라이브 방송 중에만 구매 가능합니다.');
@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const targetProd = remoteProducts.find(p => p.name === item.name);
                     if (targetProd) {
                       targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
-                      localStorage.setItem('ryzin_live_products', JSON.stringify(remoteProducts));
+                      localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(remoteProducts));
                       await db
                         .from('live_control')
                         .update({ 
@@ -704,9 +704,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // 어드민 iframe에서 postMessage로 실시간 데이터 쏘는 것 수신
   window.addEventListener('message', (e) => {
     if (e.data && e.data.type === 'sync_preview') {
-      if (e.data.config) localStorage.setItem('ryzin_live_config', JSON.stringify(e.data.config));
-      if (e.data.stats) localStorage.setItem('ryzin_live_stats', JSON.stringify(e.data.stats));
-      if (e.data.products) localStorage.setItem('ryzin_live_products', JSON.stringify(e.data.products));
+      if (e.data.config) localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(e.data.config));
+      if (e.data.stats) localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(e.data.stats));
+      if (e.data.products) localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(e.data.products));
       loadLiveConfig();
       loadLiveStats();
       loadLiveProducts();
@@ -714,9 +714,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('storage', (e) => {
-    if (e.key === 'ryzin_live_config') loadLiveConfig();
-    if (e.key === 'ryzin_live_stats') loadLiveStats();
-    if (e.key === 'ryzin_live_products') loadLiveProducts();
+    if (e.key === `ryzin_live_config_${LIVE_ID}`) loadLiveConfig();
+    if (e.key === `ryzin_live_stats_${LIVE_ID}`) loadLiveStats();
+    if (e.key === `ryzin_live_products_${LIVE_ID}`) loadLiveProducts();
     if (e.key === 'ryzin_admin_chat_trigger') {
       try {
         const msg = JSON.parse(e.newValue);
@@ -804,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       if (productModal && productModal.classList.contains('hidden')) {
         try {
-          const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
+          const p = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
           const now = Date.now();
           const activeProducts = (p && Array.isArray(p)) ? p.filter(item => {
             if (item.dealEndTime && item.dealEndTime > 0 && now >= item.dealEndTime) return false;
@@ -1030,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let pendingLikeCount = parseInt(localStorage.getItem(`ryzin_pending_likes_${LIVE_ID}`)) || 0;
 
   try {
-    const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
+    const s = JSON.parse(localStorage.getItem(`ryzin_live_stats_${LIVE_ID}`));
     if (s && s.hearts !== undefined) {
       likeCount = parseInt(s.hearts) || 0;
     }
@@ -1113,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // === [NEW] 랜덤 믹스 엔진: 커스텀 이미지가 등록되어 있으면 85% 확률로 섞어서 띄움 ===
       let likeImgUrl = '';
       try {
-        const c = JSON.parse(localStorage.getItem('ryzin_live_config'));
+        const c = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`));
         if (c && c.likeImageUrl) likeImgUrl = c.likeImageUrl;
       } catch (e) {}
 
@@ -1262,7 +1262,7 @@ document.head.appendChild(style);
 setInterval(() => {
   // 1. 깜짝딜 타이머 로직
   try {
-    const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
+    const p = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
     const timerEl = document.getElementById('surprise-deal-timer');
     const textEl = document.getElementById('surprise-deal-text');
     if (p && Array.isArray(p) && timerEl && textEl) {
@@ -1290,8 +1290,8 @@ setInterval(() => {
 
   // 3. [NEW] 좋아요 수 달성 시 깜짝딜 자동 오픈 감시 로직
   try {
-    const p = JSON.parse(localStorage.getItem('ryzin_live_products'));
-    const s = JSON.parse(localStorage.getItem('ryzin_live_stats'));
+    const p = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
+    const s = JSON.parse(localStorage.getItem(`ryzin_live_stats_${LIVE_ID}`));
     if (p && Array.isArray(p) && s && s.hearts !== undefined && db && !window.__triggeringSurpriseDeal) {
       const currentHearts = parseInt(s.hearts) || 0;
       const targetProduct = p.find(item => 

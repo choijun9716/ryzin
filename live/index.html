@@ -30,7 +30,8 @@
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const isAdminPreview = urlParams.get('admin') === '1';
-      const cached = JSON.parse(localStorage.getItem('ryzin_live_config') || '{}');
+      const liveId = window.INJECTED_LIVE_ID || urlParams.get('id') || 'live01';
+      const cached = JSON.parse(localStorage.getItem(`ryzin_live_config_${liveId}`) || '{}');
       
       // 어드민 미리보기이거나 스플래시 비활성화 상태면 즉시 가림
       if (isAdminPreview || cached.showSplash === false) {
