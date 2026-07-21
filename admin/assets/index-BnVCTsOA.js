@@ -554,10 +554,10 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
       <!-- 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
-      <div class="section-card" style="margin-top: 24px; border: 1.5px solid #fab005; background: #fffdf5;">
-        <h3 style="margin:0 0 8px 0; border:none; padding:0; color:#d9480f; display:flex; align-items:center; gap:6px;">
+      <div class="section-card" style="margin-top: 24px;">
+        <h3 style="margin:0 0 8px 0; border:none; padding:0; display:flex; align-items:center; gap:6px;">
           <span>당첨 알림 배너 제어 (소통왕/구매인증)</span>
-          ${o.winner_timestamp&&Number(o.winner_timestamp)>Date.now()?`<span style="font-size:11px; font-weight:700; background:#fab005; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>`:``}
+          ${o.winner_timestamp&&Number(o.winner_timestamp)>Date.now()?`<span style="font-size:11px; font-weight:700; background:#3b82f6; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>`:``}
         </h3>
         <p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.4;">
           당첨 종류(유형)를 선택하고 닉네임을 적은 뒤 노출 시간(분)을 입력하고 시작을 누르면 배너가 활성화됩니다.
@@ -567,24 +567,24 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <div style="display:flex; gap:10px; margin-bottom:14px; align-items:center;">
           <span style="font-size:13px; font-weight:700; color:#495057;">당첨 유형:</span>
           <div id="winner-type-segmented" style="display:inline-flex; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:10px; padding:3px; overflow:hidden; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
-            <button type="button" class="type-segment-btn ${!o.winner_name||!o.winner_name.startsWith(`구매인증`)?`active`:``}" data-type="소통왕" style="padding:6px 16px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; outline:none; transition:all 0.15s; background:${!o.winner_name||!o.winner_name.startsWith(`구매인증`)?`#fab005`:`transparent`}; color:${!o.winner_name||!o.winner_name.startsWith(`구매인증`)?`#fff`:`#64748b`};">🏆 소통왕</button>
-            <button type="button" class="type-segment-btn ${o.winner_name&&o.winner_name.startsWith(`구매인증`)?`active`:``}" data-type="구매인증" style="padding:6px 16px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; outline:none; transition:all 0.15s; background:${o.winner_name&&o.winner_name.startsWith(`구매인증`)?`#fab005`:`transparent`}; color:${o.winner_name&&o.winner_name.startsWith(`구매인증`)?`#fff`:`#64748b`};">🎁 구매인증</button>
+            <button type="button" class="type-segment-btn ${!o.winner_name||!o.winner_name.startsWith(`구매인증`)?`active`:``}" data-type="소통왕" style="padding:6px 16px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; outline:none; transition:all 0.15s; background:${!o.winner_name||!o.winner_name.startsWith(`구매인증`)?`#3b82f6`:`transparent`}; color:${!o.winner_name||!o.winner_name.startsWith(`구매인증`)?`#fff`:`#64748b`};">소통왕</button>
+            <button type="button" class="type-segment-btn ${o.winner_name&&o.winner_name.startsWith(`구매인증`)?`active`:``}" data-type="구매인증" style="padding:6px 16px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; outline:none; transition:all 0.15s; background:${o.winner_name&&o.winner_name.startsWith(`구매인증`)?`#3b82f6`:`transparent`}; color:${o.winner_name&&o.winner_name.startsWith(`구매인증`)?`#fff`:`#64748b`};">구매인증</button>
           </div>
         </div>
 
         <div style="display:flex; gap:8px; align-items:center;">
           <input type="text" class="modern-input" style="flex:2; padding:8px 12px; font-size:13px;" id="winner-announce-text" placeholder="당첨자 닉네임 입력 (예: 라이진)" value="${o.winner_name&&o.winner_name.includes(`|`)?o.winner_name.split(`|`)[1]:o.winner_name||``}">
           <input type="number" class="modern-input" style="width:54px; padding:8px; font-size:13px;" id="winner-announce-min" placeholder="분" value="1">
-          <button id="btn-winner-start" style="padding:8px 16px; background:#fab005; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+          <button id="btn-winner-start" style="padding:8px 16px; background:#3b82f6; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
           <button id="btn-winner-cancel" style="padding:8px 16px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
         </div>
       </div>
 
-      <!-- 🏆 실시간 당첨 정보 수집 현황판 -->
+      <!-- 실시간 당첨 정보 수집 현황판 -->
       <div class="section-card" style="margin-top: 24px;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1.5px solid #f1f5f9; padding-bottom:12px; margin-bottom:16px;">
           <h3 style="margin:0; border:none; padding:0; display:flex; align-items:center; gap:6px;">
-            <span>🏆 당첨 경품 배송 정보 현황판</span>
+            <span>당첨 경품 배송 정보 현황판</span>
           </h3>
           <button id="btn-refresh-winners" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px; font-weight:700;">새로고침</button>
         </div>
