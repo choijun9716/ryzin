@@ -23,12 +23,32 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <link rel="stylesheet" href="live.css?v=202607211349">
+  <link rel="stylesheet" href="live.css?v=202607211448">
   <script defer src="/_vercel/insights/script.js"></script>
   <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 
 <body>
+  <!-- ── Splash Screen (Intro) ── -->
+  <div id="splash-screen" class="splash-screen">
+    <img src="https://ryzincorp.com/assets/logo.png" alt="RYZIN" class="splash-logo" onerror="this.src='../assets/logo.png'">
+  </div>
+  <script>
+    // 2.5초 후 스플래시 화면을 부드럽게 사라지게 함
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+          splash.style.opacity = '0';
+          splash.style.visibility = 'hidden';
+          setTimeout(() => {
+            splash.remove();
+          }, 800); // transition 지속 시간 후 DOM에서 제거
+        }
+      }, 2500);
+    });
+  </script>
+
   <div class="live-container">
     <!-- 비디오 영역 -->
     <div class="video-wrapper">
