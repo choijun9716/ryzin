@@ -67,7 +67,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 18px 8px;
+      padding: 10px 20px 8px;
     }
 
     /* 로고 — 다크 배경에 흰 반전 */
@@ -214,7 +214,7 @@
     .home-deal-scroll {
       display: flex;
       gap: 10px;
-      padding: 0 18px 2px;
+      padding: 0 20px 2px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
@@ -284,11 +284,11 @@
       text-decoration: line-through;
     }
 
-    /* HOME: 매거진 가로 스크롤 */
+    /* HOME: 매거진 가로 스크롤 — Wisely 스타일 */
     .magazine-scroll {
       display: flex;
-      gap: 12px;
-      padding: 0 18px 2px;
+      gap: 14px;
+      padding: 0 20px 2px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
@@ -296,62 +296,89 @@
     .magazine-scroll::-webkit-scrollbar { display: none; }
 
     .mag-card {
-      flex: 0 0 260px;
+      flex: 0 0 calc(100% - 56px);
       scroll-snap-align: start;
       cursor: pointer;
       border-radius: 16px;
       overflow: hidden;
-      background: #111827;
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .mag-thumb {
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
       position: relative;
     }
 
-    .mag-card img {
-      width: 100%;
-      height: 160px;
+    .mag-thumb img {
+      width: 100%; height: 100%;
       object-fit: cover;
-      opacity: 0.7;
     }
 
-    .mag-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%);
+    .mag-ep-badge {
+      position: absolute;
+      top: 14px; left: 14px;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 14px;
+      align-items: center;
+      gap: 6px;
     }
 
-    .mag-tag {
-      align-self: flex-start;
-      font-size: 9px;
-      font-weight: 800;
+    .mag-series-name {
+      font-size: 12px;
+      font-weight: 700;
       color: #fff;
-      background: rgba(255,255,255,0.2);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+
+    .mag-ep-num {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-main);
+      background: #fff;
       padding: 2px 8px;
-      border-radius: 20px;
-      margin-bottom: 6px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+      border-radius: 4px;
+    }
+
+    .mag-body {
+      padding: 14px 16px 12px;
     }
 
     .mag-title {
       font-size: 15px;
       font-weight: 800;
-      color: #fff;
-      line-height: 1.3;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      color: var(--text-main);
+      line-height: 1.35;
+      margin-bottom: 4px;
     }
 
-    .mag-sub {
-      font-size: 11px;
-      color: rgba(255,255,255,0.7);
-      margin-top: 3px;
-      font-weight: 500;
+    .mag-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .mag-products {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mag-products img {
+      width: 40px; height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border);
     }
 
     /* HOME: 최저가보장제 카드 */
     .lowest-price-card {
-      margin: 0 18px;
+      margin: 0 20px;
       padding: 20px;
       background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
       border-radius: 16px;
@@ -399,7 +426,7 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 20px 18px;
+      padding: 20px 20px;
       border-bottom: 6px solid var(--bg);
     }
 
@@ -490,7 +517,7 @@
       font-size: 11px;
       font-weight: 700;
       color: var(--text-muted);
-      padding: 8px 18px 4px;
+      padding: 8px 20px 4px;
       letter-spacing: 0.03em;
       text-transform: uppercase;
     }
@@ -499,7 +526,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 15px 18px;
+      padding: 15px 20px;
       cursor: pointer;
       transition: background 0.1s;
     }
@@ -546,7 +573,7 @@
     .section:last-child { border-bottom: none; }
 
     .sec-header {
-      padding: 0 18px 14px;
+      padding: 0 20px 14px;
       display: flex;
       justify-content: space-between;
       align-items: baseline;
@@ -571,7 +598,7 @@
     .live-scroll {
       display: flex;
       gap: 10px;
-      padding: 0 18px 2px;
+      padding: 0 20px 2px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
@@ -690,7 +717,7 @@
     .pill-scroll {
       display: flex;
       gap: 6px;
-      padding: 0 18px 12px;
+      padding: 0 20px 12px;
       overflow-x: auto;
       scrollbar-width: none;
     }
@@ -719,7 +746,7 @@
     .vod-scroll {
       display: flex;
       gap: 10px;
-      padding: 0 18px 2px;
+      padding: 0 20px 2px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
@@ -832,7 +859,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      padding: 0 18px;
+      padding: 0 20px;
     }
 
     .prod-card {
@@ -969,7 +996,7 @@
     ───────────────────────────────────────────────────────── */
     .home-banner {
       margin: 0 0 0;
-      padding: 16px 18px 0;
+      padding: 16px 20px 0;
     }
 
     .banner-card {
@@ -1029,7 +1056,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      padding: 0 18px;
+      padding: 0 20px;
     }
 
     .trial-card {
@@ -1222,7 +1249,7 @@
       <a class="logo-wrap" href="/shop/">
         <div class="logo-img-wrap">
           <img
-            src="https://ryzincorp.com/assets/logo.png"
+            src="/assets/logo.png"
             alt="RYZIN"
             onerror="this.outerHTML='<span class=\'logo-text-fallback\'>RYZIN</span>'"
           >
@@ -1965,75 +1992,63 @@
 
   const MAGAZINES = [
     {
-      tag: 'BEAUTY TIPS',
-      title: '여름철 자외선 차단의 모든 것',
-      sub: '피부과 전문의가 알려주는 선케어 루틴',
-      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85'
+      series: '라이진 뷰티 사전',
+      ep: 'Ep.01',
+      title: '어쩌다 보니 내 파우치가 라이진 쇼룸이 되었어요',
+      desc: '뷰티 에디터 정은님은 3년 전 라이진 라이브를 처음 접했습니다. 지금은 화장대 수납장을 열면 전부 라이진 제품입니다.',
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
+      products: [
+        'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=120&q=80'
+      ]
     },
     {
-      tag: 'WELLNESS',
-      title: '멀티비타민, 어떻게 고를까?',
-      sub: '연령별 맞춤 건기식 가이드',
-      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=600&q=85'
+      series: '건강 루틴 탐구',
+      ep: 'Ep.03',
+      title: '멀티비타민, 어떻게 골라야 할까?',
+      desc: '연령별 맞춤 건기식 가이드. 피부과 전문의와 약사가 함께 알려주는 올바른 영양제 선택법.',
+      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=700&q=85',
+      products: [
+        'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=120&q=80'
+      ]
     },
     {
-      tag: 'TREND',
+      series: '트렌드 리포트',
+      ep: 'Ep.05',
       title: '2025 여름 뷰티 트렌드 총정리',
-      sub: '글로우 스킨부터 선 세럼까지',
-      img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=85'
-    },
-    {
-      tag: 'HOW TO',
-      title: '라이브 방송으로 똑똑하게 쇼핑하기',
-      sub: '라이브 커머스 초보자 완벽 가이드',
-      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=600&q=85'
+      desc: '글로우 스킨부터 선 세럼까지, 올여름 가장 핫한 뷰티 키워드를 한눈에 정리해 드립니다.',
+      img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=700&q=85',
+      products: [
+        'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=120&q=80',
+        'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=120&q=80'
+      ]
     }
   ];
-
-  function renderHomeUpcomingLives() {
-    const upcoming = LIVES.filter(l => !l.isLive);
-    const el = document.getElementById('home-upcoming-lives');
-    el.innerHTML = upcoming.map(item => `
-      <div class="live-card" onclick="openLive('${item.id}')">
-        <img src="${item.img}" alt="${item.title}">
-        <div class="live-card-overlay">
-          <div class="live-status-badge badge-upcoming">${item.time}</div>
-          <div class="live-card-body">
-            <div class="live-card-title">${item.title}</div>
-            <button class="live-card-btn" onclick="event.stopPropagation();notifyMe(this,'${item.title}')">알림 신청</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderHomeDeals() {
-    const el = document.getElementById('home-deals');
-    el.innerHTML = DEALS.map(p => `
-      <div class="home-deal-card" onclick="showToast('${p.brand} 상품 페이지로 이동합니다.')">
-        <div class="home-deal-img">
-          <img src="${p.img}" alt="${p.name}">
-          <span class="hd-discount">${p.discount}</span>
-        </div>
-        <div class="hd-info">
-          <div class="hd-brand">${p.brand}</div>
-          <div class="hd-name">${p.name}</div>
-          <div class="hd-price">${p.price}</div>
-          <div class="hd-origin">${p.origin}</div>
-        </div>
-      </div>
-    `).join('');
-  }
 
   function renderMagazine() {
     const el = document.getElementById('magazine-list');
     el.innerHTML = MAGAZINES.map(m => `
       <div class="mag-card" onclick="showToast('매거진 상세 페이지로 이동합니다.')">
-        <img src="${m.img}" alt="${m.title}">
-        <div class="mag-overlay">
-          <span class="mag-tag">${m.tag}</span>
-          <span class="mag-title">${m.title}</span>
-          <span class="mag-sub">${m.sub}</span>
+        <div class="mag-thumb">
+          <img src="${m.img}" alt="${m.title}">
+          <div class="mag-ep-badge">
+            <span class="mag-series-name">${m.series}</span>
+            <span class="mag-ep-num">${m.ep}</span>
+          </div>
+        </div>
+        <div class="mag-body">
+          <div class="mag-title">${m.title}</div>
+          <div class="mag-desc">${m.desc}</div>
+          <div class="mag-products">
+            ${m.products.map(p => `<img src="${p}" alt="상품">`).join('')}
+          </div>
         </div>
       </div>
     `).join('');
