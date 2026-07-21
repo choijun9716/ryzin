@@ -2,6 +2,11 @@
   "framework": null,
   "redirects": [
     {
+      "source": "/shop",
+      "destination": "/shop/",
+      "permanent": true
+    },
+    {
       "source": "/live",
       "has": [
         { "type": "query", "key": "id" }
