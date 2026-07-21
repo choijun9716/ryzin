@@ -263,13 +263,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 100);
 
   // === 페이지 로드(새로고침 포함) 시마다 누적 시청자수 +1 ===
-  const SESSION_KEY = `ryzin_viewer_counted_${LIVE_ID || 'default'}`;
-  if (!sessionStorage.getItem(SESSION_KEY)) {
-    sessionStorage.setItem(SESSION_KEY, '1');
-    setTimeout(async () => {
-      try {
-        const targetLiveId = LIVE_ID || 'live01';
-        if (!db) return;
+  setTimeout(async () => {
+    try {
+      const targetLiveId = LIVE_ID || 'live01';
+      if (!db) return;
 
         const { data, error } = await db
           .from('live_control')
@@ -292,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Viewer count increment failed:', e);
       }
     }, 800);
-  }
 
   function loadLiveConfig() {
     try {

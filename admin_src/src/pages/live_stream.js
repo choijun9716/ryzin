@@ -1653,7 +1653,7 @@ function renderLiveEditView(container, liveId, showView) {
             if (typeof window.updateAdminViewersDisplay === 'function') window.updateAdminViewersDisplay();
           }
         } catch (e) {}
-      }, 10000);
+      }, 3000);
     };
 
     // 2. 실시간 채팅 구독
