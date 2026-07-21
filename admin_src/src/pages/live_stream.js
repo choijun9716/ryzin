@@ -700,10 +700,10 @@ function renderLiveEditView(container, liveId, showView) {
 
   container.appendChild(layout);
 
-  // 복사 버튼 이벤트 (container에 layout이 추가된 이후에 등록)
+  // 복사 버튼 이벤트
   const copyEmbed = (id, btnId) => {
-    const el = document.getElementById(id);
-    const btn = document.getElementById(btnId);
+    const el = layout.querySelector('#' + id);
+    const btn = layout.querySelector('#' + btnId);
     if (!el || !btn) return;
     navigator.clipboard.writeText(el.value).then(() => {
       btn.textContent = '복사됨!';
@@ -718,8 +718,11 @@ function renderLiveEditView(container, liveId, showView) {
     });
   };
 
-  document.getElementById('btn-copy-embed-mobile').addEventListener('click', () => copyEmbed('embed-url-mobile', 'btn-copy-embed-mobile'));
-  document.getElementById('btn-copy-embed-wide').addEventListener('click', () => copyEmbed('embed-url-wide', 'btn-copy-embed-wide'));
+  const btnCopyMobile = layout.querySelector('#btn-copy-embed-mobile');
+  if (btnCopyMobile) btnCopyMobile.addEventListener('click', () => copyEmbed('embed-url-mobile', 'btn-copy-embed-mobile'));
+
+  const btnCopyWide = layout.querySelector('#btn-copy-embed-wide');
+  if (btnCopyWide) btnCopyWide.addEventListener('click', () => copyEmbed('embed-url-wide', 'btn-copy-embed-wide'));
 
   // ── 탭 패널 렌더 함수들 ───────────────────────────────────
   const renderConfigTab = () => {
