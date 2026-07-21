@@ -883,24 +883,6 @@ function renderLiveEditView(container, liveId, showView) {
         <input type="password" id="cfg-imgbb-key" placeholder="API Key 입력" value="${localStorage.getItem('ryzin_imgbb_key') || ''}" style="width:180px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; outline:none; background:#fff;">
       </div>
 
-      <!-- 채팅 정책 설정 (금칙어 및 차단) -->
-      <div class="section-card" style="margin-top: 18px;">
-        <h3 style="margin:0 0 4px 0; border:none; padding:0;">채팅 정책 설정</h3>
-        <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">방송 중 채팅 금칙어를 설정하고, 차단된 사용자 목록을 관리할 수 있습니다.</p>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
-          <div>
-            <label class="modern-label">채팅 금칙어 (쉼표로 구분)</label>
-            <textarea class="modern-input" id="cfg-bannedWords" style="height:80px; resize:none; padding:10px 14px; font-size:13px;" placeholder="예: 욕설,바보,비속어,광고">${config.bannedWords || ''}</textarea>
-            <div style="font-size:10px; color:#94a3b8; margin-top:4px;">쉼표(,)로 구분해 입력해 주세요. 시청자가 전송 시 차단됩니다.</div>
-          </div>
-          <div>
-            <label class="modern-label">차단된 시청자 닉네임 목록 (쉼표로 구분)</label>
-            <textarea class="modern-input" id="cfg-bannedUsers" style="height:80px; resize:none; padding:10px 14px; font-size:13px;" placeholder="차단된 사용자가 없습니다.">${config.bannedUsers || ''}</textarea>
-            <div style="font-size:10px; color:#94a3b8; margin-top:4px;">쉼표(,)로 구분하여 직접 추가하거나, 채팅방에서 바로 차단할 수 있습니다.</div>
-          </div>
-        </div>
-      </div>
 
       <div style="display:flex; gap:12px;">
         <button id="btn-save-config" class="action-btn btn-primary-solid" style="flex:1; justify-content:center; padding:14px; font-size:15px;">설정 저장</button>
@@ -932,8 +914,6 @@ function renderLiveEditView(container, liveId, showView) {
       config.showSplash = document.getElementById('cfg-showSplash').checked;
       config.shareTitle = document.getElementById('cfg-shareTitle').value;
       config.shareDesc = document.getElementById('cfg-shareDesc').value;
-      config.bannedWords = document.getElementById('cfg-bannedWords').value.trim();
-      config.bannedUsers = document.getElementById('cfg-bannedUsers').value.trim();
       saveConfig();
       saveStats();
       topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
@@ -1245,7 +1225,16 @@ function renderLiveEditView(container, liveId, showView) {
 
   const renderChatTab = () => {
     contentArea.innerHTML = `
-      <div class="section-card">
+      <!-- 서브 탭 네비게이션 -->
+      <div style="display:flex; gap:8px; margin-bottom:16px; background:#f1f5f9; padding:4px; border-radius:10px;">
+        <button class="chat-sub-tab-btn active" data-subtab="admin" style="flex:1; padding:8px 0; font-size:13px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">관리자 채팅 & 정책</button>
+        <button class="chat-sub-tab-btn" data-subtab="bot" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">채팅 봇 관리</button>
+        <button class="chat-sub-tab-btn" data-subtab="event" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">이벤트 관리</button>
+      </div>
+
+      <!-- 관리자 채팅 & 정책 뷰 -->
+      <div id="chat-sub-admin" class="chat-sub-view">
+        <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9;">
           <h3 style="margin:0; border:none; padding:0;">관리자 채팅 발송</h3>
           <button id="btn-clear-chats" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px; color:#ef4444; border-color:#fee2e2; background:#fff5f5;">채팅 내역 초기화</button>
@@ -1284,8 +1273,30 @@ function renderLiveEditView(container, liveId, showView) {
           <button id="btn-send-chat" class="action-btn btn-primary-solid" style="white-space:nowrap;">전송</button>
         </div>
       </div>
+        
+        <!-- 채팅 정책 설정 (금칙어 및 차단) -->
+        <div class="section-card" style="margin-top: 18px;">
+          <h3 style="margin:0 0 4px 0; border:none; padding:0;">채팅 정책 설정</h3>
+          <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">방송 중 채팅 금칙어를 설정하고, 차단된 사용자 목록을 관리할 수 있습니다. (입력 시 자동 저장)</p>
+          
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+            <div>
+              <label class="modern-label">채팅 금칙어 (쉼표로 구분)</label>
+              <textarea class="modern-input" id="cfg-bannedWords" style="height:80px; resize:none; padding:10px 14px; font-size:13px;" placeholder="예: 욕설,바보,비속어,광고">${config.bannedWords || ''}</textarea>
+              <div style="font-size:10px; color:#94a3b8; margin-top:4px;">쉼표(,)로 구분해 입력해 주세요. 시청자가 전송 시 차단됩니다.</div>
+            </div>
+            <div>
+              <label class="modern-label">차단된 시청자 닉네임 목록 (쉼표로 구분)</label>
+              <textarea class="modern-input" id="cfg-bannedUsers" style="height:80px; resize:none; padding:10px 14px; font-size:13px;" placeholder="차단된 사용자가 없습니다.">${config.bannedUsers || ''}</textarea>
+              <div style="font-size:10px; color:#94a3b8; margin-top:4px;">쉼표(,)로 구분하여 직접 추가하거나, 채팅방에서 바로 차단할 수 있습니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <div class="section-card">
+      <!-- 채팅 봇 관리 뷰 -->
+      <div id="chat-sub-bot" class="chat-sub-view" style="display:none;">
+        <div class="section-card">
         <h3>채팅 봇</h3>
         <p style="font-size:13px; color:#64748b; margin:0 0 16px; line-height:1.6;">
           시청자에게 보여질 가상 채팅입니다.<br>
@@ -1302,8 +1313,12 @@ function renderLiveEditView(container, liveId, showView) {
         <button id="btn-toggle-bot" class="action-btn btn-primary-solid" style="width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;">
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
+      </div>
+
+      <!-- 이벤트 관리 뷰 -->
+      <div id="chat-sub-event" class="chat-sub-view" style="display:none;">
       <!-- 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
-      <div class="section-card" style="margin-top: 24px;">
+      <div class="section-card">
         <h3 style="margin:0 0 8px 0; border:none; padding:0; display:flex; align-items:center; gap:6px;">
           <span>당첨 알림 배너 제어 (소통왕/구매인증)</span>
           ${config.winner_timestamp && Number(config.winner_timestamp) > Date.now() ? `<span style="font-size:11px; font-weight:700; background:#3b82f6; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>` : ''}
@@ -1358,7 +1373,46 @@ function renderLiveEditView(container, liveId, showView) {
           </table>
         </div>
       </div>
+      </div>
     `;
+
+    // ── 서브 탭 전환 이벤트 ──
+    const subTabBtns = contentArea.querySelectorAll('.chat-sub-tab-btn');
+    const subViews = contentArea.querySelectorAll('.chat-sub-view');
+    subTabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // 버튼 스타일 초기화
+        subTabBtns.forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'transparent';
+          b.style.color = '#64748b';
+          b.style.fontWeight = '600';
+          b.style.boxShadow = 'none';
+        });
+        // 활성화 스타일
+        btn.classList.add('active');
+        btn.style.background = '#fff';
+        btn.style.color = '#0f172a';
+        btn.style.fontWeight = '700';
+        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+        // 뷰 전환
+        subViews.forEach(v => v.style.display = 'none');
+        const targetView = document.getElementById(`chat-sub-${btn.dataset.subtab}`);
+        if (targetView) targetView.style.display = 'block';
+      });
+    });
+
+    // ── 채팅 정책 설정 자동 저장 ──
+    const bannedWordsInput = document.getElementById('cfg-bannedWords');
+    const bannedUsersInput = document.getElementById('cfg-bannedUsers');
+    const savePolicy = () => {
+      config.bannedWords = bannedWordsInput.value.trim();
+      config.bannedUsers = bannedUsersInput.value.trim();
+      saveConfig();
+    };
+    if (bannedWordsInput) bannedWordsInput.addEventListener('change', savePolicy);
+    if (bannedUsersInput) bannedUsersInput.addEventListener('change', savePolicy);
 
     // 관리자 채팅 전송
     const chatInput = document.getElementById('admin-chat-input');
