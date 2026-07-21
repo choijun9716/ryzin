@@ -75,27 +75,18 @@
       text-decoration: none;
     }
 
-    .logo-img-wrap {
-      background: #111827;
-      border-radius: 8px;
-      padding: 5px 10px;
-      display: flex;
-      align-items: center;
-      height: 34px;
-    }
-
-    .logo-img-wrap img {
-      height: 18px;
+    .logo-wrap img {
+      height: 22px;
       width: auto;
       object-fit: contain;
-      filter: brightness(0) invert(1);
+      display: block;
     }
 
     .logo-text-fallback {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 900;
       letter-spacing: -0.04em;
-      color: #fff;
+      color: #111827;
     }
 
     .header-icons {
@@ -1270,9 +1261,7 @@
   <header class="header">
     <div class="header-logo-row">
       <a class="logo-wrap" href="/shop/">
-        <div class="logo-img-wrap">
-          <img src="/assets/logo.png" alt="RYZIN" onerror="this.outerHTML='<span class=\'logo-text-fallback\'>RYZIN</span>'">
-        </div>
+        <img src="/assets/logo.png" alt="RYZIN" onerror="this.outerHTML='<span class=\'logo-text-fallback\'>RYZIN</span>'">
       </a>
       <div class="header-icons">
         <button class="hdr-btn" onclick="openSearchModal()">
