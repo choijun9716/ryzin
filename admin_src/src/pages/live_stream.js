@@ -468,6 +468,12 @@ function renderLiveEditView(container, liveId, showView) {
   let products = getLiveProducts(liveId);
   let botCfg = getBotConfig(liveId);
 
+  // ── 채팅 봇 전역(라이브 편집기 레벨) 상태 ──
+  let botTimer = null;
+  let botActive = false;
+  let botLineIndex = 0;
+  let botLines = [];
+
   // Supabase로부터 설정 정보 무조건 1순위 역동기화
   if (db && !window[`live_loaded_${liveId}`]) {
     db.from('live_control')
@@ -1551,23 +1557,45 @@ function renderLiveEditView(container, liveId, showView) {
     botListEl.addEventListener('input', () => { botCfg.list = botListEl.value; saveBotCfg(); });
     botIntervalEl.addEventListener('input', () => { botCfg.interval = parseInt(botIntervalEl.value) || 10; saveBotCfg(); });
 
-    let botTimer = null;
-    let botActive = false;
-    document.getElementById('btn-toggle-bot').addEventListener('click', () => {
-      botActive = !botActive;
+    // 초기 버튼 렌더링 상태 동기화
+    const syncBotBtnState = () => {
       const icon = document.getElementById('bot-icon');
       const text = document.getElementById('bot-text');
       const btn = document.getElementById('btn-toggle-bot');
+      if (!btn) return;
       if (botActive) {
-        const lines = botListEl.value.split('\n').map(l => l.trim()).filter(l => l.includes('|'));
-        if (lines.length === 0) { alert('닉네임|내용 형식으로 1줄 이상 입력해주세요.'); botActive = false; return; }
         icon.textContent = '⏸';
         text.textContent = '채팅 봇 중지';
         btn.className = 'action-btn btn-danger-solid';
         btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
+      } else {
+        icon.textContent = '▶';
+        text.textContent = '채팅 봇 시작';
+        btn.className = 'action-btn btn-primary-solid';
+        btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
+      }
+    };
+    syncBotBtnState();
+
+    document.getElementById('btn-toggle-bot').addEventListener('click', () => {
+      botActive = !botActive;
+      if (botActive) {
+        botLines = botListEl.value.split('\n').map(l => l.trim()).filter(l => l.includes('|'));
+        if (botLines.length === 0) { alert('닉네임|내용 형식으로 1줄 이상 입력해주세요.'); botActive = false; return; }
+        botLineIndex = 0;
+        syncBotBtnState();
+        
         const sec = parseInt(botIntervalEl.value) || 10;
+        if (botTimer) clearInterval(botTimer);
         botTimer = setInterval(async () => {
-          const line = lines[Math.floor(Math.random() * lines.length)];
+          if (botLineIndex >= botLines.length) {
+            clearInterval(botTimer);
+            botTimer = null;
+            botActive = false;
+            syncBotBtnState();
+            return;
+          }
+          const line = botLines[botLineIndex++];
           const [name, ...parts] = line.split('|');
           const msgText = parts.join('|').trim();
           if (!name || !msgText) return;
@@ -1592,10 +1620,8 @@ function renderLiveEditView(container, liveId, showView) {
         }, sec * 1000);
       } else {
         if (botTimer) clearInterval(botTimer);
-        icon.textContent = '▶';
-        text.textContent = '채팅 봇 시작';
-        btn.className = 'action-btn btn-primary-solid';
-        btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
+        botTimer = null;
+        syncBotBtnState();
       }
     });
 
@@ -1738,9 +1764,6 @@ function renderLiveEditView(container, liveId, showView) {
       }
       if (statsPollingInterval) {
         clearInterval(statsPollingInterval);
-      }
-      if (botTimer) {
-        clearInterval(botTimer);
       }
       if (winnersPollingInterval) {
         clearInterval(winnersPollingInterval);
@@ -2200,6 +2223,7 @@ function renderLiveEditView(container, liveId, showView) {
   setTimeout(() => {
     document.getElementById('btn-back').addEventListener('click', () => {
       cleanUpOnAirTimer();
+      if (botTimer) clearInterval(botTimer);
       showView(null);
     });
     document.getElementById('btn-refresh-preview').addEventListener('click', () => {
@@ -2208,6 +2232,7 @@ function renderLiveEditView(container, liveId, showView) {
 
     const tabBtns = topBar.querySelectorAll('.tab-btn');
     const switchTab = (tabName) => {
+      contentArea.dispatchEvent(new Event('adminTabLeave'));
       tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
       if (tabName === 'config') renderConfigTab();
       else if (tabName === 'chat') renderChatTab();
