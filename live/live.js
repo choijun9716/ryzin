@@ -270,14 +270,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { data, error } = await db
           .from('live_control')
-          .select('cum_viewers, viewers, is_live')
+          .select('cum_viewers, viewers, status')
           .eq('live_id', targetLiveId)
           .maybeSingle();
 
         if (data) {
           const newCum = (parseInt(data.cum_viewers) || 0) + 1;
           const updateData = { cum_viewers: newCum };
-          if (data.is_live) {
+          if (data.status === 'ON') {
             updateData.viewers = (parseInt(data.viewers) || 0) + 1;
           }
           await db
