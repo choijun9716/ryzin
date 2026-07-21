@@ -26,6 +26,14 @@
   <link rel="stylesheet" href="live.css?v=202607211451">
   <script defer src="/_vercel/insights/script.js"></script>
   <script defer src="/_vercel/speed-insights/script.js"></script>
+  <script>
+    try {
+      const cached = JSON.parse(localStorage.getItem('ryzin_live_config') || '{}');
+      if (cached.showSplash === false) {
+        document.write('<style>#splash-screen { display: none !important; }</style>');
+      }
+    } catch(e) {}
+  </script>
 </head>
 
 <body>
@@ -271,7 +279,7 @@
     <!-- Supabase JS SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config.js"></script>
-    <script src="live.js?v=202607211349"></script>
+    <script src="live.js?v=202607211501"></script>
 
 </body>
 

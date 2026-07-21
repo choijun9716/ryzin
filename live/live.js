@@ -154,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
       logoUrl: rawLogoUrl.replace('#nosplash', '') || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
       streamUrl: row.stream_url || '',
       showViewers: row.show_viewers !== false,
+      showSplash: showSplash,
       thumbnailUrl: row.thumbnail_url || '',
       liveStartTime: row.start_time || '',
       isLive: row.status === 'ON',
