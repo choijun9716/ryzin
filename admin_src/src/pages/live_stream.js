@@ -2343,6 +2343,7 @@ function renderLiveEditView(container, liveId, showView) {
   // ── 탭 전환 로직 ──────────────────────────────────────────
   setTimeout(() => {
     document.getElementById('btn-back').addEventListener('click', () => {
+      contentArea.dispatchEvent(new Event('adminTabLeave'));
       cleanUpOnAirTimer();
       if (botTimer) clearInterval(botTimer);
       showView(null);
