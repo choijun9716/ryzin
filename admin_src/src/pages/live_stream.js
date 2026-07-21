@@ -875,9 +875,9 @@ function renderLiveEditView(container, liveId, showView) {
         <input type="password" id="cfg-imgbb-key" placeholder="API Key 입력" value="${localStorage.getItem('ryzin_imgbb_key') || ''}" style="width:180px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; outline:none; background:#fff;">
       </div>
 
-      <!-- 💬 채팅 정책 설정 (금칙어 및 차단) -->
+      <!-- 채팅 정책 설정 (금칙어 및 차단) -->
       <div class="section-card" style="margin-top: 18px;">
-        <h3 style="margin:0 0 4px 0; border:none; padding:0;">💬 채팅 정책 설정</h3>
+        <h3 style="margin:0 0 4px 0; border:none; padding:0;">채팅 정책 설정</h3>
         <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">방송 중 채팅 금칙어를 설정하고, 차단된 사용자 목록을 관리할 수 있습니다.</p>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
@@ -1267,7 +1267,7 @@ function renderLiveEditView(container, liveId, showView) {
 
         <div id="admin-chat-list" style="height:200px; overflow-y:auto; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:16px; font-size:14px;">
           <div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
-            <div style="font-size:24px; margin-bottom:8px;">💭</div>
+            <div style="font-size:24px; margin-bottom:8px;"></div>
             실시간 채팅 내역이 여기에 표시됩니다.
           </div>
         </div>
@@ -1294,10 +1294,10 @@ function renderLiveEditView(container, liveId, showView) {
         <button id="btn-toggle-bot" class="action-btn btn-primary-solid" style="width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;">
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
-      <!-- 🏆 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
+      <!-- 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
       <div class="section-card" style="margin-top: 24px; border: 1.5px solid #fab005; background: #fffdf5;">
         <h3 style="margin:0 0 8px 0; border:none; padding:0; color:#d9480f; display:flex; align-items:center; gap:6px;">
-          <span>🏆 당첨 알림 배너 제어 (소통왕/구매인증)</span>
+          <span>당첨 알림 배너 제어 (소통왕/구매인증)</span>
           ${config.winner_timestamp && Number(config.winner_timestamp) > Date.now() ? `<span style="font-size:11px; font-weight:700; background:#fab005; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>` : ''}
         </h3>
         <p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.4;">
@@ -1737,8 +1737,8 @@ function renderLiveEditView(container, liveId, showView) {
       <div class="product-inputs">
         <div style="display:flex; align-items:center; gap:8px;">
           <input type="text" class="modern-input" style="flex:2;" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
-          <input type="number" class="modern-input" style="flex:1;" value="${(p.normalPrice || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
-          <input type="number" class="modern-input" style="flex:1;" value="${(p.price || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
+          <input type="text" class="modern-input price-input" style="flex:1;" value="${p.normalPrice ? Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
+          <input type="text" class="modern-input price-input" style="flex:1;" value="${p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="price" placeholder="라이브가">
           <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="width:50px; text-align:center;">
         </div>
         <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
@@ -1834,6 +1834,15 @@ function renderLiveEditView(container, liveId, showView) {
 
     const bindProductEvents = () => {
       const plc = document.getElementById('product-list-container');
+
+      // 실시간 숫자 콤마 포맷팅
+      plc.querySelectorAll('.price-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          let val = e.target.value.replace(/[^0-9]/g, '');
+          e.target.value = val ? Number(val).toLocaleString() : '';
+        });
+      });
+
       plc.querySelectorAll('input[data-field]').forEach(input => {
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.idx);
@@ -1852,7 +1861,11 @@ function renderLiveEditView(container, liveId, showView) {
               return;
             }
           } else {
-            products[idx][field] = e.target.value;
+            if (field === 'price' || field === 'normalPrice') {
+              products[idx][field] = e.target.value.replace(/[^0-9]/g, '');
+            } else {
+              products[idx][field] = e.target.value;
+            }
           }
           if (field === 'price' || field === 'normalPrice') {
             const n = Number((products[idx].normalPrice || '').toString().replace(/[^0-9]/g, ''));
@@ -1861,6 +1874,10 @@ function renderLiveEditView(container, liveId, showView) {
               products[idx].discountRate = Math.floor(((n - p) / n) * 100);
               const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
               if (ri) ri.value = products[idx].discountRate;
+            } else {
+              products[idx].discountRate = 0;
+              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
+              if (ri) ri.value = 0;
             }
           }
           saveProducts();
@@ -1983,7 +2000,7 @@ function renderLiveEditView(container, liveId, showView) {
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
-            📞 상담 DB (리드)
+            상담 DB (리드)
           </h2>
           <div style="display:flex; gap:8px;">
             <button id="btn-download-csv-leads" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none;">CSV 다운로드</button>

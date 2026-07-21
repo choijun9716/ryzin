@@ -469,9 +469,9 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <input type="password" id="cfg-imgbb-key" placeholder="API Key 입력" value="${localStorage.getItem(`ryzin_imgbb_key`)||``}" style="width:180px; padding:8px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; outline:none; background:#fff;">
       </div>
 
-      <!-- 💬 채팅 정책 설정 (금칙어 및 차단) -->
+      <!-- 채팅 정책 설정 (금칙어 및 차단) -->
       <div class="section-card" style="margin-top: 18px;">
-        <h3 style="margin:0 0 4px 0; border:none; padding:0;">💬 채팅 정책 설정</h3>
+        <h3 style="margin:0 0 4px 0; border:none; padding:0;">채팅 정책 설정</h3>
         <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">방송 중 채팅 금칙어를 설정하고, 차단된 사용자 목록을 관리할 수 있습니다.</p>
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
@@ -526,7 +526,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
 
         <div id="admin-chat-list" style="height:200px; overflow-y:auto; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; margin-bottom:16px; font-size:14px;">
           <div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
-            <div style="font-size:24px; margin-bottom:8px;">💭</div>
+            <div style="font-size:24px; margin-bottom:8px;"></div>
             실시간 채팅 내역이 여기에 표시됩니다.
           </div>
         </div>
@@ -553,10 +553,10 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <button id="btn-toggle-bot" class="action-btn btn-primary-solid" style="width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;">
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
-      <!-- 🏆 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
+      <!-- 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
       <div class="section-card" style="margin-top: 24px; border: 1.5px solid #fab005; background: #fffdf5;">
         <h3 style="margin:0 0 8px 0; border:none; padding:0; color:#d9480f; display:flex; align-items:center; gap:6px;">
-          <span>🏆 당첨 알림 배너 제어 (소통왕/구매인증)</span>
+          <span>당첨 알림 배너 제어 (소통왕/구매인증)</span>
           ${o.winner_timestamp&&Number(o.winner_timestamp)>Date.now()?`<span style="font-size:11px; font-weight:700; background:#fab005; color:#fff; padding:2px 8px; border-radius:12px;">노출 진행중</span>`:``}
         </h3>
         <p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.4;">
@@ -636,8 +636,8 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="product-inputs">
         <div style="display:flex; align-items:center; gap:8px;">
           <input type="text" class="modern-input" style="flex:2;" value="${e.name||``}" data-idx="${t}" data-field="name" placeholder="상품명">
-          <input type="number" class="modern-input" style="flex:1;" value="${(e.normalPrice||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="normalPrice" placeholder="정상가">
-          <input type="number" class="modern-input" style="flex:1;" value="${(e.price||``).toString().replace(/[^0-9]/g,``)}" data-idx="${t}" data-field="price" placeholder="라이브가">
+          <input type="text" class="modern-input price-input" style="flex:1;" value="${e.normalPrice?Number(e.normalPrice.toString().replace(/[^0-9]/g,``)).toLocaleString():``}" data-idx="${t}" data-field="normalPrice" placeholder="정상가">
+          <input type="text" class="modern-input price-input" style="flex:1;" value="${e.price?Number(e.price.toString().replace(/[^0-9]/g,``)).toLocaleString():``}" data-idx="${t}" data-field="price" placeholder="라이브가">
           <input type="number" class="modern-input" value="${e.discountRate||0}" data-idx="${t}" data-field="discountRate" placeholder="%" readonly style="width:50px; text-align:center;">
         </div>
         <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
@@ -688,12 +688,12 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
         <div id="product-list-container">${O()}</div>
       </div>
-    `,Z&&Z.from(`live_control`).select(`products`).eq(`live_id`,t).maybeSingle().then(({data:t,error:n})=>{if(n)throw n;if(t&&t.products)try{let n=typeof t.products==`string`?JSON.parse(t.products):t.products;if(Array.isArray(n)){!c||c.length===0?c=n:c.forEach(e=>{let t=n.find(t=>t.name===e.name);t&&(e.clicks=parseInt(t.clicks)||0,!e.image&&t.image&&(e.image=t.image))}),f();let t=document.getElementById(`product-list-container`);t&&(t.innerHTML=O(),e())}}catch{}}).catch(e=>console.warn(`Failed to load product clicks from Supabase`,e));let e=()=>{let n=document.getElementById(`product-list-container`);n.querySelectorAll(`input[data-field]`).forEach(t=>{t.addEventListener(`change`,t=>{let r=parseInt(t.target.dataset.idx),i=t.target.dataset.field;if(t.target.type===`checkbox`){if(c[r][i]=t.target.checked,i===`isLeadForm`){t.target.checked?c[r].url=`__LEAD_FORM__`:c[r].url===`__LEAD_FORM__`&&(c[r].url=``),n.innerHTML=O(),e();return}}else c[r][i]=t.target.value;if(i===`price`||i===`normalPrice`){let e=Number((c[r].normalPrice||``).toString().replace(/[^0-9]/g,``)),t=Number((c[r].price||``).toString().replace(/[^0-9]/g,``));if(e>0&&e>=t){c[r].discountRate=Math.floor((e-t)/e*100);let i=n.querySelector(`input[data-idx="${r}"][data-field="discountRate"]`);i&&(i.value=c[r].discountRate)}}f()})}),n.querySelectorAll(`.prod-img-upload`).forEach(t=>{t.addEventListener(`change`,async t=>{let r=t.target.files[0];if(!r)return;let a=parseInt(t.target.dataset.idx),o=document.getElementById(`img-prev-${a}`);o&&(o.style.opacity=`0.5`);try{let t=await i(await new Promise((e,t)=>{let n=new FileReader;n.onload=()=>e(n.result.split(`,`)[1]),n.onerror=t,n.readAsDataURL(r)}));if(!t)throw Error(`서버로부터 다운로드 URL을 받지 못했습니다.`);c[a].image=t,o&&(o.src=t),f(),n.innerHTML=O(),e(),alert(`🎉 상품 이미지 변경 성공!`)}catch(e){console.error(e),alert(`❌ 상품 이미지 업로드 에러:
+    `,Z&&Z.from(`live_control`).select(`products`).eq(`live_id`,t).maybeSingle().then(({data:t,error:n})=>{if(n)throw n;if(t&&t.products)try{let n=typeof t.products==`string`?JSON.parse(t.products):t.products;if(Array.isArray(n)){!c||c.length===0?c=n:c.forEach(e=>{let t=n.find(t=>t.name===e.name);t&&(e.clicks=parseInt(t.clicks)||0,!e.image&&t.image&&(e.image=t.image))}),f();let t=document.getElementById(`product-list-container`);t&&(t.innerHTML=O(),e())}}catch{}}).catch(e=>console.warn(`Failed to load product clicks from Supabase`,e));let e=()=>{let n=document.getElementById(`product-list-container`);n.querySelectorAll(`.price-input`).forEach(e=>{e.addEventListener(`input`,e=>{let t=e.target.value.replace(/[^0-9]/g,``);e.target.value=t?Number(t).toLocaleString():``})}),n.querySelectorAll(`input[data-field]`).forEach(t=>{t.addEventListener(`change`,t=>{let r=parseInt(t.target.dataset.idx),i=t.target.dataset.field;if(t.target.type===`checkbox`){if(c[r][i]=t.target.checked,i===`isLeadForm`){t.target.checked?c[r].url=`__LEAD_FORM__`:c[r].url===`__LEAD_FORM__`&&(c[r].url=``),n.innerHTML=O(),e();return}}else i===`price`||i===`normalPrice`?c[r][i]=t.target.value.replace(/[^0-9]/g,``):c[r][i]=t.target.value;if(i===`price`||i===`normalPrice`){let e=Number((c[r].normalPrice||``).toString().replace(/[^0-9]/g,``)),t=Number((c[r].price||``).toString().replace(/[^0-9]/g,``));if(e>0&&e>=t){c[r].discountRate=Math.floor((e-t)/e*100);let i=n.querySelector(`input[data-idx="${r}"][data-field="discountRate"]`);i&&(i.value=c[r].discountRate)}else{c[r].discountRate=0;let e=n.querySelector(`input[data-idx="${r}"][data-field="discountRate"]`);e&&(e.value=0)}}f()})}),n.querySelectorAll(`.prod-img-upload`).forEach(t=>{t.addEventListener(`change`,async t=>{let r=t.target.files[0];if(!r)return;let a=parseInt(t.target.dataset.idx),o=document.getElementById(`img-prev-${a}`);o&&(o.style.opacity=`0.5`);try{let t=await i(await new Promise((e,t)=>{let n=new FileReader;n.onload=()=>e(n.result.split(`,`)[1]),n.onerror=t,n.readAsDataURL(r)}));if(!t)throw Error(`서버로부터 다운로드 URL을 받지 못했습니다.`);c[a].image=t,o&&(o.src=t),f(),n.innerHTML=O(),e(),alert(`🎉 상품 이미지 변경 성공!`)}catch(e){console.error(e),alert(`❌ 상품 이미지 업로드 에러:
 `+e.message)}finally{o&&(o.style.opacity=`1`)}})}),n.querySelectorAll(`.btn-deal-start`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx),a=parseInt(document.getElementById(`deal-min-${i}`).value);a>0&&(c[i].dealText=document.getElementById(`deal-text-${i}`).value||`깜짝딜 종료까지`,c[i].dealEndTime=Date.now()+a*60*1e3,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0),setTimeout(()=>alert(`${a}분 깜짝딜이 시작되었습니다!`),10))})}),n.querySelectorAll(`.btn-deal-cancel`).forEach(r=>{r.addEventListener(`click`,r=>{let i=parseInt(r.target.dataset.idx);c[i].dealEndTime=0,f(),n.innerHTML=O(),e(),At(t,o,s,c,!0)})}),n.querySelectorAll(`.btn-del-product`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx),i=c[r]?.name||`이 상품`;confirm(`정말 "${i}" 상품을 삭제하시겠습니까?`)&&(c.splice(r,1),f(),n.innerHTML=O(),e())})}),n.querySelectorAll(`.btn-move-up`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx);if(r>0){let t=c[r-1];c[r-1]=c[r],c[r]=t,f(),n.innerHTML=O(),e()}})}),n.querySelectorAll(`.btn-move-down`).forEach(t=>{t.addEventListener(`click`,t=>{let r=parseInt(t.target.dataset.idx);if(r<c.length-1){let t=c[r+1];c[r+1]=c[r],c[r]=t,f(),n.innerHTML=O(),e()}})})};e(),document.getElementById(`btn-add-product`).addEventListener(`click`,()=>{c.push({id:Date.now(),name:`새 상품`,price:``,normalPrice:``,discountRate:0,image:`https://via.placeholder.com/72`,url:`#`}),f(),document.getElementById(`product-list-container`).innerHTML=O(),e()}),document.getElementById(`btn-save-products`).addEventListener(`click`,()=>{At(t,o,s,c,!0),alert(`상품 목록이 적용되었습니다!`)})},A=()=>{x.innerHTML=`
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; display:flex; align-items:center; gap:6px;">
-            📞 상담 DB (리드)
+            상담 DB (리드)
           </h2>
           <div style="display:flex; gap:8px;">
             <button id="btn-download-csv-leads" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none;">CSV 다운로드</button>
