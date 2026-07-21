@@ -1752,6 +1752,8 @@ function renderLiveEditView(container, liveId, showView) {
           <input type="number" class="modern-input" value="${(p.price || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
           <input type="number" class="modern-input" value="${(p.normalPrice || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
           <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="max-width:72px; text-align:center;">
+          <button class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === 0 ? 'disabled' : ''}>▲</button>
+          <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
         <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:10px; border:1px solid #fecdd3;">
@@ -1927,6 +1929,32 @@ function renderLiveEditView(container, liveId, showView) {
           const prodName = products[idx]?.name || '이 상품';
           if (confirm(`정말 "${prodName}" 상품을 삭제하시겠습니까?`)) {
             products.splice(idx, 1);
+            saveProducts();
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+          }
+        });
+      });
+      plc.querySelectorAll('.btn-move-up').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          if (idx > 0) {
+            const temp = products[idx - 1];
+            products[idx - 1] = products[idx];
+            products[idx] = temp;
+            saveProducts();
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+          }
+        });
+      });
+      plc.querySelectorAll('.btn-move-down').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          if (idx < products.length - 1) {
+            const temp = products[idx + 1];
+            products[idx + 1] = products[idx];
+            products[idx] = temp;
             saveProducts();
             plc.innerHTML = renderProductList();
             bindProductEvents();
