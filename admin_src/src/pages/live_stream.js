@@ -1481,30 +1481,30 @@ function renderLiveEditView(container, liveId, showView) {
 
         // 뷰 전환
         subViews.forEach(v => v.style.display = 'none');
-        const targetView = document.getElementById(`chat-sub-${btn.dataset.subtab}`);
+        const targetView = getEl(`chat-sub-${btn.dataset.subtab}`);
         if (targetView) targetView.style.display = 'block';
       });
     });
 
     // ── 채팅 정책 설정 자동 저장 ──
-    const bannedWordsInput = document.getElementById('cfg-bannedWords');
-    const bannedUsersInput = document.getElementById('cfg-bannedUsers');
+    const bannedWordsInput = getEl('cfg-bannedWords');
+    const bannedUsersInput = getEl('cfg-bannedUsers');
     const savePolicy = () => {
-      config.bannedWords = bannedWordsInput.value.trim();
-      config.bannedUsers = bannedUsersInput.value.trim();
+      if (bannedWordsInput) config.bannedWords = bannedWordsInput.value.trim();
+      if (bannedUsersInput) config.bannedUsers = bannedUsersInput.value.trim();
       saveConfig();
     };
     if (bannedWordsInput) bannedWordsInput.addEventListener('change', savePolicy);
     if (bannedUsersInput) bannedUsersInput.addEventListener('change', savePolicy);
 
     // 관리자 채팅 전송
-    const chatInput = document.getElementById('admin-chat-input');
-    const chatList = document.getElementById('admin-chat-list');
-    const nickInput = document.getElementById('admin-nickname-input');
-    const colorInput = document.getElementById('admin-color-input');
-    const colorCode = document.getElementById('admin-color-code');
-    const bgColorInput = document.getElementById('admin-bg-color-input');
-    const bgColorCode = document.getElementById('admin-bg-color-code');
+    const chatInput = getEl('admin-chat-input');
+    const chatList = getEl('admin-chat-list');
+    const nickInput = getEl('admin-nickname-input');
+    const colorInput = getEl('admin-color-input');
+    const colorCode = getEl('admin-color-code');
+    const bgColorInput = getEl('admin-bg-color-input');
+    const bgColorCode = getEl('admin-bg-color-code');
 
 
 
@@ -1597,63 +1597,70 @@ function renderLiveEditView(container, liveId, showView) {
       } catch (e) { console.warn('Admin chat send failed', e); }
       finally { isSending = false; }
     };
-    document.getElementById('btn-send-chat').addEventListener('click', sendAdminChat);
-    chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAdminChat(); });
+    const btnSendChat = getEl('btn-send-chat');
+    if (btnSendChat) btnSendChat.addEventListener('click', sendAdminChat);
+    if (chatInput) chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAdminChat(); });
 
     // 채팅 내역 초기화
-    document.getElementById('btn-clear-chats').addEventListener('click', async () => {
-      if (confirm('📡 이 라이브 방송의 모든 실시간 채팅 내역을 초기화(영구 삭제)하시겠습니까?\n이 작업은 복구할 수 없습니다.')) {
-        const btn = document.getElementById('btn-clear-chats');
-        btn.disabled = true;
-        btn.textContent = '초기화 중...';
-        try {
-          if (!db) throw new Error('Supabase client가 로드되지 않았습니다.');
-          const { error } = await db
-            .from('live_chats')
-            .delete()
-            .eq('live_id', liveId);
-          if (error) throw error;
-          alert('채팅 내역이 성공적으로 초기화되었습니다!');
-          chatList.innerHTML = `<div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
-            <div style="font-size:24px; margin-bottom:8px;">💭</div>
-            실시간 채팅 내역이 여기에 표시됩니다.
-          </div>`;
-        } catch (err) {
-          alert('채팅 내역 초기화 실패: ' + err.message);
-        } finally {
-          btn.disabled = false;
-          btn.textContent = '채팅 내역 초기화';
+    const btnClearChats = getEl('btn-clear-chats');
+    if (btnClearChats) {
+      btnClearChats.addEventListener('click', async () => {
+        if (confirm('📡 이 라이브 방송의 모든 실시간 채팅 내역을 초기화(영구 삭제)하시겠습니까?\n이 작업은 복구할 수 없습니다.')) {
+          btnClearChats.disabled = true;
+          btnClearChats.textContent = '초기화 중...';
+          try {
+            if (!db) throw new Error('Supabase client가 로드되지 않았습니다.');
+            const { error } = await db
+              .from('live_chats')
+              .delete()
+              .eq('live_id', liveId);
+            if (error) throw error;
+            alert('채팅 내역이 성공적으로 초기화되었습니다!');
+            if (chatList) {
+              chatList.innerHTML = `<div style="color:#94a3b8; text-align:center; padding-top:70px; font-weight:500;">
+                <div style="font-size:24px; margin-bottom:8px;">💭</div>
+                실시간 채팅 내역이 여기에 표시됩니다.
+              </div>`;
+            }
+          } catch (err) {
+            alert('채팅 내역 초기화 실패: ' + err.message);
+          } finally {
+            btnClearChats.disabled = false;
+            btnClearChats.textContent = '채팅 내역 초기화';
+          }
         }
-      }
-    });
+      });
+    }
 
     // 채팅 봇
-    const botListEl = document.getElementById('bot-chat-list');
-    const botIntervalEl = document.getElementById('bot-interval');
-    botListEl.addEventListener('input', () => { botCfg.list = botListEl.value; saveBotCfg(); });
-    botIntervalEl.addEventListener('input', () => { botCfg.interval = parseInt(botIntervalEl.value) || 10; saveBotCfg(); });
+    const botListEl = getEl('bot-chat-list');
+    const botIntervalEl = getEl('bot-interval');
+    if (botListEl) botListEl.addEventListener('input', () => { botCfg.list = botListEl.value; saveBotCfg(); });
+    if (botIntervalEl) botIntervalEl.addEventListener('input', () => { botCfg.interval = parseInt(botIntervalEl.value) || 10; saveBotCfg(); });
 
     // 초기 버튼 렌더링 상태 동기화
     const syncBotBtnState = () => {
-      const icon = document.getElementById('bot-icon');
-      const text = document.getElementById('bot-text');
-      const btn = document.getElementById('btn-toggle-bot');
+      const icon = getEl('bot-icon');
+      const text = getEl('bot-text');
+      const btn = getEl('btn-toggle-bot');
       if (!btn) return;
       if (botActive) {
-        icon.textContent = '⏸';
-        text.textContent = '채팅 봇 중지';
+        if (icon) icon.textContent = '⏸';
+        if (text) text.textContent = '채팅 봇 중지';
         btn.className = 'action-btn btn-danger-solid';
         btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
       } else {
-        icon.textContent = '▶';
-        text.textContent = '채팅 봇 시작';
+        if (icon) icon.textContent = '▶';
+        if (text) text.textContent = '채팅 봇 시작';
         btn.className = 'action-btn btn-primary-solid';
         btn.style.cssText = 'width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;';
       }
     };
     syncBotBtnState();
 
-    document.getElementById('btn-toggle-bot').addEventListener('click', () => {
+    const btnToggleBot = getEl('btn-toggle-bot');
+    if (btnToggleBot) {
+      btnToggleBot.addEventListener('click', () => {
       botActive = !botActive;
       if (botActive) {
         botLines = botListEl.value.split('\n').map(l => l.trim()).filter(l => l.includes('|'));
@@ -1704,7 +1711,8 @@ function renderLiveEditView(container, liveId, showView) {
         botTimer = null;
         syncBotBtnState();
       }
-    });
+      });
+    }
 
     // ── 자동응답 봇 로직 ──
     const arActiveCheckbox = document.getElementById('auto-reply-active');
@@ -2250,18 +2258,24 @@ function renderLiveEditView(container, liveId, showView) {
     };
     bindProductEvents();
 
-    document.getElementById('btn-add-product').addEventListener('click', () => {
-      products.push({ id: Date.now(), name: '새 상품', price: '', normalPrice: '', discountRate: 0, image: 'https://via.placeholder.com/72', url: '#' });
-      saveProducts();
-      document.getElementById('product-list-container').innerHTML = renderProductList();
-      bindProductEvents();
-    });
-    document.getElementById('btn-save-products').addEventListener('click', () => {
-      syncToSheetDB(liveId, config, stats, products, true);
-      alert('상품 목록이 적용되었습니다!');
-    });
+    const btnAddProduct = getEl('btn-add-product');
+    if (btnAddProduct) {
+      btnAddProduct.addEventListener('click', () => {
+        products.push({ id: Date.now(), name: '새 상품', price: '', normalPrice: '', discountRate: 0, image: 'https://via.placeholder.com/72', url: '#' });
+        saveProducts();
+        const plc = getEl('product-list-container');
+        if (plc) plc.innerHTML = renderProductList();
+        bindProductEvents();
+      });
+    }
 
-
+    const btnSaveProducts = getEl('btn-save-products');
+    if (btnSaveProducts) {
+      btnSaveProducts.addEventListener('click', () => {
+        syncToSheetDB(liveId, config, stats, products, true);
+        alert('상품 목록이 적용되었습니다!');
+      });
+    }
   };
 
   const renderLeadsTab = () => {
@@ -2294,11 +2308,11 @@ function renderLiveEditView(container, liveId, showView) {
         if (error) throw error;
 
         currentLeads = list || [];
-        const countSpan = document.getElementById('leads-total-count');
+        const countSpan = getEl('leads-total-count');
         if (countSpan) countSpan.textContent = currentLeads.length;
 
-        const container = document.getElementById('leads-list-container');
-        const btnCsv = document.getElementById('btn-download-csv-leads');
+        const container = getEl('leads-list-container');
+        const btnCsv = getEl('btn-download-csv-leads');
         
         if (btnCsv) {
           btnCsv.style.display = currentLeads.length > 0 ? 'block' : 'none';
@@ -2336,8 +2350,8 @@ function renderLiveEditView(container, liveId, showView) {
         container.innerHTML = html;
       } catch (err) {
         console.warn('Failed to load leads', err);
-        const container = document.getElementById('leads-list-container');
-        if (container) container.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">데이터를 불러오는 데 실패했습니다. (테이블 생성 여부를 확인하세요)</div>`;
+        const container = getEl('leads-list-container');
+        if (container) container.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">데이터를 불러오는 데 실패했습니다.</div>`;
       }
     };
 
@@ -2362,8 +2376,10 @@ function renderLiveEditView(container, liveId, showView) {
     };
 
     loadLeads();
-    document.getElementById('btn-refresh-leads').addEventListener('click', loadLeads);
-    document.getElementById('btn-download-csv-leads').addEventListener('click', downloadCsv);
+    const btnRefreshLeads = getEl('btn-refresh-leads');
+    if (btnRefreshLeads) btnRefreshLeads.addEventListener('click', loadLeads);
+    const btnDownloadCsvLeads = getEl('btn-download-csv-leads');
+    if (btnDownloadCsvLeads) btnDownloadCsvLeads.addEventListener('click', downloadCsv);
   };
 
   // ── 탭 전환 로직 ──────────────────────────────────────────
