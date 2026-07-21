@@ -305,29 +305,15 @@ document.addEventListener('DOMContentLoaded', () => {
           window.__lastStreamUrl = c.streamUrl;
           window.__lastIsLive = c.isLive;
 
-          // 라이브 중이거나, 라이브 종료 상태더라도 다시보기 URL(streamUrl)이 있으면 재생
-          const isPlayable = c.isLive || (c.streamUrl && c.streamUrl.trim().length > 5);
-          const isVodMode = !c.isLive && (c.streamUrl && c.streamUrl.trim().length > 5);
-          const vodOverlay = document.getElementById('vod-controls-overlay');
-
-          if (vodOverlay) {
-            if (isVodMode) vodOverlay.classList.remove('hidden');
-            else vodOverlay.classList.add('hidden');
-          }
-
-          if (isPlayable) {
+          if (c.isLive) {
             if (overlay) overlay.classList.add('hidden');
-            const isHls = c.streamUrl.includes('.m3u8');
-            if (isHls && window.hlsInstance) {
+            if (window.hlsInstance) {
               window.hlsInstance.loadSource(c.streamUrl);
               window.hlsInstance.attachMedia(video);
               window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
                 video.play().catch(e => console.warn(e));
               });
-            } else {
-              if (window.hlsInstance) {
-                try { window.hlsInstance.detachMedia(); } catch (e) {}
-              }
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
               video.src = c.streamUrl;
               video.play().catch(e => console.warn(e));
             }
@@ -752,8 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 1. 비디오 HLS 스트리밍 설정
   const video = document.getElementById('live-video');
-  const initialCfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
-  const m3u8Url = initialCfg.streamUrl || 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
+  const m3u8Url = 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
 
   if (Hls.isSupported()) {
     window.hlsInstance = new Hls({
@@ -770,75 +755,6 @@ document.addEventListener('DOMContentLoaded', () => {
     video.src = m3u8Url;
     video.addEventListener('loadedmetadata', function () {
       video.play().catch(e => console.warn("자동 재생 차단됨", e));
-    });
-  }
-
-  // ── VOD 다시보기 전용 컨트롤러 바 로직 ──
-  const btnVodPlay = document.getElementById('btn-vod-play');
-  const vodPlayIcon = document.getElementById('vod-play-icon');
-  const vodPauseIcon = document.getElementById('vod-pause-icon');
-  const btnVodRewind = document.getElementById('btn-vod-rewind');
-  const btnVodForward = document.getElementById('btn-vod-forward');
-  const vodSeekbar = document.getElementById('vod-seekbar');
-  const vodTimeCurrent = document.getElementById('vod-time-current');
-  const vodTimeDuration = document.getElementById('vod-time-duration');
-
-  const formatTime = (seconds) => {
-    if (isNaN(seconds) || seconds < 0) return '00:00';
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
-  };
-
-  if (video) {
-    video.addEventListener('timeupdate', () => {
-      if (video.duration) {
-        const pct = (video.currentTime / video.duration) * 100;
-        if (vodSeekbar) vodSeekbar.value = pct;
-        if (vodTimeCurrent) vodTimeCurrent.textContent = formatTime(video.currentTime);
-        if (vodTimeDuration) vodTimeDuration.textContent = formatTime(video.duration);
-      }
-    });
-
-    video.addEventListener('play', () => {
-      if (vodPlayIcon) vodPlayIcon.style.display = 'none';
-      if (vodPauseIcon) vodPauseIcon.style.display = 'block';
-    });
-
-    video.addEventListener('pause', () => {
-      if (vodPlayIcon) vodPlayIcon.style.display = 'block';
-      if (vodPauseIcon) vodPauseIcon.style.display = 'none';
-    });
-  }
-
-  if (btnVodPlay && video) {
-    btnVodPlay.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (video.paused) video.play();
-      else video.pause();
-    });
-  }
-
-  if (btnVodRewind && video) {
-    btnVodRewind.addEventListener('click', (e) => {
-      e.stopPropagation();
-      video.currentTime = Math.max(0, video.currentTime - 10);
-    });
-  }
-
-  if (btnVodForward && video) {
-    btnVodForward.addEventListener('click', (e) => {
-      e.stopPropagation();
-      video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
-    });
-  }
-
-  if (vodSeekbar && video) {
-    vodSeekbar.addEventListener('input', (e) => {
-      e.stopPropagation();
-      if (video.duration) {
-        video.currentTime = (vodSeekbar.value / 100) * video.duration;
-      }
     });
   }
 
