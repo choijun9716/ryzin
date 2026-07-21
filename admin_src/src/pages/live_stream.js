@@ -776,7 +776,7 @@ function renderLiveEditView(container, liveId, showView) {
           <div>
             <label class="modern-label">실시간 시청자 수 (현재값)</label>
             <div style="display:flex; gap:6px; align-items:center;">
-              <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">${stats.viewers.toLocaleString()}명</div>
+              <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">총 ${stats.viewers.toLocaleString()}명</div>
             </div>
             <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
               <input type="number" class="modern-input" id="cfg-viewers-add" placeholder="+추가할 수" style="flex:1; padding:8px 10px; font-size:13px;">
@@ -1011,7 +1011,7 @@ function renderLiveEditView(container, liveId, showView) {
 
         stats.viewers = newViewers;
         saveStats();
-        document.getElementById('cfg-viewers-display').textContent = newViewers.toLocaleString() + '명';
+        if (typeof window.updateAdminViewersDisplay === 'function') window.updateAdminViewersDisplay();
         document.getElementById('cfg-viewers-add').value = '';
         alert(`시청자 수가 ${newViewers.toLocaleString()}명으로 업데이트되었습니다.`);
       } catch (err) {
@@ -1065,8 +1065,7 @@ function renderLiveEditView(container, liveId, showView) {
           }
 
           // 3. UI 업데이트
-          const viewersDisplay = document.getElementById('cfg-viewers-display');
-          if (viewersDisplay) viewersDisplay.textContent = '0명';
+          if (typeof window.updateAdminViewersDisplay === 'function') window.updateAdminViewersDisplay();
 
           const cumViewersInput = document.getElementById('cfg-cumViewers');
           if (cumViewersInput) cumViewersInput.value = 0;
@@ -1622,6 +1621,27 @@ function renderLiveEditView(container, liveId, showView) {
       }
     };
 
+    window.realTimePresenceCount = 0;
+    window.updateAdminViewersDisplay = () => {
+      const viewerDisplayEl = document.getElementById('cfg-viewers-display');
+      if (viewerDisplayEl) {
+        viewerDisplayEl.innerHTML = `총 <b>${(stats.viewers + window.realTimePresenceCount).toLocaleString()}</b>명 <span style="font-size:11px; font-weight:normal; color:#64748b; margin-left:4px;">(실접속: ${window.realTimePresenceCount}명, 수동: ${stats.viewers.toLocaleString()}명)</span>`;
+      }
+    };
+
+    let adminPresenceChannel = null;
+    const subscribeAdminPresence = () => {
+      if (!db) return;
+      adminPresenceChannel = db.channel(`presence-${liveId}`);
+      adminPresenceChannel.on('presence', { event: 'sync' }, () => {
+        const state = adminPresenceChannel.presenceState();
+        let count = 0;
+        for (const key in state) count += state[key].length;
+        window.realTimePresenceCount = count;
+        window.updateAdminViewersDisplay();
+      }).subscribe();
+    };
+
     // 2. 실시간 구독
     const subscribeAdminChat = () => {
       if (!db) return;
@@ -1638,11 +1658,15 @@ function renderLiveEditView(container, liveId, showView) {
 
     loadAdminChatHistory();
     subscribeAdminChat();
+    subscribeAdminPresence();
 
     // 탭 이동 시 구독 해제 및 봇 정리
     contentArea.addEventListener('adminTabLeave', () => {
       if (chatChannel) {
         db.removeChannel(chatChannel);
+      }
+      if (adminPresenceChannel) {
+        db.removeChannel(adminPresenceChannel);
       }
       if (botTimer) {
         clearInterval(botTimer);
