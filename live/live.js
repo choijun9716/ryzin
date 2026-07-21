@@ -145,6 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (showSplash === false) {
       const splash = document.getElementById('splash-screen');
       if (splash) splash.remove();
+      const splashAudio = document.getElementById('splash-audio');
+      if (splashAudio) {
+        splashAudio.pause();
+        splashAudio.remove();
+      }
     }
 
     const config = {

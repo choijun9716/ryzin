@@ -31,23 +31,31 @@
       const cached = JSON.parse(localStorage.getItem('ryzin_live_config') || '{}');
       if (cached.showSplash === false) {
         document.write('<style>#splash-screen { display: none !important; }</style>');
+      } else {
+        document.addEventListener("DOMContentLoaded", () => {
+          const audio = document.getElementById('splash-audio');
+          if (audio) audio.play().catch(e => console.warn('Autoplay blocked:', e));
+        });
       }
     } catch(e) {}
   </script>
 </head>
 
 <body>
+  <!-- ── Splash Screen Audio ── -->
+  <audio id="splash-audio" src="splash_sound.mp3" preload="auto"></audio>
+  
   <!-- ── Splash Screen (Intro) ── -->
   <div id="splash-screen" class="splash-screen">
     <img src="https://ryzincorp.com/assets/logo.png" alt="RYZIN" class="splash-logo" onerror="this.src='../assets/logo.png'">
   </div>
   <script>
-    // 2.5초 후 스플래시 화면을 페이드아웃 없이 즉시 제거
+    // 3초 후 스플래시 화면을 페이드아웃 없이 즉시 제거 (오디오는 DOM에 남아 계속 재생됨)
     document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         if (splash) splash.remove();
-      }, 2500);
+      }, 3000);
     });
   </script>
 
