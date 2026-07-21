@@ -305,15 +305,18 @@ document.addEventListener('DOMContentLoaded', () => {
           window.__lastStreamUrl = c.streamUrl;
           window.__lastIsLive = c.isLive;
 
-          if (c.isLive) {
+          // 라이브 중이거나, 라이브 종료 상태더라도 다시보기 URL(streamUrl)이 있으면 재생
+          const isPlayable = c.isLive || (c.streamUrl && c.streamUrl.trim().length > 5);
+
+          if (isPlayable) {
             if (overlay) overlay.classList.add('hidden');
-            if (window.hlsInstance) {
+            if (window.hlsInstance && (c.streamUrl.includes('.m3u8') || !c.streamUrl.endsWith('.mp4'))) {
               window.hlsInstance.loadSource(c.streamUrl);
               window.hlsInstance.attachMedia(video);
               window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
                 video.play().catch(e => console.warn(e));
               });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            } else {
               video.src = c.streamUrl;
               video.play().catch(e => console.warn(e));
             }
