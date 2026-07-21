@@ -1313,6 +1313,7 @@ function renderLiveEditView(container, liveId, showView) {
         <button id="btn-toggle-bot" class="action-btn btn-primary-solid" style="width:100%; justify-content:center; padding:14px; font-size:15px; gap:8px;">
           <span id="bot-icon">▶</span> <span id="bot-text">채팅 봇 시작</span>
         </button>
+        </div>
       </div>
 
       <!-- 이벤트 관리 뷰 -->
