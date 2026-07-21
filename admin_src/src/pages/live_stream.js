@@ -2344,11 +2344,103 @@ function renderLiveEditView(container, liveId, showView) {
       contentArea.dispatchEvent(new Event('adminTabLeave'));
       cleanUpOnAirTimer();
       if (botTimer) clearInterval(botTimer);
+      if (adminSyncChannel) db.removeChannel(adminSyncChannel);
       showView(null);
     });
     document.getElementById('btn-refresh-preview').addEventListener('click', () => {
       document.getElementById('live-preview-iframe').src = previewUrl;
     });
+
+    // ── 실시간 어드민 동기화 (다중 접속 처리) ──
+    let adminSyncChannel = null;
+    const subscribeAdminSync = () => {
+      if (!db) return;
+      adminSyncChannel = db.channel(`admin-sync-${liveId}`)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_control', filter: `live_id=eq.${liveId}` }, payload => {
+          const newData = payload.new;
+          if (!newData) return;
+
+          // 로컬 config 갱신
+          config.brandName = newData.title || '';
+          config.title = newData.subtitle || '';
+          const logoStr = newData.profile_image || '';
+          config.showSplash = !logoStr.includes('#nosplash');
+          config.logoUrl = logoStr.replace('#nosplash', '');
+          config.streamUrl = newData.stream_url || '';
+          config.showViewers = newData.show_viewers !== false;
+          config.thumbnailUrl = newData.thumbnail_url || '';
+          config.liveStartTime = newData.start_time || '';
+          config.isLive = newData.status === 'ON';
+          config.shareTitle = newData.share_title || '';
+          config.shareDesc = newData.share_desc || '';
+          config.shareImageUrl = newData.share_image || '';
+          config.likeImageUrl = newData.like_image_url || '';
+          config.bannedWords = newData.banned_words || '';
+          config.bannedUsers = newData.banned_users || '';
+          if (newData.winner_name !== undefined) config.winner_name = newData.winner_name;
+          if (newData.winner_timestamp !== undefined) config.winner_timestamp = newData.winner_timestamp;
+          saveLiveConfig(liveId, config);
+
+          // 입력 중인 엘리먼트는 제외하고 UI 갱신 (타이핑 증발 방지)
+          const safeUpdate = (id, val) => {
+            const el = document.getElementById(id);
+            if (el && document.activeElement !== el) {
+              if (el.type === 'checkbox') el.checked = Boolean(val);
+              else el.value = val;
+            }
+          };
+
+          safeUpdate('cfg-brandName', config.brandName);
+          safeUpdate('cfg-title', config.title);
+          safeUpdate('cfg-stream', config.streamUrl);
+          safeUpdate('cfg-showViewers', config.showViewers);
+          safeUpdate('cfg-liveStartTime', config.liveStartTime);
+          safeUpdate('cfg-shareTitle', config.shareTitle);
+          safeUpdate('cfg-shareDesc', config.shareDesc);
+          safeUpdate('cfg-bannedWords', config.bannedWords);
+          safeUpdate('cfg-bannedUsers', config.bannedUsers);
+
+          // 이미지 갱신
+          const logoPreview = document.getElementById('logo-preview');
+          if (logoPreview) logoPreview.src = config.logoUrl;
+          const thumbPreview = document.getElementById('thumbnail-preview');
+          if (thumbPreview) thumbPreview.src = config.thumbnailUrl;
+          const likePreview = document.getElementById('like-preview');
+          if (likePreview) {
+            likePreview.src = config.likeImageUrl;
+            likePreview.style.display = config.likeImageUrl ? 'block' : 'none';
+          }
+          const likePlaceholder = document.getElementById('like-preview-placeholder');
+          if (likePlaceholder) likePlaceholder.style.display = config.likeImageUrl ? 'none' : 'block';
+          const btnClearLike = document.getElementById('btn-clear-like-icon');
+          if (btnClearLike) btnClearLike.style.display = config.likeImageUrl ? 'block' : 'none';
+
+          // 상태 토글 버튼 갱신
+          const liveToggleBtn = document.getElementById('btn-toggle-live');
+          if (liveToggleBtn && document.activeElement !== liveToggleBtn) {
+            liveToggleBtn.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
+            liveToggleBtn.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
+          }
+
+          // 상품 목록 갱신 (포커스 방해 없을 때만)
+          if (newData.products && Array.isArray(newData.products)) {
+            const newProductsStr = JSON.stringify(newData.products);
+            if (JSON.stringify(products) !== newProductsStr) {
+              products.length = 0;
+              products.push(...newData.products);
+              saveLiveProductsLocal(liveId, products);
+              const plc = document.getElementById('product-list-container');
+              if (plc && !plc.contains(document.activeElement)) {
+                if (typeof renderProductList === 'function') {
+                  plc.innerHTML = renderProductList();
+                }
+              }
+            }
+          }
+        })
+        .subscribe();
+    };
+    subscribeAdminSync();
 
     const tabBtns = topBar.querySelectorAll('.tab-btn');
     const switchTab = (tabName) => {
