@@ -811,8 +811,8 @@ function renderLiveEditView(container, liveId, showView) {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
           <h3 style="margin:0; border:none; padding:0;">카카오톡 공유 카드 설정</h3>
           <div style="display:flex; gap:8px;">
-            <button id="btn-preview-og" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700;">🔍 링크 테스트</button>
-            <button id="btn-kakao-cache" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700; color:#f0a000; border-color:#fde68a;">🔄 카카오 캐시 초기화</button>
+            <button id="btn-preview-og" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700;">링크 테스트</button>
+            <button id="btn-kakao-cache" class="action-btn btn-neutral" style="padding:6px 12px; font-size:11px; font-weight:700;">카카오 캐시 초기화</button>
           </div>
         </div>
         <p style="margin:0 0 20px 0; font-size:12px; color:#64748b; line-height:1.5;">카카오톡·슬랙·라인 등 SNS에서 링크를 공유할 때 나타나는 미리보기 카드를 커스텀합니다. 설정 후 반드시 <strong>[설정 저장]</strong>을 눌러주세요.</p>
