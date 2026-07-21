@@ -310,13 +310,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (isPlayable) {
             if (overlay) overlay.classList.add('hidden');
-            if (window.hlsInstance && (c.streamUrl.includes('.m3u8') || !c.streamUrl.endsWith('.mp4'))) {
+            const isHls = c.streamUrl.includes('.m3u8');
+            if (isHls && window.hlsInstance) {
               window.hlsInstance.loadSource(c.streamUrl);
               window.hlsInstance.attachMedia(video);
               window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
                 video.play().catch(e => console.warn(e));
               });
             } else {
+              if (window.hlsInstance) {
+                try { window.hlsInstance.detachMedia(); } catch (e) {}
+              }
               video.src = c.streamUrl;
               video.play().catch(e => console.warn(e));
             }
@@ -741,7 +745,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 1. 비디오 HLS 스트리밍 설정
   const video = document.getElementById('live-video');
-  const m3u8Url = 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
+  const initialCfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+  const m3u8Url = initialCfg.streamUrl || 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
 
   if (Hls.isSupported()) {
     window.hlsInstance = new Hls({
