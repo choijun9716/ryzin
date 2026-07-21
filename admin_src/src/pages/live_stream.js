@@ -1735,47 +1735,47 @@ function renderLiveEditView(container, liveId, showView) {
         <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
       </div>
       <div class="product-inputs">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <input type="text" class="modern-input" style="flex:1;" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
-          <span style="margin-left:12px; font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:4px 10px; border-radius:12px; white-space:nowrap;">
-            조회수 (클릭수): ${clickCount.toLocaleString()}회
-          </span>
-        </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <input type="text" class="modern-input" style="flex:1;" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL (상담문의 폼인 경우 자동 처리됨)" ${p.isLeadForm ? 'disabled' : ''}>
+          <input type="text" class="modern-input" style="flex:2;" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
+          <input type="number" class="modern-input" style="flex:1;" value="${(p.normalPrice || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
+          <input type="number" class="modern-input" style="flex:1;" value="${(p.price || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
+          <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="width:50px; text-align:center;">
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <input type="text" class="modern-input" style="flex:1;" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL" ${p.isLeadForm ? 'disabled' : ''}>
           <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
             <input type="checkbox" data-idx="${idx}" data-field="isLeadForm" ${p.isLeadForm === true || p.isLeadForm === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#3b82f6;">
-            상담문의 폼
+            상담문의
           </label>
-        </div>
-        <div class="product-prices">
-          <input type="number" class="modern-input" value="${(p.price || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="price" placeholder="라이브가">
-          <input type="number" class="modern-input" value="${(p.normalPrice || '').toString().replace(/[^0-9]/g, '')}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
-          <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="max-width:72px; text-align:center;">
+          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+            <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
+            평소숨김
+          </label>
+          <span style="font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:8px 10px; border-radius:8px; white-space:nowrap;">조회: ${clickCount.toLocaleString()}</span>
           <button class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === 0 ? 'disabled' : ''}>▲</button>
           <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
-        <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:10px; border:1px solid #fecdd3;">
-          <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
-          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
-          <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
-          <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
-          <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-          ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:10px; border:1px solid #bbf7d0; margin-top:6px;">
-          <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
-          <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetLikes" placeholder="목표 좋아요" value="${p.targetLikes || ''}">
-          <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
-          <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
-          <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
-          <div style="flex:1;"></div>
-          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none;">
-            <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
-            평소 숨김
-          </label>
-        </div>
+        <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+          <summary style="padding:10px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none;">⚙️ 고급 설정 (깜짝딜 / 좋아요 조건)</summary>
+          <div style="padding:10px 14px; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
+              <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
+              <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
+              <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
+              <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+              <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+              ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:8px; border:1px solid #bbf7d0;">
+              <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
+              <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetLikes" placeholder="목표 좋아요" value="${p.targetLikes || ''}">
+              <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
+              <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
+              <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
     `;
