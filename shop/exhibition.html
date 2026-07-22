@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RYZIN SHOP — 기획전</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/admin/supabase_config.js"></script>
+
+  <style>
+    :root {
+      --bg: #0c0d10;
+      --surface: #14151a;
+      --surface-card: #1c1d24;
+      --text-main: #ffffff;
+      --text-sub: #94a3b8;
+      --text-muted: #64748b;
+      --accent-orange: #FF8730;
+      --accent-yellow: #fbbf24;
+      --border: #232530;
+      --chip-navy: #1a1c23;
+      --chip-burgundy: #2d1813;
+      --chip-dark: #22232a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000000;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 90px;
+      position: relative;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(12, 13, 16, 0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hdr-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hdr-back-btn {
+      background: none;
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 4px 0;
+    }
+    .hdr-back-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .hdr-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    /* ── EXHIBITION HERO BANNER ── */
+    .ex-hero {
+      position: relative;
+      margin: 16px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1f2330 0%, #111319 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 24px 20px;
+    }
+
+    .ex-badge {
+      display: inline-block;
+      background: var(--accent-orange);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .ex-hero h1 {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.04em;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    .ex-hero p {
+      font-size: 13px;
+      color: var(--text-sub);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    /* ── VERTICAL 2-COLUMN GRID ── */
+    .ex-grid-section {
+      padding: 8px 16px 24px;
+    }
+
+    .ex-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px 12px;
+    }
+
+    .toss-card {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .toss-img-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      background: #1c1d24;
+    }
+
+    .toss-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .toss-discount-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: #FF3B30;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      z-index: 2;
+    }
+
+    .toss-wish-btn {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      border: none;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .toss-wish-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #ffffff;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .toss-info {
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .toss-brand-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      min-height: 18px;
+      max-height: 36px;
+      height: auto;
+    }
+
+    .toss-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .toss-sale-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .toss-origin-price {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .toss-unit-price {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .toss-rating-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .star-icon { color: var(--accent-yellow); }
+
+    .toss-chip-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .toss-chip {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .chip-ship { background: #1a1c23; color: #60a5fa; }
+    .chip-guarantee { background: #2d1813; color: #fdba74; }
+    .chip-best { background: #22232a; color: #cbd5e1; }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: #090a0c;
+      padding: 20px 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 20px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding-bottom: 12px;
+      user-select: none;
+    }
+
+    .footer-logo span {
+      font-size: 16px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.04em;
+    }
+
+    .footer-logo svg {
+      transition: transform 0.3s ease;
+    }
+
+    .footer.open .footer-logo svg {
+      transform: rotate(180deg);
+    }
+
+    .footer-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+      opacity: 0;
+      padding-top: 0;
+    }
+
+    .footer.open .footer-body {
+      max-height: 350px;
+      opacity: 1;
+      padding-top: 16px;
+    }
+
+    .footer-info {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .footer-notice {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-size: 10px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      color: var(--text-sub);
+    }
+
+    .footer-links span {
+      color: var(--text-sub);
+      font-weight: 500;
+    }
+
+    .footer-copyright {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav-wrap {
+      position: fixed;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 390px;
+      z-index: 300;
+    }
+
+    .bottom-nav {
+      width: 100%;
+      height: 64px;
+      border-radius: 40px;
+      background: rgba(22, 23, 28, 0.78);
+      backdrop-filter: saturate(180%) blur(24px);
+      -webkit-backdrop-filter: saturate(180%) blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.45);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .nav-item.active {
+      color: var(--accent-orange);
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ── HEADER ── -->
+  <header class="header">
+    <div class="hdr-left">
+      <button class="hdr-back-btn" onclick="window.history.back()">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <span class="hdr-title" id="page-title">기획전 특가</span>
+    </div>
+  </header>
+
+  <!-- ── HERO ── -->
+  <div class="ex-hero">
+    <span class="ex-badge" id="ex-badge">SPECIAL EVENT</span>
+    <h1 id="ex-main-title">기획전 브랜드 컬렉션</h1>
+    <p id="ex-subtitle">라이진 단독 혜택으로 만나는 특별 기획전</p>
+  </div>
+
+  <!-- ── GRID SECTION ── -->
+  <section class="ex-grid-section">
+    <div class="ex-grid" id="ex-grid"></div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer" id="ryzin-footer">
+    <div class="footer-logo" onclick="toggleFooter()">
+      <span>RYZIN</span>
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="footer-body">
+      <div class="footer-info">
+        <span>회사명: 라이진 | 대표: 채이준 | 사업자등록번호: 821-29-01197</span>
+        <span>사업장 소재지: 경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2</span>
+        <span>호스팅서비스: Amazon Web Services, Inc</span>
+      </div>
+      <p class="footer-notice">
+        라이진은 통신판매중개자이며, 통신판매의 당사자가 아닙니다. 상품, 상품 정보, 거래, 배송에 관한 의무와 책임은 판매자에게 있습니다.
+      </p>
+      <div class="footer-links">
+        <span>이용약관</span> |
+        <span>사업자정보</span> |
+        <span>개인정보처리방침</span> |
+        <span>입점문의</span>
+      </div>
+      <div class="footer-copyright">
+        © 2026 RYZIN
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── BOTTOM NAV ── -->
+  <div class="bottom-nav-wrap">
+    <nav class="bottom-nav">
+      <div class="nav-item" onclick="window.location.href='/shop/index.html'">
+        <svg viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h14v-8h3L12 3z"/></svg>
+        <span>홈</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='/shop/live_teaser.html'">
+        <svg viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+        <span>라이브</span>
+      </div>
+      <div class="nav-item active" onclick="window.location.href='/shop/group_buy.html'">
+        <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span>공동구매</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='/shop/cart.html'">
+        <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h6v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/></svg>
+        <span>장바구니</span>
+      </div>
+      <div class="nav-item" onclick="window.location.href='/shop/profile.html'">
+        <svg viewBox="0 0 24 24"><text x="50%" y="68%" text-anchor="middle" font-size="13" font-weight="800" font-family="'Pretendard', sans-serif" fill="currentColor">MY</text></svg>
+        <span>내정보</span>
+      </div>
+    </nav>
+  </div>
+
+</div>
+
+<script>
+  const SB_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+  const SB_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+  const SB_H = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+  async function sbGet(table, params = '') {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_H });
+      return r.ok ? r.json() : [];
+    } catch { return []; }
+  }
+
+  function toggleFooter() {
+    document.getElementById('ryzin-footer').classList.toggle('open');
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  async function loadExhibition() {
+    const params = new URLSearchParams(window.location.search);
+    const secId = params.get('id');
+    const paramTitle = params.get('title');
+
+    let title = paramTitle || '기획전 특가';
+    let subtitle = '라이진 단독 혜택으로 만나는 특별 기획전';
+    let products = [];
+
+    if (secId) {
+      const [secRes, prodRes] = await Promise.all([
+        sbGet('shop_sections', `select=*&id=eq.${secId}`),
+        sbGet('shop_products', `select=*&section_id=eq.${secId}&active=eq.true&order=sort_order.asc`)
+      ]);
+      if (secRes && secRes.length) {
+        title = secRes[0].title || title;
+        subtitle = secRes[0].subtitle || subtitle;
+      }
+      products = prodRes || [];
+    }
+
+    if (!products.length) {
+      products = await sbGet('shop_products', 'select=*&active=eq.true&order=sort_order.asc&limit=10');
+    }
+
+    if (!products.length) {
+      products = [
+        {
+          id: 'ex_01',
+          brand_name: '설화수',
+          product_title: '윤조 에센스 90ml 단독 기획세트',
+          sale_price: '79,000원',
+          origin_price: '140,000원',
+          discount: '43% OFF',
+          rating: '4.9',
+          reviews: '1,250',
+          img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85',
+          chips: [{ text: '무료배송', class: 'chip-ship' }, { text: '단독특가', class: 'chip-guarantee' }]
+        },
+        {
+          id: 'ex_02',
+          brand_name: '에이피뷰티',
+          product_title: '에어리 선 세럼 50ml 신제품 론칭',
+          sale_price: '34,000원',
+          origin_price: '58,000원',
+          discount: '41% OFF',
+          rating: '4.8',
+          reviews: '340',
+          img_url: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85',
+          chips: [{ text: '오늘출발', class: 'chip-ship' }]
+        },
+        {
+          id: 'ex_03',
+          brand_name: '야다',
+          product_title: '오리온 딥 클렌징 크림 100ml',
+          sale_price: '12,900원',
+          origin_price: '39,000원',
+          discount: '66% OFF',
+          rating: '5.0',
+          reviews: '292',
+          img_url: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=600&q=85',
+          chips: [{ text: '무료배송', class: 'chip-ship' }]
+        }
+      ];
+    }
+
+    document.getElementById('page-title').textContent = title;
+    document.getElementById('ex-main-title').textContent = title;
+    document.getElementById('ex-subtitle').textContent = subtitle;
+
+    const grid = document.getElementById('ex-grid');
+    grid.innerHTML = products.map(item => {
+      let bName = item.brand_name || '';
+      let pTitle = item.product_title || '';
+      if (!bName && item.brand_title) {
+        const parts = item.brand_title.split(' ');
+        if (parts.length > 1) {
+          bName = parts[0];
+          pTitle = parts.slice(1).join(' ');
+        } else {
+          pTitle = item.brand_title;
+        }
+      }
+
+      return `
+        <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
+          <div class="toss-img-box">
+            <img src="${item.img_url}" alt="${esc(pTitle)}">
+            <span class="toss-discount-tag">${item.discount || '기획특가'}</span>
+            <button class="toss-wish-btn" onclick="event.stopPropagation();">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
+          </div>
+          <div class="toss-info">
+            ${bName ? `<div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px;">${esc(bName)}</div>` : ''}
+            <div class="toss-brand-title">${esc(pTitle || item.brand_title)}</div>
+            <div class="toss-price-row">
+              <span class="toss-sale-price">${item.sale_price}</span>
+              ${item.origin_price ? `<span class="toss-origin-price">${item.origin_price}</span>` : ''}
+            </div>
+            ${item.unit_price ? `<div class="toss-unit-price">${item.unit_price}</div>` : ''}
+            ${item.rating ? `<div class="toss-rating-row"><span class="star-icon">★</span><span>${item.rating} (${item.reviews || 0})</span></div>` : ''}
+            <div class="toss-chip-row">
+              ${(Array.isArray(item.chips) ? item.chips : JSON.parse(item.chips||'[]')).map(c => `<span class="toss-chip ${c.class||'chip-ship'}">${c.text}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', loadExhibition);
+</script>
+</body>
+</html>

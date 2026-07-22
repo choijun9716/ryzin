@@ -869,7 +869,7 @@
     <section class="mag-section">
       <div class="mag-header">
         <h3>매거진</h3>
-        <button class="mag-more-btn">더보기</button>
+        <button class="mag-more-btn" onclick="window.location.href='/shop/exhibition.html?title=${encodeURIComponent('RYZIN 뷰티 & 라이프 매거진')}'">더보기</button>
       </div>
 
       <!-- 피처 카드 -->
@@ -1086,14 +1086,14 @@
       secEl.className = 'section';
       secEl.id = 'sec-wrap-' + sec.id;
       secEl.innerHTML = `
-        <div class="sec-header-wrap">
+        <div class="sec-header-wrap" style="cursor:pointer;" onclick="window.location.href='/shop/exhibition.html?id=${sec.id}&title=${encodeURIComponent(sec.title)}'">
           <div class="sec-title-group">
             <h3>${sec.title}</h3>
             <p>${sec.subtitle || ''}</p>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
             ${sec.show_timer ? '<div class="sec-timer-badge" id="sec-timer-'+sec.id+'">00:00</div>' : ''}
-            <button class="mag-more-btn">더보기</button>
+            <button class="mag-more-btn" onclick="event.stopPropagation(); window.location.href='/shop/exhibition.html?id=${sec.id}&title=${encodeURIComponent(sec.title)}'">더보기</button>
           </div>
         </div>
         <div class="toss-prod-scroll" id="sec-prods-${sec.id}"></div>
@@ -1207,22 +1207,22 @@
 
   wrap.innerHTML = `
       <section class="section">
-        <div class="sec-header-wrap">
+        <div class="sec-header-wrap" style="cursor:pointer;" onclick="window.location.href='/shop/exhibition.html?title=${encodeURIComponent('지금 바로 상설관 구경')}'">
           <div class="sec-title-group">
             <h3>지금 바로 상설관 구경</h3>
             <p>특가 상품 보러 가기</p>
           </div>
-          <button class="mag-more-btn">더보기</button>
+          <button class="mag-more-btn" onclick="event.stopPropagation(); window.location.href='/shop/exhibition.html?title=${encodeURIComponent('지금 바로 상설관 구경')}'">더보기</button>
         </div>
         <div class="toss-prod-scroll" id="scroll-section-1"></div>
       </section>
       <section class="section">
-        <div class="sec-header-wrap">
+        <div class="sec-header-wrap" style="cursor:pointer;" onclick="window.location.href='/shop/exhibition.html?title=${encodeURIComponent('뷰티영 브랜드 기획전')}'">
           <div class="sec-title-group">
             <h3>뷰티영 브랜드 기획전</h3>
             <p>단독 특가로 만나보세요</p>
           </div>
-          <button class="mag-more-btn">더보기</button>
+          <button class="mag-more-btn" onclick="event.stopPropagation(); window.location.href='/shop/exhibition.html?title=${encodeURIComponent('뷰티영 브랜드 기획전')}'">더보기</button>
         </div>
         <div class="toss-prod-scroll" id="scroll-section-2"></div>
       </section>
