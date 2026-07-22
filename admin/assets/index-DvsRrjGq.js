@@ -3215,7 +3215,7 @@ Minimum version required to store current data is: `+c+`.
       <button id="add-live" class="sm-action-btn sm-btn-primary">+ 새 라이브 추가</button>
     </div>
     <div id="live-list"></div>
-  `,e.querySelector(`#add-live`).addEventListener(`click`,async()=>{await aa.insert({sort_order:99,title:`새로운 라이브 방송`,viewers:`0명 시청 중`,img_url:``,link_url:``}),Q(`새 라이브가 생성되었습니다.`),await va(e)});let n=e.querySelector(`#live-list`);t.forEach((t,r)=>{let i=document.createElement(`div`);i.className=`sm-card`,i.innerHTML=`
+  `,e.querySelector(`#add-live`).addEventListener(`click`,async()=>{await aa.insert({sort_order:99,title:`새로운 라이브 방송`,viewers:`0명 시청 중`,img_url:``,link_url:``,status:`live`}),Q(`새 라이브가 생성되었습니다.`),await va(e)});let n=e.querySelector(`#live-list`);t.forEach((t,r)=>{let i=document.createElement(`div`);i.className=`sm-card`;let a=t.status===`upcoming`;i.innerHTML=`
       <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
         <div style="width:140px; flex-shrink:0;">
           <label class="sm-label">방송 썸네일 (클릭 업로드)</label>
@@ -3226,7 +3226,14 @@ Minimum version required to store current data is: `+c+`.
         </div>
         <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           ${$(`방송 타이틀`,`lv-title`,t.title,`text`,!0)}
-          ${$(`시청자 수 문구`,`lv-viewers`,t.viewers)}
+          <div>
+            <label class="sm-label">라이브 진행 상태</label>
+            <select class="sm-input lv-status" style="font-weight:600; cursor:pointer;">
+              <option value="live" ${a?``:`selected`}>🔴 방송 중 (버튼: 지금 시청하기)</option>
+              <option value="upcoming" ${a?`selected`:``}>📅 방송 예정 (버튼: 라이브 확인하기)</option>
+            </select>
+          </div>
+          ${$(`시청자 수 / 방송시간 문구`,`lv-viewers`,t.viewers)}
           ${$(`이동 링크 URL`,`lv-link`,t.link_url)}
           ${fa(`썸네일 이미지 URL`,`lv-img`,t.img_url)}
         </div>
@@ -3235,7 +3242,7 @@ Minimum version required to store current data is: `+c+`.
         <button class="sm-action-btn sm-btn-success lv-save">저장</button>
         <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
       </div>
-    `,da(i.querySelector(`.lv-uploader`),i.querySelector(`.lv-img`),e=>{i.querySelector(`.lv-thumb`).src=e}),i.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{i.querySelector(`.lv-thumb`).src=i.querySelector(`.lv-img`).value.trim()}),i.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await aa.update(t.id,{title:i.querySelector(`.lv-title`).value.trim(),viewers:i.querySelector(`.lv-viewers`).value.trim(),link_url:i.querySelector(`.lv-link`).value.trim(),img_url:i.querySelector(`.lv-img`).value.trim()}),Q(`라이브 제어 카드 저장 완료`)}),i.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`라이브 정보를 삭제합니까?`)&&(await aa.delete(t.id),Q(`제거되었습니다.`),await va(e))}),n.appendChild(i)})}async function ya(e,t){ma=await na.getAll();let n=await ia.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
+    `,da(i.querySelector(`.lv-uploader`),i.querySelector(`.lv-img`),e=>{i.querySelector(`.lv-thumb`).src=e}),i.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{i.querySelector(`.lv-thumb`).src=i.querySelector(`.lv-img`).value.trim()}),i.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await aa.update(t.id,{title:i.querySelector(`.lv-title`).value.trim(),viewers:i.querySelector(`.lv-viewers`).value.trim(),link_url:i.querySelector(`.lv-link`).value.trim(),img_url:i.querySelector(`.lv-img`).value.trim(),status:i.querySelector(`.lv-status`).value}),Q(`라이브 제어 카드 저장 완료`)}),i.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`라이브 정보를 삭제합니까?`)&&(await aa.delete(t.id),Q(`제거되었습니다.`),await va(e))}),n.appendChild(i)})}async function ya(e,t){ma=await na.getAll();let n=await ia.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
       <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">상설관 및 기획전 상품 섹션 (${ma.length}개)</h2>
       <button id="add-section" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>

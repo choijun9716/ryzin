@@ -879,21 +879,30 @@
       return;
     }
     if (sec) sec.style.display = '';
-    cont.innerHTML = lives.map(lv => `
-      <div class="live-card-item" onclick="window.location.href='${lv.link_url}'">
-        <img src="${lv.img_url}" alt="${lv.title}">
-        <div class="live-card-overlay">
-          <div class="live-top-row">
-            <span class="live-badge-onair"><span class="live-pulse-dot"></span>LIVE</span>
-            <span class="live-viewers">${lv.viewers}</span>
-          </div>
-          <div class="live-bottom-info">
-            <div class="live-title-text">${lv.title}</div>
-            <button class="live-join-btn">지금 시청하기</button>
+    cont.innerHTML = lives.map(lv => {
+      const isUpcoming = lv.status === 'upcoming';
+      const badgeHtml = isUpcoming
+        ? `<span class="live-badge-upcoming" style="background: rgba(255,255,255,0.22); color: #ffffff; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; backdrop-filter: blur(8px); letter-spacing: -0.01em;">라이브 예정</span>`
+        : `<span class="live-badge-onair"><span class="live-pulse-dot"></span>LIVE</span>`;
+      const btnText = isUpcoming ? '라이브 확인하기' : '지금 시청하기';
+      const btnStyle = isUpcoming ? 'background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.35); backdrop-filter: blur(10px); color: #fff;' : '';
+
+      return `
+        <div class="live-card-item" onclick="window.location.href='${lv.link_url || '/shop/live_teaser.html'}'">
+          <img src="${lv.img_url}" alt="${lv.title}">
+          <div class="live-card-overlay">
+            <div class="live-top-row">
+              ${badgeHtml}
+              <span class="live-viewers">${lv.viewers || ''}</span>
+            </div>
+            <div class="live-bottom-info">
+              <div class="live-title-text">${lv.title}</div>
+              <button class="live-join-btn" style="${btnStyle}">${btnText}</button>
+            </div>
           </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   // ── 상품 섹션 + 상품 동적 렌더 ──
@@ -931,30 +940,44 @@
         <button class="toss-more-btn">더보기</button>
       `;
       const grid = secEl.querySelector(`#sec-prods-${sec.id}`);
-      grid.innerHTML = prods.map(item => `
-        <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
-          <div class="toss-img-box">
-            <img src="${item.img_url}" alt="${item.brand_title}">
-            <span class="toss-discount-tag">${item.discount}</span>
-            <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
-              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            </button>
-          </div>
-          <div class="toss-info">
-            ${item.brand_name ? `<div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px; letter-spacing: -0.01em;">${item.brand_name}</div>` : ''}
-            <div class="toss-brand-title" style="${item.brand_name ? 'font-size: 13px; font-weight: 600;' : ''}">${item.product_title || item.brand_title}</div>
-            <div class="toss-price-row">
-              <span class="toss-sale-price">${item.sale_price}</span>
-              <span class="toss-origin-price">${item.origin_price}</span>
+      grid.innerHTML = prods.map(item => {
+        let bName = item.brand_name || '';
+        let pTitle = item.product_title || '';
+        if (!bName && item.brand_title) {
+          const parts = item.brand_title.split(' ');
+          if (parts.length > 1) {
+            bName = parts[0];
+            pTitle = parts.slice(1).join(' ');
+          } else {
+            pTitle = item.brand_title;
+          }
+        }
+
+        return `
+          <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
+            <div class="toss-img-box">
+              <img src="${item.img_url}" alt="${pTitle}">
+              <span class="toss-discount-tag">${item.discount}</span>
+              <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
+                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              </button>
             </div>
-            ${item.unit_price ? `<div class="toss-unit-price">${item.unit_price}</div>` : ''}
-            ${item.rating ? `<div class="toss-rating-row"><span class="star-icon">★</span><span>${item.rating} (${item.reviews})</span></div>` : ''}
-            <div class="toss-chip-row">
-              ${(Array.isArray(item.chips) ? item.chips : JSON.parse(item.chips||'[]')).map(c => `<span class="toss-chip ${c.class||'chip-ship'}">${c.text}</span>`).join('')}
+            <div class="toss-info">
+              ${bName ? `<div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px; letter-spacing: -0.01em;">${bName}</div>` : ''}
+              <div class="toss-brand-title" style="${bName ? 'font-size: 13px; font-weight: 600;' : ''}">${pTitle || item.brand_title}</div>
+              <div class="toss-price-row">
+                <span class="toss-sale-price">${item.sale_price}</span>
+                <span class="toss-origin-price">${item.origin_price}</span>
+              </div>
+              ${item.unit_price ? `<div class="toss-unit-price">${item.unit_price}</div>` : ''}
+              ${item.rating ? `<div class="toss-rating-row"><span class="star-icon">★</span><span>${item.rating} (${item.reviews})</span></div>` : ''}
+              <div class="toss-chip-row">
+                ${(Array.isArray(item.chips) ? item.chips : JSON.parse(item.chips||'[]')).map(c => `<span class="toss-chip ${c.class||'chip-ship'}">${c.text}</span>`).join('')}
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
       wrap.appendChild(secEl);
     });
   }

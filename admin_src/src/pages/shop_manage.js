@@ -516,7 +516,7 @@ async function renderLivesPanel(panel) {
   `;
 
   panel.querySelector('#add-live').addEventListener('click', async () => {
-    await liveDB.insert({ sort_order:99, title:'새로운 라이브 방송', viewers:'0명 시청 중', img_url:'', link_url:'' });
+    await liveDB.insert({ sort_order:99, title:'새로운 라이브 방송', viewers:'0명 시청 중', img_url:'', link_url:'', status:'live' });
     toast('새 라이브가 생성되었습니다.');
     await renderLivesPanel(panel);
   });
@@ -525,6 +525,7 @@ async function renderLivesPanel(panel) {
   lives.forEach((lv, i) => {
     const card = document.createElement('div');
     card.className = 'sm-card';
+    const isUpcoming = lv.status === 'upcoming';
     card.innerHTML = `
       <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
         <div style="width:140px; flex-shrink:0;">
@@ -536,7 +537,14 @@ async function renderLivesPanel(panel) {
         </div>
         <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           ${formField('방송 타이틀','lv-title',lv.title,'text',true)}
-          ${formField('시청자 수 문구','lv-viewers',lv.viewers)}
+          <div>
+            <label class="sm-label">라이브 진행 상태</label>
+            <select class="sm-input lv-status" style="font-weight:600; cursor:pointer;">
+              <option value="live" ${!isUpcoming ? 'selected' : ''}>🔴 방송 중 (버튼: 지금 시청하기)</option>
+              <option value="upcoming" ${isUpcoming ? 'selected' : ''}>📅 방송 예정 (버튼: 라이브 확인하기)</option>
+            </select>
+          </div>
+          ${formField('시청자 수 / 방송시간 문구','lv-viewers',lv.viewers)}
           ${formField('이동 링크 URL','lv-link',lv.link_url)}
           ${imgUploadField('썸네일 이미지 URL','lv-img',lv.img_url)}
         </div>
@@ -558,10 +566,11 @@ async function renderLivesPanel(panel) {
     });
     card.querySelector('.lv-save').addEventListener('click', async () => {
       await liveDB.update(lv.id, {
-        title:   card.querySelector('.lv-title').value.trim(),
-        viewers: card.querySelector('.lv-viewers').value.trim(),
+        title:    card.querySelector('.lv-title').value.trim(),
+        viewers:  card.querySelector('.lv-viewers').value.trim(),
         link_url: card.querySelector('.lv-link').value.trim(),
-        img_url:  card.querySelector('.lv-img').value.trim(),
+        img_url:   card.querySelector('.lv-img').value.trim(),
+        status:   card.querySelector('.lv-status').value,
       });
       toast('라이브 제어 카드 저장 완료');
     });
