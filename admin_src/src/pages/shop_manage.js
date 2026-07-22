@@ -615,6 +615,29 @@ function openProductModal(productObj, wrapper) {
               <input class="sm-input" id="m-color" type="text" value="${esc(defaultColor)}" placeholder="#ef4444" style="font-weight:700;">
             </div>
           </div>
+
+          <!-- 공동구매 설정 섹션 -->
+          <div style="grid-column: 1 / -1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-top:4px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <input type="checkbox" id="m-isgb" ${(productObj && productObj.is_group_buy) ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;">
+              <label for="m-isgb" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">공동구매 상품으로 등록 및 노출</label>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+              <div>
+                <label class="sm-label">모집 상태 뱃지</label>
+                <input class="sm-input" id="m-gbstatus" value="${esc(productObj ? (productObj.group_buy_status || '모집중') : '모집중')}" placeholder="모집중">
+              </div>
+              <div>
+                <label class="sm-label">참여 인원 뱃지</label>
+                <input class="sm-input" id="m-gbpart" value="${esc(productObj ? (productObj.group_buy_participants || '50명 참여') : '50명 참여')}" placeholder="50명 참여">
+              </div>
+              <div>
+                <label class="sm-label">목표 달성 인원 (명)</label>
+                <input class="sm-input" id="m-gbtarget" type="number" value="${productObj ? (productObj.group_buy_target || 50) : 50}" placeholder="50">
+              </div>
+            </div>
+          </div>
+
           ${formField('MD 추천 코멘트','m-mdcomment', productObj ? productObj.md_comment : 'MD 강력 추천 상품', 'text', true)}
           <div style="grid-column: 1 / -1;">
             <label class="sm-label">상품 이미지 (클릭 업로드)</label>
@@ -671,6 +694,10 @@ function openProductModal(productObj, wrapper) {
       discount:      modalContainer.querySelector('#m-disc').value.trim(),
       best_rank:     rankVal,
       badge_color:   colorText.value.trim() || '#ef4444',
+      is_group_buy:  modalContainer.querySelector('#m-isgb').checked,
+      group_buy_status:       modalContainer.querySelector('#m-gbstatus').value.trim() || '모집중',
+      group_buy_participants: modalContainer.querySelector('#m-gbpart').value.trim() || '50명 참여',
+      group_buy_target:       parseInt(modalContainer.querySelector('#m-gbtarget').value) || 50,
       md_comment:    modalContainer.querySelector('#m-mdcomment').value.trim(),
       img_url:       inputImg.value.trim(),
     };

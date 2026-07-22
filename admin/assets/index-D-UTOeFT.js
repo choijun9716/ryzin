@@ -3362,6 +3362,29 @@ Minimum version required to store current data is: `+c+`.
               <input class="sm-input" id="m-color" type="text" value="${$(a)}" placeholder="#ef4444" style="font-weight:700;">
             </div>
           </div>
+
+          <!-- 공동구매 설정 섹션 -->
+          <div style="grid-column: 1 / -1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-top:4px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <input type="checkbox" id="m-isgb" ${e&&e.is_group_buy?`checked`:``} style="width:16px; height:16px; cursor:pointer;">
+              <label for="m-isgb" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">공동구매 상품으로 등록 및 노출</label>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+              <div>
+                <label class="sm-label">모집 상태 뱃지</label>
+                <input class="sm-input" id="m-gbstatus" value="${$(e&&e.group_buy_status||`모집중`)}" placeholder="모집중">
+              </div>
+              <div>
+                <label class="sm-label">참여 인원 뱃지</label>
+                <input class="sm-input" id="m-gbpart" value="${$(e&&e.group_buy_participants||`50명 참여`)}" placeholder="50명 참여">
+              </div>
+              <div>
+                <label class="sm-label">목표 달성 인원 (명)</label>
+                <input class="sm-input" id="m-gbtarget" type="number" value="${e&&e.group_buy_target||50}" placeholder="50">
+              </div>
+            </div>
+          </div>
+
           ${ua(`MD 추천 코멘트`,`m-mdcomment`,e?e.md_comment:`MD 강력 추천 상품`,`text`,!0)}
           <div style="grid-column: 1 / -1;">
             <label class="sm-label">상품 이미지 (클릭 업로드)</label>
@@ -3380,7 +3403,7 @@ Minimum version required to store current data is: `+c+`.
         </form>
       </div>
     </div>
-  `;let s=()=>{i.innerHTML=``};i.querySelector(`#modal-close-btn`).addEventListener(`click`,s),i.querySelector(`#modal-cancel-btn`).addEventListener(`click`,s);let c=i.querySelector(`#m-picker`),l=i.querySelector(`#m-color`);c.addEventListener(`input`,e=>l.value=e.target.value),l.addEventListener(`input`,e=>c.value=e.target.value);let u=i.querySelector(`#m-uploader`),d=i.querySelector(`#m-imgurl`);la(u,d,e=>{i.querySelector(`#m-thumb-img`).src=e}),i.querySelector(`#modal-prod-form`).addEventListener(`submit`,async r=>{r.preventDefault();let a=i.querySelector(`#m-pcode`).value.trim(),o=i.querySelector(`#m-psection`).value||null,c=i.querySelector(`#m-bname`).value.trim(),u=i.querySelector(`#m-ptitle`).value.trim(),f=parseInt(i.querySelector(`#m-bestrank`).value)||0,p={product_code:a,section_id:o,brand_name:c,product_title:u,brand_title:c?`${c} ${u}`:u,sale_price:i.querySelector(`#m-sale`).value.trim(),origin_price:i.querySelector(`#m-origin`).value.trim(),discount:i.querySelector(`#m-disc`).value.trim(),best_rank:f,badge_color:l.value.trim()||`#ef4444`,md_comment:i.querySelector(`#m-mdcomment`).value.trim(),img_url:d.value.trim()};n?(await ia.update(e.id,p),Q(`상품 수정 완료`)):(p.sort_order=99,p.rating=`5.0`,p.reviews=`10`,await ia.insert(p),Q(`새 상품 등록 완료`)),s(),await ga(t)})}function ya(e,t){let n=e.querySelector(`#sm-modal-container`);n.innerHTML=`
+  `;let s=()=>{i.innerHTML=``};i.querySelector(`#modal-close-btn`).addEventListener(`click`,s),i.querySelector(`#modal-cancel-btn`).addEventListener(`click`,s);let c=i.querySelector(`#m-picker`),l=i.querySelector(`#m-color`);c.addEventListener(`input`,e=>l.value=e.target.value),l.addEventListener(`input`,e=>c.value=e.target.value);let u=i.querySelector(`#m-uploader`),d=i.querySelector(`#m-imgurl`);la(u,d,e=>{i.querySelector(`#m-thumb-img`).src=e}),i.querySelector(`#modal-prod-form`).addEventListener(`submit`,async r=>{r.preventDefault();let a=i.querySelector(`#m-pcode`).value.trim(),o=i.querySelector(`#m-psection`).value||null,c=i.querySelector(`#m-bname`).value.trim(),u=i.querySelector(`#m-ptitle`).value.trim(),f=parseInt(i.querySelector(`#m-bestrank`).value)||0,p={product_code:a,section_id:o,brand_name:c,product_title:u,brand_title:c?`${c} ${u}`:u,sale_price:i.querySelector(`#m-sale`).value.trim(),origin_price:i.querySelector(`#m-origin`).value.trim(),discount:i.querySelector(`#m-disc`).value.trim(),best_rank:f,badge_color:l.value.trim()||`#ef4444`,is_group_buy:i.querySelector(`#m-isgb`).checked,group_buy_status:i.querySelector(`#m-gbstatus`).value.trim()||`모집중`,group_buy_participants:i.querySelector(`#m-gbpart`).value.trim()||`50명 참여`,group_buy_target:parseInt(i.querySelector(`#m-gbtarget`).value)||50,md_comment:i.querySelector(`#m-mdcomment`).value.trim(),img_url:d.value.trim()};n?(await ia.update(e.id,p),Q(`상품 수정 완료`)):(p.sort_order=99,p.rating=`5.0`,p.reviews=`10`,await ia.insert(p),Q(`새 상품 등록 완료`)),s(),await ga(t)})}function ya(e,t){let n=e.querySelector(`#sm-modal-container`);n.innerHTML=`
     <div class="sm-modal-backdrop">
       <div class="sm-modal-content" style="max-width:540px;">
         <div class="sm-modal-header">

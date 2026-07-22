@@ -618,41 +618,23 @@
 </div>
 
 <script>
-  const GB_PRODUCTS = [
-    {
-      id: 'toss_01',
-      category: '뷰티',
-      brandTitle: '코코팜 네이처바이 알로에 에센스 팩 100매',
-      salePrice: '10,000원',
-      originPrice: '50,000원',
-      discount: '80% 공구',
-      rating: '4.7',
-      reviews: '466',
-      chips: [{ text: '오늘출발', class: 'chip-ship' }, { text: '최저가보상', class: 'chip-guarantee' }],
-      img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=85'
-    },
-    {
-      id: 'toss_02',
-      category: '뷰티',
-      brandTitle: '필링빈 페이셜 커피스크럽 클렌저 60g',
-      salePrice: '9,300원',
-      originPrice: '22,000원',
-      discount: '57% 공구',
-      rating: '5.0',
-      reviews: '11',
-      chips: [{ text: '오늘출발', class: 'chip-ship' }],
-      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85'
-    },
-    {
-      id: 'toss_03',
-      category: '뷰티',
-      brandTitle: '참존 탑글램 타임 케어 리프팅 크림 50ml',
-      salePrice: '14,900원',
-      originPrice: '70,000원',
-      discount: '70% 공구',
-      rating: '4.7',
-      reviews: '459',
-  const GB_PRODUCTS = [
+  const SB_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+  const SB_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+  const SB_H = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+  async function sbGet(table, params = '') {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_H });
+      return r.ok ? r.json() : [];
+    } catch { return []; }
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  const FALLBACK_GB_PRODUCTS = [
     {
       id: 'toss_01',
       category: '뷰티',
@@ -660,12 +642,9 @@
       salePrice: '10,000원',
       originPrice: '50,000원',
       discount: '80% OFF',
-      rating: '4.7',
-      reviews: '466',
       status: '모집중',
       participants: '342명 참여',
       target_count: 50,
-      chips: [{ text: '무료배송', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=85'
     },
     {
@@ -675,12 +654,9 @@
       salePrice: '9,300원',
       originPrice: '22,000원',
       discount: '57% OFF',
-      rating: '5.0',
-      reviews: '11',
       status: '모집중',
       participants: '48명 참여',
       target_count: 30,
-      chips: [{ text: '오늘출발', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85'
     },
     {
@@ -690,12 +666,9 @@
       salePrice: '14,900원',
       originPrice: '70,000원',
       discount: '70% OFF',
-      rating: '4.7',
-      reviews: '459',
       status: '모집중',
       participants: '189명 참여',
       target_count: 100,
-      chips: [{ text: '무료배송', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=600&q=85'
     },
     {
@@ -704,14 +677,10 @@
       brandTitle: '에이지랩 스네일 뮤신 브라이트닝 크림 50ml',
       salePrice: '9,900원',
       originPrice: '50,000원',
-      unitPrice: '10ml 당 708원',
       discount: '80% OFF',
-      rating: '4.6',
-      reviews: '560',
       status: '모집중',
       participants: '520명 참여',
       target_count: 100,
-      chips: [{ text: '오늘출발', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85'
     },
     {
@@ -721,12 +690,9 @@
       salePrice: '1,000원',
       originPrice: '6,000원',
       discount: '83% OFF',
-      rating: '4.9',
-      reviews: '1,204',
       status: '모집중',
       participants: '820명 참여',
       target_count: 500,
-      chips: [{ text: '무료배송', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=85'
     },
     {
@@ -736,12 +702,9 @@
       salePrice: '16,500원',
       originPrice: '38,000원',
       discount: '57% OFF',
-      rating: '5.0',
-      reviews: '18',
       status: '모집중',
       participants: '26명 참여',
       target_count: 20,
-      chips: [{ text: '오늘출발', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85'
     },
     {
@@ -751,12 +714,9 @@
       salePrice: '19,800원',
       originPrice: '35,000원',
       discount: '43% OFF',
-      rating: '4.8',
-      reviews: '3,402',
       status: '모집중',
       participants: '1,450명 참여',
       target_count: 200,
-      chips: [{ text: '무료배송', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=400&q=85'
     },
     {
@@ -766,23 +726,50 @@
       salePrice: '29,900원',
       originPrice: '59,000원',
       discount: '49% OFF',
-      rating: '4.7',
-      reviews: '984',
       status: '모집중',
       participants: '92명 참여',
       target_count: 50,
-      chips: [{ text: '최저가보상', class: 'chip-guarantee' }],
       img: 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=400&q=85'
     }
   ];
 
-  function renderGbGrid(filterCategory = '전체') {
+  let currentProducts = [];
+
+  async function fetchGbProducts() {
+    try {
+      const dbProds = await sbGet('shop_products', 'select=*&is_group_buy=eq.true&order=sort_order.asc');
+      if (dbProds && dbProds.length) {
+        currentProducts = dbProds.map(p => ({
+          id: p.id,
+          category: '뷰티',
+          brandTitle: p.brand_title || (p.brand_name ? `${p.brand_name} ${p.product_title}` : p.product_title),
+          salePrice: p.sale_price,
+          originPrice: p.origin_price,
+          discount: p.discount || '공구특가',
+          status: p.group_buy_status || '모집중',
+          participants: p.group_buy_participants || '50명 참여',
+          target_count: p.group_buy_target || 50,
+          img: p.img_url
+        }));
+      } else {
+        currentProducts = FALLBACK_GB_PRODUCTS;
+      }
+    } catch(e) {
+      currentProducts = FALLBACK_GB_PRODUCTS;
+    }
+  }
+
+  async function renderGbGrid(filterCategory = '전체') {
     const el = document.getElementById('gb-products-grid');
     if (!el) return;
 
+    if (!currentProducts.length) {
+      await fetchGbProducts();
+    }
+
     const filtered = filterCategory === '전체' 
-      ? GB_PRODUCTS 
-      : GB_PRODUCTS.filter(p => p.category === filterCategory);
+      ? currentProducts 
+      : currentProducts.filter(p => p.category === filterCategory);
 
     if (filtered.length === 0) {
       el.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 14px; font-weight: 600;">해당 카테고리의 공동구매 상품이 없습니다.</div>`;
@@ -792,18 +779,17 @@
     el.innerHTML = filtered.map(item => `
       <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
         <div class="toss-img-box">
-          <div class="gb-status-badge">${item.status || '모집중'}</div>
-          <div class="gb-participants-badge">${item.participants || '0명 참여'}</div>
-          <img src="${item.img}" alt="${item.brandTitle}">
-          <span class="toss-discount-tag">${item.discount}</span>
+          <div class="gb-status-badge">${esc(item.status || '모집중')}</div>
+          <div class="gb-participants-badge">${esc(item.participants || '50명 참여')}</div>
+          <img src="${item.img}" alt="${esc(item.brandTitle)}">
+          <span class="toss-discount-tag">${esc(item.discount)}</span>
         </div>
         <div class="toss-info">
-          <div class="toss-brand-title">${item.brandTitle}</div>
+          <div class="toss-brand-title">${esc(item.brandTitle)}</div>
           <div class="toss-price-row">
-            <span class="toss-sale-price">${item.salePrice}</span>
-            <span class="toss-origin-price">${item.originPrice}</span>
+            <span class="toss-sale-price">${esc(item.salePrice)}</span>
+            ${item.originPrice ? `<span class="toss-origin-price">${esc(item.originPrice)}</span>` : ''}
           </div>
-          ${item.unitPrice ? `<div class="toss-unit-price">${item.unitPrice}</div>` : ''}
           <div class="gb-goal-notice">
             <span>${item.target_count || 50}명 달성 시 구매 가능</span>
           </div>
@@ -829,7 +815,8 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    await fetchGbProducts();
     renderGbGrid('전체');
   });
 </script>
