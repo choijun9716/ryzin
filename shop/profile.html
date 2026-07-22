@@ -279,74 +279,7 @@
       fill: none;
     }
 
-    /* ── FOOTER STYLING ── */
-    .footer {
-      background: #090a0c;
-      padding: 20px 16px 20px;
-      border-top: 1px solid var(--border);
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 11px;
-      line-height: 1.6;
-      margin-top: 12px;
-    }
 
-    .footer-logo {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--text-sub);
-      margin-bottom: 12px;
-      letter-spacing: -0.03em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    .footer-logo svg {
-      transition: transform 0.3s ease;
-    }
-
-    .footer.open .footer-logo svg {
-      transform: rotate(180deg);
-    }
-
-    .footer-body {
-      display: none;
-    }
-
-    .footer.open .footer-body {
-      display: block;
-    }
-
-    .footer-info {
-      margin-bottom: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .footer-notice {
-      color: var(--text-muted);
-      margin-bottom: 16px;
-      font-size: 10px;
-      padding: 0 8px;
-    }
-
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 16px;
-      color: var(--text-sub);
-      font-weight: 600;
-    }
-
-    .footer-copyright {
-      font-size: 10px;
-      color: var(--text-muted);
-    }
 
     /* 배송지 모달 */
     .addr-modal {
@@ -582,32 +515,7 @@
 
   </div>
 
-  <!-- ── 푸터 (Footer) ── -->
-  <footer class="footer" id="ryzin-footer">
-    <div class="footer-logo" onclick="toggleFooter()">
-      <span>RYZIN</span>
-      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M18 15l-6-6-6 6"/></svg>
-    </div>
-    <div class="footer-body">
-      <div class="footer-info">
-        <span>회사명: 라이진 | 대표: 채이준 | 사업자등록번호: 821-29-01197</span>
-        <span>사업장 소재지: 경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2</span>
-        <span>호스팅서비스: Amazon Web Services, Inc</span>
-      </div>
-      <p class="footer-notice">
-        라이진은 통신판매중개자이며, 통신판매의 당사자가 아닙니다. 상품, 상품 정보, 거래, 배송에 관한 의무와 책임은 판매자에게 있습니다.
-      </p>
-      <div class="footer-links">
-        <span>이용약관</span> |
-        <span>사업자정보</span> |
-        <span>개인정보처리방침</span> |
-        <span>입점문의</span>
-      </div>
-      <div class="footer-copyright">
-        © 2026 RYZIN
-      </div>
-    </div>
-  </footer>
+  </div>
 
 </div>
 
@@ -673,10 +581,7 @@
   }
   window.showToast = showToast;
 
-  window.toggleFooter = () => {
-    const footer = document.getElementById('ryzin-footer');
-    if (footer) footer.classList.toggle('open');
-  };
+
 
   async function loadProfile() {
     const profile = await getUserProfile();
