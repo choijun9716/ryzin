@@ -2999,38 +2999,38 @@ Minimum version required to store current data is: `+c+`.
   `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`);document.getElementById(`otp-setup-container`),document.getElementById(`qrcode-box`);let a=document.getElementById(`login-otp`),o=null;e&&e.addEventListener(`submit`,async t=>{t.preventDefault();let n=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value;if(n.toLowerCase()===`admin`&&r.trim()===`1234`){H.loginAsDemo();return}let i=e.querySelector(`button[type="submit"]`),a=i?i.textContent:`로그인`;i&&(i.textContent=`로그인 중...`,i.disabled=!0);try{await H.init()}catch(e){console.warn(`Failed to sync users from Supabase before login`,e)}finally{i&&(i.textContent=a,i.disabled=!1)}let o=H.verifyPassword(n,r);if(o){if(H.isDemoMode){H.completeLogin(o),q(`데모 모드로 접속되었습니다.`),M.navigate(`/`);return}H.completeLogin(o),q(`환영합니다.`),M.navigate(`/`);return}else J(`로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.`)}),t&&t.addEventListener(`submit`,e=>{if(e.preventDefault(),!o)return;let t=a.value.trim(),n=o.otpSecret||localStorage.getItem(`ryzin_otp_${o.id}`)||null;try{new yi({issuer:`Ryzin Admin`,label:o.id,algorithm:`SHA1`,digits:6,period:30,secret:gi.fromBase32(n)}).validate({token:t,window:1})===null?(J(`인증번호가 올바르지 않습니다.`),a.value=``,a.focus()):(localStorage.setItem(`ryzin_otp_trusted_${o.id}`,`true`),H.completeLogin(o),q(`OTP 인증 성공! 환영합니다.`),M.navigate(`/`))}catch{J(`인증 과정에 문제가 발생했습니다.`)}}),i&&i.addEventListener(`click`,()=>{o&&confirm(`OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.`)&&(localStorage.removeItem(`ryzin_otp_${o.id}`),alert(`OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.`),n.style.transform=`translateX(0)`,o=null,a.value=``)}),r&&r.addEventListener(`click`,()=>{n.style.transform=`translateX(0)`,o=null,a.value=``})},0),e}var Ji=`https://vybrnhyaeugfwezbygdt.supabase.co`,Yi=`sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9`,Xi={"Content-Type":`application/json`,apikey:Yi,Authorization:`Bearer ${Yi}`,Prefer:`return=representation`};async function Zi(e,t=``){let n=await fetch(`${Ji}/rest/v1/${e}?${t}`,{headers:Xi});if(!n.ok)throw Error(`DB fetch error: ${n.status}`);return n.json()}async function Qi(e,t){let n=await fetch(`${Ji}/rest/v1/${e}`,{method:`POST`,headers:Xi,body:JSON.stringify(t)});if(!n.ok)throw Error(`DB insert error: ${n.status}`);return n.json()}async function $i(e,t,n){let r=await fetch(`${Ji}/rest/v1/${e}?id=eq.${t}`,{method:`PATCH`,headers:Xi,body:JSON.stringify(n)});if(!r.ok)throw Error(`DB update error: ${r.status}`);return r.json()}async function ea(e,t){let n=await fetch(`${Ji}/rest/v1/${e}?id=eq.${t}`,{method:`DELETE`,headers:Xi});if(!n.ok)throw Error(`DB delete error: ${n.status}`);return!0}var ta={getAll:()=>Zi(`shop_banners`,`select=*&order=sort_order.asc`),insert:e=>Qi(`shop_banners`,e),update:(e,t)=>$i(`shop_banners`,e,t),delete:e=>ea(`shop_banners`,e)},na={getAll:()=>Zi(`shop_sections`,`select=*&order=sort_order.asc`),insert:e=>Qi(`shop_sections`,e),update:(e,t)=>$i(`shop_sections`,e,t),delete:e=>ea(`shop_sections`,e)},ra={getAll:()=>Zi(`shop_menus`,`select=*&order=sort_order.asc`),insert:e=>Qi(`shop_menus`,e),update:(e,t)=>$i(`shop_menus`,e,t),delete:e=>ea(`shop_menus`,e)},ia={getAll:()=>Zi(`shop_products`,`select=*&order=sort_order.asc`),getBySectionId:e=>Zi(`shop_products`,`select=*&section_id=eq.${e}&order=sort_order.asc`),insert:e=>Qi(`shop_products`,e),update:(e,t)=>$i(`shop_products`,e,t),delete:e=>ea(`shop_products`,e)},aa={getAll:()=>Zi(`shop_lives`,`select=*&order=sort_order.asc`),insert:e=>Qi(`shop_lives`,e),update:(e,t)=>$i(`shop_lives`,e,t),delete:e=>ea(`shop_lives`,e)};function oa(e){let t=document.createElement(`style`);t.innerHTML=`
     .sm-input { 
       width: 100%; 
-      padding: 10px 14px; 
+      padding: 8px 12px; 
       border: 1.5px solid #e2e8f0; 
-      border-radius: 10px; 
+      border-radius: 8px; 
       font-size: 13px; 
       font-weight: 500;
       outline: none; 
-      transition: all 0.2s ease; 
+      transition: all 0.15s ease; 
       background: #ffffff; 
       box-sizing: border-box; 
       color: #0f172a; 
     }
     .sm-input:focus { 
       border-color: #3b82f6; 
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.14); 
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12); 
     }
     .sm-label { 
       display: block; 
       font-size: 11px; 
       font-weight: 700; 
       color: #64748b; 
-      margin-bottom: 6px; 
-      letter-spacing: 0.02em; 
+      margin-bottom: 5px; 
+      letter-spacing: -0.01em; 
     }
     .sm-tab-btn { 
-      padding: 10px 22px; 
-      border-radius: 10px; 
-      font-size: 14px; 
+      padding: 9px 18px; 
+      border-radius: 8px; 
+      font-size: 13px; 
       font-weight: 700; 
       cursor: pointer; 
-      border: 1.5px solid transparent; 
-      transition: all 0.18s ease; 
-      background: #f1f5f9; 
+      border: 1px solid #e2e8f0; 
+      transition: all 0.15s ease; 
+      background: #ffffff; 
       color: #64748b; 
       display: flex;
       align-items: center;
@@ -3040,20 +3040,18 @@ Minimum version required to store current data is: `+c+`.
       background: #0f172a; 
       color: #ffffff; 
       border-color: #0f172a;
-      box-shadow: 0 4px 14px rgba(15,23,42,0.18);
     }
     .sm-tab-btn:hover:not(.active) { 
-      background: #e2e8f0; 
+      background: #f1f5f9; 
       color: #0f172a; 
     }
     .sm-card { 
       background: #ffffff; 
       border: 1.5px solid #e2e8f0; 
-      border-radius: 16px; 
-      padding: 22px 24px; 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02); 
-      margin-bottom: 20px; 
-      transition: border-color 0.2s ease;
+      border-radius: 12px; 
+      padding: 18px 20px; 
+      margin-bottom: 16px; 
+      transition: border-color 0.15s ease;
     }
     .sm-card:hover {
       border-color: #cbd5e1;
@@ -3062,12 +3060,12 @@ Minimum version required to store current data is: `+c+`.
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 18px;
-      padding-bottom: 14px;
-      border-bottom: 1.5px solid #f1f5f9;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
     }
     .sm-card-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #0f172a;
       margin: 0;
@@ -3079,48 +3077,44 @@ Minimum version required to store current data is: `+c+`.
       display: inline-flex; 
       align-items: center; 
       justify-content: center;
-      gap: 6px; 
-      padding: 8px 16px; 
-      border-radius: 8px; 
-      font-size: 13px; 
+      gap: 5px; 
+      padding: 7px 14px; 
+      border-radius: 6px; 
+      font-size: 12px; 
       font-weight: 700; 
       cursor: pointer; 
       border: none; 
-      transition: all 0.18s ease; 
+      transition: all 0.15s ease; 
     }
     .sm-action-btn:hover { 
       opacity: 0.92; 
-      transform: translateY(-1px); 
     }
     .sm-btn-primary { 
-      background: linear-gradient(135deg, #3b82f6, #2563eb); 
+      background: #2563eb; 
       color: #ffffff; 
-      box-shadow: 0 4px 12px rgba(37,99,235,0.2); 
     }
     .sm-btn-success { 
-      background: linear-gradient(135deg, #10b981, #059669); 
+      background: #059669; 
       color: #ffffff; 
-      box-shadow: 0 4px 12px rgba(16,185,129,0.2); 
     }
     .sm-btn-danger { 
-      background: linear-gradient(135deg, #ef4444, #dc2626); 
+      background: #dc2626; 
       color: #ffffff; 
-      box-shadow: 0 4px 12px rgba(220,38,38,0.2); 
     }
     .sm-thumb-uploader {
-      border: 2px dashed #cbd5e1;
-      border-radius: 12px;
+      border: 1.5px dashed #cbd5e1;
+      border-radius: 8px;
       position: relative;
       overflow: hidden;
       cursor: pointer;
       background: #f8fafc;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .sm-thumb-uploader:hover {
-      border-color: #3b82f6;
+      border-color: #2563eb;
       background: #eff6ff;
     }
     .sm-thumb-uploader-overlay {
@@ -3134,7 +3128,7 @@ Minimum version required to store current data is: `+c+`.
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.15s ease;
     }
     .sm-thumb-uploader:hover .sm-thumb-uploader-overlay {
       opacity: 1;
@@ -3143,18 +3137,17 @@ Minimum version required to store current data is: `+c+`.
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: #0f172a;
+      background: #334155;
       color: #ffffff;
       font-size: 11px;
-      font-weight: 900;
+      font-weight: 800;
       padding: 2px 8px;
-      border-radius: 6px;
-      letter-spacing: -0.01em;
+      border-radius: 4px;
     }
     .sm-rank-badge.top3 {
-      background: linear-gradient(135deg, #FF3B30, #FF8730);
+      background: #ef4444;
     }
-  `,e.appendChild(t)}async function sa(e){let t=localStorage.getItem(`ryzin_imgbb_key`)||`4ad44d673bfba8d88df109c0df1e2cae`,n=await ca(e,1024,.85),r=new FormData;r.append(`image`,n.split(`,`)[1]);let i=await(await fetch(`https://api.imgbb.com/1/upload?key=${t}`,{method:`POST`,body:r})).json();if(i&&i.success)return i.data.url;throw Error(i.error&&i.error.message||`이미지 업로드 실패`)}function ca(e,t=1024,n=.85){return new Promise((r,i)=>{let a=new FileReader;a.onload=e=>{let a=new Image;a.onload=()=>{let e=document.createElement(`canvas`),i=a.width,o=a.height;i>t&&(o=Math.round(o*t/i),i=t),e.width=i,e.height=o,e.getContext(`2d`).drawImage(a,0,0,i,o),r(e.toDataURL(`image/jpeg`,n))},a.onerror=i,a.src=e.target.result},a.onerror=i,a.readAsDataURL(e)})}function la(e,t,n){e.addEventListener(`click`,()=>{let e=document.createElement(`input`);e.type=`file`,e.accept=`image/*`,e.onchange=async e=>{let r=e.target.files[0];if(r){Q(`이미지를 업로드하고 있습니다...`);try{let e=await sa(r);t.value=e,n&&n(e),Q(`이미지 업로드 성공!`)}catch(e){alert(`업로드 실패: `+e.message)}}},e.click()})}function Q(e){let t=document.getElementById(`sm-toast`);t||(t=document.createElement(`div`),t.id=`sm-toast`,t.style.cssText=`position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:12px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 10px 25px rgba(0,0,0,0.25);transition:opacity 0.3s;`,document.body.appendChild(t)),t.textContent=e,t.style.opacity=`1`,clearTimeout(t.timer),t.timer=setTimeout(()=>{t.style.opacity=`0`},2400)}function ua(e){return e?String(e).replace(/&/g,`&amp;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`).replace(/"/g,`&quot;`):``}function $(e,t,n,r=`text`,i=!1){return`
+  `,e.appendChild(t)}async function sa(e){let t=localStorage.getItem(`ryzin_imgbb_key`)||`4ad44d673bfba8d88df109c0df1e2cae`,n=await ca(e,1024,.85),r=new FormData;r.append(`image`,n.split(`,`)[1]);let i=await(await fetch(`https://api.imgbb.com/1/upload?key=${t}`,{method:`POST`,body:r})).json();if(i&&i.success)return i.data.url;throw Error(i.error&&i.error.message||`이미지 업로드 실패`)}function ca(e,t=1024,n=.85){return new Promise((r,i)=>{let a=new FileReader;a.onload=e=>{let a=new Image;a.onload=()=>{let e=document.createElement(`canvas`),i=a.width,o=a.height;i>t&&(o=Math.round(o*t/i),i=t),e.width=i,e.height=o,e.getContext(`2d`).drawImage(a,0,0,i,o),r(e.toDataURL(`image/jpeg`,n))},a.onerror=i,a.src=e.target.result},a.onerror=i,a.readAsDataURL(e)})}function la(e,t,n){e.addEventListener(`click`,()=>{let e=document.createElement(`input`);e.type=`file`,e.accept=`image/*`,e.onchange=async e=>{let r=e.target.files[0];if(r){Q(`이미지를 업로드하고 있습니다...`);try{let e=await sa(r);t.value=e,n&&n(e),Q(`이미지 업로드 성공`)}catch(e){alert(`업로드 실패: `+e.message)}}},e.click()})}function Q(e){let t=document.getElementById(`sm-toast`);t||(t=document.createElement(`div`),t.id=`sm-toast`,t.style.cssText=`position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;font-weight:700;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,0.2);transition:opacity 0.2s;`,document.body.appendChild(t)),t.textContent=e,t.style.opacity=`1`,clearTimeout(t.timer),t.timer=setTimeout(()=>{t.style.opacity=`0`},2200)}function ua(e){return e?String(e).replace(/&/g,`&amp;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`).replace(/"/g,`&quot;`):``}function $(e,t,n,r=`text`,i=!1){return`
     <div style="${i?`grid-column: 1 / -1;`:``}">
       <label class="sm-label">${e}</label>
       <input class="sm-input ${t}" type="${r}" value="${ua(n||``)}">
@@ -3167,175 +3160,174 @@ Minimum version required to store current data is: `+c+`.
         <button class="sm-action-btn sm-btn-primary ${t}-preview" style="flex-shrink:0; padding:0 12px;">적용</button>
       </div>
     </div>
-  `}var fa=`banners`,pa=[];function ma(){let e=document.createElement(`div`);e.style.cssText=`min-height:100vh; background:#f8fafc; padding:32px 24px; color:#0f172a; font-family:"Pretendard",sans-serif;`,oa(e);let t=document.createElement(`div`);return t.style.cssText=`max-width:1100px; margin:0 auto;`,t.innerHTML=`
-    <div style="margin-bottom:28px;">
+  `}var fa=`banners`,pa=[];function ma(){let e=document.createElement(`div`);e.style.cssText=`min-height:100vh; background:#f8fafc; padding:24px; color:#0f172a; font-family:"Pretendard",sans-serif;`,oa(e);let t=document.createElement(`div`);return t.style.cssText=`max-width:1100px; margin:0 auto;`,t.innerHTML=`
+    <div style="margin-bottom:24px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
         <div>
-          <h1 style="font-size:22px; font-weight:900; color:#0f172a; margin:0 0 6px 0; letter-spacing:-0.03em;">쇼핑몰 라이브 & 커머스 센터</h1>
-          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">메인 배너, 라이브 방송, 퀵탭 카테고리, 베스트 TOP 10 랭킹 및 상품 섹션을 통합 관리합니다.</p>
+          <h1 style="font-size:20px; font-weight:800; color:#0f172a; margin:0 0 4px 0; letter-spacing:-0.02em;">쇼핑몰 라이브 & 커머스 관리</h1>
+          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">상단 배너, 라이브 방송, 퀵메뉴 탭, 상품 섹션 및 MD 추천 코멘트를 관리합니다.</p>
         </div>
-        <button id="btn-refresh" class="sm-action-btn sm-btn-primary" style="padding:10px 18px;">🔄 전체 새로고침</button>
+        <button id="btn-refresh" class="sm-action-btn sm-btn-primary">전체 새로고침</button>
       </div>
     </div>
 
-    <!-- 미니멀 세그먼트 서브 탭 -->
-    <div style="display:flex; gap:10px; margin-bottom:24px; border-bottom:2px solid #e2e8f0; padding-bottom:12px; overflow-x:auto;">
-      ${[{key:`banners`,label:`🖼️ 히어로 배너`},{key:`lives`,label:`🔴 라이브 NOW & 예정`},{key:`menus`,label:`📌 퀵메뉴 & 베스트 탭`},{key:`sections`,label:`🛍️ 상품 섹션 & 랭킹 관리`}].map(e=>`<button class="sm-tab-btn${e.key===fa?` active`:``}" data-tab="${e.key}">${e.label}</button>`).join(``)}
+    <!-- 슬림 서브 탭 메뉴 -->
+    <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
+      ${[{key:`banners`,label:`상단 배너`},{key:`lives`,label:`라이브 NOW / 예정`},{key:`menus`,label:`퀵메뉴 탭 설정`},{key:`sections`,label:`상품 섹션 & MD 추천 관리`}].map(e=>`<button class="sm-tab-btn${e.key===fa?` active`:``}" data-tab="${e.key}">${e.label}</button>`).join(``)}
     </div>
 
-    <div id="sm-loading" style="text-align:center; padding:40px; color:#64748b; font-size:14px; font-weight:600;">
+    <div id="sm-loading" style="text-align:center; padding:30px; color:#64748b; font-size:13px; font-weight:600;">
       데이터를 동기화하는 중...
     </div>
     <div id="sm-panel"></div>
   `,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.addEventListener(`click`,()=>{fa=e.dataset.tab,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.classList.toggle(`active`,e.dataset.tab===fa)}),ha(t)})}),t.querySelector(`#btn-refresh`).addEventListener(`click`,()=>{Q(`데이터를 새로고침합니다.`),ha(t)}),e.appendChild(t),setTimeout(async()=>{try{pa=await na.getAll()}catch{pa=[]}await ha(t)},0),e}async function ha(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{fa===`banners`?await ga(n):fa===`lives`?await _a(n):fa===`menus`?await va(n):fa===`sections`&&await ya(n,e)}catch(e){n.innerHTML=`
       <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
-        <h4 style="margin:0 0 8px 0; font-weight:800;">데이터 연동 실패</h4>
-        <p style="margin:0; font-size:13px;">${e.message}. Supabase 마이그레이션 SQL 실행 여부를 점검해 주세요.</p>
+        <h4 style="margin:0 0 6px 0; font-weight:800;">데이터 연동 실패</h4>
+        <p style="margin:0; font-size:12.5px;">${e.message}. Supabase 데이터베이스 설정을 확인해 주세요.</p>
       </div>
     `}t.style.display=`none`}async function ga(e){let t=await ta.getAll();e.innerHTML=`
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${t.length}개)</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${t.length}개)</h2>
       <button id="add-banner" class="sm-action-btn sm-btn-primary">+ 새 배너 추가</button>
     </div>
     <div id="banner-list"></div>
-  `,e.querySelector(`#add-banner`).addEventListener(`click`,async()=>{await ta.insert({sort_order:99,title:`새 특집 배너`,desc:``,label:`오늘`,time_text:`오후 8시`,img_url:``,link_url:`/shop/live_teaser.html`}),Q(`새 배너가 생성되었습니다.`),await ga(e)});let n=e.querySelector(`#banner-list`);t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.innerHTML=`
-      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="width:140px; flex-shrink:0;">
-          <label class="sm-label">배너 프리뷰 (클릭 업로드)</label>
-          <div class="sm-thumb-uploader b-uploader" style="width:100%; height:94px;">
+  `,e.querySelector(`#add-banner`).addEventListener(`click`,async()=>{await ta.insert({sort_order:99,title:`새 기획 배너`,desc:``,label:`오늘`,time_text:`오후 8시`,img_url:``,link_url:`/shop/live_teaser.html`}),Q(`새 배너가 추가되었습니다.`),await ga(e)});let n=e.querySelector(`#banner-list`);t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.innerHTML=`
+      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:130px; flex-shrink:0;">
+          <label class="sm-label">배너 썸네일 (클릭 업로드)</label>
+          <div class="sm-thumb-uploader b-uploader" style="width:100%; height:86px;">
             <img class="b-thumb" src="${ua(t.img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
-            <div class="sm-thumb-uploader-overlay">클릭하여 업로드</div>
-          </div>
-        </div>
-        <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          ${$(`배너 대제목 (타이틀)`,`b-title`,t.title)}
-          ${$(`소제목 (서브 타이틀)`,`b-desc`,t.desc)}
-          ${$(`라벨 뱃지 (예: 오늘, 내일)`,`b-label`,t.label)}
-          ${$(`시간 문구 (예: 오후 8시)`,`b-time`,t.time_text)}
-          ${da(`배너 이미지 URL`,`b-img`,t.img_url)}
-          ${$(`클릭 시 이동할 링크 URL`,`b-link`,t.link_url,`text`,!0)}
-        </div>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; padding-top:16px; border-top:1.5px solid #f1f5f9;">
-        <button class="sm-action-btn sm-btn-success b-save">저장</button>
-        <button class="sm-action-btn sm-btn-danger b-del">삭제</button>
-      </div>
-    `,la(r.querySelector(`.b-uploader`),r.querySelector(`.b-img`),e=>{r.querySelector(`.b-thumb`).src=e}),r.querySelector(`.b-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.b-thumb`).src=r.querySelector(`.b-img`).value.trim()}),r.querySelector(`.b-save`).addEventListener(`click`,async()=>{await ta.update(t.id,{title:r.querySelector(`.b-title`).value.trim(),desc:r.querySelector(`.b-desc`).value.trim(),label:r.querySelector(`.b-label`).value.trim(),time_text:r.querySelector(`.b-time`).value.trim(),img_url:r.querySelector(`.b-img`).value.trim(),link_url:r.querySelector(`.b-link`).value.trim()}),Q(`배너 정보 저장 완료`)}),r.querySelector(`.b-del`).addEventListener(`click`,async()=>{confirm(`배너를 삭제합니까?`)&&(await ta.delete(t.id),Q(`제거되었습니다.`),await ga(e))}),n.appendChild(r)})}async function _a(e){let t=await aa.getAll();e.innerHTML=`
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">라이브 큐레이션 관리 (${t.length}개)</h2>
-      <button id="add-live" class="sm-action-btn sm-btn-primary">+ 새 라이브 추가</button>
-    </div>
-    <div id="live-list"></div>
-  `,e.querySelector(`#add-live`).addEventListener(`click`,async()=>{await aa.insert({sort_order:99,title:`새로운 라이브 방송`,viewers:`0명 시청 중`,img_url:``,link_url:``,status:`live`}),Q(`새 라이브가 생성되었습니다.`),await _a(e)});let n=e.querySelector(`#live-list`);t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`;let i=t.status===`upcoming`;r.innerHTML=`
-      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="width:140px; flex-shrink:0;">
-          <label class="sm-label">방송 썸네일 (클릭 업로드)</label>
-          <div class="sm-thumb-uploader lv-uploader" style="width:100%; height:94px;">
-            <img class="lv-thumb" src="${ua(t.img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
-            <div class="sm-thumb-uploader-overlay">클릭하여 업로드</div>
-          </div>
-        </div>
-        <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          ${$(`방송 타이틀`,`lv-title`,t.title,`text`,!0)}
-          <div>
-            <label class="sm-label">라이브 진행 상태</label>
-            <select class="sm-input lv-status" style="font-weight:700; cursor:pointer;">
-              <option value="live" ${i?``:`selected`}>🔴 방송 중 (버튼: 지금 시청하기)</option>
-              <option value="upcoming" ${i?`selected`:``}>📅 방송 예정 (버튼: 라이브 확인하기)</option>
-            </select>
-          </div>
-          ${$(`시청자 수 / 방송시간 문구`,`lv-viewers`,t.viewers)}
-          ${$(`이동 링크 URL`,`lv-link`,t.link_url)}
-          ${da(`썸네일 이미지 URL`,`lv-img`,t.img_url)}
-        </div>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; padding-top:16px; border-top:1.5px solid #f1f5f9;">
-        <button class="sm-action-btn sm-btn-success lv-save">저장</button>
-        <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
-      </div>
-    `,la(r.querySelector(`.lv-uploader`),r.querySelector(`.lv-img`),e=>{r.querySelector(`.lv-thumb`).src=e}),r.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.lv-thumb`).src=r.querySelector(`.lv-img`).value.trim()}),r.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await aa.update(t.id,{title:r.querySelector(`.lv-title`).value.trim(),viewers:r.querySelector(`.lv-viewers`).value.trim(),link_url:r.querySelector(`.lv-link`).value.trim(),img_url:r.querySelector(`.lv-img`).value.trim(),status:r.querySelector(`.lv-status`).value}),Q(`라이브 제어 카드 저장 완료`)}),r.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`라이브 정보를 삭제합니까?`)&&(await aa.delete(t.id),Q(`제거되었습니다.`),await _a(e))}),n.appendChild(r)})}async function va(e){let[t,n]=await Promise.all([ra.getAll(),na.getAll()]);pa=n;let r=`<option value="">-- 상품 섹션 연결 안함 --</option>`+n.map(e=>`<option value="${e.id}">${ua(e.title)}</option>`).join(``);e.innerHTML=`
-    <div style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:14px; padding:16px 20px; margin-bottom:24px; color:#1e40af;">
-      <h3 style="font-size:14px; font-weight:800; margin:0 0 6px 0; display:flex; align-items:center; gap:6px;">
-        💡 퀵탭 & 베스트 랭킹 안내
-      </h3>
-      <p style="font-size:12.5px; margin:0; line-height:1.5; color:#1e3a8a;">
-        • 쇼핑몰 홈 상단 퀵탭에는 <strong>[전체]</strong> 및 <strong>[🏆 베스트 TOP 10]</strong> 탭이 기본으로 셋팅됩니다.<br>
-        • 아래 목록에서 추가한 메뉴 탭을 클릭하면 연결된 <strong>상품 섹션의 카드들만 집중 필터링</strong>되어 시원하게 표시됩니다.
-      </p>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">가로 퀵메뉴 탭 설정 (${t.length}개)</h2>
-      <button id="add-menu" class="sm-action-btn sm-btn-primary">+ 새 탭 메뉴 추가</button>
-    </div>
-    <div id="menu-list"></div>
-  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,name:`새 카테고리 탭`,section_id:null}),Q(`새 탭 메뉴가 추가되었습니다.`),await va(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.style.cssText=`padding:18px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:12px;`,a.innerHTML=`
-      <span class="sm-rank-badge">TAB #${n+1}</span>
-      <div style="flex:1; min-width:200px;">
-        <label class="sm-label" style="margin-bottom:4px;">탭 메뉴 이름</label>
-        <input class="sm-input m-name" value="${ua(t.name)}" placeholder="예: 셀러 특가" style="font-weight:700;">
-      </div>
-      <div style="width:260px;">
-        <label class="sm-label" style="margin-bottom:4px;">연동할 상품 섹션</label>
-        <select class="sm-input m-sec" style="font-weight:700; cursor:pointer; height:41px; padding:0 12px;">
-          ${r}
-        </select>
-      </div>
-      <div style="display:flex; gap:8px;">
-        <button class="sm-action-btn sm-btn-success m-save">저장</button>
-        <button class="sm-action-btn sm-btn-danger m-del">삭제</button>
-      </div>
-    `;let o=a.querySelector(`.m-sec`);o.value=t.section_id||``,a.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ra.update(t.id,{name:a.querySelector(`.m-name`).value.trim(),section_id:o.value||null}),Q(`탭 정보 저장 완료`)}),a.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`이 탭 메뉴를 삭제하시겠습니까?`)&&(await ra.delete(t.id),Q(`삭제되었습니다.`),await va(e))}),i.appendChild(a)})}async function ya(e,t){pa=await na.getAll();let n=await ia.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">상품 섹션 & 상품 관리 (${pa.length}개 섹션)</h2>
-      <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
-    </div>
-    <div id="section-list"></div>
-  `,e.querySelector(`#add-sec`).addEventListener(`click`,async()=>{await na.insert({sort_order:99,title:`새로운 기획전 섹션`,subtitle:`단독 특가로 만나보세요`,show_timer:!1}),Q(`새 섹션이 생성되었습니다.`),await ya(e,t)});let i=e.querySelector(`#section-list`);pa.forEach(n=>{let a=r[n.id]||[],o=document.createElement(`div`);o.className=`sm-card`,o.innerHTML=`
-      <div class="sm-card-header">
-        <div class="sm-card-title">
-          <span>📦 ${ua(n.title)}</span>
-          <span style="font-size:12px; font-weight:600; color:#64748b; background:#f1f5f9; padding:2px 8px; border-radius:12px;">(${a.length}개 상품)</span>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="sm-action-btn sm-btn-primary sec-add-prod" style="padding:6px 12px; font-size:12px;">+ 상품 추가</button>
-          <button class="sm-action-btn sm-btn-success sec-save" style="padding:6px 12px; font-size:12px;">섹션 저장</button>
-          <button class="sm-action-btn sm-btn-danger sec-del" style="padding:6px 12px; font-size:12px;">섹션 삭제</button>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
-        ${$(`섹션 제목 (예: 바캉스 기획전, 인플루언서 픽)`,`sec-title`,n.title)}
-        ${$(`섹션 설명/부제목`,`sec-subtitle`,n.subtitle)}
-      </div>
-
-      <div style="margin-top:20px; background:#f8fafc; border-radius:12px; padding:16px;">
-        <h4 style="font-size:13px; font-weight:800; color:#334155; margin:0 0 12px 0;">등록된 상품 카드 리스트</h4>
-        <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:14px;"></div>
-      </div>
-    `,o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await na.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim()}),Q(`섹션 정보가 저장되었습니다.`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 섹션과 포함된 상품들을 모두 삭제합니까?`)&&(await na.delete(n.id),Q(`섹션이 삭제되었습니다.`),await ya(e,t))}),o.querySelector(`.sec-add-prod`).addEventListener(`click`,async()=>{await ia.insert({section_id:n.id,sort_order:99,brand_name:`브랜드`,product_title:`신규 상품`,brand_title:`브랜드 신규 상품`,sale_price:`10,000원`,origin_price:`20,000원`,discount:`50% OFF`,unit_price:``,rating:`5.0`,reviews:`10`,img_url:``,chips:[]}),Q(`새 상품 카드가 추가되었습니다.`),await ya(e,t)});let s=o.querySelector(`.sec-prod-list`);a.forEach((n,r)=>{let i=document.createElement(`div`);i.style.cssText=`background:#fff; border:1.5px solid #e2e8f0; border-radius:12px; padding:16px; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;`;let a=n.brand_name||``,o=n.product_title||``;if(!a&&n.brand_title){let e=n.brand_title.split(` `);e.length>1?(a=e[0],o=e.slice(1).join(` `)):o=n.brand_title}i.innerHTML=`
-        <div style="width:110px; flex-shrink:0;">
-          <div style="margin-bottom:6px; display:flex; align-items:center; justify-content:space-between;">
-            <span class="sm-rank-badge ${r<3?`top3`:``}">RANK #${r+1}</span>
-          </div>
-          <div class="sm-thumb-uploader p-uploader" style="width:100%; height:94px;">
-            <img class="p-thumb" src="${ua(n.img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
             <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
           </div>
         </div>
         <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          ${$(`배너 대제목`,`b-title`,t.title)}
+          ${$(`서브 설명`,`b-desc`,t.desc)}
+          ${$(`라벨 (예: 오늘, 내일)`,`b-label`,t.label)}
+          ${$(`시간 문구 (예: 오후 8시)`,`b-time`,t.time_text)}
+          ${da(`이미지 URL`,`b-img`,t.img_url)}
+          ${$(`이동 링크 URL`,`b-link`,t.link_url,`text`,!0)}
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
+        <button class="sm-action-btn sm-btn-success b-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger b-del">삭제</button>
+      </div>
+    `,la(r.querySelector(`.b-uploader`),r.querySelector(`.b-img`),e=>{r.querySelector(`.b-thumb`).src=e}),r.querySelector(`.b-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.b-thumb`).src=r.querySelector(`.b-img`).value.trim()}),r.querySelector(`.b-save`).addEventListener(`click`,async()=>{await ta.update(t.id,{title:r.querySelector(`.b-title`).value.trim(),desc:r.querySelector(`.b-desc`).value.trim(),label:r.querySelector(`.b-label`).value.trim(),time_text:r.querySelector(`.b-time`).value.trim(),img_url:r.querySelector(`.b-img`).value.trim(),link_url:r.querySelector(`.b-link`).value.trim()}),Q(`배너 저장 완료`)}),r.querySelector(`.b-del`).addEventListener(`click`,async()=>{confirm(`배너를 삭제합니까?`)&&(await ta.delete(t.id),Q(`삭제되었습니다.`),await ga(e))}),n.appendChild(r)})}async function _a(e){let t=await aa.getAll();e.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">라이브 방송 목록 (${t.length}개)</h2>
+      <button id="add-live" class="sm-action-btn sm-btn-primary">+ 새 라이브 추가</button>
+    </div>
+    <div id="live-list"></div>
+  `,e.querySelector(`#add-live`).addEventListener(`click`,async()=>{await aa.insert({sort_order:99,title:`신규 라이브 방송`,viewers:`0명 시청 중`,img_url:``,link_url:``,status:`live`}),Q(`새 라이브가 생성되었습니다.`),await _a(e)});let n=e.querySelector(`#live-list`);t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`;let i=t.status===`upcoming`;r.innerHTML=`
+      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:130px; flex-shrink:0;">
+          <label class="sm-label">방송 썸네일 (클릭 업로드)</label>
+          <div class="sm-thumb-uploader lv-uploader" style="width:100%; height:86px;">
+            <img class="lv-thumb" src="${ua(t.img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          ${$(`방송 타이틀`,`lv-title`,t.title,`text`,!0)}
+          <div>
+            <label class="sm-label">진행 상태</label>
+            <select class="sm-input lv-status" style="font-weight:700; cursor:pointer;">
+              <option value="live" ${i?``:`selected`}>방송 중 (버튼: 지금 시청하기)</option>
+              <option value="upcoming" ${i?`selected`:``}>방송 예정 (버튼: 라이브 확인하기)</option>
+            </select>
+          </div>
+          ${$(`시청자 수 / 시간 문구`,`lv-viewers`,t.viewers)}
+          ${$(`이동 링크 URL`,`lv-link`,t.link_url)}
+          ${da(`썸네일 이미지 URL`,`lv-img`,t.img_url)}
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
+        <button class="sm-action-btn sm-btn-success lv-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
+      </div>
+    `,la(r.querySelector(`.lv-uploader`),r.querySelector(`.lv-img`),e=>{r.querySelector(`.lv-thumb`).src=e}),r.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.lv-thumb`).src=r.querySelector(`.lv-img`).value.trim()}),r.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await aa.update(t.id,{title:r.querySelector(`.lv-title`).value.trim(),viewers:r.querySelector(`.lv-viewers`).value.trim(),link_url:r.querySelector(`.lv-link`).value.trim(),img_url:r.querySelector(`.lv-img`).value.trim(),status:r.querySelector(`.lv-status`).value}),Q(`라이브 정보 저장 완료`)}),r.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`라이브를 삭제합니까?`)&&(await aa.delete(t.id),Q(`삭제되었습니다.`),await _a(e))}),n.appendChild(r)})}async function va(e){let[t,n]=await Promise.all([ra.getAll(),na.getAll()]);pa=n;let r=`<option value="">-- 상품 섹션 연결 안함 --</option>`+n.map(e=>`<option value="${e.id}">${ua(e.title)}</option>`).join(``);e.innerHTML=`
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
+      <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
+        퀵메뉴 탭 & 베스트 랭킹 안내
+      </h3>
+      <p style="font-size:12px; margin:0; line-height:1.4; color:#64748b;">
+        쇼핑몰 홈 상단 퀵탭에는 [전체] 및 [베스트 TOP 10] 탭이 자동 생성되며, 아래 추가한 탭 클릭 시 매핑된 상품 섹션이 표출됩니다.
+      </p>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">가로 퀵메뉴 탭 설정 (${t.length}개)</h2>
+      <button id="add-menu" class="sm-action-btn sm-btn-primary">+ 새 탭 메뉴 추가</button>
+    </div>
+    <div id="menu-list"></div>
+  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,name:`새 카테고리 탭`,section_id:null}),Q(`새 탭이 추가되었습니다.`),await va(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.style.cssText=`padding:14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;`,a.innerHTML=`
+      <span class="sm-rank-badge">TAB #${n+1}</span>
+      <div style="flex:1; min-width:180px;">
+        <label class="sm-label" style="margin-bottom:3px;">탭 메뉴 이름</label>
+        <input class="sm-input m-name" value="${ua(t.name)}" placeholder="예: 셀러 특가" style="font-weight:700;">
+      </div>
+      <div style="width:240px;">
+        <label class="sm-label" style="margin-bottom:3px;">연동 상품 섹션</label>
+        <select class="sm-input m-sec" style="font-weight:700; cursor:pointer; height:37px; padding:0 10px;">
+          ${r}
+        </select>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="sm-action-btn sm-btn-success m-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger m-del">삭제</button>
+      </div>
+    `;let o=a.querySelector(`.m-sec`);o.value=t.section_id||``,a.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ra.update(t.id,{name:a.querySelector(`.m-name`).value.trim(),section_id:o.value||null}),Q(`탭 저장 완료`)}),a.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`이 탭 메뉴를 삭제합니까?`)&&(await ra.delete(t.id),Q(`삭제되었습니다.`),await va(e))}),i.appendChild(a)})}async function ya(e,t){pa=await na.getAll();let n=await ia.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상품 섹션 & MD 추천 관리 (${pa.length}개 섹션)</h2>
+      <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
+    </div>
+    <div id="section-list"></div>
+  `,e.querySelector(`#add-sec`).addEventListener(`click`,async()=>{await na.insert({sort_order:99,title:`새 기획전 섹션`,subtitle:`단독 특가로 만나보세요`,show_timer:!1}),Q(`새 섹션이 생성되었습니다.`),await ya(e,t)});let i=e.querySelector(`#section-list`);pa.forEach(n=>{let a=r[n.id]||[],o=document.createElement(`div`);o.className=`sm-card`,o.innerHTML=`
+      <div class="sm-card-header">
+        <div class="sm-card-title">
+          <span>${ua(n.title)}</span>
+          <span style="font-size:11px; font-weight:600; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:4px;">(${a.length}개 상품)</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="sm-action-btn sm-btn-primary sec-add-prod" style="padding:5px 10px; font-size:12px;">+ 상품 추가</button>
+          <button class="sm-action-btn sm-btn-success sec-save" style="padding:5px 10px; font-size:12px;">섹션 저장</button>
+          <button class="sm-action-btn sm-btn-danger sec-del" style="padding:5px 10px; font-size:12px;">섹션 삭제</button>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        ${$(`섹션 제목 (예: 바캉스 기획전, 인플루언서 픽)`,`sec-title`,n.title)}
+        ${$(`섹션 부제목 / 혜택 안내`,`sec-subtitle`,n.subtitle)}
+      </div>
+
+      <div style="margin-top:16px; background:#f8fafc; border-radius:8px; padding:14px;">
+        <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록 상품 리스트</h4>
+        <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+    `,o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await na.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim()}),Q(`섹션 정보가 저장되었습니다.`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 섹션과 포함된 상품들을 모두 삭제합니까?`)&&(await na.delete(n.id),Q(`섹션이 삭제되었습니다.`),await ya(e,t))}),o.querySelector(`.sec-add-prod`).addEventListener(`click`,async()=>{await ia.insert({section_id:n.id,sort_order:99,brand_name:`브랜드`,product_title:`신규 상품`,brand_title:`브랜드 신규 상품`,sale_price:`10,000원`,origin_price:`20,000원`,discount:`50% OFF`,unit_price:``,rating:`5.0`,reviews:`10`,md_comment:`MD 강력 추천 상품`,img_url:``,chips:[]}),Q(`새 상품 카드가 추가되었습니다.`),await ya(e,t)});let s=o.querySelector(`.sec-prod-list`);a.forEach((n,r)=>{let i=document.createElement(`div`);i.style.cssText=`background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:14px; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;`;let a=n.brand_name||``,o=n.product_title||``;if(!a&&n.brand_title){let e=n.brand_title.split(` `);e.length>1?(a=e[0],o=e.slice(1).join(` `)):o=n.brand_title}i.innerHTML=`
+        <div style="width:100px; flex-shrink:0;">
+          <div style="margin-bottom:4px;">
+            <span class="sm-rank-badge ${r<3?`top3`:``}">RANK #${r+1}</span>
+          </div>
+          <div class="sm-thumb-uploader p-uploader" style="width:100%; height:80px;">
+            <img class="p-thumb" src="${ua(n.img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:240px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
           ${$(`브랜드명 (예: 설화수)`,`p-bname`,a)}
           ${$(`상품명 (예: 윤조 에센스 90ml)`,`p-ptitle`,o)}
           ${$(`판매가 (예: 9,900원)`,`p-sale`,n.sale_price)}
           ${$(`원래 정가 (예: 50,000원)`,`p-origin`,n.origin_price)}
           ${$(`할인 태그 (예: 80% 특가)`,`p-disc`,n.discount)}
-          ${$(`평점 (예: 4.9)`,`p-rating`,n.rating)}
+          ${$(`MD 추천 코멘트`,`p-md`,n.md_comment||`MD 강력 추천`)}
           ${da(`상품 이미지 URL`,`p-img`,n.img_url)}
         </div>
-        <div style="display:flex; flex-direction:column; gap:6px; margin-top:20px;">
-          <button class="sm-action-btn sm-btn-success p-save" style="padding:6px 12px; font-size:12px;">저장</button>
-          <button class="sm-action-btn sm-btn-danger p-del" style="padding:6px 12px; font-size:12px;">삭제</button>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:16px;">
+          <button class="sm-action-btn sm-btn-success p-save" style="padding:5px 10px; font-size:11.5px;">저장</button>
+          <button class="sm-action-btn sm-btn-danger p-del" style="padding:5px 10px; font-size:11.5px;">삭제</button>
         </div>
-      `,la(i.querySelector(`.p-uploader`),i.querySelector(`.p-img`),e=>{i.querySelector(`.p-thumb`).src=e}),i.querySelector(`.p-img-preview`).addEventListener(`click`,()=>{i.querySelector(`.p-thumb`).src=i.querySelector(`.p-img`).value.trim()}),i.querySelector(`.p-save`).addEventListener(`click`,async()=>{let e=i.querySelector(`.p-bname`).value.trim(),t=i.querySelector(`.p-ptitle`).value.trim(),r=e?`${e} ${t}`:t;await ia.update(n.id,{brand_name:e,product_title:t,brand_title:r,sale_price:i.querySelector(`.p-sale`).value.trim(),origin_price:i.querySelector(`.p-origin`).value.trim(),discount:i.querySelector(`.p-disc`).value.trim(),rating:i.querySelector(`.p-rating`).value.trim(),img_url:i.querySelector(`.p-img`).value.trim()}),Q(`상품 정보 동기화 완료!`)}),i.querySelector(`.p-del`).addEventListener(`click`,async()=>{confirm(`상품을 삭제하시겠습니까?`)&&(await ia.delete(n.id),Q(`제거되었습니다.`),await ya(e,t))}),s.appendChild(i)}),i.appendChild(o)})}x(),j();async function ba(){let e=document.getElementById(`app`);if(e.innerHTML=`
+      `,la(i.querySelector(`.p-uploader`),i.querySelector(`.p-img`),e=>{i.querySelector(`.p-thumb`).src=e}),i.querySelector(`.p-img-preview`).addEventListener(`click`,()=>{i.querySelector(`.p-thumb`).src=i.querySelector(`.p-img`).value.trim()}),i.querySelector(`.p-save`).addEventListener(`click`,async()=>{let e=i.querySelector(`.p-bname`).value.trim(),t=i.querySelector(`.p-ptitle`).value.trim(),r=e?`${e} ${t}`:t;await ia.update(n.id,{brand_name:e,product_title:t,brand_title:r,sale_price:i.querySelector(`.p-sale`).value.trim(),origin_price:i.querySelector(`.p-origin`).value.trim(),discount:i.querySelector(`.p-disc`).value.trim(),md_comment:i.querySelector(`.p-md`).value.trim(),img_url:i.querySelector(`.p-img`).value.trim()}),Q(`상품 정보 동기화 완료`)}),i.querySelector(`.p-del`).addEventListener(`click`,async()=>{confirm(`상품을 삭제하시겠습니까?`)&&(await ia.delete(n.id),Q(`삭제되었습니다.`),await ya(e,t))}),s.appendChild(i)}),i.appendChild(o)})}x(),j();async function ba(){let e=document.getElementById(`app`);if(e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
