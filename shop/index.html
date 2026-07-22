@@ -862,6 +862,18 @@
 
   <!-- ───── MAIN CONTENT ───── -->
   <main id="shop-main-content">
+
+    <!-- ── 퀵탭 전용 독립 카드 뷰 섹션 ── -->
+    <section class="section" id="quick-tab-card-view" style="display:none; padding: 20px 16px; border-bottom: 8px solid #000000;">
+      <div class="sec-header-wrap" style="margin-bottom: 14px;">
+        <div class="sec-title-group">
+          <h3 id="qt-view-title" style="font-size: 18px; font-weight: 800; color: #ffffff;">셀러 특가 큐레이션</h3>
+          <p id="qt-view-subtitle" style="font-size: 13px; color: var(--text-sub); margin-top: 4px;">실시간 인기의 단독 특가 상품 모음</p>
+        </div>
+      </div>
+      <div class="ex-grid" id="qt-card-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 12px;"></div>
+    </section>
+
     <!-- 라이브 섹션 (Supabase 동적 렌더) -->
     <section class="section" id="live-section">
       <div class="sec-header-wrap">
@@ -1302,7 +1314,75 @@
     }
   }
 
-  // ── 서브 탭 이동 및 탭별 상품 카드 필터링 ──
+  // ── 퀵탭 전용 카드 뷰 렌더링 ──
+  async function renderQuickTabCardView(tabName, sectionId) {
+    const qtView = document.getElementById('quick-tab-card-view');
+    const qtTitle = document.getElementById('qt-view-title');
+    const qtSub = document.getElementById('qt-view-subtitle');
+    const qtGrid = document.getElementById('qt-card-grid');
+
+    if (!qtView || !qtGrid) return;
+
+    if (tabName === '전체' || sectionId === 'all') {
+      qtView.style.display = 'none';
+      return;
+    }
+
+    qtView.style.display = 'block';
+    qtTitle.textContent = `${tabName} 큐레이션`;
+    qtSub.textContent = `${tabName} 추천 인기 상품`;
+
+    let products = [];
+    if (sectionId) {
+      products = await sbGet('shop_products', `select=*&section_id=eq.${sectionId}&active=eq.true&order=sort_order.asc`);
+    }
+
+    if (!products || !products.length) {
+      const allProds = await sbGet('shop_products', 'select=*&active=eq.true&order=sort_order.asc&limit=6');
+      products = allProds.length ? allProds : [
+        { id:'qt1', brand_name:'설화수', product_title:'자음수 리미티드 세트 90ml', sale_price:'49,000원', origin_price:'98,000원', discount:'50% OFF', rating:'4.9', reviews:'830', img_url:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85' },
+        { id:'qt2', brand_name:'에이피뷰티', product_title:'엠디 세럼 50ml 기획전', sale_price:'32,000원', origin_price:'64,000원', discount:'50% OFF', rating:'4.8', reviews:'210', img_url:'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85' }
+      ];
+    }
+
+    qtGrid.innerHTML = products.map(item => {
+      let bName = item.brand_name || '';
+      let pTitle = item.product_title || '';
+      if (!bName && item.brand_title) {
+        const parts = item.brand_title.split(' ');
+        if (parts.length > 1) {
+          bName = parts[0];
+          pTitle = parts.slice(1).join(' ');
+        } else {
+          pTitle = item.brand_title;
+        }
+      }
+
+      return `
+        <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
+          <div class="toss-img-box">
+            <img src="${item.img_url}" alt="${esc(pTitle)}">
+            <span class="toss-discount-tag">${item.discount || '특가'}</span>
+            <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
+          </div>
+          <div class="toss-info">
+            ${bName ? `<div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px;">${esc(bName)}</div>` : ''}
+            <div class="toss-brand-title">${esc(pTitle || item.brand_title)}</div>
+            <div class="toss-price-row">
+              <span class="toss-sale-price">${item.sale_price}</span>
+              ${item.origin_price ? `<span class="toss-origin-price">${item.origin_price}</span>` : ''}
+            </div>
+            ${item.unit_price ? `<div class="toss-unit-price">${item.unit_price}</div>` : ''}
+            ${item.rating ? `<div class="toss-rating-row"><span class="star-icon">★</span><span>${item.rating} (${item.reviews||0})</span></div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── 서브 탭 이동 및 탭별 전용 카드 뷰 필터링 ──
   function switchSubTab(el) {
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
@@ -1318,30 +1398,9 @@
 
     const sectionId = el.getAttribute('data-section-id');
     const menuName = el.getAttribute('data-menu-name') || el.textContent.trim();
-    const allSections = document.querySelectorAll('#dynamic-sections > section');
 
-    if (!allSections.length) return;
-
-    if (sectionId === 'all' || menuName === '전체') {
-      // '전체' 탭 클릭 시 모든 상품 섹션 표시
-      allSections.forEach(sec => sec.style.display = '');
-    } else {
-      let found = false;
-      if (sectionId) {
-        const targetSec = document.getElementById('sec-wrap-' + sectionId);
-        if (targetSec) {
-          allSections.forEach(sec => sec.style.display = (sec === targetSec ? '' : 'none'));
-          found = true;
-        }
-      }
-      if (!found) {
-        const allTabs = Array.from(document.querySelectorAll('.sub-tab'));
-        const idx = allTabs.indexOf(el) - 1; // '전체' 탭 제외
-        allSections.forEach((sec, i) => {
-          sec.style.display = (i === idx || idx < 0) ? '' : 'none';
-        });
-      }
-    }
+    // 퀵탭 전용 카드 뷰 호출
+    renderQuickTabCardView(menuName, sectionId);
   }
 
   function switchNav(el) {
