@@ -1,13 +1,19 @@
 // ============================================================
-//  RYZIN SHOP MANAGE ADMIN — 쇼핑몰 커머스 통합 관리 센터
-//  - 이모티콘 100% 완전 금지
-//  - 베스트 TOP 10 랭킹 & 뱃지 커스텀 색상(Color Picker) 어드민 설정 기능 지원
-//  - live_stream.js 슬림 UI/UX 톤앤매너 적용
+//  RYZIN SHOP MANAGE ADMIN — 커머스 통합 관리 센터 (모달 + 상품코드 + 검색 연동)
+//  - 상품 마스터 리스트 (테이블 형태) & 모달 등록/수정
+//  - 고유 상품 코드 (product_code: PROD-XXXXX) 자동 생성 및 관리
+//  - 기획전 및 라이브 상품 추가 시 코드/이름 실시간 검색 모달 연동
+//  - 이모티콘 100% 모조리 제외, live_stream 슬림 UI/UX 적용
 // ============================================================
 
 import { bannerDB, sectionDB, menuDB, productDB, liveDB } from '../utils/shopDB.js';
 
-// ── 공통 CSS 스타일 주입 (live_stream.js 톤앤매너 슬림 스타일) ──
+function generateProductCode() {
+  const num = Math.floor(Math.random() * 89999 + 10000);
+  return `PROD-${num}`;
+}
+
+// ── 공통 CSS 스타일 주입 ──
 function injectShopManageStyles(container) {
   const style = document.createElement('style');
   style.innerHTML = `
@@ -37,7 +43,7 @@ function injectShopManageStyles(container) {
       letter-spacing: -0.01em; 
     }
     .sm-tab-btn { 
-      padding: 9px 18px; 
+      padding: 9px 16px; 
       border-radius: 8px; 
       font-size: 13px; 
       font-weight: 700; 
@@ -49,6 +55,7 @@ function injectShopManageStyles(container) {
       display: flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
     }
     .sm-tab-btn.active { 
       background: #0f172a; 
@@ -115,6 +122,10 @@ function injectShopManageStyles(container) {
       background: #dc2626; 
       color: #ffffff; 
     }
+    .sm-btn-secondary {
+      background: #64748b;
+      color: #ffffff;
+    }
     .sm-thumb-uploader {
       border: 1.5px dashed #cbd5e1;
       border-radius: 8px;
@@ -158,9 +169,6 @@ function injectShopManageStyles(container) {
       padding: 2px 8px;
       border-radius: 4px;
     }
-    .sm-rank-badge.top3 {
-      background: #ef4444;
-    }
     .color-picker-box {
       display: flex;
       align-items: center;
@@ -174,6 +182,81 @@ function injectShopManageStyles(container) {
       border-radius: 6px;
       cursor: pointer;
       background: none;
+    }
+
+    /* ── 상품 데이터 테이블 ── */
+    .sm-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .sm-table th {
+      background: #f8fafc;
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 700;
+      color: #475569;
+      border-bottom: 1.5px solid #e2e8f0;
+      font-size: 12px;
+    }
+    .sm-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #0f172a;
+      vertical-align: middle;
+    }
+    .sm-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* ── MODAL ── */
+    .sm-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .sm-modal-content {
+      background: #ffffff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      border: 1px solid #e2e8f0;
+      padding: 24px;
+    }
+    .sm-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 20px;
+    }
+    .sm-modal-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+    .sm-modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
     }
   `;
   container.appendChild(style);
@@ -253,7 +336,7 @@ function toast(msg) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'sm-toast';
-    el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;font-weight:700;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,0.2);transition:opacity 0.2s;';
+    el.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;font-weight:700;z-index:99999;box-shadow:0 8px 20px rgba(0,0,0,0.2);transition:opacity 0.2s;';
     document.body.appendChild(el);
   }
   el.textContent = msg;
@@ -288,8 +371,9 @@ function imgUploadField(label, className, value) {
   `;
 }
 
-let _tab = 'banners';
+let _tab = 'products';
 let _sections = [];
+let _allProducts = [];
 
 export function renderShopManage() {
   const container = document.createElement('div');
@@ -304,20 +388,21 @@ export function renderShopManage() {
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
         <div>
           <h1 style="font-size:20px; font-weight:800; color:#0f172a; margin:0 0 4px 0; letter-spacing:-0.02em;">쇼핑몰 라이브 & 커머스 관리 센터</h1>
-          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">상단 배너, 라이브 방송, 베스트 TOP 10 랭킹 및 뱃지 컬러, 퀵메뉴 탭을 통합 설정합니다.</p>
+          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">상품 마스터 리스트, 고유 상품 코드, 모달 등록, 기획전/라이브 검색 연동을 통합 관리합니다.</p>
         </div>
         <button id="btn-refresh" class="sm-action-btn sm-btn-primary">전체 새로고침</button>
       </div>
     </div>
 
-    <!-- 슬림 서브 탭 메뉴 (이모티콘 완전 제외) -->
+    <!-- 서브 탭 메뉴 -->
     <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
       ${[
-        { key:'banners', label:'상단 배너' },
+        { key:'products', label:'마스터 상품 리스트 (모달 등록)' },
+        { key:'sections', label:'상품 섹션 & 기획전' },
+        { key:'best10', label:'베스트 TOP 10 랭킹' },
         { key:'lives', label:'라이브 NOW / 예정' },
-        { key:'best10', label:'베스트 TOP 10 랭킹 설정' },
-        { key:'menus', label:'퀵메뉴 탭 설정' },
-        { key:'sections', label:'상품 섹션 & MD 추천 관리' }
+        { key:'banners', label:'상단 배너' },
+        { key:'menus', label:'퀵메뉴 탭 설정' }
       ].map(t => `<button class="sm-tab-btn${t.key===_tab?' active':''}" data-tab="${t.key}">${t.label}</button>`).join('')}
     </div>
 
@@ -325,6 +410,7 @@ export function renderShopManage() {
       데이터를 동기화하는 중...
     </div>
     <div id="sm-panel"></div>
+    <div id="sm-modal-container"></div>
   `;
 
   wrapper.querySelectorAll('.sm-tab-btn').forEach(btn => {
@@ -363,99 +449,543 @@ async function loadPanel(wrapper) {
   panel.innerHTML = '';
 
   try {
-    if (_tab === 'banners') await renderBannersPanel(panel);
-    else if (_tab === 'lives') await renderLivesPanel(panel);
-    else if (_tab === 'best10') await renderBest10Panel(panel);
-    else if (_tab === 'menus') await renderMenusPanel(panel);
+    _allProducts = await productDB.getAll();
+
+    if (_tab === 'products') await renderProductsMasterPanel(panel, wrapper);
     else if (_tab === 'sections') await renderSectionsPanel(panel, wrapper);
+    else if (_tab === 'best10') await renderBest10Panel(panel);
+    else if (_tab === 'lives') await renderLivesPanel(panel);
+    else if (_tab === 'banners') await renderBannersPanel(panel);
+    else if (_tab === 'menus') await renderMenusPanel(panel);
   } catch(e) {
     panel.innerHTML = `
       <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
         <h4 style="margin:0 0 6px 0; font-weight:800;">데이터 연동 실패</h4>
-        <p style="margin:0; font-size:12.5px;">${e.message}. Supabase 데이터베이스 설정을 확인해 주세요.</p>
+        <p style="margin:0; font-size:12.5px;">${e.message}. Supabase 데이터베이스 연결 상태를 확인해 주세요.</p>
       </div>
     `;
   }
   loading.style.display = 'none';
 }
 
-// ① 상단 배너 탭
-async function renderBannersPanel(panel) {
-  const banners = await bannerDB.getAll();
+// ──────────────────────────────────────────
+// 1. 마스터 상품 리스트 & 모달 등록 탭
+// ──────────────────────────────────────────
+async function renderProductsMasterPanel(panel, wrapper) {
   panel.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${banners.length}개)</h2>
-      <button id="add-banner" class="sm-action-btn sm-btn-primary">+ 새 배너 추가</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 마스터 상품 리스트 (${_allProducts.length}개 등록)</h2>
+        <p style="font-size:12px; color:#64748b; margin:0;">고유 상품 코드(product_code) 기반으로 상품을 모달을 통해 간편히 등록/관리합니다.</p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <input id="prod-search-input" class="sm-input" placeholder="상품 코드 또는 상품명 검색..." style="width:240px;">
+        <button id="btn-open-add-modal" class="sm-action-btn sm-btn-primary">+ 모달로 새 상품 등록</button>
+      </div>
     </div>
-    <div id="banner-list"></div>
+
+    <div class="sm-card" style="padding:0; overflow:hidden;">
+      <table class="sm-table">
+        <thead>
+          <tr>
+            <th style="width:110px;">상품 코드</th>
+            <th style="width:60px; text-align:center;">썸네일</th>
+            <th style="width:100px;">브랜드</th>
+            <th>상품명</th>
+            <th style="width:90px;">판매가</th>
+            <th style="width:80px;">할인율</th>
+            <th style="width:90px;">뱃지 색상</th>
+            <th style="width:110px; text-align:center;">관리</th>
+          </tr>
+        </thead>
+        <tbody id="prod-table-body"></tbody>
+      </table>
+    </div>
   `;
 
-  panel.querySelector('#add-banner').addEventListener('click', async () => {
-    await bannerDB.insert({ sort_order: 99, title:'새 기획 배너', desc:'', label:'오늘', time_text:'오후 8시', img_url:'', link_url:'/shop/live_teaser.html' });
-    toast('새 배너가 추가되었습니다.');
-    await renderBannersPanel(panel);
+  const tbody = panel.querySelector('#prod-table-body');
+  const searchInput = panel.querySelector('#prod-search-input');
+
+  function filterAndRenderTable() {
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = _allProducts.filter(p => {
+      const pCode = (p.product_code || '').toLowerCase();
+      const pName = (p.product_title || p.brand_title || '').toLowerCase();
+      const bName = (p.brand_name || '').toLowerCase();
+      return !q || pCode.includes(q) || pName.includes(q) || bName.includes(q);
+    });
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">검색된 상품이 없습니다.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(p => {
+      const pCode = p.product_code || generateProductCode();
+      const defaultColor = p.badge_color || '#ef4444';
+      return `
+        <tr>
+          <td><span class="sm-rank-badge" style="background:#1e293b;">${esc(pCode)}</span></td>
+          <td style="text-align:center;">
+            <img src="${esc(p.img_url || '')}" style="width:40px; height:40px; border-radius:6px; object-fit:cover; background:#f1f5f9;">
+          </td>
+          <td style="font-weight:700;">${esc(p.brand_name || '-')}</td>
+          <td style="font-weight:600; color:#0f172a;">${esc(p.product_title || p.brand_title)}</td>
+          <td style="font-weight:700; color:#2563eb;">${esc(p.sale_price)}</td>
+          <td style="color:#dc2626; font-weight:700;">${esc(p.discount || '-')}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="display:inline-block; width:14px; height:14px; border-radius:4px; background:${esc(defaultColor)};"></span>
+              <span style="font-size:11px; font-weight:600; color:#64748b;">${esc(defaultColor)}</span>
+            </div>
+          </td>
+          <td style="text-align:center;">
+            <button class="sm-action-btn sm-btn-primary btn-edit-prod" data-id="${p.id}" style="padding:4px 8px; font-size:11px;">수정</button>
+            <button class="sm-action-btn sm-btn-danger btn-del-prod" data-id="${p.id}" style="padding:4px 8px; font-size:11px;">삭제</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('.btn-edit-prod').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const prod = _allProducts.find(x => x.id === btn.dataset.id);
+        if (prod) openProductModal(prod, wrapper);
+      });
+    });
+
+    tbody.querySelectorAll('.btn-del-prod').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('이 상품을 삭제하시겠습니까?')) return;
+        await productDB.delete(btn.dataset.id);
+        toast('삭제되었습니다.');
+        await loadPanel(wrapper);
+      });
+    });
+  }
+
+  searchInput.addEventListener('input', filterAndRenderTable);
+  filterAndRenderTable();
+
+  panel.querySelector('#btn-open-add-modal').addEventListener('click', () => {
+    openProductModal(null, wrapper);
+  });
+}
+
+// ──────────────────────────────────────────
+// 상품 추가/수정 모달 UI
+// ──────────────────────────────────────────
+function openProductModal(productObj, wrapper) {
+  const isEdit = !!productObj;
+  const prodCode = (productObj && productObj.product_code) || generateProductCode();
+  const modalContainer = wrapper.querySelector('#sm-modal-container');
+
+  const defaultColor = (productObj && productObj.badge_color) || '#ef4444';
+
+  modalContainer.innerHTML = `
+    <div class="sm-modal-backdrop" id="modal-backdrop">
+      <div class="sm-modal-content">
+        <div class="sm-modal-header">
+          <h3 class="sm-modal-title">${isEdit ? '상품 정보 수정' : '새 상품 등록 (모달)'}</h3>
+          <button class="sm-modal-close" id="modal-close-btn">&times;</button>
+        </div>
+        <form id="modal-prod-form" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div>
+            <label class="sm-label">고유 상품 코드 (자동 부여)</label>
+            <input class="sm-input" id="m-pcode" value="${esc(prodCode)}" readonly style="background:#f8fafc; font-weight:800; color:#2563eb;">
+          </div>
+          <div>
+            <label class="sm-label">연속 등록할 상품 섹션</label>
+            <select class="sm-input" id="m-psection" style="font-weight:700; cursor:pointer; height:37px;">
+              <option value="">-- 섹션 지정 안함 --</option>
+              ${_sections.map(s => `<option value="${s.id}" ${(productObj && productObj.section_id === s.id) ? 'selected' : ''}>${esc(s.title)}</option>`).join('')}
+            </select>
+          </div>
+          ${formField('브랜드명 (예: 설화수)','m-bname', productObj ? productObj.brand_name : '')}
+          ${formField('상품명 (예: 윤조 에센스 90ml)','m-ptitle', productObj ? (productObj.product_title || productObj.brand_title) : '')}
+          ${formField('판매가 (예: 9,900원)','m-sale', productObj ? productObj.sale_price : '')}
+          ${formField('원래 정가 (예: 50,000원)','m-origin', productObj ? productObj.origin_price : '')}
+          ${formField('할인 태그 (예: 80% 특가)','m-disc', productObj ? productObj.discount : '')}
+          <div>
+            <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
+            <div class="color-picker-box">
+              <input class="color-picker-input" id="m-picker" type="color" value="${esc(defaultColor)}">
+              <input class="sm-input" id="m-color" type="text" value="${esc(defaultColor)}" placeholder="#ef4444" style="font-weight:700;">
+            </div>
+          </div>
+          ${formField('MD 추천 코멘트','m-mdcomment', productObj ? productObj.md_comment : 'MD 강력 추천 상품', 'text', true)}
+          <div style="grid-column: 1 / -1;">
+            <label class="sm-label">상품 이미지 (클릭 업로드)</label>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <div class="sm-thumb-uploader" id="m-uploader" style="width:80px; height:80px; flex-shrink:0;">
+                <img id="m-thumb-img" src="${esc(productObj ? productObj.img_url : '')}" style="width:100%; height:100%; object-fit:cover;">
+                <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
+              </div>
+              <input class="sm-input" id="m-imgurl" type="text" value="${esc(productObj ? productObj.img_url : '')}" placeholder="이미지 URL">
+            </div>
+          </div>
+          <div style="grid-column:1 / -1; display:flex; justify-content:flex-end; gap:8px; margin-top:16px; padding-top:16px; border-top:1px solid #e2e8f0;">
+            <button type="button" class="sm-action-btn sm-btn-secondary" id="modal-cancel-btn">취소</button>
+            <button type="submit" class="sm-action-btn sm-btn-success">${isEdit ? '수정 내용 저장' : '새 상품 등록'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalContainer.innerHTML = ''; };
+
+  modalContainer.querySelector('#modal-close-btn').addEventListener('click', closeModal);
+  modalContainer.querySelector('#modal-cancel-btn').addEventListener('click', closeModal);
+
+  const picker = modalContainer.querySelector('#m-picker');
+  const colorText = modalContainer.querySelector('#m-color');
+  picker.addEventListener('input', (e) => colorText.value = e.target.value);
+  colorText.addEventListener('input', (e) => picker.value = e.target.value);
+
+  const uploader = modalContainer.querySelector('#m-uploader');
+  const inputImg = modalContainer.querySelector('#m-imgurl');
+  bindImageUploader(uploader, inputImg, (url) => {
+    modalContainer.querySelector('#m-thumb-img').src = url;
   });
 
-  const list = panel.querySelector('#banner-list');
-  banners.forEach((b) => {
-    const card = document.createElement('div');
-    card.className = 'sm-card';
-    card.innerHTML = `
-      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="width:130px; flex-shrink:0;">
-          <label class="sm-label">배너 썸네일 (클릭 업로드)</label>
-          <div class="sm-thumb-uploader b-uploader" style="width:100%; height:86px;">
-            <img class="b-thumb" src="${esc(b.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
-            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
-          </div>
+  modalContainer.querySelector('#modal-prod-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pCode = modalContainer.querySelector('#m-pcode').value.trim();
+    const secId = modalContainer.querySelector('#m-psection').value || null;
+    const bName = modalContainer.querySelector('#m-bname').value.trim();
+    const pTitle = modalContainer.querySelector('#m-ptitle').value.trim();
+    const combinedTitle = bName ? `${bName} ${pTitle}` : pTitle;
+
+    const payload = {
+      product_code: pCode,
+      section_id:   secId,
+      brand_name:    bName,
+      product_title: pTitle,
+      brand_title:   combinedTitle,
+      sale_price:    modalContainer.querySelector('#m-sale').value.trim(),
+      origin_price:  modalContainer.querySelector('#m-origin').value.trim(),
+      discount:      modalContainer.querySelector('#m-disc').value.trim(),
+      badge_color:   colorText.value.trim() || '#ef4444',
+      md_comment:    modalContainer.querySelector('#m-mdcomment').value.trim(),
+      img_url:       inputImg.value.trim(),
+    };
+
+    if (isEdit) {
+      await productDB.update(productObj.id, payload);
+      toast('상품 수정 완료');
+    } else {
+      payload.sort_order = 99;
+      payload.rating = '5.0';
+      payload.reviews = '10';
+      await productDB.insert(payload);
+      toast('새 상품 등록 완료');
+    }
+
+    closeModal();
+    await loadPanel(wrapper);
+  });
+}
+
+// ──────────────────────────────────────────
+// 상품 코드/이름 검색 선택 모달 (기획전 & 라이브 연동용)
+// ──────────────────────────────────────────
+function openProductSearchModal(wrapper, onSelectProduct) {
+  const modalContainer = wrapper.querySelector('#sm-modal-container');
+
+  modalContainer.innerHTML = `
+    <div class="sm-modal-backdrop">
+      <div class="sm-modal-content" style="max-width:540px;">
+        <div class="sm-modal-header">
+          <h3 class="sm-modal-title">등록할 상품 코드 / 이름 검색</h3>
+          <button class="sm-modal-close" id="search-modal-close">&times;</button>
         </div>
-        <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          ${formField('배너 대제목','b-title',b.title)}
-          ${formField('서브 설명','b-desc',b.desc)}
-          ${formField('라벨 (예: 오늘, 내일)','b-label',b.label)}
-          ${formField('시간 문구 (예: 오후 8시)','b-time',b.time_text)}
-          ${imgUploadField('이미지 URL','b-img',b.img_url)}
-          ${formField('이동 링크 URL','b-link',b.link_url,'text',true)}
+        <div style="margin-bottom:14px;">
+          <input class="sm-input" id="modal-search-keyword" placeholder="상품 코드(PROD-...) 또는 상품명 입력..." autofocus>
+        </div>
+        <div id="search-result-list" style="max-height:360px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalContainer.innerHTML = ''; };
+  modalContainer.querySelector('#search-modal-close').addEventListener('click', closeModal);
+
+  const inputKw = modalContainer.querySelector('#modal-search-keyword');
+  const resList = modalContainer.querySelector('#search-result-list');
+
+  function doSearch() {
+    const q = inputKw.value.trim().toLowerCase();
+    const filtered = _allProducts.filter(p => {
+      const pCode = (p.product_code || '').toLowerCase();
+      const pName = (p.product_title || p.brand_title || '').toLowerCase();
+      const bName = (p.brand_name || '').toLowerCase();
+      return !q || pCode.includes(q) || pName.includes(q) || bName.includes(q);
+    });
+
+    if (!filtered.length) {
+      resList.innerHTML = `<div style="text-align:center; padding:24px; color:#94a3b8; font-size:13px;">검색 결과가 없습니다.</div>`;
+      return;
+    }
+
+    resList.innerHTML = filtered.map(p => `
+      <div class="search-item-card" data-id="${p.id}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; background:#fff; transition:background 0.15s;">
+        <img src="${esc(p.img_url || '')}" style="width:44px; height:44px; border-radius:6px; object-fit:cover; background:#f1f5f9;">
+        <div style="flex:1; overflow:hidden;">
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:2px;">
+            <span class="sm-rank-badge" style="font-size:10px;">${esc(p.product_code || 'PROD-00000')}</span>
+            <span style="font-size:11px; font-weight:700; color:#64748b;">${esc(p.brand_name || '')}</span>
+          </div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(p.product_title || p.brand_title)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:13px; font-weight:800; color:#2563eb;">${esc(p.sale_price)}</div>
+          <button class="sm-action-btn sm-btn-primary" style="padding:3px 8px; font-size:11px; margin-top:2px;">선택 추가</button>
         </div>
       </div>
-      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
-        <button class="sm-action-btn sm-btn-success b-save">저장</button>
-        <button class="sm-action-btn sm-btn-danger b-del">삭제</button>
+    `).join('');
+
+    resList.querySelectorAll('.search-item-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const prod = _allProducts.find(x => x.id === card.dataset.id);
+        if (prod) {
+          onSelectProduct(prod);
+          closeModal();
+        }
+      });
+    });
+  }
+
+  inputKw.addEventListener('input', doSearch);
+  doSearch();
+}
+
+// ──────────────────────────────────────────
+// ② 상품 섹션 & 기획전 (검색 모달 연동)
+// ──────────────────────────────────────────
+async function renderSectionsPanel(panel, wrapper) {
+  _sections = await sectionDB.getAll();
+  const products = _allProducts;
+  const prodBySec = {};
+  products.forEach(p => {
+    if (!prodBySec[p.section_id]) prodBySec[p.section_id] = [];
+    prodBySec[p.section_id].push(p);
+  });
+
+  panel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">기획전 상품 섹션 관리 (${_sections.length}개 섹션)</h2>
+      <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
+    </div>
+    <div id="section-list"></div>
+  `;
+
+  panel.querySelector('#add-sec').addEventListener('click', async () => {
+    await sectionDB.insert({ sort_order:99, title:'새 기획전 섹션', subtitle:'단독 특가로 만나보세요', show_timer:false });
+    toast('새 섹션이 생성되었습니다.');
+    await renderSectionsPanel(panel, wrapper);
+  });
+
+  const list = panel.querySelector('#section-list');
+  _sections.forEach((sec) => {
+    const prods = prodBySec[sec.id] || [];
+    const card = document.createElement('div');
+    card.className = 'sm-card';
+
+    card.innerHTML = `
+      <div class="sm-card-header">
+        <div class="sm-card-title">
+          <span>${esc(sec.title)}</span>
+          <span style="font-size:11px; font-weight:600; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:4px;">(${prods.length}개 상품)</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="sm-action-btn sm-btn-primary sec-search-add" style="padding:5px 10px; font-size:12px;">+ 코드/이름 검색 추가</button>
+          <button class="sm-action-btn sm-btn-success sec-save" style="padding:5px 10px; font-size:12px;">섹션 저장</button>
+          <button class="sm-action-btn sm-btn-danger sec-del" style="padding:5px 10px; font-size:12px;">섹션 삭제</button>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        ${formField('섹션 제목 (예: 바캉스 기획전, 인플루언서 픽)','sec-title',sec.title)}
+        ${formField('섹션 부제목 / 혜택 안내','sec-subtitle',sec.subtitle)}
+      </div>
+
+      <div style="margin-top:16px; background:#f8fafc; border-radius:8px; padding:14px;">
+        <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록된 섹션 상품 카드</h4>
+        <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
     `;
 
-    const uploader = card.querySelector('.b-uploader');
-    const input = card.querySelector('.b-img');
-    bindImageUploader(uploader, input, (url) => {
-      card.querySelector('.b-thumb').src = url;
+    card.querySelector('.sec-save').addEventListener('click', async () => {
+      await sectionDB.update(sec.id, {
+        title: card.querySelector('.sec-title').value.trim(),
+        subtitle: card.querySelector('.sec-subtitle').value.trim(),
+      });
+      toast('섹션 정보 저장 완료');
     });
 
-    card.querySelector('.b-img-preview').addEventListener('click', () => {
-      card.querySelector('.b-thumb').src = card.querySelector('.b-img').value.trim();
-    });
-    card.querySelector('.b-save').addEventListener('click', async () => {
-      await bannerDB.update(b.id, {
-        title: card.querySelector('.b-title').value.trim(),
-        desc: card.querySelector('.b-desc').value.trim(),
-        label: card.querySelector('.b-label').value.trim(),
-        time_text: card.querySelector('.b-time').value.trim(),
-        img_url: card.querySelector('.b-img').value.trim(),
-        link_url: card.querySelector('.b-link').value.trim(),
-      });
-      toast('배너 저장 완료');
-    });
-    card.querySelector('.b-del').addEventListener('click', async () => {
-      if (!confirm('배너를 삭제합니까?')) return;
-      await bannerDB.delete(b.id);
+    card.querySelector('.sec-del').addEventListener('click', async () => {
+      if (!confirm('이 섹션을 삭제합니까?')) return;
+      await sectionDB.delete(sec.id);
       toast('삭제되었습니다.');
-      await renderBannersPanel(panel);
+      await renderSectionsPanel(panel, wrapper);
+    });
+
+    // 코드/이름 검색하여 해당 섹션에 상품 할당 추가
+    card.querySelector('.sec-search-add').addEventListener('click', () => {
+      openProductSearchModal(wrapper, async (selectedProd) => {
+        await productDB.update(selectedProd.id, { section_id: sec.id });
+        toast(`[${selectedProd.product_code || '상품'}]이 '${sec.title}' 섹션에 추가되었습니다.`);
+        await loadPanel(wrapper);
+      });
+    });
+
+    const prodListEl = card.querySelector('.sec-prod-list');
+    prods.forEach((p) => {
+      const itemRow = document.createElement('div');
+      itemRow.style.cssText = 'background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;';
+
+      itemRow.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+          <span class="sm-rank-badge" style="font-size:10px;">${esc(p.product_code || 'PROD-00000')}</span>
+          <img src="${esc(p.img_url || '')}" style="width:36px; height:36px; border-radius:6px; object-fit:cover; background:#f1f5f9;">
+          <div style="overflow:hidden;">
+            <div style="font-size:12px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(p.brand_name ? `${p.brand_name} ${p.product_title}` : p.brand_title)}</div>
+            <div style="font-size:11px; color:#2563eb; font-weight:700;">${esc(p.sale_price)}</div>
+          </div>
+        </div>
+        <button class="sm-action-btn sm-btn-danger btn-remove-sec-prod" style="padding:4px 8px; font-size:11px;">섹션 제외</button>
+      `;
+
+      itemRow.querySelector('.btn-remove-sec-prod').addEventListener('click', async () => {
+        await productDB.update(p.id, { section_id: null });
+        toast('섹션에서 제외되었습니다.');
+        await loadPanel(wrapper);
+      });
+
+      prodListEl.appendChild(itemRow);
     });
 
     list.appendChild(card);
   });
 }
 
-// ② 라이브 NOW 탭
+// ──────────────────────────────────────────
+// ③ 베스트 TOP 10 랭킹 설정
+// ──────────────────────────────────────────
+async function renderBest10Panel(panel) {
+  const products = _allProducts;
+  const bestProducts = products
+    .filter(p => (p.best_rank && p.best_rank > 0))
+    .sort((a,b) => (a.best_rank || 99) - (b.best_rank || 99))
+    .slice(0, 10);
+
+  const displayList = bestProducts.length ? bestProducts : products.slice(0, 10);
+
+  panel.innerHTML = `
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
+      <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
+        베스트 TOP 10 랭킹 & 뱃지 색상 설정
+      </h3>
+      <p style="font-size:12px; margin:0; line-height:1.4; color:#64748b;">
+        쇼핑몰 홈 [베스트 TOP 10] 탭 클릭 시 표시될 1위부터 10위까지 순위와 뱃지 배경 색상을 커스텀 설정합니다.
+      </p>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">베스트 TOP 10 등록 상품 (${displayList.length}개)</h2>
+    </div>
+    <div id="best10-list"></div>
+  `;
+
+  const list = panel.querySelector('#best10-list');
+
+  displayList.forEach((p, idx) => {
+    const defaultRank = p.best_rank || (idx + 1);
+    const defaultColor = p.badge_color || '#ef4444';
+
+    const card = document.createElement('div');
+    card.className = 'sm-card';
+    card.innerHTML = `
+      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:110px; flex-shrink:0;">
+          <div style="margin-bottom:6px;">
+            <span class="sm-rank-badge top3" style="background:${esc(defaultColor)}">RANK #${defaultRank}</span>
+          </div>
+          <div class="sm-thumb-uploader b10-uploader" style="width:100%; height:86px;">
+            <img class="b10-thumb" src="${esc(p.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label class="sm-label">상품 코드: ${esc(p.product_code || 'PROD-00000')}</label>
+            <label class="sm-label">베스트 순위 (1~10)</label>
+            <input class="sm-input b10-rank" type="number" min="1" max="10" value="${defaultRank}" style="font-weight:800;">
+          </div>
+          <div>
+            <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
+            <div class="color-picker-box">
+              <input class="color-picker-input b10-picker" type="color" value="${esc(defaultColor)}">
+              <input class="sm-input b10-color" type="text" value="${esc(defaultColor)}" placeholder="#ef4444" style="font-weight:700;">
+            </div>
+          </div>
+          ${formField('브랜드명','b10-bname', p.brand_name || '')}
+          ${formField('상품명','b10-title', p.product_title || p.brand_title || '')}
+          ${formField('판매가','b10-sale', p.sale_price)}
+          ${formField('할인 태그','b10-disc', p.discount)}
+          ${imgUploadField('이미지 URL','b10-img', p.img_url)}
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
+        <button class="sm-action-btn sm-btn-success b10-save">저장</button>
+      </div>
+    `;
+
+    const uploader = card.querySelector('.b10-uploader');
+    const inputImg = card.querySelector('.b10-img');
+    bindImageUploader(uploader, inputImg, (url) => {
+      card.querySelector('.b10-thumb').src = url;
+    });
+
+    const picker = card.querySelector('.b10-picker');
+    const colorText = card.querySelector('.b10-color');
+
+    picker.addEventListener('input', (e) => {
+      colorText.value = e.target.value;
+      card.querySelector('.sm-rank-badge').style.background = e.target.value;
+    });
+    colorText.addEventListener('input', (e) => {
+      picker.value = e.target.value;
+      card.querySelector('.sm-rank-badge').style.background = e.target.value;
+    });
+
+    card.querySelector('.b10-save').addEventListener('click', async () => {
+      const rankVal = parseInt(card.querySelector('.b10-rank').value) || (idx + 1);
+      const colorVal = card.querySelector('.b10-color').value.trim() || '#ef4444';
+      const bName = card.querySelector('.b10-bname').value.trim();
+      const pTitle = card.querySelector('.b10-title').value.trim();
+      const combinedTitle = bName ? `${bName} ${pTitle}` : pTitle;
+
+      await productDB.update(p.id, {
+        best_rank: rankVal,
+        badge_color: colorVal,
+        brand_name: bName,
+        product_title: pTitle,
+        brand_title: combinedTitle,
+        sale_price: card.querySelector('.b10-sale').value.trim(),
+        discount: card.querySelector('.b10-disc').value.trim(),
+        img_url: card.querySelector('.b10-img').value.trim(),
+      });
+      toast(`베스트 #${rankVal}위 저장 완료`);
+    });
+
+    list.appendChild(card);
+  });
+}
+
+// ──────────────────────────────────────────
+// ④ 라이브 NOW 탭 (검색 추가 지원)
+// ──────────────────────────────────────────
 async function renderLivesPanel(panel) {
   const lives = await liveDB.getAll();
   panel.innerHTML = `
@@ -536,119 +1066,87 @@ async function renderLivesPanel(panel) {
   });
 }
 
-// ③ 베스트 TOP 10 랭킹 & 뱃지 커스텀 색상 전용 관리 탭
-async function renderBest10Panel(panel) {
-  const products = await productDB.getAll();
-  // 베스트 랭킹이 지정되었거나 전체 상품 중 상위 10개
-  const bestProducts = products
-    .filter(p => (p.best_rank && p.best_rank > 0))
-    .sort((a,b) => (a.best_rank || 99) - (b.best_rank || 99))
-    .slice(0, 10);
-
-  const displayList = bestProducts.length ? bestProducts : products.slice(0, 10);
-
+// ──────────────────────────────────────────
+// ⑤ 상단 배너 탭
+// ──────────────────────────────────────────
+async function renderBannersPanel(panel) {
+  const banners = await bannerDB.getAll();
   panel.innerHTML = `
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
-      <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
-        베스트 TOP 10 랭킹 & 뱃지 커스텀 색상 설정
-      </h3>
-      <p style="font-size:12px; margin:0; line-height:1.4; color:#64748b;">
-        • 쇼핑몰 홈 <strong>[베스트 TOP 10]</strong> 탭 클릭 시 표시될 1위부터 10위까지 순위와 <strong>순위 뱃지 배경 색상(Badge Color)</strong>을 직접 설정할 수 있습니다.
-      </p>
-    </div>
-
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">베스트 TOP 10 랭킹 등록 상품 목록 (${displayList.length}개)</h2>
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${banners.length}개)</h2>
+      <button id="add-banner" class="sm-action-btn sm-btn-primary">+ 새 배너 추가</button>
     </div>
-    <div id="best10-list"></div>
+    <div id="banner-list"></div>
   `;
 
-  const list = panel.querySelector('#best10-list');
+  panel.querySelector('#add-banner').addEventListener('click', async () => {
+    await bannerDB.insert({ sort_order: 99, title:'새 기획 배너', desc:'', label:'오늘', time_text:'오후 8시', img_url:'', link_url:'/shop/live_teaser.html' });
+    toast('새 배너가 추가되었습니다.');
+    await renderBannersPanel(panel);
+  });
 
-  displayList.forEach((p, idx) => {
-    const defaultRank = p.best_rank || (idx + 1);
-    const defaultColor = p.badge_color || '#ef4444';
-
+  const list = panel.querySelector('#banner-list');
+  banners.forEach((b) => {
     const card = document.createElement('div');
     card.className = 'sm-card';
     card.innerHTML = `
       <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="width:110px; flex-shrink:0;">
-          <div style="margin-bottom:6px;">
-            <span class="sm-rank-badge top3" style="background:${esc(defaultColor)}">RANK #${defaultRank}</span>
-          </div>
-          <div class="sm-thumb-uploader b10-uploader" style="width:100%; height:86px;">
-            <img class="b10-thumb" src="${esc(p.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
+        <div style="width:130px; flex-shrink:0;">
+          <label class="sm-label">배너 썸네일 (클릭 업로드)</label>
+          <div class="sm-thumb-uploader b-uploader" style="width:100%; height:86px;">
+            <img class="b-thumb" src="${esc(b.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
             <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
           </div>
         </div>
         <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div>
-            <label class="sm-label">베스트 TOP 10 순위 (1~10)</label>
-            <input class="sm-input b10-rank" type="number" min="1" max="10" value="${defaultRank}" style="font-weight:800;">
-          </div>
-          <div>
-            <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
-            <div class="color-picker-box">
-              <input class="color-picker-input b10-picker" type="color" value="${esc(defaultColor)}">
-              <input class="sm-input b10-color" type="text" value="${esc(defaultColor)}" placeholder="#ef4444" style="font-weight:700;">
-            </div>
-          </div>
-          ${formField('브랜드명','b10-bname', p.brand_name || '')}
-          ${formField('상품명','b10-title', p.product_title || p.brand_title || '')}
-          ${formField('판매가','b10-sale', p.sale_price)}
-          ${formField('할인 태그 (예: 50% OFF)','b10-disc', p.discount)}
-          ${imgUploadField('상품 이미지 URL','b10-img', p.img_url)}
+          ${formField('배너 대제목','b-title',b.title)}
+          ${formField('서브 설명','b-desc',b.desc)}
+          ${formField('라벨 (예: 오늘, 내일)','b-label',b.label)}
+          ${formField('시간 문구 (예: 오후 8시)','b-time',b.time_text)}
+          ${imgUploadField('이미지 URL','b-img',b.img_url)}
+          ${formField('이동 링크 URL','b-link',b.link_url,'text',true)}
         </div>
       </div>
       <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
-        <button class="sm-action-btn sm-btn-success b10-save">저장</button>
+        <button class="sm-action-btn sm-btn-success b-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger b-del">삭제</button>
       </div>
     `;
 
-    const uploader = card.querySelector('.b10-uploader');
-    const inputImg = card.querySelector('.b10-img');
-    bindImageUploader(uploader, inputImg, (url) => {
-      card.querySelector('.b10-thumb').src = url;
+    const uploader = card.querySelector('.b-uploader');
+    const input = card.querySelector('.b-img');
+    bindImageUploader(uploader, input, (url) => {
+      card.querySelector('.b-thumb').src = url;
     });
 
-    const picker = card.querySelector('.b10-picker');
-    const colorText = card.querySelector('.b10-color');
-
-    picker.addEventListener('input', (e) => {
-      colorText.value = e.target.value;
-      card.querySelector('.sm-rank-badge').style.background = e.target.value;
+    card.querySelector('.b-img-preview').addEventListener('click', () => {
+      card.querySelector('.b-thumb').src = card.querySelector('.b-img').value.trim();
     });
-    colorText.addEventListener('input', (e) => {
-      picker.value = e.target.value;
-      card.querySelector('.sm-rank-badge').style.background = e.target.value;
-    });
-
-    card.querySelector('.b10-save').addEventListener('click', async () => {
-      const rankVal = parseInt(card.querySelector('.b10-rank').value) || (idx + 1);
-      const colorVal = card.querySelector('.b10-color').value.trim() || '#ef4444';
-      const bName = card.querySelector('.b10-bname').value.trim();
-      const pTitle = card.querySelector('.b10-title').value.trim();
-      const combinedTitle = bName ? `${bName} ${pTitle}` : pTitle;
-
-      await productDB.update(p.id, {
-        best_rank: rankVal,
-        badge_color: colorVal,
-        brand_name: bName,
-        product_title: pTitle,
-        brand_title: combinedTitle,
-        sale_price: card.querySelector('.b10-sale').value.trim(),
-        discount: card.querySelector('.b10-disc').value.trim(),
-        img_url: card.querySelector('.b10-img').value.trim(),
+    card.querySelector('.b-save').addEventListener('click', async () => {
+      await bannerDB.update(b.id, {
+        title: card.querySelector('.b-title').value.trim(),
+        desc: card.querySelector('.b-desc').value.trim(),
+        label: card.querySelector('.b-label').value.trim(),
+        time_text: card.querySelector('.b-time').value.trim(),
+        img_url: card.querySelector('.b-img').value.trim(),
+        link_url: card.querySelector('.b-link').value.trim(),
       });
-      toast(`베스트 #${rankVal}위 상품 및 뱃지 색상 저장 완료`);
+      toast('배너 저장 완료');
+    });
+    card.querySelector('.b-del').addEventListener('click', async () => {
+      if (!confirm('배너를 삭제합니까?')) return;
+      await bannerDB.delete(b.id);
+      toast('삭제되었습니다.');
+      await renderBannersPanel(panel);
     });
 
     list.appendChild(card);
   });
 }
 
-// ④ 퀵메뉴 탭 설정
+// ──────────────────────────────────────────
+// ⑥ 퀵메뉴 탭 설정
+// ──────────────────────────────────────────
 async function renderMenusPanel(panel) {
   const [menus, sections] = await Promise.all([menuDB.getAll(), sectionDB.getAll()]);
   _sections = sections;
@@ -719,204 +1217,6 @@ async function renderMenusPanel(panel) {
       await menuDB.delete(m.id);
       toast('삭제되었습니다.');
       await renderMenusPanel(panel);
-    });
-
-    list.appendChild(card);
-  });
-}
-
-// ⑤ 상품 섹션 & MD 추천 코멘트 및 뱃지 컬러 관리
-async function renderSectionsPanel(panel, wrapper) {
-  _sections = await sectionDB.getAll();
-  const products = await productDB.getAll();
-  const prodBySec = {};
-  products.forEach(p => {
-    if (!prodBySec[p.section_id]) prodBySec[p.section_id] = [];
-    prodBySec[p.section_id].push(p);
-  });
-
-  panel.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상품 섹션 & MD 추천 관리 (${_sections.length}개 섹션)</h2>
-      <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
-    </div>
-    <div id="section-list"></div>
-  `;
-
-  panel.querySelector('#add-sec').addEventListener('click', async () => {
-    await sectionDB.insert({ sort_order:99, title:'새 기획전 섹션', subtitle:'단독 특가로 만나보세요', show_timer:false });
-    toast('새 섹션이 생성되었습니다.');
-    await renderSectionsPanel(panel, wrapper);
-  });
-
-  const list = panel.querySelector('#section-list');
-  _sections.forEach((sec) => {
-    const prods = prodBySec[sec.id] || [];
-    const card = document.createElement('div');
-    card.className = 'sm-card';
-
-    card.innerHTML = `
-      <div class="sm-card-header">
-        <div class="sm-card-title">
-          <span>${esc(sec.title)}</span>
-          <span style="font-size:11px; font-weight:600; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:4px;">(${prods.length}개 상품)</span>
-        </div>
-        <div style="display:flex; gap:6px;">
-          <button class="sm-action-btn sm-btn-primary sec-add-prod" style="padding:5px 10px; font-size:12px;">+ 상품 추가</button>
-          <button class="sm-action-btn sm-btn-success sec-save" style="padding:5px 10px; font-size:12px;">섹션 저장</button>
-          <button class="sm-action-btn sm-btn-danger sec-del" style="padding:5px 10px; font-size:12px;">섹션 삭제</button>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
-        ${formField('섹션 제목 (예: 바캉스 기획전, 인플루언서 픽)','sec-title',sec.title)}
-        ${formField('섹션 부제목 / 혜택 안내','sec-subtitle',sec.subtitle)}
-      </div>
-
-      <div style="margin-top:16px; background:#f8fafc; border-radius:8px; padding:14px;">
-        <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록 상품 리스트</h4>
-        <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:12px;"></div>
-      </div>
-    `;
-
-    card.querySelector('.sec-save').addEventListener('click', async () => {
-      await sectionDB.update(sec.id, {
-        title: card.querySelector('.sec-title').value.trim(),
-        subtitle: card.querySelector('.sec-subtitle').value.trim(),
-      });
-      toast('섹션 정보가 저장되었습니다.');
-    });
-
-    card.querySelector('.sec-del').addEventListener('click', async () => {
-      if (!confirm('이 섹션과 포함된 상품들을 모두 삭제합니까?')) return;
-      await sectionDB.delete(sec.id);
-      toast('섹션이 삭제되었습니다.');
-      await renderSectionsPanel(panel, wrapper);
-    });
-
-    card.querySelector('.sec-add-prod').addEventListener('click', async () => {
-      await productDB.insert({
-        section_id: sec.id,
-        sort_order: 99,
-        brand_name: '브랜드',
-        product_title: '신규 상품',
-        brand_title: '브랜드 신규 상품',
-        sale_price: '10,000원',
-        origin_price: '20,000원',
-        discount: '50% OFF',
-        unit_price: '',
-        rating: '5.0',
-        reviews: '10',
-        md_comment: 'MD 강력 추천 상품',
-        badge_color: '#ef4444',
-        best_rank: 0,
-        img_url: '',
-        chips: []
-      });
-      toast('새 상품 카드가 추가되었습니다.');
-      await renderSectionsPanel(panel, wrapper);
-    });
-
-    // 상품 카드 슬림 폼 리스트
-    const prodListEl = card.querySelector('.sec-prod-list');
-    prods.forEach((p, idx) => {
-      const itemRow = document.createElement('div');
-      itemRow.style.cssText = 'background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:14px; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;';
-
-      let bNameVal = p.brand_name || '';
-      let pTitleVal = p.product_title || '';
-      if (!bNameVal && p.brand_title) {
-        const parts = p.brand_title.split(' ');
-        if (parts.length > 1) {
-          bNameVal = parts[0];
-          pTitleVal = parts.slice(1).join(' ');
-        } else {
-          pTitleVal = p.brand_title;
-        }
-      }
-
-      const defaultColor = p.badge_color || '#ef4444';
-
-      itemRow.innerHTML = `
-        <div style="width:100px; flex-shrink:0;">
-          <div style="margin-bottom:4px;">
-            <span class="sm-rank-badge ${idx < 3 ? 'top3' : ''}" style="background:${esc(defaultColor)}">ITEM #${idx + 1}</span>
-          </div>
-          <div class="sm-thumb-uploader p-uploader" style="width:100%; height:80px;">
-            <img class="p-thumb" src="${esc(p.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
-            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
-          </div>
-        </div>
-        <div style="flex:1; min-width:240px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          ${formField('브랜드명 (예: 설화수)','p-bname', bNameVal)}
-          ${formField('상품명 (예: 윤조 에센스 90ml)','p-ptitle', pTitleVal)}
-          ${formField('판매가 (예: 9,900원)','p-sale',p.sale_price)}
-          ${formField('원래 정가 (예: 50,000원)','p-origin',p.origin_price)}
-          ${formField('할인 태그 (예: 80% 특가)','p-disc',p.discount)}
-          <div>
-            <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
-            <div class="color-picker-box">
-              <input class="color-picker-input p-picker" type="color" value="${esc(defaultColor)}">
-              <input class="sm-input p-color" type="text" value="${esc(defaultColor)}" placeholder="#ef4444" style="font-weight:700;">
-            </div>
-          </div>
-          ${formField('MD 추천 코멘트','p-md', p.md_comment || 'MD 강력 추천')}
-          ${imgUploadField('상품 이미지 URL','p-img',p.img_url)}
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px; margin-top:16px;">
-          <button class="sm-action-btn sm-btn-success p-save" style="padding:5px 10px; font-size:11.5px;">저장</button>
-          <button class="sm-action-btn sm-btn-danger p-del" style="padding:5px 10px; font-size:11.5px;">삭제</button>
-        </div>
-      `;
-
-      const uploader = itemRow.querySelector('.p-uploader');
-      const input = itemRow.querySelector('.p-img');
-      bindImageUploader(uploader, input, (url) => {
-        itemRow.querySelector('.p-thumb').src = url;
-      });
-
-      const picker = itemRow.querySelector('.p-picker');
-      const colorText = itemRow.querySelector('.p-color');
-
-      picker.addEventListener('input', (e) => {
-        colorText.value = e.target.value;
-        itemRow.querySelector('.sm-rank-badge').style.background = e.target.value;
-      });
-      colorText.addEventListener('input', (e) => {
-        picker.value = e.target.value;
-        itemRow.querySelector('.sm-rank-badge').style.background = e.target.value;
-      });
-
-      itemRow.querySelector('.p-img-preview').addEventListener('click', () => {
-        itemRow.querySelector('.p-thumb').src = itemRow.querySelector('.p-img').value.trim();
-      });
-
-      itemRow.querySelector('.p-save').addEventListener('click', async () => {
-        const bName = itemRow.querySelector('.p-bname').value.trim();
-        const pTitle = itemRow.querySelector('.p-ptitle').value.trim();
-        const combinedTitle = bName ? `${bName} ${pTitle}` : pTitle;
-
-        await productDB.update(p.id, {
-          brand_name:    bName,
-          product_title: pTitle,
-          brand_title:   combinedTitle,
-          sale_price:    itemRow.querySelector('.p-sale').value.trim(),
-          origin_price:  itemRow.querySelector('.p-origin').value.trim(),
-          discount:      itemRow.querySelector('.p-disc').value.trim(),
-          badge_color:   itemRow.querySelector('.p-color').value.trim() || '#ef4444',
-          md_comment:    itemRow.querySelector('.p-md').value.trim(),
-          img_url:       itemRow.querySelector('.p-img').value.trim(),
-        });
-        toast('상품 정보 및 뱃지 색상 저장 완료');
-      });
-
-      itemRow.querySelector('.p-del').addEventListener('click', async () => {
-        if (!confirm('상품을 삭제하시겠습니까?')) return;
-        await productDB.delete(p.id);
-        toast('삭제되었습니다.');
-        await renderSectionsPanel(panel, wrapper);
-      });
-
-      prodListEl.appendChild(itemRow);
     });
 
     list.appendChild(card);
