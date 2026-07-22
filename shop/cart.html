@@ -88,7 +88,7 @@
       color: #ffffff;
     }
 
-    /* ── SUB TABS (담은 상품 / 자주 산 상품 / 관심 상품) ── */
+    /* ── SUB TABS ── */
     .cart-sub-tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
@@ -150,14 +150,25 @@
       width: 20px;
       height: 20px;
       border-radius: 5px;
-      background: #ffffff;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .custom-check.checked {
+      background: #ffffff;
+      border-color: #ffffff;
     }
 
     .custom-check svg {
-      width: 13px; height: 13px; stroke: #000; stroke-width: 3; fill: none;
+      width: 13px; height: 13px; stroke: #000; stroke-width: 3; fill: none; display: none;
+    }
+
+    .custom-check.checked svg {
+      display: block;
     }
 
     .del-btn {
@@ -171,7 +182,13 @@
       cursor: pointer;
     }
 
-    /* 2. 장바구니 상품 카드 (첨부 2번 스크린샷 매칭) */
+    /* 2. 장바구니 상품 리스트 */
+    .cart-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
     .cart-item-card {
       background: var(--surface-card);
       border: 1px solid var(--border);
@@ -183,6 +200,7 @@
       display: flex;
       gap: 12px;
       margin-bottom: 14px;
+      align-items: flex-start;
     }
 
     .item-img {
@@ -191,6 +209,7 @@
       border-radius: 10px;
       object-fit: cover;
       background: #1e2028;
+      flex-shrink: 0;
     }
 
     .item-info { flex: 1; }
@@ -233,7 +252,7 @@
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .qty-control {
@@ -266,7 +285,6 @@
       line-height: 32px;
     }
 
-    /* 개별 합계 내역 바 */
     .item-calc-box {
       background: rgba(255,255,255,0.03);
       border-radius: 10px;
@@ -284,7 +302,7 @@
       margin-left: 4px;
     }
 
-    /* 3. 영수증 결제 예상 금액 요약 카드 */
+    /* 3. 영수증 결제 금액 요약 카드 */
     .receipt-card {
       background: var(--surface-card);
       border: 1px solid var(--border);
@@ -342,7 +360,7 @@
       font-weight: 500;
     }
 
-    /* 4. 멤버십 vs 일반가 비교 칩 (첨부 2번 하단 토글 매칭) */
+    /* 4. 멤버십 비교 칩 */
     .mem-compare-wrap {
       position: relative;
       margin-top: 6px;
@@ -358,19 +376,6 @@
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
-    .mem-tooltip::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 16px;
-      width: 0; height: 0;
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top: 4px solid #334155;
     }
 
     .mem-compare-box {
@@ -433,11 +438,8 @@
       font-size: 16px;
       font-weight: 900;
       cursor: pointer;
-      transition: opacity 0.15s;
     }
-    .cta-pay-btn:active { opacity: 0.88; }
 
-    /* 토스트 */
     #toast {
       position: fixed;
       top: 20px;
@@ -484,78 +486,33 @@
 
     <!-- 1. 전체선택 / 선택삭제 -->
     <div class="select-bar">
-      <div class="check-wrap" onclick="toggleSelectAll()">
-        <div class="custom-check">
+      <div class="check-wrap" onclick="toggleSelectAllItems()">
+        <div class="custom-check checked" id="all-check-box">
           <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
         </div>
         <span>전체선택</span>
       </div>
-      <button class="del-btn" onclick="showToast('선택한 상품이 삭제되었습니다.')">선택삭제</button>
+      <button class="del-btn" onclick="deleteSelected()">선택삭제</button>
     </div>
 
-    <!-- 2. 장바구니 상품 1 -->
-    <div class="cart-item-card">
-      <div class="item-top">
-        <img class="item-img" src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=400&q=85" alt="상품 이미지">
-        <div class="item-info">
-          <div class="item-brand">코코팜 네이처바이</div>
-          <div class="item-name">알로에 에센스 마스크팩 100매 기획세트</div>
-          <div class="item-price-row">
-            <span class="item-price">10,000원</span>
-            <span class="item-origin">50,000원</span>
-          </div>
-        </div>
-      </div>
-      <div class="item-bottom">
-        <div class="qty-control">
-          <button class="qty-btn" onclick="updateQty('qty-1', -1)">-</button>
-          <div class="qty-num" id="qty-1">1</div>
-          <button class="qty-btn" onclick="updateQty('qty-1', 1)">+</button>
-        </div>
-      </div>
-      <div class="item-calc-box">
-        상품 10,000원 + 배송비 3,000원 = <strong>13,000원</strong>
-      </div>
-    </div>
-
-    <!-- 2. 장바구니 상품 2 -->
-    <div class="cart-item-card">
-      <div class="item-top">
-        <img class="item-img" src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85" alt="상품 이미지">
-        <div class="item-info">
-          <div class="item-brand">필링빈</div>
-          <div class="item-name">페이셜 커피스크럽 클렌저 60g</div>
-          <div class="item-price-row">
-            <span class="item-price">3,990원</span>
-            <span class="item-origin">9,900원</span>
-          </div>
-        </div>
-      </div>
-      <div class="item-bottom">
-        <div class="qty-control">
-          <button class="qty-btn" onclick="updateQty('qty-2', -1)">-</button>
-          <div class="qty-num" id="qty-2">1</div>
-          <button class="qty-btn" onclick="updateQty('qty-2', 1)">+</button>
-        </div>
-      </div>
-      <div class="item-calc-box">
-        상품 3,990원 + 배송비 0원(합배송) = <strong>3,990원</strong>
-      </div>
+    <!-- 2. 동적 장바구니 상품 리스트 -->
+    <div class="cart-list" id="cart-item-list">
+      <!-- JS Rendered -->
     </div>
 
     <!-- 3. 결제 예상 금액 영수증 카드 -->
     <div class="receipt-card">
       <div class="receipt-row">
         <span>선택 상품 금액</span>
-        <span>35,800원</span>
+        <span id="rc-origin">0원</span>
       </div>
       <div class="receipt-row highlight">
         <span>할인 예상 금액</span>
-        <span>- 21,810원</span>
+        <span id="rc-discount">- 0원</span>
       </div>
       <div class="receipt-row">
         <span>배송비</span>
-        <span>+ 3,000원</span>
+        <span id="rc-shipping">+ 3,000원</span>
       </div>
       <div style="font-size:11.5px; color:var(--text-muted); padding-left:10px; margin-bottom:8px;">└ 상온 배송비 3,000원</div>
       
@@ -563,7 +520,7 @@
 
       <div class="receipt-total-row">
         <span class="label">예상 결제 금액</span>
-        <span class="val" id="total-val">16,990원</span>
+        <span class="val" id="total-val">0원</span>
       </div>
 
       <div class="receipt-tip">
@@ -577,11 +534,11 @@
       <div class="mem-compare-box">
         <div class="mem-comp-col active">
           <div class="mem-comp-label">멤버십 회원가</div>
-          <div class="mem-comp-price">16,990원</div>
+          <div class="mem-comp-price" id="mem-price">0원</div>
         </div>
         <div class="mem-comp-col">
           <div class="mem-comp-label" style="color:var(--text-muted);">일반가</div>
-          <div class="mem-comp-price" style="color:var(--text-sub);">38,800원</div>
+          <div class="mem-comp-price" id="normal-price" style="color:var(--text-sub);">0원</div>
         </div>
       </div>
     </div>
@@ -590,7 +547,7 @@
 
   <!-- ── 하단 결제 CTA 버튼 ── -->
   <div class="bottom-cta-wrap">
-    <button class="cta-pay-btn" id="pay-btn" onclick="doCheckout()">16,990원 결제하기</button>
+    <button class="cta-pay-btn" id="pay-btn" onclick="doCheckout()">0원 결제하기</button>
   </div>
 
   <!-- 토스트 -->
@@ -598,8 +555,17 @@
 
 </div>
 
-<script>
-  let q1 = 1, q2 = 1;
+<script type="module">
+  import { 
+    getCartItems, 
+    updateCartQty, 
+    toggleCartSelect, 
+    toggleAllCartSelect, 
+    deleteCartItem, 
+    deleteSelectedCartItems 
+  } from './user_store.js';
+
+  let cartData = [];
 
   function showToast(msg) {
     const toast = document.getElementById('toast');
@@ -611,32 +577,143 @@
     }, 2200);
   }
 
-  function updateQty(id, delta) {
-    if (id === 'qty-1') {
-      q1 = Math.max(1, q1 + delta);
-      document.getElementById('qty-1').textContent = q1;
-    } else {
-      q2 = Math.max(1, q2 + delta);
-      document.getElementById('qty-2').textContent = q2;
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  async function loadCart() {
+    cartData = await getCartItems();
+    renderCartList();
+  }
+
+  function renderCartList() {
+    const listEl = document.getElementById('cart-item-list');
+    if (!listEl) return;
+
+    if (!cartData.length) {
+      listEl.innerHTML = `<div style="text-align:center; padding:40px 0; color:var(--text-muted); font-size:14px; font-weight:600;">장바구니가 비어있습니다.</div>`;
+      recalcSummary();
+      return;
     }
-    recalc();
+
+    listEl.innerHTML = cartData.map(item => {
+      const isChecked = item.selected !== false;
+      const originP = item.origin_price || (item.price * 2);
+      const totalP = (item.price * item.qty) + (isChecked ? 3000 : 0);
+
+      return `
+        <div class="cart-item-card" id="card-${item.id}">
+          <div class="item-top">
+            <div class="custom-check ${isChecked ? 'checked' : ''}" onclick="toggleItemSelect('${item.id}')" style="margin-top:2px; flex-shrink:0;">
+              <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+            </div>
+            <img class="item-img" src="${item.img_url}" alt="${esc(item.product_name)}">
+            <div class="item-info">
+              <div class="item-brand">${esc(item.brand_name || 'RYZIN')}</div>
+              <div class="item-name">${esc(item.product_name)}</div>
+              <div class="item-price-row">
+                <span class="item-price">${item.price.toLocaleString()}원</span>
+                ${originP ? `<span class="item-origin">${originP.toLocaleString()}원</span>` : ''}
+              </div>
+            </div>
+            <button onclick="removeItem('${item.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">&times;</button>
+          </div>
+          <div class="item-bottom">
+            <div class="qty-control">
+              <button class="qty-btn" onclick="changeQty('${item.id}', -1)">-</button>
+              <div class="qty-num">${item.qty}</div>
+              <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+            </div>
+          </div>
+          <div class="item-calc-box">
+            상품 ${(item.price * item.qty).toLocaleString()}원 + 배송비 ${isChecked ? '3,000원' : '0원'} = <strong>${totalP.toLocaleString()}원</strong>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    recalcSummary();
   }
 
-  function recalc() {
-    const sum = (10000 * q1) + (3990 * q2) + 3000;
-    const formatted = sum.toLocaleString() + '원';
-    document.getElementById('total-val').textContent = formatted;
-    document.getElementById('pay-btn').textContent = `${formatted} 결제하기`;
+  window.toggleItemSelect = async (id) => {
+    const item = cartData.find(x => x.id === id);
+    if (!item) return;
+    item.selected = !item.selected;
+    await toggleCartSelect(id, item.selected);
+    renderCartList();
+  };
+
+  window.toggleSelectAllItems = async () => {
+    const allChecked = cartData.every(x => x.selected !== false);
+    const nextState = !allChecked;
+    cartData.forEach(x => x.selected = nextState);
+    
+    document.getElementById('all-check-box').classList.toggle('checked', nextState);
+    await toggleAllCartSelect(nextState);
+    renderCartList();
+  };
+
+  window.changeQty = async (id, delta) => {
+    const item = cartData.find(x => x.id === id);
+    if (!item) return;
+    item.qty = Math.max(1, item.qty + delta);
+    await updateCartQty(id, item.qty);
+    renderCartList();
+  };
+
+  window.removeItem = async (id) => {
+    cartData = cartData.filter(x => x.id !== id);
+    await deleteCartItem(id);
+    showToast('상품이 장바구니에서 삭제되었습니다.');
+    renderCartList();
+  };
+
+  window.deleteSelected = async () => {
+    const selectedIds = cartData.filter(x => x.selected !== false).map(x => x.id);
+    if (!selectedIds.length) {
+      showToast('선택된 상품이 없습니다.');
+      return;
+    }
+    cartData = cartData.filter(x => x.selected === false);
+    await deleteSelectedCartItems(selectedIds);
+    showToast('선택한 상품이 삭제되었습니다.');
+    renderCartList();
+  };
+
+  function recalcSummary() {
+    const selectedItems = cartData.filter(x => x.selected !== false);
+    let rawOriginSum = 0;
+    let saleSum = 0;
+
+    selectedItems.forEach(item => {
+      const orig = item.origin_price || (item.price * 2);
+      rawOriginSum += (orig * item.qty);
+      saleSum += (item.price * item.qty);
+    });
+
+    const shipping = selectedItems.length ? 3000 : 0;
+    const discount = Math.max(0, rawOriginSum - saleSum);
+    const finalTotal = saleSum + shipping;
+    const normalTotal = rawOriginSum + shipping;
+
+    document.getElementById('rc-origin').textContent = rawOriginSum.toLocaleString() + '원';
+    document.getElementById('rc-discount').textContent = '- ' + discount.toLocaleString() + '원';
+    document.getElementById('rc-shipping').textContent = '+ ' + shipping.toLocaleString() + '원';
+    document.getElementById('total-val').textContent = finalTotal.toLocaleString() + '원';
+    document.getElementById('mem-price').textContent = finalTotal.toLocaleString() + '원';
+    document.getElementById('normal-price').textContent = normalTotal.toLocaleString() + '원';
+
+    document.getElementById('pay-btn').textContent = `${finalTotal.toLocaleString()}원 결제하기`;
+    document.getElementById('all-check-box').classList.toggle('checked', cartData.length > 0 && cartData.every(x => x.selected !== false));
   }
 
-  function toggleSelectAll() {
-    showToast('전체 상품이 선택되었습니다.');
-  }
-
-  function doCheckout() {
+  window.doCheckout = () => {
     const total = document.getElementById('total-val').textContent;
-    alert(`총 ${total} 결제 페이지로 이동합니다.`);
-  }
+    alert(`총 ${total} 결제 창으로 이동합니다.`);
+  };
+
+  document.addEventListener('DOMContentLoaded', loadCart);
 </script>
 </body>
 </html>

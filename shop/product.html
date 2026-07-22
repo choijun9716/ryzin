@@ -541,7 +541,9 @@
 
 </div>
 
-<script>
+<script type="module">
+  import { addCartItem } from './user_store.js';
+
   const SB_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
   const SB_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
   const SB_H = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
@@ -570,33 +572,38 @@
       toast.style.transform = 'translateX(-50%) translateY(-100px)';
     }, 2200);
   }
+  window.showToast = showToast;
 
-  function copyLink() {
+  window.copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     showToast('상품 링크가 복사되었습니다.');
-  }
+  };
 
-  function toggleWish(btn) {
+  window.toggleWish = (btn) => {
     btn.classList.toggle('active');
     if (btn.classList.contains('active')) {
       showToast('위시리스트에 담겼습니다.');
     } else {
       showToast('위시리스트에서 제외되었습니다.');
     }
-  }
+  };
 
-  function changeQty(delta) {
+  window.changeQty = (delta) => {
     currentQty = Math.max(1, currentQty + delta);
     document.getElementById('qty-count').textContent = currentQty;
-  }
+  };
 
-  function addToCart() {
+  window.addToCart = async () => {
+    if (currentProduct) {
+      currentProduct.qty = currentQty;
+      await addCartItem(currentProduct);
+    }
     showToast(`장바구니에 ${currentQty}개 담겼습니다.`);
-  }
+  };
 
-  function buyNow() {
+  window.buyNow = () => {
     alert(`[${currentProduct ? (currentProduct.product_title || currentProduct.brand_title) : '상품'}] 구매 수량 ${currentQty}개 결제 페이지로 이동합니다.`);
-  }
+  };
 
   async function loadProductDetail() {
     const params = new URLSearchParams(window.location.search);
