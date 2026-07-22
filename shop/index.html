@@ -638,6 +638,140 @@
       color: var(--text-muted);
     }
 
+    /* ── MAGAZINE SECTION ── */
+    .mag-section {
+      padding: 28px 16px 8px;
+    }
+
+    .mag-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .mag-header h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.04em;
+    }
+
+    .mag-header .mag-more-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      letter-spacing: -0.02em;
+    }
+
+    /* 첫 번째 카드 — 대형 피처 카드 */
+    .mag-feature-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    .mag-feature-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .mag-feature-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.1) 55%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px 16px;
+    }
+
+    .mag-category-badge {
+      display: inline-block;
+      background: var(--accent-orange);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      width: fit-content;
+      letter-spacing: 0.02em;
+    }
+
+    .mag-feature-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+
+    .mag-feature-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+    }
+
+    /* 소형 카드 가로 스크롤 */
+    .mag-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .mag-scroll::-webkit-scrollbar { display: none; }
+
+    .mag-small-card {
+      flex: 0 0 160px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--surface-card);
+    }
+
+    .mag-small-card img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+    }
+
+    .mag-small-info {
+      padding: 10px 10px 12px;
+    }
+
+    .mag-small-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent-orange);
+      margin-bottom: 4px;
+    }
+
+    .mag-small-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.03em;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
     /* ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV (홈, 라이브, 공동구매, 장바구니, 내정보) ── */
     .bottom-nav-wrap {
       position: fixed;
@@ -750,6 +884,49 @@
     </section>
     <!-- 상품 섹션들 (Supabase 동적 렌더) -->
     <div id="dynamic-sections"></div>
+
+    <!-- ── 매거진 섹션 ── -->
+    <section class="mag-section">
+      <div class="mag-header">
+        <h3>매거진</h3>
+        <button class="mag-more-btn">더보기</button>
+      </div>
+
+      <!-- 피처 카드 -->
+      <div class="mag-feature-card" onclick="">
+        <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" alt="매거진 피처">
+        <div class="mag-feature-overlay">
+          <span class="mag-category-badge">뷰티 트렌드</span>
+          <div class="mag-feature-title">2026 여름 스킨케어<br>루틴 완전 정복</div>
+          <div class="mag-feature-desc">폭염 속에서도 촉촉한 피부를 유지하는 K-뷰티 전문가들의 비밀</div>
+        </div>
+      </div>
+
+      <!-- 소형 카드 가로 스크롤 -->
+      <div class="mag-scroll">
+        <div class="mag-small-card" onclick="">
+          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85" alt="매거진">
+          <div class="mag-small-info">
+            <div class="mag-small-badge">라이프스타일</div>
+            <div class="mag-small-title">라이브 쇼핑, 이제는 문화다</div>
+          </div>
+        </div>
+        <div class="mag-small-card" onclick="">
+          <img src="https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85" alt="매거진">
+          <div class="mag-small-info">
+            <div class="mag-small-badge">성분 분석</div>
+            <div class="mag-small-title">나이아신아마이드 vs 비타민C 뭐가 더 좋을까</div>
+          </div>
+        </div>
+        <div class="mag-small-card" onclick="">
+          <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=400&q=85" alt="매거진">
+          <div class="mag-small-info">
+            <div class="mag-small-badge">셀럽 루틴</div>
+            <div class="mag-small-title">연예인들이 선택한 NO.1 선크림</div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- ── 푸터 (Footer) ── -->
