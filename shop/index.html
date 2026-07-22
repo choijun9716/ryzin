@@ -461,13 +461,18 @@
 
     .toss-brand-title {
       font-size: 13px;
+      font-weight: 600;
       color: #e2e8f0;
       line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      height: 35px;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+      min-height: 18px;
+      max-height: 36px;
+      height: auto;
     }
 
     .toss-price-row {
@@ -1119,7 +1124,7 @@
             </div>
             <div class="toss-info">
               ${bName ? `<div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px; letter-spacing: -0.01em;">${bName}</div>` : ''}
-              <div class="toss-brand-title" style="${bName ? 'font-size: 13px; font-weight: 600;' : ''}">${pTitle || item.brand_title}</div>
+              <div class="toss-brand-title">${pTitle || item.brand_title}</div>
               <div class="toss-price-row">
                 <span class="toss-sale-price">${item.sale_price}</span>
                 <span class="toss-origin-price">${item.origin_price}</span>
