@@ -355,7 +355,7 @@
     .chip-guarantee { background: #2d1813; color: #fdba74; }
     .chip-best { background: #22232a; color: #cbd5e1; }
 
-    /* ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV ── */
+    /* ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV (MASTER UNIFIED SPEC) ── */
     .bottom-nav-wrap {
       position: fixed;
       bottom: calc(16px + env(safe-area-inset-bottom));
@@ -363,7 +363,7 @@
       transform: translateX(-50%);
       width: calc(100% - 32px);
       max-width: 390px;
-      z-index: 300;
+      z-index: 400;
     }
 
     .bottom-nav {
@@ -385,16 +385,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 3px;
       cursor: pointer;
       color: rgba(255, 255, 255, 0.45);
       text-decoration: none;
       position: relative;
       transition: color 0.15s;
-    }
-
-    .nav-item.active {
-      color: var(--accent-orange);
+      flex: 1;
+      height: 100%;
     }
 
     .nav-item svg {
@@ -404,25 +403,31 @@
     }
 
     .nav-item span {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: -0.01em;
+      line-height: 1;
+    }
+
+    .nav-item.active {
+      color: var(--accent-orange);
     }
 
     .nav-badge-count {
       position: absolute;
-      top: -2px;
-      right: 2px;
+      top: 4px;
+      right: 12px;
       background: var(--accent-orange);
       color: #ffffff;
-      font-size: 10px;
-      font-weight: 700;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 900;
+      min-width: 15px;
+      height: 15px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0 3px;
     }
 
     /* ── FOOTER STYLING ── */
@@ -611,7 +616,7 @@
         <span>장바구니</span>
       </div>
       <div class="nav-item" onclick="window.location.href='/shop/profile.html'">
-        <svg viewBox="0 0 24 24"><text x="50%" y="68%" text-anchor="middle" font-size="13" font-weight="800" font-family="'Pretendard', sans-serif" fill="currentColor">MY</text></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         <span>내정보</span>
       </div>
     </nav>
