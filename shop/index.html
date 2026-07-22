@@ -167,42 +167,41 @@
     .tab-view { display: none; }
     .tab-view.active { display: block; }
 
-    /* ── HOME: 카테고리 ── */
-    .home-cat-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 4px 0;
-      padding: 16px 16px 14px;
-      border-bottom: 8px solid var(--bg);
-    }
-
-    .home-cat-item {
+    /* ── HOME: 카테고리 알약 스타일 ── */
+    .home-cat-scroll {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
+      gap: 8px;
+      padding: 16px 20px 24px;
+      overflow-x: auto;
+      scroll-padding: 0 20px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
+    .home-cat-scroll::-webkit-scrollbar { display: none; }
 
-    .home-cat-item span {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-sub);
-      letter-spacing: -0.02em;
-    }
-
-    .home-cat-icon {
-      width: 44px; height: 44px;
-      border-radius: 14px;
+    .cat-pill-btn {
+      flex-shrink: 0;
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      color: #111111;
+      font-size: 14px;
+      font-weight: 500;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
     }
 
-    .home-cat-icon svg {
-      width: 22px; height: 22px;
-      stroke-width: 1.8;
-      fill: none;
+    .cat-pill-btn.active {
+      background: #111111;
+      border-color: #111111;
+      color: #ffffff;
+      font-weight: 700;
     }
 
     /* HOME: 오늘의딜 가로 스크롤 */
@@ -944,11 +943,24 @@
 
     .home-banner { margin: 0 0 0; padding: 16px 20px 0; }
 
-    .banner-card {
+    .banner-carousel-wrap {
       width: 100%;
-      aspect-ratio: 16 / 9;
+      aspect-ratio: 2.2 / 1;
       border-radius: 16px;
       overflow: hidden;
+      position: relative;
+    }
+
+    .banner-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s ease-in-out;
+    }
+
+    .banner-card {
+      min-width: 100%;
+      height: 100%;
       position: relative;
       cursor: pointer;
     }
@@ -961,7 +973,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 0 20px;
+      padding: 0 16px;
     }
 
     .banner-subtitle {
@@ -970,15 +982,48 @@
       color: rgba(255,255,255,0.75);
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
-    .banner-title { font-size: 17px; font-weight: 900; color: #fff; line-height: 1.25; }
+    .banner-title { font-size: 15px; font-weight: 900; color: #fff; line-height: 1.2; }
     .banner-cta {
-      margin-top: 8px;
+      margin-top: 6px;
       display: inline-block;
+      align-self: flex-start;
       background: #fff;
       color: #111;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .banner-dots {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 10;
+      background: rgba(0,0,0,0.35);
+      padding: 3px 8px;
+      border-radius: 10px;
+      backdrop-filter: blur(4px);
+    }
+
+    .banner-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transition: all 0.2s;
+    }
+
+    .banner-dot.active {
+      width: 12px;
+      border-radius: 6px;
+      background: #ffffff;
+    }
       font-size: 10px;
       font-weight: 800;
       padding: 4px 10px;
@@ -1356,74 +1401,52 @@
 
     <!-- ── 탭: 홈 ── -->
     <div class="tab-view" id="view-home">
-      <!-- 메인 배너 -->
+      <!-- 메인 배너 (롤링 카러셀) -->
       <div class="home-banner">
-        <div class="banner-card" onclick="showToast('라이진 멤버십 혜택 페이지로 이동합니다.')">
-          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85" alt="배너">
-          <div class="banner-overlay">
-            <span class="banner-subtitle">RYZIN LIVE COMMERCE</span>
-            <span class="banner-title">프리미엄<br>뷰티 특가</span>
-            <span class="banner-cta">지금 확인하기</span>
+        <div class="banner-carousel-wrap">
+          <div class="banner-track" id="home-banner-track">
+            <div class="banner-card" onclick="showToast('프리미엄 뷰티 특가 기획전으로 이동합니다.')">
+              <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85" alt="배너 1">
+              <div class="banner-overlay">
+                <span class="banner-subtitle">RYZIN LIVE COMMERCE</span>
+                <span class="banner-title">프리미엄 뷰티 특가</span>
+                <span class="banner-cta">지금 확인하기</span>
+              </div>
+            </div>
+            <div class="banner-card" onclick="showToast('신규 회원 웰컴 쿠폰팩 페이지로 이동합니다.')">
+              <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85" alt="배너 2">
+              <div class="banner-overlay">
+                <span class="banner-subtitle">WELCOME BENEFIT</span>
+                <span class="banner-title">신규 회원 전용 15% 쿠폰팩</span>
+                <span class="banner-cta">혜택 받기</span>
+              </div>
+            </div>
+            <div class="banner-card" onclick="showToast('타임 세일 디데이 이벤트로 이동합니다.')">
+              <img src="https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=900&q=85" alt="배너 3">
+              <div class="banner-overlay">
+                <span class="banner-subtitle">TODAY'S SPECIAL</span>
+                <span class="banner-title">단 24시간 한정 타임딜</span>
+                <span class="banner-cta">구경하기</span>
+              </div>
+            </div>
+          </div>
+          <div class="banner-dots" id="home-banner-dots">
+            <span class="banner-dot active"></span>
+            <span class="banner-dot"></span>
+            <span class="banner-dot"></span>
           </div>
         </div>
       </div>
 
-      <!-- 카테고리 -->
-      <div class="home-cat-grid">
-        <div class="home-cat-item" onclick="showToast('건기식 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#fef3c7;">
-            <svg viewBox="0 0 24 24" style="stroke:#d97706;"><path d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
-          </div>
-          <span>건기식</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('뷰티 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#fce7f3;">
-            <svg viewBox="0 0 24 24" style="stroke:#db2777;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-          </div>
-          <span>뷰티</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('식품 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#dcfce7;">
-            <svg viewBox="0 0 24 24" style="stroke:#16a34a;"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-          </div>
-          <span>식품</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('생활 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#dbeafe;">
-            <svg viewBox="0 0 24 24" style="stroke:#2563eb;"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-          </div>
-          <span>생활</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('주방 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#e0e7ff;">
-            <svg viewBox="0 0 24 24" style="stroke:#4f46e5;"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-          </div>
-          <span>주방</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('헤어 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#fae8ff;">
-            <svg viewBox="0 0 24 24" style="stroke:#a21caf;"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-          </div>
-          <span>헤어</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('바디 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#ccfbf1;">
-            <svg viewBox="0 0 24 24" style="stroke:#0d9488;"><path d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-          </div>
-          <span>바디</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('패션 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#fee2e2;">
-            <svg viewBox="0 0 24 24" style="stroke:#dc2626;"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-          </div>
-          <span>패션</span>
-        </div>
-        <div class="home-cat-item" onclick="showToast('디지털가전 카테고리입니다.')">
-          <div class="home-cat-icon" style="background:#f3f4f6;">
-            <svg viewBox="0 0 24 24" style="stroke:#374151;"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          </div>
-          <span>디지털가전</span>
-        </div>
+      <!-- 카테고리 알약 스크롤 -->
+      <div class="home-cat-scroll">
+        <button class="cat-pill-btn active" onclick="filterCategory('전체', this)">전체</button>
+        <button class="cat-pill-btn" onclick="filterCategory('식품', this)">식품</button>
+        <button class="cat-pill-btn" onclick="filterCategory('뷰티', this)">뷰티</button>
+        <button class="cat-pill-btn" onclick="filterCategory('생활 · 주방', this)">생활 · 주방</button>
+        <button class="cat-pill-btn" onclick="filterCategory('건강식품', this)">건강식품</button>
+        <button class="cat-pill-btn" onclick="filterCategory('패션', this)">패션</button>
+        <button class="cat-pill-btn" onclick="filterCategory('디지털 · 가전', this)">디지털 · 가전</button>
       </div>
 
       <!-- 실시간 개인화 추천 피드 -->
@@ -2846,11 +2869,36 @@
     }, 45000);
   }
 
+  function filterCategory(catName, btn) {
+    document.querySelectorAll('.cat-pill-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    showToast(`${catName} 카테고리로 필터링되었습니다.`);
+  }
+
+  function startBannerRolling() {
+    const track = document.getElementById('home-banner-track');
+    const dotsContainer = document.getElementById('home-banner-dots');
+    if (!track || !dotsContainer) return;
+
+    const dots = dotsContainer.querySelectorAll('.banner-dot');
+    const totalSlides = 3;
+    let currentIndex = 0;
+
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % totalSlides;
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentIndex);
+      });
+    }, 3500);
+  }
+
   /* ──────────────────────────────────────────
      INITIALIZATION
   ────────────────────────────────────────── */
   async function init() {
     loadState();
+    startBannerRolling();
     renderMyPageInfo();
     renderRecFeed();
     renderVod(VODS);
