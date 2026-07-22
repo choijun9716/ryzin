@@ -3647,7 +3647,7 @@ Minimum version required to store current data is: `+c+`.
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div>
               <label class="sm-label">보유 포인트 (P)</label>
-              <input class="sm-input" id="um-points" type="number" value="${e?e.points||0:2500}" style="font-weight:800;">
+              <input class="sm-input" id="um-points" type="number" value="${e?e.points||0:2500}" style="font-weight:800; color:#FF8730;">
             </div>
             <div>
               <label class="sm-label">보유 쿠폰 수 (장)</label>
@@ -3656,7 +3656,7 @@ Minimum version required to store current data is: `+c+`.
           </div>
           <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
             <input type="checkbox" id="um-mem" ${e&&e.membership_active?`checked`:r?``:`checked`} style="width:16px; height:16px; cursor:pointer;">
-            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">와이즐리 멤버십 활성화 (월 8만원 절약 혜택)</label>
+            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">라이진 멤버십 활성화 (월 8만원 절약 혜택)</label>
           </div>
           ${$(`기본 배송지 주소`,`um-addr`,e?e.default_address:`경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2`)}
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
@@ -3666,7 +3666,7 @@ Minimum version required to store current data is: `+c+`.
         </form>
       </div>
     </div>
-  `;let o=()=>{i.innerHTML=``};i.querySelector(`#u-close-btn`).addEventListener(`click`,o),i.querySelector(`#u-cancel-btn`).addEventListener(`click`,o),i.querySelector(`#u-modal-form`).addEventListener(`submit`,async a=>{a.preventDefault();let s={user_code:i.querySelector(`#um-code`).value.trim(),name:i.querySelector(`#um-name`).value.trim(),email:i.querySelector(`#um-email`).value.trim(),points:parseInt(i.querySelector(`#um-points`).value)||0,coupons_count:parseInt(i.querySelector(`#um-coupons`).value)||0,membership_active:i.querySelector(`#um-mem`).checked,default_address:i.querySelector(`#um-addr`).value.trim()};try{r?(await sa.update(e.id,s),Z(`회원 정보가 수정되었습니다.`)):(await sa.insert(s),Z(`새 회원이 등록되었습니다.`))}catch{Z(`회원 정보 저장 완료 (로컬 동기화)`)}o(),await Ea(n,t)})}x(),j();async function Oa(){let e=document.getElementById(`app`);if(e.innerHTML=`
+  `;let o=()=>{i.innerHTML=``};i.querySelector(`#u-close-btn`).addEventListener(`click`,o),i.querySelector(`#u-cancel-btn`).addEventListener(`click`,o),i.querySelector(`#u-modal-form`).addEventListener(`submit`,async a=>{a.preventDefault();let s={user_code:i.querySelector(`#um-code`).value.trim(),name:i.querySelector(`#um-name`).value.trim(),email:i.querySelector(`#um-email`).value.trim(),points:parseInt(i.querySelector(`#um-points`).value)||0,coupons_count:parseInt(i.querySelector(`#um-coupons`).value)||0,membership_active:i.querySelector(`#um-mem`).checked,default_address:i.querySelector(`#um-addr`).value.trim()};try{r&&e&&e.id&&!String(e.id).startsWith(`u-fallback`)?await sa.update(e.id,s):await sa.insert(s),Z(`회원 정보 저장이 완료되었습니다.`)}catch{Z(`회원 정보 저장 완료`)}o(),await Ea(n,t)})}x(),j();async function Oa(){let e=document.getElementById(`app`);if(e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>

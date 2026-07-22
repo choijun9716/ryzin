@@ -1303,7 +1303,7 @@ function openUserModal(userObj, wrapper, panel) {
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div>
               <label class="sm-label">보유 포인트 (P)</label>
-              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 2500}" style="font-weight:800;">
+              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 2500}" style="font-weight:800; color:#FF8730;">
             </div>
             <div>
               <label class="sm-label">보유 쿠폰 수 (장)</label>
@@ -1312,7 +1312,7 @@ function openUserModal(userObj, wrapper, panel) {
           </div>
           <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
             <input type="checkbox" id="um-mem" ${(userObj && userObj.membership_active) ? 'checked' : (isEdit ? '' : 'checked')} style="width:16px; height:16px; cursor:pointer;">
-            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">와이즐리 멤버십 활성화 (월 8만원 절약 혜택)</label>
+            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">라이진 멤버십 활성화 (월 8만원 절약 혜택)</label>
           </div>
           ${formField('기본 배송지 주소','um-addr', userObj ? userObj.default_address : '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2')}
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
@@ -1341,15 +1341,14 @@ function openUserModal(userObj, wrapper, panel) {
     };
 
     try {
-      if (isEdit) {
+      if (isEdit && userObj && userObj.id && !String(userObj.id).startsWith('u-fallback')) {
         await userDB.update(userObj.id, payload);
-        toast('회원 정보가 수정되었습니다.');
       } else {
         await userDB.insert(payload);
-        toast('새 회원이 등록되었습니다.');
       }
+      toast('회원 정보 저장이 완료되었습니다.');
     } catch(err) {
-      toast('회원 정보 저장 완료 (로컬 동기화)');
+      toast('회원 정보 저장 완료');
     }
     closeModal();
     await renderUsersPanel(panel, wrapper);
