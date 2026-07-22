@@ -991,6 +991,11 @@
     } catch { return []; }
   }
 
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   // ── 배너 렌더 ──
   async function renderBanners() {
     const carousel = document.getElementById('main-hero-carousel');
