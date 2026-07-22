@@ -659,7 +659,8 @@
     toggleCartSelect, 
     toggleAllCartSelect, 
     deleteCartItem, 
-    deleteSelectedCartItems 
+    deleteSelectedCartItems,
+    updateGlobalCartBadge
   } from './user_store.js';
 
   let cartData = [];
@@ -679,22 +680,43 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  function updateGlobalCartBadge() {
+    const badge = document.getElementById('cart-badge');
+    if (!badge) return;
+    const count = cartData.length;
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+
   async function loadCart() {
     cartData = await getCartItems();
     renderCartList();
   }
 
   function renderCartList() {
-    const listEl = document.getElementById('cart-item-list');
-    if (!listEl) return;
+    const container = document.getElementById('cart-items-container');
+    const ctaWrap = document.querySelector('.bottom-cta-wrap');
 
-    if (!cartData.length) {
-      listEl.innerHTML = `<div style="text-align:center; padding:40px 0; color:var(--text-muted); font-size:14px; font-weight:600;">장바구니가 비어있습니다.</div>`;
+    if (!cartData || cartData.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:60px 20px 40px; background:var(--surface-card); border-radius:18px; border:1px solid var(--border); margin-bottom:20px;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin-bottom:16px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
+          </svg>
+          <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">장바구니에 담긴 상품이 없습니다</div>
+          <div style="font-size:13px; color:var(--text-sub); margin-bottom:24px;">RYZIN만의 단독 기획 특가 상품을 만나보세요!</div>
+          <button onclick="window.location.href='/shop/index.html'" style="padding:12px 24px; background:var(--accent-orange); color:#fff; border:none; border-radius:24px; font-size:14px; font-weight:800; cursor:pointer;">인기 상품 둘러보기</button>
+        </div>
+      `;
+      if (ctaWrap) ctaWrap.style.display = 'none';
       recalcSummary();
+      updateGlobalCartBadge();
       return;
     }
 
-    listEl.innerHTML = cartData.map(item => {
+    if (ctaWrap) ctaWrap.style.display = 'block';
+
+    container.innerHTML = cartData.map(item => {
       const isChecked = item.selected !== false;
       const originP = item.origin_price || (item.price * 2);
       const totalP = (item.price * item.qty) + (isChecked ? 3000 : 0);
@@ -731,6 +753,7 @@
     }).join('');
 
     recalcSummary();
+    updateGlobalCartBadge();
   }
 
   window.toggleItemSelect = async (id) => {
@@ -764,6 +787,7 @@
     await deleteCartItem(id);
     showToast('상품이 장바구니에서 삭제되었습니다.');
     renderCartList();
+    await updateGlobalCartBadge();
   };
 
   window.deleteSelected = async () => {

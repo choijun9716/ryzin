@@ -144,3 +144,29 @@ export async function addAddress(title, recipient, phone, address) {
   };
   return await sbFetch('shop_addresses', 'POST', payload);
 }
+
+// 4. 전역 장바구니 뱃지 수량 실시간 동기화 (0개일 경우 숨김, 1개 이상일 경우 숫자 표기)
+export async function updateGlobalCartBadge() {
+  const items = await getCartItems();
+  const totalCount = items ? items.length : 0;
+  
+  const badgeElements = document.querySelectorAll('.nav-badge-count, .hdr-badge-count');
+  badgeElements.forEach(el => {
+    if (totalCount <= 0) {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'flex';
+      el.textContent = totalCount;
+    }
+  });
+
+  return totalCount;
+}
+
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateGlobalCartBadge);
+  } else {
+    updateGlobalCartBadge();
+  }
+}

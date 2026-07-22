@@ -542,7 +542,7 @@
 </div>
 
 <script type="module">
-  import { addCartItem } from './user_store.js';
+  import { addCartItem, updateGlobalCartBadge } from './user_store.js';
 
   const SB_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
   const SB_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
@@ -597,6 +597,7 @@
     if (currentProduct) {
       currentProduct.qty = currentQty;
       await addCartItem(currentProduct);
+      await updateGlobalCartBadge();
     }
     showToast(`장바구니에 ${currentQty}개 담겼습니다.`);
   };
