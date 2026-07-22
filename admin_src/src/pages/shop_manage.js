@@ -111,6 +111,44 @@ function injectShopManageStyles(container) {
       color: #fff; 
       box-shadow: 0 4px 12px rgba(5,150,105,0.2);
     }
+    .sm-thumb-uploader {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      background: #f1f5f9;
+      transition: all 0.2s;
+    }
+    .sm-thumb-uploader:hover {
+      border-color: #3b82f6;
+      opacity: 0.9;
+    }
+    .sm-thumb-uploader-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity 0.2s;
+      text-align: center;
+      padding: 4px;
+      box-sizing: border-box;
+    }
+    .sm-thumb-uploader:hover .sm-thumb-uploader-overlay {
+      opacity: 1;
+    }
+    .sm-thumb-uploader img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
   `;
   container.appendChild(style);
 }
@@ -131,6 +169,144 @@ function toast(msg, isErr = false) {
   setTimeout(() => t.remove(), 2200);
 }
 
+// ── ImgBB 업로드 유틸리티 ──
+const base64ToBlob = (base64Data, contentType = '') => {
+  const sliceSize = 1024;
+  const byteCharacters = atob(base64Data);
+  const bytesLength = byteCharacters.length;
+  const slicesCount = Math.ceil(bytesLength / sliceSize);
+  const byteArrays = new Array(slicesCount);
+
+  for (let sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+    const begin = sliceIndex * sliceSize;
+    const end = Math.min(begin + sliceSize, bytesLength);
+    const bytes = new Array(end - begin);
+    for (let offset = begin, i = 0; offset < end; ++i, ++offset) {
+      bytes[i] = byteCharacters.charCodeAt(offset);
+    }
+    byteArrays[sliceIndex] = new Uint8Array(bytes);
+  }
+  return new Blob(byteArrays, { type: contentType });
+};
+
+const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.85) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      URL.revokeObjectURL(img.src);
+      resolve(dataUrl.split(',')[1]);
+    };
+    img.onerror = (e) => {
+      URL.revokeObjectURL(img.src);
+      reject(e);
+    };
+  });
+};
+
+const uploadToImgBB = async (base64Data, fileType = 'image/png') => {
+  const blob = base64ToBlob(base64Data, fileType);
+  let ext = 'png';
+  if (blob.type && blob.type.includes('/')) {
+    ext = blob.type.split('/')[1] || 'png';
+  }
+
+  const userKey = localStorage.getItem('ryzin_imgbb_key') || '';
+  const IMGBB_KEYS = [];
+  if (userKey) IMGBB_KEYS.push(userKey);
+  IMGBB_KEYS.push(
+    '117dfb947bc9e0045774b193d1eef7b6',
+    'd2b512c9bf10e4a3bfec604be1218579',
+    '6049a4f479f67a26eb3ccb8823b1eef7'
+  );
+
+  let lastError = null;
+  const errors = [];
+
+  for (const key of IMGBB_KEYS) {
+    try {
+      const fd = new FormData();
+      fd.append('key', key);
+      fd.append('image', blob, `image.${ext}`);
+      const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.success && json.data && json.data.url) {
+        return json.data.url;
+      } else {
+        throw new Error(json.error ? json.error.message : 'API 응답 실패');
+      }
+    } catch (err) {
+      const maskedKey = key ? `${key.substring(0, 4)}...` : 'none';
+      errors.push(`Key (${maskedKey}): ${err.message}`);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('업로드 실패');
+};
+
+// ── 파일 업로드 바인딩 헬퍼 ──
+function bindImageUploader(uploaderEl, inputEl, onUploaded) {
+  if (!uploaderEl) return;
+  uploaderEl.addEventListener('click', () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const overlay = uploaderEl.querySelector('.sm-thumb-uploader-overlay');
+      const originalText = overlay ? overlay.textContent : '';
+      if (overlay) {
+        overlay.textContent = '업로드 중...';
+        overlay.style.opacity = '1';
+      }
+
+      try {
+        const base64 = await compressImage(file);
+        const url = await uploadToImgBB(base64, file.type);
+        if (inputEl) {
+          inputEl.value = url;
+          // input 이벤트를 강제 발생시켜 변경을 알림
+          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        const img = uploaderEl.querySelector('img');
+        if (img) img.src = url;
+        toast('이미지가 업로드되었습니다.');
+        if (onUploaded) onUploaded(url);
+      } catch (err) {
+        toast('이미지 업로드에 실패했습니다.', true);
+        console.error(err);
+      } finally {
+        if (overlay) {
+          overlay.textContent = originalText;
+          overlay.style.opacity = '';
+        }
+      }
+    };
+    fileInput.click();
+  });
+}
+
 // ── 폼 생성 헬퍼 ──
 function formField(label, cls, val, type = 'text', full = false) {
   return `<div${full ? ' style="grid-column:span 2;"' : ''}>
@@ -144,7 +320,7 @@ function imgUploadField(label, cls, val) {
     <label class="sm-label">${esc(label)}</label>
     <div style="display:flex;gap:8px;">
       <input class="sm-input ${cls}" value="${esc(val)}">
-      <button class="sm-action-btn sm-btn-neutral ${cls}-preview" type="button">미리보기</button>
+      <button class="sm-action-btn sm-btn-neutral ${cls}-preview" type="button">새로고침</button>
     </div>
   </div>`;
 }
@@ -256,8 +432,11 @@ async function renderBannersPanel(panel) {
     card.innerHTML = `
       <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
         <div style="width:140px; flex-shrink:0;">
-          <label class="sm-label">배너 프리뷰</label>
-          <img class="b-thumb" src="${esc(b.img_url)}" style="width:100%; height:94px; object-fit:cover; border-radius:10px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
+          <label class="sm-label">배너 프리뷰 (클릭 업로드)</label>
+          <div class="sm-thumb-uploader b-uploader" style="width:100%; height:94px;">
+            <img class="b-thumb" src="${esc(b.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">클릭하여 업로드</div>
+          </div>
         </div>
         <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           ${formField('배너 대제목 (타이틀)','b-title',b.title)}
@@ -280,6 +459,12 @@ async function renderBannersPanel(panel) {
         </div>
       </div>
     `;
+
+    const uploader = card.querySelector('.b-uploader');
+    const input = card.querySelector('.b-img');
+    bindImageUploader(uploader, input, (url) => {
+      card.querySelector('.b-thumb').src = url;
+    });
 
     card.querySelector('.b-img-preview').addEventListener('click', () => {
       card.querySelector('.b-thumb').src = card.querySelector('.b-img').value.trim();
@@ -343,8 +528,11 @@ async function renderLivesPanel(panel) {
     card.innerHTML = `
       <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
         <div style="width:140px; flex-shrink:0;">
-          <label class="sm-label">방송 썸네일</label>
-          <img class="lv-thumb" src="${esc(lv.img_url)}" style="width:100%; height:94px; object-fit:cover; border-radius:10px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
+          <label class="sm-label">방송 썸네일 (클릭 업로드)</label>
+          <div class="sm-thumb-uploader lv-uploader" style="width:100%; height:94px;">
+            <img class="lv-thumb" src="${esc(lv.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">클릭하여 업로드</div>
+          </div>
         </div>
         <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           ${formField('방송 타이틀','lv-title',lv.title,'text',true)}
@@ -358,6 +546,12 @@ async function renderLivesPanel(panel) {
         <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
       </div>
     `;
+
+    const uploader = card.querySelector('.lv-uploader');
+    const input = card.querySelector('.lv-img');
+    bindImageUploader(uploader, input, (url) => {
+      card.querySelector('.lv-thumb').src = url;
+    });
 
     card.querySelector('.lv-img-preview').addEventListener('click', () => {
       card.querySelector('.lv-thumb').src = card.querySelector('.lv-img').value.trim();
@@ -489,8 +683,11 @@ function renderProductCards(list, prods, panel, wrapper) {
     
     itemRow.innerHTML = `
       <div style="width:90px; flex-shrink:0;">
-        <label class="sm-label">상품 사진</label>
-        <img class="p-thumb" src="${esc(p.img_url)}" style="width:100%; height:74px; object-fit:cover; border-radius:8px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
+        <label class="sm-label">상품 사진 (클릭 업로드)</label>
+        <div class="sm-thumb-uploader p-uploader" style="width:100%; height:74px;">
+          <img class="p-thumb" src="${esc(p.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
+          <div class="sm-thumb-uploader-overlay">클릭하여 업로드</div>
+        </div>
       </div>
       <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         ${formField('브랜드 및 상품명','p-name',p.brand_title,'text',true)}
@@ -507,6 +704,12 @@ function renderProductCards(list, prods, panel, wrapper) {
         <button class="sm-action-btn sm-btn-danger p-del" style="padding:6px 12px; font-size:12px;">삭제</button>
       </div>
     `;
+
+    const uploader = itemRow.querySelector('.p-uploader');
+    const input = itemRow.querySelector('.p-img');
+    bindImageUploader(uploader, input, (url) => {
+      itemRow.querySelector('.p-thumb').src = url;
+    });
 
     itemRow.querySelector('.p-img-preview').addEventListener('click', () => {
       itemRow.querySelector('.p-thumb').src = itemRow.querySelector('.p-img').value.trim();
