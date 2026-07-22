@@ -39,7 +39,7 @@ let _tab = 'banners';
 let _sections = []; // 섹션 캐시 (퀵메뉴·상품 탭에서 공유)
 
 // ─────────────────────────────────────
-export async function renderShopManage() {
+export function renderShopManage() {
   const wrap = document.createElement('div');
   wrap.style.cssText = 'padding:24px;max-width:960px;';
 
@@ -62,7 +62,7 @@ export async function renderShopManage() {
     </div>
 
     <div id="sm-loading" style="text-align:center;padding:40px;color:var(--text-secondary);font-size:14px;">
-      불러오는 중...
+      ⏳ 데이터 불러오는 중...
     </div>
     <div id="sm-panel"></div>
   `;
@@ -82,14 +82,17 @@ export async function renderShopManage() {
     });
   });
 
-  // 초기 로드
-  try {
-    _sections = await sectionDB.getAll();
-  } catch(e) {
-    _sections = [];
-  }
-  await loadPanel(wrap);
-  return wrap;
+  // DOM 삽입 후 비동기 초기화 (라우터가 동기 HTMLElement 반환을 요구하므로)
+  setTimeout(async () => {
+    try {
+      _sections = await sectionDB.getAll();
+    } catch(e) {
+      _sections = [];
+    }
+    await loadPanel(wrap);
+  }, 0);
+
+  return wrap; // 즉시 반환 → 라우터가 DOM에 붙임
 }
 
 async function loadPanel(wrap) {

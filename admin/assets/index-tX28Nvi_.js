@@ -3008,7 +3008,7 @@ Minimum version required to store current data is: `+c+`.
       <input class="${t}" value="${ia(n)}" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:12px;">
       <button class="${t}-preview" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-secondary);font-size:12px;cursor:pointer;white-space:nowrap;">미리보기</button>
     </div>
-  </div>`}var la=`banners`,ua=[];async function da(){let e=document.createElement(`div`);e.style.cssText=`padding:24px;max-width:960px;`,e.innerHTML=`
+  </div>`}var la=`banners`,ua=[];function da(){let e=document.createElement(`div`);return e.style.cssText=`padding:24px;max-width:960px;`,e.innerHTML=`
     <div style="margin-bottom:24px;">
       <h1 style="font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:4px;">쇼핑몰 관리</h1>
       <p style="color:var(--text-secondary);font-size:14px;">홈 화면 전체 콘텐츠를 실시간으로 편집합니다.</p>
@@ -3024,10 +3024,10 @@ Minimum version required to store current data is: `+c+`.
     </div>
 
     <div id="sm-loading" style="text-align:center;padding:40px;color:var(--text-secondary);font-size:14px;">
-      불러오는 중...
+      ⏳ 데이터 불러오는 중...
     </div>
     <div id="sm-panel"></div>
-  `,e.querySelectorAll(`.sm-tab`).forEach(t=>{t.addEventListener(`click`,()=>{la=t.dataset.tab,e.querySelectorAll(`.sm-tab`).forEach(e=>{let t=e.dataset.tab===la;e.style.color=t?`var(--primary)`:`var(--text-secondary)`,e.style.fontWeight=t?`700`:`600`,e.style.borderBottom=`2px solid ${t?`var(--primary)`:`transparent`}`,e.classList.toggle(`active`,t)}),fa(e)})});try{ua=await ea.getAll()}catch{ua=[]}return await fa(e),e}async function fa(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{la===`banners`?await pa(n):la===`lives`?await ha(n):la===`sections`?await ga(n,e):la===`menus`&&await va(n)}catch(e){n.innerHTML=`<div style="color:var(--status-error);padding:20px;">오류: ${e.message}<br>Supabase SQL 스크립트를 먼저 실행해 주세요.</div>`}t.style.display=`none`}async function pa(e){let t=await $i.getAll();e.innerHTML=`
+  `,e.querySelectorAll(`.sm-tab`).forEach(t=>{t.addEventListener(`click`,()=>{la=t.dataset.tab,e.querySelectorAll(`.sm-tab`).forEach(e=>{let t=e.dataset.tab===la;e.style.color=t?`var(--primary)`:`var(--text-secondary)`,e.style.fontWeight=t?`700`:`600`,e.style.borderBottom=`2px solid ${t?`var(--primary)`:`transparent`}`,e.classList.toggle(`active`,t)}),fa(e)})}),setTimeout(async()=>{try{ua=await ea.getAll()}catch{ua=[]}await fa(e)},0),e}async function fa(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{la===`banners`?await pa(n):la===`lives`?await ha(n):la===`sections`?await ga(n,e):la===`menus`&&await va(n)}catch(e){n.innerHTML=`<div style="color:var(--status-error);padding:20px;">오류: ${e.message}<br>Supabase SQL 스크립트를 먼저 실행해 주세요.</div>`}t.style.display=`none`}async function pa(e){let t=await $i.getAll();e.innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">홈 상단 슬라이드 배너</h2>
       <button id="add-banner" class="btn btn-primary btn-sm">+ 추가</button>
