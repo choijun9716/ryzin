@@ -918,7 +918,7 @@
     <section class="mag-section">
       <div class="mag-header">
         <h3>매거진</h3>
-        <button class="mag-more-btn" onclick="window.location.href='/shop/exhibition.html?title=${encodeURIComponent('RYZIN 뷰티 & 라이프 매거진')}'">더보기</button>
+        <button class="mag-more-btn" onclick="window.location.href='/shop/magazine.html'">더보기</button>
       </div>
 
       <!-- 피처 카드 (동적 렌더) -->
@@ -1498,9 +1498,9 @@
 
     if (!mags || !mags.length) {
       mags = [
-        { is_feature: true, category: '뷰티 트렌드', title: '2026 여름 스킨케어 루틴 완전 정복', desc: '폭염 속에서도 촉촉한 피부를 유지하는 K-뷰티 전문가들의 비밀', img_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85', link_url: '/shop/exhibition.html' },
-        { is_feature: false, category: '라이프스타일', title: '라이브 쇼핑, 이제는 문화다', img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85', link_url: '/shop/exhibition.html' },
-        { is_feature: false, category: '성분 분석', title: '나이아신아마이드 vs 비타민C 핵심 비교', img_url: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85', link_url: '/shop/exhibition.html' }
+        { is_feature: true, category: '뷰티 트렌드', title: '2026 여름 스킨케어 루틴 완전 정복', desc: '폭염 속에서도 촉촉한 피부를 유지하는 K-뷰티 전문가들의 비밀', img_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85', link_url: '/shop/magazine.html' },
+        { is_feature: false, category: '라이프스타일', title: '라이브 쇼핑, 이제는 문화다', img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85', link_url: '/shop/magazine.html' },
+        { is_feature: false, category: '성분 분석', title: '나이아신아마이드 vs 비타민C 핵심 비교', img_url: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85', link_url: '/shop/magazine.html' }
       ];
     }
 
@@ -1509,7 +1509,7 @@
 
     if (feat) {
       featureBox.innerHTML = `
-        <div class="mag-feature-card" onclick="window.location.href='${feat.link_url || '/shop/exhibition.html'}'">
+        <div class="mag-feature-card" onclick="window.location.href='${feat.link_url || '/shop/magazine.html'}'">
           <img src="${feat.img_url}" alt="${esc(feat.title)}">
           <div class="mag-feature-overlay">
             <span class="mag-category-badge">${esc(feat.category || '트렌드')}</span>
@@ -1521,7 +1521,7 @@
     }
 
     scrollBox.innerHTML = subList.map(m => `
-      <div class="mag-small-card" onclick="window.location.href='${m.link_url || '/shop/exhibition.html'}'">
+      <div class="mag-small-card" onclick="window.location.href='${m.link_url || '/shop/magazine.html'}'">
         <img src="${m.img_url}" alt="${esc(m.title)}">
         <div class="mag-small-info">
           <div class="mag-small-badge">${esc(m.category || '컬처')}</div>

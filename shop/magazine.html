@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RYZIN MAGAZINE — 뷰티 & 라이프 스타일 매거진</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0c0d10;
+      --surface: #14151a;
+      --surface-card: #1c1d24;
+      --text-main: #ffffff;
+      --text-sub: #94a3b8;
+      --text-muted: #64748b;
+      --accent-orange: #FF8730;
+      --border: #232530;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000000;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 90px;
+      position: relative;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      height: 52px;
+      background: rgba(12, 13, 16, 0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .tb-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tb-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: #ffffff;
+      stroke-width: 2.2;
+      fill: none;
+    }
+
+    .hdr-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    /* ── WIDE COVER HERO BANNER ── */
+    .mag-hero {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      background: #111319;
+    }
+
+    .mag-hero-bg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.75;
+    }
+
+    .mag-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(12, 13, 16, 0.25) 0%, rgba(12, 13, 16, 0.9) 100%);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .mag-badge {
+      display: inline-block;
+      align-self: flex-start;
+      background: var(--accent-orange);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+      box-shadow: 0 4px 12px rgba(255,135,48,0.3);
+    }
+
+    .mag-hero h1 {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.04em;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .mag-hero p {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    /* ── CATEGORY TAB BAR ── */
+    .category-section {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .category-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .category-scroll::-webkit-scrollbar { display: none; }
+
+    .category-btn {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-sub);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .category-btn.active {
+      background: #ffffff;
+      color: #000000;
+      font-weight: 800;
+      border-color: #ffffff;
+    }
+
+    /* ── WIDE CARD LIST ── */
+    .mag-list-section {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .wide-mag-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .wide-mag-card:active {
+      transform: scale(0.98);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    .wide-mag-img-box {
+      width: 100%;
+      height: 190px;
+      position: relative;
+      background: #1a1c24;
+      overflow: hidden;
+    }
+
+    .wide-mag-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .wide-mag-cat-tag {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(12, 13, 16, 0.8);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .wide-mag-body {
+      padding: 16px 18px;
+    }
+
+    .wide-mag-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.4;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .wide-mag-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.5;
+      font-weight: 400;
+      margin-bottom: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .wide-mag-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .read-time {
+      color: var(--accent-orange);
+      font-weight: 700;
+    }
+
+    /* 토스트 */
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: rgba(30,41,59,0.95);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ── 헤더 ── -->
+  <header class="header">
+    <button class="tb-icon-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="hdr-title">RYZIN MAGAZINE</div>
+    <button class="tb-icon-btn" onclick="copyLink()">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+    </button>
+  </header>
+
+  <!-- ── WIDE COVER HERO BANNER ── -->
+  <div class="mag-hero">
+    <img class="mag-hero-bg" src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=85" alt="RYZIN 뷰티 & 라이프 매거진 커버">
+    <div class="mag-hero-overlay">
+      <span class="mag-badge">RYZIN MAGAZINE</span>
+      <h1>뷰티 & 라이프 아티클</h1>
+      <p>K-뷰티 전문가들과 에디터들이 큐레이션하는 트렌드 스토리</p>
+    </div>
+  </div>
+
+  <!-- ── CATEGORY PILL TABS ── -->
+  <section class="category-section">
+    <div class="category-scroll">
+      <button class="category-btn active" onclick="selectCat(this, '전체')">전체</button>
+      <button class="category-btn" onclick="selectCat(this, '뷰티 트렌드')">뷰티 트렌드</button>
+      <button class="category-btn" onclick="selectCat(this, '라이프스타일')">라이프스타일</button>
+      <button class="category-btn" onclick="selectCat(this, '성분 분석')">성분 분석</button>
+      <button class="category-btn" onclick="selectCat(this, '셀럽 루틴')">셀럽 루틴</button>
+    </div>
+  </section>
+
+  <!-- ── WIDE CARD LIST ── -->
+  <section class="mag-list-section" id="mag-wide-list">
+    <!-- JS Rendered -->
+  </section>
+
+  <!-- 토스트 -->
+  <div id="toast"></div>
+
+</div>
+
+<script>
+  const SB_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+  const SB_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+  const SB_H = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+  let allMagazines = [];
+
+  async function sbGet(table, params = '') {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_H });
+      return r.ok ? r.json() : [];
+    } catch { return []; }
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => {
+      toast.style.transform = 'translateX(-50%) translateY(-100px)';
+    }, 2200);
+  }
+
+  function copyLink() {
+    navigator.clipboard.writeText(window.location.href);
+    showToast('매거진 링크가 복사되었습니다.');
+  }
+
+  const FALLBACK_MAGAZINES = [
+    {
+      id: 'mag_1',
+      category: '뷰티 트렌드',
+      title: '2026 여름 스킨케어 루틴 완전 정복',
+      desc: '폭염과 강한 유분 속에서도 하루 종일 속건조 없이 촉촉한 피부를 유지하는 K-뷰티 전문가들의 스킨 쿨링 비밀.',
+      img_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85',
+      read_time: '3분 읽기',
+      date: '2026.07.22'
+    },
+    {
+      id: 'mag_2',
+      category: '라이프스타일',
+      title: '라이브 커머스, 시청하는 쇼핑을 넘어 경험이 되다',
+      desc: '실시간 소통과 단독 할인 혜택으로 스마트 쇼퍼들이 가장 먼저 찾는 라이브 쇼핑 문화 현장 취재.',
+      img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=85',
+      read_time: '4분 읽기',
+      date: '2026.07.20'
+    },
+    {
+      id: 'mag_3',
+      category: '성분 분석',
+      title: '나이아신아마이드 vs 비타민C 핵심 가이드',
+      desc: '모공 케어와 미백 브라이트닝에 탁월한 두 성분의 조합 팁과 제대로 알고 바르는 바이블.',
+      img_url: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=800&q=85',
+      read_time: '5분 읽기',
+      date: '2026.07.18'
+    },
+    {
+      id: 'mag_4',
+      category: '셀럽 루틴',
+      title: '톱모델이 피부 촬영 전날 반드시 사용하는 아이템',
+      desc: '중요한 라이브 및 촬영 전 피부 컨디션을 단 10분 만에 최상으로 끌어올리는 시크릿 팩 추천.',
+      img_url: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=800&q=85',
+      read_time: '2분 읽기',
+      date: '2026.07.15'
+    }
+  ];
+
+  async function loadMagazines() {
+    try {
+      const dbRes = await sbGet('shop_magazines', 'select=*&order=sort_order.asc');
+      if (dbRes && dbRes.length) {
+        allMagazines = dbRes.map((m, idx) => ({
+          id: m.id,
+          category: m.category || '뷰티 트렌드',
+          title: m.title,
+          desc: m.desc || 'RYZIN 에디터가 엄선한 뷰티 & 라이프스타일 큐레이션 스토리입니다.',
+          img_url: m.img_url || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85',
+          read_time: `${(idx % 3) + 3}분 읽기`,
+          date: '2026.07.22'
+        }));
+      } else {
+        allMagazines = FALLBACK_MAGAZINES;
+      }
+    } catch(e) {
+      allMagazines = FALLBACK_MAGAZINES;
+    }
+    renderWideList('전체');
+  }
+
+  function renderWideList(category = '전체') {
+    const listEl = document.getElementById('mag-wide-list');
+    if (!listEl) return;
+
+    const filtered = category === '전체'
+      ? allMagazines
+      : allMagazines.filter(m => m.category === category);
+
+    if (!filtered.length) {
+      listEl.innerHTML = `<div style="text-align:center; padding:50px 0; color:var(--text-muted); font-size:14px; font-weight:600;">해당 카테고리의 매거진 아티클이 없습니다.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(item => `
+      <div class="wide-mag-card" onclick="window.location.href='/shop/exhibition.html?title=${encodeURIComponent(item.title)}'">
+        <div class="wide-mag-img-box">
+          <img src="${item.img_url}" alt="${esc(item.title)}">
+          <span class="wide-mag-cat-tag">${esc(item.category)}</span>
+        </div>
+        <div class="wide-mag-body">
+          <h2 class="wide-mag-title">${esc(item.title)}</h2>
+          <p class="wide-mag-desc">${esc(item.desc)}</p>
+          <div class="wide-mag-footer">
+            <span>${item.date} · RYZIN EDIT</span>
+            <span class="read-time">${item.read_time}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function selectCat(btn, category) {
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderWideList(category);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadMagazines);
+</script>
+</body>
+</html>

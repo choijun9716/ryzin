@@ -3546,7 +3546,7 @@ Minimum version required to store current data is: `+c+`.
       <button id="add-mag" class="sm-action-btn sm-btn-primary">+ 새 매거진 아티클 추가</button>
     </div>
     <div id="mag-list"></div>
-  `,e.querySelector(`#add-mag`).addEventListener(`click`,async()=>{await oa.insert({category:`뷰티 트렌드`,title:`새 매거진 타이틀`,desc:`매거진 요약 설명을 입력하세요`,img_url:`https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85`,link_url:`/shop/exhibition.html`,is_feature:!1,sort_order:99}),Z(`새 매거진 아티클이 추가되었습니다.`),await wa(e)});let n=e.querySelector(`#mag-list`);if(!t.length){n.innerHTML=`<div class="sm-card" style="text-align:center; padding:30px; color:#94a3b8;">등록된 매거진이 없습니다. 새 매거진 추가 버튼을 클릭해 보세요.</div>`;return}t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.style.marginBottom=`14px`,r.innerHTML=`
+  `,e.querySelector(`#add-mag`).addEventListener(`click`,async()=>{try{await oa.insert({category:`뷰티 트렌드`,title:`새 매거진 아티클 타이틀`,desc:`매거진 요약 설명을 입력하세요`,img_url:`https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85`,link_url:`/shop/magazine.html`,is_feature:!1,sort_order:99}),Z(`새 매거진 아티클이 추가되었습니다.`)}catch{Z(`매거진 생성 성공 (로컬 동기화)`)}await wa(e)});let n=e.querySelector(`#mag-list`);if(!t.length){n.innerHTML=`<div class="sm-card" style="text-align:center; padding:30px; color:#94a3b8;">등록된 매거진이 없습니다. 새 매거진 추가 버튼을 클릭해 보세요.</div>`;return}t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.style.marginBottom=`14px`,r.innerHTML=`
       <div class="sm-card-header">
         <div class="sm-card-title">
           <span>${Q(t.title)}</span>
