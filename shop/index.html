@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>RYZIN SHOP — 라이브 커머스</title>
-  <meta name="description" content="라이진 라이브 커머스 — 프리미엄 뷰티 & 라이프스타일 모바일 쇼핑몰">
+  <title>RYZIN SHOP — 토스 라이브 쇼핑</title>
+  <meta name="description" content="라이진 라이브 커머스 — 토스 스타일 프리미엄 뷰티 & 라이프스타일">
 
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,22 +17,26 @@
 
   <style>
     :root {
-      --primary: #111111;
-      --text-main: #111111;
-      --text-sub: #666666;
-      --text-muted: #999999;
-      --surface: #ffffff;
-      --bg: #F7F7F7;
-      --border: #EEEEEE;
-      --border-light: #F7F7F7;
-      --header-h: 100px;
+      --bg: #121316;
+      --surface: #1c1d22;
+      --surface-card: #22232a;
+      --text-main: #ffffff;
+      --text-sub: #94a3b8;
+      --text-muted: #64748b;
+      --accent-red: #ff3b30;
+      --accent-blue: #3b82f6;
+      --accent-yellow: #f59e0b;
+      --border: #272832;
+      --chip-navy: #1e293b;
+      --chip-burgundy: #3f1d24;
+      --chip-dark: #262626;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
       font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
+      background: #000000;
       color: var(--text-main);
       display: flex;
       justify-content: center;
@@ -44,10 +48,10 @@
       width: 100%;
       max-width: 430px;
       min-height: 100vh;
-      background: var(--surface);
+      background: var(--bg);
       display: flex;
       flex-direction: column;
-      padding-bottom: 68px;
+      padding-bottom: 70px;
       position: relative;
     }
 
@@ -56,2890 +60,681 @@
       position: sticky;
       top: 0;
       z-index: 200;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .header-logo-row {
+      background: rgba(18, 19, 22, 0.95);
+      backdrop-filter: blur(12px);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 16px 8px;
+      padding: 12px 16px;
     }
 
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .logo-wrap img {
-      height: 22px;
-      width: auto;
-      object-fit: contain;
-      display: block;
-      filter: brightness(0);
-    }
-
-    .logo-text-fallback {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      color: var(--text-main);
-    }
-
-    .header-icons {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hdr-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #f3f4f6;
+    .hdr-icon-btn {
+      background: none;
       border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.15s;
-      position: relative;
+      color: #ffffff;
+      padding: 4px;
     }
 
-    .hdr-btn:active { background: #e5e7eb; }
-
-    .hdr-btn svg {
-      width: 18px;
-      height: 18px;
-      stroke: #111827;
+    .hdr-icon-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: #ffffff;
       stroke-width: 2;
       fill: none;
     }
 
-    .hdr-btn-badge {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 8px;
-      height: 8px;
-      background: var(--primary);
-      border-radius: 50%;
-      display: none;
-    }
-
-    .top-nav {
+    .hdr-right {
       display: flex;
-      border-top: 1px solid var(--border-light);
+      align-items: center;
+      gap: 12px;
     }
 
-    .top-nav-tab {
-      flex: 1;
-      padding: 14px 0 12px; /* 상하 패딩을 늘려 터치영역 45px 확보 */
-      text-align: center;
-      font-size: 15px; /* 시각적 주목도 향상 */
+    /* ── HERO PROMO BANNER ── */
+    .hero-banner-wrap {
+      padding: 8px 16px 16px;
+    }
+
+    .hero-promo-card {
+      width: 100%;
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-promo-text h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .hero-promo-text p {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .hero-promo-img {
+      width: 100px;
+      height: 70px;
+      object-fit: contain;
+    }
+
+    /* ── SUB NAV TABS ── */
+    .sub-tabs {
+      display: flex;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 24px;
+    }
+
+    .sub-tab {
+      padding: 12px 0 14px;
+      font-size: 15px;
       font-weight: 600;
-      color: #9ca3af;
+      color: var(--text-sub);
       cursor: pointer;
       position: relative;
       transition: color 0.15s;
-      letter-spacing: -0.01em;
     }
 
-    .top-nav-tab.active {
-      color: var(--text-main);
-      font-weight: 800;
-    }
-
-    .top-nav-tab.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 10%; right: 10%;
-      height: 2.5px;
-      background: var(--text-main);
-      border-radius: 2px;
-    }
-
-    /* ── TAB VIEWS ── */
-    .tab-view { display: none; }
-    .tab-view.active { display: block; }
-
-    /* ── HOME: 카테고리 알약 스타일 ── */
-    .home-cat-scroll {
-      display: flex;
-      gap: 8px;
-      padding: 16px 20px 24px;
-      overflow-x: auto;
-      scroll-padding: 0 20px;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    .home-cat-scroll::-webkit-scrollbar { display: none; }
-
-    .cat-pill-btn {
-      flex-shrink: 0;
-      height: 38px;
-      padding: 0 18px;
-      border-radius: 20px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      color: #111111;
-      font-size: 14px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.15s ease;
-    }
-
-    .cat-pill-btn.active {
-      background: #111111;
-      border-color: #111111;
+    .sub-tab.active {
       color: #ffffff;
       font-weight: 700;
     }
 
-    /* HOME: 오늘의딜 가로 스크롤 */
-    .home-deal-scroll {
+    .sub-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #ffffff;
+      border-radius: 2px;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      padding: 24px 16px;
+      border-bottom: 8px solid #000000;
+    }
+
+    .sec-header-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 16px;
+    }
+
+    .sec-title-group h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .sec-title-group p {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+
+    .sec-timer-badge {
+      background: #272832;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-family: monospace;
+    }
+
+    /* ── TOSS PRODUCT CARDS (HORIZONTAL SCROLL / GRID) ── */
+    .toss-prod-scroll {
       display: flex;
       gap: 12px;
-      padding: 0 16px 2px;
-      scroll-padding: 0 16px;
       overflow-x: auto;
-      scroll-snap-type: x mandatory;
+      scroll-padding: 0 16px;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -16px;
+      padding: 0 16px 8px;
     }
-    .home-deal-scroll::-webkit-scrollbar { display: none; }
 
-    .home-deal-card {
-      flex: 0 0 140px;
-      scroll-snap-align: start;
+    .toss-prod-scroll::-webkit-scrollbar { display: none; }
+
+    .toss-card {
+      flex: 0 0 160px;
+      display: flex;
+      flex-direction: column;
       cursor: pointer;
     }
 
-    .home-deal-img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 14px;
+    .toss-img-box {
+      width: 160px;
+      height: 160px;
+      border-radius: 16px;
       overflow: hidden;
       position: relative;
-      background: var(--bg);
+      background: #2a2b32;
     }
 
-    .home-deal-img img {
-      width: 100%; height: 100%;
+    .toss-img-box img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
 
-    .hd-discount {
+    .toss-discount-tag {
       position: absolute;
-      top: 7px; left: 7px;
-      background: #ef4444;
-      color: #fff;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .hd-info { padding: 6px 2px 0; }
-
-    .hd-brand {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-muted);
-    }
-
-    .hd-name {
+      top: 8px;
+      left: 8px;
+      background: var(--accent-red);
+      color: #ffffff;
       font-size: 12px;
-      font-weight: 600;
-      color: var(--text-main);
-      margin: 2px 0;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 6px;
+      z-index: 2;
+    }
+
+    .toss-wish-btn {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      border: none;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .toss-wish-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #ffffff;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .toss-info {
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .toss-brand-title {
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      line-height: 1.3;
+      height: 35px;
     }
 
-    .hd-price {
-      font-size: 14px;
-      font-weight: 900;
-      color: var(--text-main);
+    .toss-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 2px;
     }
 
-    .hd-origin {
-      font-size: 11px;
+    .toss-sale-price {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .toss-origin-price {
+      font-size: 12px;
       color: var(--text-muted);
       text-decoration: line-through;
     }
 
-    /* HOME: 매거진 가로 스크롤 — Wisely 스타일 */
-    .magazine-scroll {
-      display: flex;
-      gap: 14px;
-      padding: 0 16px 2px;
-      scroll-padding: 0 16px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-    .magazine-scroll::-webkit-scrollbar { display: none; }
-
-    .mag-card {
-      flex: 0 0 calc(100% - 56px);
-      scroll-snap-align: start;
-      cursor: pointer;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #fff;
-      border: 1px solid var(--border);
-    }
-
-    .mag-thumb {
-      width: 100%;
-      height: 220px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .mag-thumb img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
-
-    .mag-ep-badge {
-      position: absolute;
-      top: 14px; left: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .mag-series-name {
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.6);
-    }
-
-    .mag-ep-num {
-      font-size: 10px;
-      font-weight: 800;
-      color: var(--text-main);
-      background: #fff;
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-
-    .mag-body {
-      padding: 14px 16px 12px;
-    }
-
-    .mag-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.35;
-      margin-bottom: 4px;
-    }
-
-    .mag-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-
-    .mag-products {
-      display: flex;
-      gap: 6px;
-    }
-
-    .mag-products img {
-      width: 40px; height: 40px;
-      border-radius: 6px;
-      object-fit: cover;
-      border: 1px solid var(--border);
-    }
-
-    /* HOME: 최저가보장제 카드 */
-    .lowest-price-card {
-      margin: 0 16px;
-      padding: 20px;
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-    }
-
-    .lp-left { display: flex; flex-direction: column; gap: 4px; }
-
-    .lp-badge {
-      align-self: flex-start;
-      font-size: 9px;
-      font-weight: 900;
-      color: #2563eb;
-      background: rgba(37,99,235,0.12);
-      padding: 2px 7px;
-      border-radius: 4px;
-      letter-spacing: 0.06em;
-    }
-
-    .lp-title {
-      font-size: 17px;
-      font-weight: 900;
-      color: #1e3a5f;
-    }
-
-    .lp-desc {
-      font-size: 12px;
-      font-weight: 500;
-      color: #64748b;
-      line-height: 1.4;
-    }
-
-    .lp-right { flex-shrink: 0; }
-
-    /* ── MY PAGE ── */
-    .my-profile-card {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 20px 16px;
-      border-bottom: 8px solid var(--bg);
-    }
-
-    .my-avatar {
-      width: 52px; height: 52px;
-      border-radius: 50%;
-      background: #e5e7eb;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .my-avatar svg {
-      width: 26px; height: 26px;
-      stroke: #9ca3af;
-      stroke-width: 1.5;
-      fill: none;
-    }
-
-    .my-profile-info { flex: 1; min-width: 0; }
-
-    .my-username {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text-main);
-    }
-
-    .my-usersub {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-      line-height: 1.35;
-    }
-
-    .my-edit-btn {
-      flex-shrink: 0;
-      background: var(--text-main);
-      color: #fff;
-      border: none;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 7px 16px;
-      border-radius: 20px;
-      cursor: pointer;
-    }
-
-    .my-quick-row {
-      display: flex;
-      align-items: center;
-      padding: 16px 0;
-      border-bottom: 6px solid var(--bg);
-    }
-
-    .my-quick-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    .my-quick-num {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--text-main);
-    }
-
-    .my-quick-label {
+    .toss-unit-price {
       font-size: 11px;
-      font-weight: 600;
       color: var(--text-muted);
     }
 
-    .my-quick-divider {
-      width: 1px;
-      height: 28px;
-      background: var(--border);
-    }
-
-    .my-menu-group {
-      border-bottom: 6px solid var(--bg);
-      padding: 8px 0;
-    }
-
-    .my-menu-section-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      padding: 8px 16px 4px;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-
-    .my-menu-item {
+    .toss-rating-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 15px 16px;
-      cursor: pointer;
-      transition: background 0.1s;
-    }
-
-    .my-menu-item:active { background: #f9fafb; }
-
-    .my-menu-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    .my-menu-left svg {
-      width: 18px; height: 18px;
-      stroke: #6b7280;
-      stroke-width: 1.8;
-      fill: none;
-      flex-shrink: 0;
-    }
-
-    .my-menu-arrow {
-      font-size: 16px;
-      color: #d1d5db;
-      font-weight: 400;
-    }
-
-    .my-logout .my-menu-left { color: #ef4444; }
-    .my-logout .my-menu-left svg { stroke: #ef4444; }
-
-    /* ── 공통 섹션 ── */
-    .section {
-      margin-bottom: 72px;
-      padding: 0;
-      border-bottom: none;
-    }
-
-    .section:last-child { margin-bottom: 40px; }
-
-    .sec-header {
-      padding: 0 20px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-
-    .sec-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-main);
-      letter-spacing: -0.01em;
-    }
-
-    .sec-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    /* ── 라이브 커러셀 ── */
-    .live-scroll {
-      display: flex;
-      gap: 16px;
-      padding: 0 20px 2px;
-      scroll-padding: 0 20px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
-    .live-scroll::-webkit-scrollbar { display: none; }
-
-    .live-card {
-      flex: 0 0 160px;
-      aspect-ratio: 4 / 5;
-      border-radius: 16px;
-      overflow: hidden;
-      position: relative;
-      scroll-snap-align: start;
-      cursor: pointer;
-      background: #111111;
-    }
-
-    .live-card img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-    }
-
-    .live-card:active img { transform: scale(1.03); }
-
-    .live-card-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 42%, rgba(0,0,0,0.82) 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 12px;
-    }
-
-    .live-status-badge {
-      align-self: flex-start;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 3px 9px;
-      border-radius: 30px;
-      letter-spacing: 0.03em;
-    }
-
-    .badge-live { background: #ef4444; color: #fff; }
-    .badge-upcoming {
-      background: rgba(0,0,0,0.6);
-      color: rgba(255,255,255,0.95);
-      border: 1px solid rgba(255,255,255,0.25);
-      backdrop-filter: blur(8px);
-    }
-
-    .pulse-dot {
-      width: 5px; height: 5px;
-      background: #fff;
-      border-radius: 50%;
-      animation: blink 1.2s ease-in-out infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(1.3); }
-    }
-
-    .live-card-body { color: #fff; }
-
-    .live-card-title {
-      font-size: 14px;
-      font-weight: 800;
-      line-height: 1.35;
-      margin-bottom: 8px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-    }
-
-    .live-card-btn {
-      width: 100%;
-      padding: 7px 0;
-      border-radius: 30px;
-      font-size: 11px;
-      font-weight: 700;
-      border: 1px solid rgba(255,255,255,0.4);
-      background: rgba(255,255,255,0.18);
-      color: #fff;
-      cursor: pointer;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .live-card-btn.notified {
-      background: #fff;
-      color: var(--text-main);
-      border-color: #fff;
-    }
-
-    /* ── 기획 VOD 다시보기 ── */
-    .pill-scroll {
-      display: flex;
-      gap: 8px;
-      padding: 0 16px 12px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .pill-scroll::-webkit-scrollbar { display: none; }
-
-    .pill {
-      white-space: nowrap;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-sub);
-      background: var(--bg);
-      height: 36px; /* 칩 버튼 높이: 36px */
-      padding: 0 16px;
-      border-radius: 18px;
-      cursor: pointer;
-      transition: all 0.15s;
-      border: 1px solid var(--border);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .pill.active {
-      color: var(--text-main);
-      background: #fff;
-      border-color: var(--text-main);
-      font-weight: 700;
-    }
-
-    .vod-scroll {
-      display: flex;
-      gap: 12px;
-      padding: 0 16px 2px;
-      scroll-padding: 0 16px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-    .vod-scroll::-webkit-scrollbar { display: none; }
-
-    .vod-card {
-      flex: 0 0 135px;
-      scroll-snap-align: start;
-      cursor: pointer;
-    }
-
-    .vod-thumb {
-      width: 100%;
-      aspect-ratio: 9 / 16; /* 라이브/VOD 썸네일: 9:16 */
-      border-radius: 16px;
-      overflow: hidden;
-      position: relative;
-      background: #111;
-    }
-
-    .vod-thumb img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .vod-card:active .vod-thumb img { transform: scale(1.04); }
-
-    .vod-meta {
-      position: absolute;
-      top: 8px; left: 8px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .vod-badge {
-      font-size: 9px;
-      font-weight: 900;
-      background: rgba(0,0,0,0.82);
-      color: #fff;
-      padding: 2px 5px;
-      border-radius: 4px;
-      letter-spacing: 0.06em;
-    }
-
-    .vod-views {
-      font-size: 10px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.9);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-    }
-
-    .product-chip {
-      position: absolute;
-      bottom: 7px; left: 5px; right: 5px;
-      background: rgba(255,255,255,0.97);
-      border-radius: 9px;
-      padding: 5px 7px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.18);
-    }
-
-    .product-chip img {
-      width: 28px; height: 28px;
-      border-radius: 4px;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-
-    .chip-info { flex: 1; min-width: 0; }
-
-    .chip-name {
-      font-size: 10px;
-      font-weight: 600;
-      color: #374151;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.2;
-    }
-
-    .chip-price {
-      font-size: 12px;
-      font-weight: 900;
-      color: #111827;
-      line-height: 1.2;
-    }
-
-    .vod-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-top: 7px;
-      line-height: 1.35;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* ── 상품 그리드 ── */
-    .product-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      padding: 0 20px;
-    }
-
-    .prod-card {
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-    }
-
-    .prod-img-wrap {
-      aspect-ratio: 1 / 1;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #f3f4f6;
-      position: relative;
-    }
-
-    .prod-img-wrap img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .prod-card:active .prod-img-wrap img { transform: scale(1.03); }
-
-    .rank-num {
-      position: absolute;
-      top: 8px; left: 8px;
-      width: 22px; height: 22px;
-      background: #111111;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 900;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .rank-num.gold { background: #111111; }
-    .rank-num.silver { background: #6b7280; }
-
-    .exclusive-badge {
-      position: absolute;
-      top: 8px; right: 8px;
-      background: #111111;
-      color: #fff;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 3px 6px;
-      border-radius: 6px;
-    }
-
-    .discount-badge {
-      position: absolute;
-      top: 8px; right: 8px;
-      background: #111111;
-      color: #fff;
-      font-size: 9px;
-      font-weight: 900;
-      padding: 3px 6px;
-      border-radius: 6px;
-    }
-
-    .prod-info { padding: 8px 2px 4px; }
-
-    .prod-brand {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-sub);
-      display: flex;
-      align-items: center;
-    }
-
-    .prod-brand-arrow {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-left: 2px;
-    }
-
-    .prod-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-main);
-      margin: 4px 0 6px;
-      line-height: 1.4;
-      height: calc(13px * 1.4 * 2);
-      letter-spacing: -0.01em;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .prod-price {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.2;
-    }
-    .prod-benefit { font-size: 12px; font-weight: 700; color: #ef4444; margin-top: 2px; }
-    .prod-origin { font-size: 13px; color: var(--text-muted); text-decoration: line-through; margin-top: 1px; }
-
-    .chip-row { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
-    .chip-tag { font-size: 11px; font-weight: 600; color: #666666; background: var(--bg); padding: 2px 6px; border-radius: 4px; }
-    .chip-tag.red { color: #ef4444; background: #fee2e2; }
-    .chip-tag.blue { color: #2563eb; background: #dbeafe; }
-
-    .home-banner { margin: 0 0 0; padding: 16px 20px 0; }
-
-    .banner-carousel-wrap {
-      width: 100%;
-      aspect-ratio: 2.2 / 1;
-      border-radius: 16px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .banner-track {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.4s ease-in-out;
-    }
-
-    .banner-card {
-      min-width: 100%;
-      height: 100%;
-      position: relative;
-      cursor: pointer;
-    }
-
-    .banner-card img { width: 100%; height: 100%; object-fit: cover; }
-
-    .banner-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(90deg, rgba(0,0,0,0.65) 0%, transparent 60%);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 0 16px;
-    }
-
-    .banner-subtitle {
-      font-size: 10px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.75);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .banner-title { font-size: 15px; font-weight: 900; color: #fff; line-height: 1.2; }
-    .banner-cta {
-      margin-top: 6px;
-      display: inline-block;
-      align-self: flex-start;
-      background: #fff;
-      color: #111;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 800;
-    }
-
-    .banner-dots {
-      position: absolute;
-      bottom: 8px;
-      right: 12px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      z-index: 10;
-      background: rgba(0,0,0,0.35);
-      padding: 3px 8px;
-      border-radius: 10px;
-      backdrop-filter: blur(4px);
-    }
-
-    .banner-dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.4);
-      transition: all 0.2s;
-    }
-
-    .banner-dot.active {
-      width: 12px;
-      border-radius: 6px;
-      background: #ffffff;
-    }
-      font-size: 10px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 20px;
-      align-self: flex-start;
-    }
-
-    /* ── 체험단 ── */
-    .trial-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      padding: 0 20px;
-    }
-
-    .trial-card { display: flex; flex-direction: column; cursor: pointer; }
-
-    .trial-img-wrap {
-      aspect-ratio: 1 / 1;
-      border-radius: 14px;
-      overflow: hidden;
-      position: relative;
-      background: #f3f4f6;
-    }
-
-    .trial-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-
-    .trial-spots-badge {
-      position: absolute;
-      top: 7px; left: 7px;
-      background: rgba(0,0,0,0.8);
-      color: #fff;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 3px 6px;
-      border-radius: 4px;
-    }
-
-    .trial-free-badge {
-      position: absolute;
-      top: 7px; right: 7px;
-      background: #22c55e;
-      color: #fff;
-      font-size: 9px;
-      font-weight: 900;
-      padding: 2px 5px;
-      border-radius: 4px;
-    }
-
-    .trial-info { padding: 8px 2px 4px; }
-    .trial-brand { font-size: 11px; font-weight: 700; color: var(--text-main); }
-    .trial-name {
-      font-size: 12px;
-      font-weight: 500;
-      color: #374151;
-      margin: 3px 0 5px;
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .trial-deadline { font-size: 10px; font-weight: 700; color: #ef4444; }
-
-    /* ── 바텀 네비 ── */
-    .bottom-nav {
-      position: fixed;
-      bottom: 16px; left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 32px);
-      max-width: 398px; /* 430px - 32px */
-      height: 64px;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(229, 231, 235, 0.5);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      z-index: 200;
-      padding: 0 8px;
-    }
-
-    .bnav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       gap: 3px;
-      text-decoration: none;
-      color: #9ca3af;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .toss-rating-row span.star-icon {
+      color: var(--accent-yellow);
+    }
+
+    .toss-chip-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .toss-chip {
       font-size: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      height: 100%;
-      position: relative;
-      transition: color 0.25s ease;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: 4px;
     }
 
-    .bnav-item.active { color: var(--text-main); font-weight: 800; }
+    .chip-ship { background: #1e293b; color: #60a5fa; }
+    .chip-guarantee { background: #3f1d24; color: #f87171; }
+    .chip-best { background: #262626; color: #d1d5db; }
 
-    .bnav-item svg {
-      width: 20px; height: 20px;
-      stroke: currentColor;
-      stroke-width: 2;
-      fill: none;
-      transition: transform 0.25s ease, stroke-width 0.25s ease;
-    }
-
-    .bnav-item.active svg {
-      transform: translateY(-2px);
-      stroke-width: 2.2;
-    }
-
-    /* Active Indicator Dot */
-    .bnav-item::after {
-      content: '';
-      position: absolute;
-      bottom: 8px;
-      width: 4px;
-      height: 4px;
-      background: var(--text-main);
-      border-radius: 50%;
-      transform: scale(0);
-      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .bnav-item.active::after {
-      transform: scale(1);
-    }
-
-    /* ── MODALS (기본 스타일 & 슬라이드 업) ── */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 500;
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-    }
-
-    .modal-overlay.open { display: flex; }
-
-    .modal-sheet {
-      width: 100%;
-      max-width: 430px;
-      height: 80vh;
-      background: var(--surface);
-      border-radius: 24px 24px 0 0;
-      overflow-y: auto;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-
-    .modal-hdr {
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      background: var(--surface);
-      z-index: 10;
-    }
-
-    .modal-hdr-title { font-size: 16px; font-weight: 800; color: var(--text-main); }
-
-    .modal-close-btn {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: #f3f4f6;
-      border: none;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .modal-body {
-      padding: 20px;
-      flex: 1;
-    }
-
-    /* 온보딩/인증 모달 스타일 */
-    .login-btn-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .social-login-btn {
-      width: 100%;
-      height: 48px; /* 보조 버튼 높이: 48px */
-      border-radius: 12px;
-      border: none;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-kakao { background: #fee500; color: #191919; }
-    .btn-apple { background: #000000; color: #ffffff; }
-    .btn-email { background: #f3f4f6; color: var(--text-main); border: 1.5px solid var(--border); }
-
-    .email-login-form {
-      display: none;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .login-input {
+    /* ── TOSS MORE BUTTON ── */
+    .toss-more-btn {
       width: 100%;
       height: 48px;
       border-radius: 12px;
-      border: 1.5px solid var(--border);
-      padding: 0 16px;
+      background: #1e293b;
+      color: #60a5fa;
       font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .login-input:focus { border-color: var(--text-main); }
-
-    .submit-action-btn, .btn-primary {
-      width: 100%;
-      height: 52px;
-      border-radius: 16px;
-      background: #111111;
-      color: #ffffff;
+      font-weight: 700;
       border: none;
-      font-size: 15px;
-      font-weight: 700;
       cursor: pointer;
-      margin-top: 8px;
-      display: inline-flex;
+      margin-top: 16px;
+      display: flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       transition: background 0.15s;
     }
 
-    .btn-secondary {
-      width: 100%;
-      height: 52px;
-      border-radius: 16px;
-      background: #ffffff;
-      color: #111111;
-      border: 1px solid #111111;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s;
+    .toss-more-btn:active {
+      background: #334155;
     }
 
-    /* 알림 센터 모달 스타일 */
-    .notif-item {
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .notif-item:last-child { border-bottom: none; }
-
-    .notif-hdr { display: flex; justify-content: space-between; align-items: center; }
-    .notif-title { font-size: 13px; font-weight: 800; color: var(--text-main); }
-    .notif-time { font-size: 11px; color: var(--text-muted); }
-    .notif-desc { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 0;
-      color: var(--text-muted);
-      font-size: 13px;
-      font-weight: 500;
-      gap: 8px;
-    }
-
-    .empty-state svg { width: 32px; height: 32px; stroke: var(--text-muted); fill: none; }
-
-    /* 상품 상세 모달 스타일 */
-    .detail-hero { width: 100%; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; background: #f3f4f6; position: relative; margin-bottom: 18px; }
-    .detail-hero img { width: 100%; height: 100%; object-fit: cover; }
-
-    .progress-bar-container { background: #e5e7eb; height: 6px; border-radius: 3px; overflow: hidden; margin: 10px 0; position: relative; }
-    .progress-bar-fill { background: var(--primary); height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
-
-    /* 즉시구매/공동구매 참여 하단 바 */
-    .detail-bottom-cta {
-      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-      position: sticky;
-      bottom: 0;
-      display: flex;
-      gap: 12px;
-      z-index: 50;
-    }
-
-    /* TOAST */
-    .toast {
+    /* ── BOTTOM NAV ── */
+    .bottom-nav {
       position: fixed;
-      top: 18px; left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: #111827;
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 30px;
-      font-size: 12px;
-      font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-      z-index: 600;
-      white-space: nowrap;
-      transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: rgba(18, 19, 22, 0.98);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+      z-index: 300;
     }
 
-    .toast.show { transform: translateX(-50%) translateY(0); }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+    }
+
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .nav-item span {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .nav-dot-badge {
+      position: absolute;
+      top: 0;
+      right: 12px;
+      width: 6px;
+      height: 6px;
+      background: var(--accent-red);
+      border-radius: 50%;
+    }
   </style>
 </head>
 
 <body>
 <div class="app">
 
-  <!-- ───── HEADER ───── -->
+  <!-- ── 상단 헤더 ── -->
   <header class="header">
-    <div class="header-logo-row">
-      <a class="logo-wrap" href="/shop/">
-        <img src="/assets/logo.png" alt="RYZIN" onerror="this.outerHTML='<span class=\'logo-text-fallback\'>RYZIN</span>'">
-      </a>
-      <div class="header-icons">
-        <button class="hdr-btn" onclick="openSearchModal()">
-          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        </button>
-        <button class="hdr-btn" onclick="openNotificationModal()">
-          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          <span class="hdr-btn-badge" id="notif-badge"></span>
-        </button>
-      </div>
+    <button class="hdr-icon-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="hdr-right">
+      <button class="hdr-icon-btn" onclick="showToast('프로필 페이지로 이동합니다.')">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </button>
+      <button class="hdr-icon-btn" onclick="showToast('장바구니함이 비어있습니다.')">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      </button>
     </div>
-    <nav class="top-nav">
-      <div class="top-nav-tab" data-tab="home" onclick="switchTab('home')">홈</div>
-      <div class="top-nav-tab active" data-tab="live" onclick="switchTab('live')">라이브</div>
-      <div class="top-nav-tab" data-tab="deal" onclick="switchTab('deal')">오늘의딜</div>
-      <div class="top-nav-tab" data-tab="group" onclick="switchTab('group')">공동구매</div>
-      <div class="top-nav-tab" data-tab="trial" onclick="switchTab('trial')">체험단</div>
-    </nav>
   </header>
+
+  <!-- ── 히어로 프로모 배너 ── -->
+  <div class="hero-banner-wrap">
+    <div class="hero-promo-card" onclick="showToast('여행 필수품 기획전으로 이동합니다.')">
+      <div class="hero-promo-text">
+        <h2>여행 필수품<br>모았어요</h2>
+        <p>모바일 악세서리 모음</p>
+      </div>
+      <img class="hero-promo-img" src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=300&q=80" alt="프로모션">
+    </div>
+  </div>
+
+  <!-- ── 서브 네비 탭 ── -->
+  <nav class="sub-tabs">
+    <div class="sub-tab" onclick="switchSubTab(this, 'day')">하루 특가</div>
+    <div class="sub-tab" onclick="switchSubTab(this, 'seller')">셀러 특가</div>
+    <div class="sub-tab active" onclick="switchSubTab(this, 'exhibition')">기획전</div>
+    <div class="sub-tab" onclick="switchSubTab(this, 'coupon')">쿠폰 혜택</div>
+  </nav>
 
   <!-- ───── MAIN CONTENT ───── -->
   <main>
 
-    <!-- ── 탭: 홈 ── -->
-    <div class="tab-view" id="view-home">
-      <!-- 메인 배너 (롤링 카러셀) -->
-      <div class="home-banner">
-        <div class="banner-carousel-wrap">
-          <div class="banner-track" id="home-banner-track">
-            <div class="banner-card" onclick="showToast('프리미엄 뷰티 특가 기획전으로 이동합니다.')">
-              <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=900&q=85" alt="배너 1">
-              <div class="banner-overlay">
-                <span class="banner-subtitle">RYZIN LIVE COMMERCE</span>
-                <span class="banner-title">프리미엄 뷰티 특가</span>
-                <span class="banner-cta">지금 확인하기</span>
-              </div>
-            </div>
-            <div class="banner-card" onclick="showToast('신규 회원 웰컴 쿠폰팩 페이지로 이동합니다.')">
-              <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85" alt="배너 2">
-              <div class="banner-overlay">
-                <span class="banner-subtitle">WELCOME BENEFIT</span>
-                <span class="banner-title">신규 회원 전용 15% 쿠폰팩</span>
-                <span class="banner-cta">혜택 받기</span>
-              </div>
-            </div>
-            <div class="banner-card" onclick="showToast('타임 세일 디데이 이벤트로 이동합니다.')">
-              <img src="https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=900&q=85" alt="배너 3">
-              <div class="banner-overlay">
-                <span class="banner-subtitle">TODAY'S SPECIAL</span>
-                <span class="banner-title">단 24시간 한정 타임딜</span>
-                <span class="banner-cta">구경하기</span>
-              </div>
-            </div>
-          </div>
-          <div class="banner-dots" id="home-banner-dots">
-            <span class="banner-dot active"></span>
-            <span class="banner-dot"></span>
-            <span class="banner-dot"></span>
-          </div>
+    <!-- 섹션 1: 상설관 구경 -->
+    <section class="section">
+      <div class="sec-header-wrap">
+        <div class="sec-title-group">
+          <h3>지금 바로 상설관 구경</h3>
+          <p>특가 상품 보러 가기</p>
         </div>
       </div>
 
-      <!-- 카테고리 알약 스크롤 -->
-      <div class="home-cat-scroll">
-        <button class="cat-pill-btn active" onclick="filterCategory('전체', this)">전체</button>
-        <button class="cat-pill-btn" onclick="filterCategory('식품', this)">식품</button>
-        <button class="cat-pill-btn" onclick="filterCategory('뷰티', this)">뷰티</button>
-        <button class="cat-pill-btn" onclick="filterCategory('생활 · 주방', this)">생활 · 주방</button>
-        <button class="cat-pill-btn" onclick="filterCategory('건강식품', this)">건강식품</button>
-        <button class="cat-pill-btn" onclick="filterCategory('패션', this)">패션</button>
-        <button class="cat-pill-btn" onclick="filterCategory('디지털 · 가전', this)">디지털 · 가전</button>
+      <!-- 토스형 상품 스크롤 1 -->
+      <div class="toss-prod-scroll" id="scroll-section-1">
+        <!-- JS Rendered -->
       </div>
 
-      <!-- 실시간 개인화 추천 피드 -->
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">개인화 추천 피드</span>
-          <span class="sec-sub">실시간 분석</span>
-        </div>
-        <div class="product-grid" id="home-rec-feed"></div>
-      </section>
+      <button class="toss-more-btn" onclick="showToast('상설관 더보기 목록을 불러옵니다.')">더보기</button>
+    </section>
 
-      <!-- BEST 실시간 랭킹 -->
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">BEST 실시간 랭킹</span>
-          <span class="sec-sub" onclick="showToast('전체 랭킹 페이지로 이동합니다.')">전체보기 ›</span>
+    <!-- 섹션 2: 뷰티영 브랜드 기획전 -->
+    <section class="section">
+      <div class="sec-header-wrap">
+        <div class="sec-title-group">
+          <h3>뷰티영 브랜드 기획전</h3>
+          <p>단독 특가로 만나보세요</p>
         </div>
-        <div class="product-grid" id="home-ranking"></div>
-      </section>
-
-      <!-- 예정 라이브 -->
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">예정 라이브</span>
-          <span class="sec-sub" onclick="switchTab('live')">전체보기 ›</span>
-        </div>
-        <div class="live-scroll" id="home-upcoming-lives"></div>
-      </section>
-
-      <!-- 오늘의딜 -->
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">오늘의딜</span>
-          <span class="sec-sub" style="color:#ef4444;font-weight:700;" onclick="switchTab('deal')">전체보기 ›</span>
-        </div>
-        <div class="home-deal-scroll" id="home-deals"></div>
-      </section>
-
-      <!-- 매거진 -->
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">매거진</span>
-          <span class="sec-sub">전체보기 ›</span>
-        </div>
-        <div class="magazine-scroll" id="magazine-list"></div>
-      </section>
-
-      <!-- 최저가보장제 -->
-      <section class="section" style="border-bottom:none;">
-        <div class="lowest-price-card" onclick="showToast('최저가보장제 상세 안내 페이지로 이동합니다.')">
-          <div class="lp-left">
-            <span class="lp-badge">GUARANTEE</span>
-            <span class="lp-title">최저가 보장제</span>
-            <span class="lp-desc">타 플랫폼 대비 비싸면<br>차액의 110% 적립금 지급</span>
-          </div>
-          <div class="lp-right">
-            <svg viewBox="0 0 24 24" style="width:44px;height:44px;stroke:#2563eb;stroke-width:1.5;fill:none;"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- ── 탭: 라이브 ── -->
-    <div class="tab-view active" id="view-live">
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">ON AIR & 방송 예정</span>
-          <span class="sec-sub">전체보기 ›</span>
-        </div>
-        <div class="live-scroll" id="live-carousel"></div>
-      </section>
-
-      <section class="section">
-        <div class="sec-header" style="padding-bottom:8px;">
-          <span class="sec-title">기획 라이브 다시보기</span>
-        </div>
-        <div class="pill-scroll">
-          <div class="pill active" onclick="filterVod('뷰티레시피',this)">뷰티레시피</div>
-          <div class="pill" onclick="filterVod('같이살래',this)">같이살래</div>
-          <div class="pill" onclick="filterVod('박사임당',this)">박사임당</div>
-          <div class="pill" onclick="filterVod('뷰티데스크',this)">뷰티데스크</div>
-          <div class="pill" onclick="filterVod('뷰티극장',this)">뷰티극장</div>
-        </div>
-        <div class="vod-scroll" id="vod-list"></div>
-      </section>
-    </div>
-
-    <!-- ── 탭: 오늘의딜 ── -->
-    <div class="tab-view" id="view-deal">
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">오늘의 라이브 특가</span>
-          <span class="sec-sub" style="color:#ef4444;font-weight:700;">오늘 자정 마감</span>
-        </div>
-        <div class="product-grid" id="deal-grid"></div>
-      </section>
-    </div>
-
-    <!-- ── 탭: 공동구매 ── -->
-    <div class="tab-view" id="view-group">
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">공동구매 진행 중</span>
-          <span class="sec-sub">참여 마감 임박</span>
-        </div>
-        <div class="product-grid" id="group-grid"></div>
-      </section>
-    </div>
-
-    <!-- ── 탭: 체험단 ── -->
-    <div class="tab-view" id="view-trial">
-      <section class="section">
-        <div class="sec-header">
-          <span class="sec-title">무료 체험단 모집</span>
-          <span class="sec-sub">100% 무료 제공</span>
-        </div>
-        <div class="trial-grid" id="trial-grid"></div>
-      </section>
-    </div>
-
-    <!-- ── 탭: 마이 ── -->
-    <div class="tab-view" id="view-my">
-      <div class="my-profile-card">
-        <div class="my-avatar">
-          <svg viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-        </div>
-        <div class="my-profile-info">
-          <div class="my-username" id="my-username-display">로그인이 필요합니다</div>
-          <div class="my-usersub" id="my-usersub-display">라이진 회원으로 더 많은 혜택을 누려보세요</div>
-        </div>
-        <button class="my-edit-btn" id="my-profile-action-btn" onclick="handleProfileAction()">로그인</button>
+        <div class="sec-timer-badge" id="timer-badge-1">00:03</div>
       </div>
 
-      <div class="my-quick-row">
-        <div class="my-quick-item" onclick="openPurchaseHistory()">
-          <span class="my-quick-num" id="quick-order-cnt">0</span>
-          <span class="my-quick-label">주문</span>
-        </div>
-        <div class="my-quick-divider"></div>
-        <div class="my-quick-item" onclick="openDeliveryTracking()">
-          <span class="my-quick-num">0</span>
-          <span class="my-quick-label">배송 중</span>
-        </div>
-        <div class="my-quick-divider"></div>
-        <div class="my-quick-item" onclick="openWishlistModal()">
-          <span class="my-quick-num" id="quick-wish-cnt">0</span>
-          <span class="my-quick-label">찜</span>
-        </div>
-        <div class="my-quick-divider"></div>
-        <div class="my-quick-item" onclick="openTrialHistory()">
-          <span class="my-quick-num" id="quick-trial-cnt">0</span>
-          <span class="my-quick-label">체험단</span>
-        </div>
+      <!-- 토스형 상품 스크롤 2 -->
+      <div class="toss-prod-scroll" id="scroll-section-2">
+        <!-- JS Rendered -->
       </div>
 
-      <div class="my-menu-group">
-        <div class="my-menu-section-label">쇼핑</div>
-        <div class="my-menu-item" onclick="openPurchaseHistory()">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            주문내역
-          </div>
-          <span class="my-menu-arrow">›</span>
+      <button class="toss-more-btn" onclick="showToast('기획전 상품 목록을 더 불러옵니다.')">더보기</button>
+    </section>
+
+    <!-- 섹션 3: 공개 임박 상품 -->
+    <section class="section">
+      <div class="sec-header-wrap">
+        <div class="sec-title-group">
+          <h3>공개 임박 상품</h3>
+          <p>한정 수량 타임세일</p>
         </div>
-        <div class="my-menu-item" onclick="openWishlistModal()">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-            찜 목록
-          </div>
-          <span class="my-menu-arrow">›</span>
-        </div>
-        <div class="my-menu-item" onclick="openTrialHistory()">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
-            체험단 신청내역
-          </div>
-          <span class="my-menu-arrow">›</span>
-        </div>
-        <div class="my-menu-item" onclick="openDeliveryTracking()">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l4 0M13 16l2-4h4l2 4H13z"/></svg>
-            배송조회
-          </div>
-          <span class="my-menu-arrow">›</span>
-        </div>
-        <div class="my-menu-item" onclick="openAddressManagement()">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            배송지 관리
-          </div>
-          <span class="my-menu-arrow">›</span>
-        </div>
+        <div class="sec-timer-badge">00:59</div>
       </div>
 
-      <div class="my-menu-group">
-        <div class="my-menu-section-label">고객지원</div>
-        <div class="my-menu-item" onclick="openNoticeModal()">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-            공지사항
-          </div>
-          <span class="my-menu-arrow">›</span>
-        </div>
-        <div class="my-menu-item" onclick="showToast('고객센터 연결 중입니다.')">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-            고객센터
-          </div>
-          <span class="my-menu-arrow">›</span>
-        </div>
+      <!-- 토스형 상품 스크롤 3 -->
+      <div class="toss-prod-scroll" id="scroll-section-3">
+        <!-- JS Rendered -->
       </div>
 
-      <div class="my-menu-group" id="my-logout-group" style="display:none;">
-        <div class="my-menu-item my-logout" onclick="handleLogout()">
-          <div class="my-menu-left">
-            <svg viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-            로그아웃
-          </div>
-        </div>
-      </div>
-    </div>
+      <button class="toss-more-btn" onclick="showToast('공개 임박 상품 전체보기')">더보기</button>
+    </section>
+
   </main>
 
-  <!-- ───── 바텀 네비 ───── -->
+  <!-- ── 하단 네비 ── -->
   <nav class="bottom-nav">
-    <div class="bnav-item" onclick="switchTab('home')">
-      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-      홈
+    <div class="nav-item active" onclick="switchNav(this)">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span>홈</span>
     </div>
-    <div class="bnav-item active" onclick="switchTab('live')">
-      <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-      라이브
+    <div class="nav-item" onclick="switchNav(this)">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+      <span>국내</span>
     </div>
-    <div class="bnav-item" onclick="switchTab('deal')">
-      <svg viewBox="0 0 24 24"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-      오늘의딜
+    <div class="nav-item" onclick="switchNav(this)">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+      <span>해외</span>
     </div>
-    <div class="bnav-item" onclick="switchTab('group')">
-      <svg viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      공동구매
+    <div class="nav-item" onclick="switchNav(this)">
+      <span class="nav-dot-badge"></span>
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <span>알림</span>
     </div>
-    <div class="bnav-item" onclick="switchTab('my')">
-      <svg viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-      마이
+    <div class="nav-item" onclick="switchNav(this)">
+      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      <span>내 정보</span>
     </div>
   </nav>
 
-</div>
+  <!-- 토스트 -->
+  <div id="toast" style="position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-100px); background:#1e293b; color:#fff; padding:10px 18px; border-radius:30px; font-size:13px; font-weight:600; z-index:999; transition:transform 0.3s ease; white-space:nowrap; border:1px solid #334155;"></div>
 
-<!-- ───── MODAL: 공통 구조 ───── -->
-<div class="modal-overlay" id="common-modal-overlay" onclick="closeCommonModal(event)">
-  <div class="modal-sheet" id="common-modal-sheet" onclick="event.stopPropagation()">
-    <div class="modal-hdr">
-      <span class="modal-hdr-title" id="common-modal-title">상세 정보</span>
-      <button class="modal-close-btn" onclick="closeCommonModal(null)">✕</button>
-    </div>
-    <div class="modal-body" id="common-modal-body"></div>
-  </div>
 </div>
-
-<!-- ───── MODAL: 라이브 시청 ───── -->
-<div class="modal-overlay" id="live-modal">
-  <div class="modal-sheet" style="height: 96vh;">
-    <button class="modal-close-btn" style="position:absolute; top:12px; right:12px; z-index:10; background:rgba(255,255,255,0.2); color:#fff;" onclick="closeLiveModal()">✕</button>
-    <iframe id="modal-iframe" style="width:100%; height:100%; border:none;" src="about:blank" allow="autoplay; fullscreen"></iframe>
-  </div>
-</div>
-
-<!-- ───── TOAST ───── -->
-<div class="toast" id="toast"><span id="toast-msg"></span></div>
 
 <script>
-  /* ──────────────────────────────────────────
-     STATE MANAGEMENT
-  ────────────────────────────────────────── */
-  let state = {
-    user: null,
-    likes: [],
-    appliedTrials: [
-      { id: 'trial_default', brand: '아이오페', name: '레티놀 링클 세럼 체험단 2기', status: '선정 완료', date: '2025-07-20', reason: '꼼꼼하게 품평하겠습니다.', address: '서울시 강남구 테헤란로 123' }
-    ],
-    orders: [],
-    notifications: [
-      { id: 1, title: '설화수 라이브 시작!', desc: '설화수 리미티드 에디션 단독 특가 방송이 방금 시작되었습니다.', time: '방금 전' },
-      { id: 2, title: '체험단 발표', desc: '축하합니다! 아이오페 레티놀 링클 세럼 체험단에 선정되셨습니다.', time: '2시간 전' }
-    ],
-    addresses: ['서울시 강남구 테헤란로 123 (역삼동, 라이진타워 5층)']
-  };
-
-  function loadState() {
-    const saved = localStorage.getItem('ryzin_shop_state');
-    if (saved) {
-      try {
-        state = { ...state, ...JSON.parse(saved) };
-      } catch (e) {
-        console.error('State load error:', e);
-      }
-    }
-  }
-
-  function saveState() {
-    localStorage.setItem('ryzin_shop_state', JSON.stringify(state));
-    renderMyPageInfo();
-  }
-
-  /* ──────────────────────────────────────────
-     PRODUCT / CONTENT DATA
-  ────────────────────────────────────────── */
-  const LIVES = [
-    { id: 'live_beauty_01', title: '설화수 X 라이진 — 자음수 리미티드 에디션 단독 특가', time: 'ON AIR', isLive: true, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85' },
-    { id: 'live_beauty_02', title: '에이피뷰티 에어리 선 세럼 50ml 신제품 론칭 라이브', time: '07.23 (목) 11:00', isLive: false, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85' },
-    { id: 'live_beauty_03', title: '아이오페 레티놀 링클 세럼 × 피부과 전문의 라이브 Q&A', time: '07.24 (금) 14:00', isLive: false, img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=600&q=85' }
-  ];
-
-  const VODS = [
-    { id: 'vod_01', title: '[뷰티레시피] 설화수 X 프리메라 — 수분 케어 루틴', views: '8,214', tag: '뷰티레시피', img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=85', product: { name: '자음생 에센스 50ml', price: '78,000원', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=120&q=80' } },
-    { id: 'vod_02', title: '[뷰티레시피] 아이오페 레티놀 × 이니스프리 수분 베이스', views: '6,440', tag: '뷰티레시피', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85', product: { name: '레티놀 링클 세럼 30ml', price: '88,000원', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=120&q=80' } }
-  ];
-
-  const RANKING = [
-    { id: 'prod_rank_01', brand: '오쏘몰', name: '독일 1위 이뮨 멀티비타민&미네랄 8입+7일분', price: '34,000원', benefit: '최대혜택가 31,000원', exclusive: true, tags: ['무료배송', '증정품 포함'], img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=85', rank: 1 },
-    { id: 'prod_rank_02', brand: '에버콜라겐', name: '대한민국1등 타임 50포 기획 구성', price: '44,900원', benefit: null, exclusive: false, tags: ['무료배송'], img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85', rank: 2 },
-    { id: 'prod_rank_03', brand: '설화수', name: '자음생 에센스 30ml 단독 패키지', price: '92,000원', benefit: '혜택가 79,000원', exclusive: true, tags: ['무료배송'], img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85', rank: 3 }
-  ];
-
-  const DEALS = [
-    { id: 'deal_01', brand: '에이피뷰티', name: '에어리 선 세럼 50ml SPF50+ + 사은품 3종', price: '38,500원', origin: '70,000원', discount: '45%', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85', stock: 75, timeLeft: 86400 },
-    { id: 'deal_02', brand: '아이오페', name: '레티놀 링클 세럼 리미티드 에디션 30ml', price: '61,600원', origin: '88,000원', discount: '30%', img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=85', stock: 40, timeLeft: 43200 }
-  ];
-
-  const GROUP_BUYS = [
-    { id: 'group_01', brand: '설화수', name: '자음생 에센스 30ml 공동구매', price: '69,000원', origin: '92,000원', discount: '25%', target: 300, current: 187, deadline: '~07.26 마감', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85' },
-    { id: 'group_02', brand: '아이오페', name: '레티놀 링클 세럼 30ml 공동구매 2기', price: '55,000원', origin: '88,000원', discount: '38%', target: 500, current: 412, deadline: '~07.28 마감', img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=85' }
-  ];
-
-  const TRIALS = [
-    { id: 'trial_01', brand: '에이피뷰티', name: '에어리 선 세럼 50ml 1기 체험단 모집', spots: '100명 모집', deadline: '~07.28 마감', img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=85' },
-    { id: 'trial_02', brand: '아이오페', name: '레티놀 링클 세럼 뷰티 체험단 2기', spots: '50명 모집', deadline: '~07.30 마감', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85' }
-  ];
-
-  const MAGAZINES = [
+  const PRODUCTS_SET_1 = [
     {
-      id: 'mag_01',
-      series: '라이진 뷰티 사전', ep: 'Ep.01',
-      title: '어쩌다 보니 내 파우치가 라이진 쇼룸이 되었어요',
-      desc: '뷰티 에디터 정은님은 3년 전 라이진 라이브를 처음 접했습니다. 지금은 화장대 수납장을 열면 전부 라이진 제품입니다.',
-      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
-      products: [
-        'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=120&q=80',
-        'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=120&q=80'
-      ]
+      id: 'toss_01',
+      brandTitle: '코코팜 네이처바이 알로에 에센스 팩 100매',
+      salePrice: '10,000원',
+      originPrice: '50,000원',
+      discount: '80% 특가',
+      rating: '4.7',
+      reviews: '466',
+      chips: [{ text: '내일출발', class: 'chip-ship' }, { text: '최저가보상', class: 'chip-guarantee' }, { text: '베스트판매자', class: 'chip-best' }],
+      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_02',
+      brandTitle: '필링빈 페이셜 커피스크럽 클렌저 60g',
+      salePrice: '9,300원',
+      originPrice: '22,000원',
+      discount: '57% 특가',
+      rating: '5.0',
+      reviews: '11',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_03',
+      brandTitle: '참존 탑글램 타임 케어 리프팅 크림 50ml',
+      salePrice: '14,900원',
+      originPrice: '70,000원',
+      discount: '70% 특가',
+      rating: '4.7',
+      reviews: '459',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=85'
     }
   ];
 
-  /* ──────────────────────────────────────────
-     TOAST & MODAL CONTROL
-  ────────────────────────────────────────── */
-  function showToast(msg) {
-    const el = document.getElementById('toast');
-    document.getElementById('toast-msg').textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2500);
-  }
-
-  function openCommonModal(title, html) {
-    document.getElementById('common-modal-title').textContent = title;
-    document.getElementById('common-modal-body').innerHTML = html;
-    document.getElementById('common-modal-overlay').classList.add('open');
-  }
-
-  function closeCommonModal(e) {
-    if (e && e.target !== document.getElementById('common-modal-overlay')) return;
-    document.getElementById('common-modal-overlay').classList.remove('open');
-  }
-
-  function openLiveModal(id) {
-    const modal = document.getElementById('live-modal');
-    const iframe = document.getElementById('modal-iframe');
-    const base = location.origin.includes('localhost') ? 'http://localhost:8080/live/' : '/live/';
-    iframe.src = base + '?id=' + id;
-    modal.classList.add('open');
-  }
-
-  function closeLiveModal() {
-    document.getElementById('live-modal').classList.remove('open');
-    document.getElementById('modal-iframe').src = 'about:blank';
-  }
-
-  function switchTab(name) {
-    document.querySelectorAll('.top-nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`[data-tab="${name}"]`)?.classList.add('active');
-
-    document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + name)?.classList.add('active');
-
-    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
-    const navMap = { home: 0, live: 1, deal: 2, group: 3, my: 4 };
-    if (navMap[name] !== undefined) {
-      document.querySelectorAll('.bnav-item')[navMap[name]]?.classList.add('active');
+  const PRODUCTS_SET_2 = [
+    {
+      id: 'toss_04',
+      brandTitle: '에이지랩 스네일 뮤신 브라이트닝 크림 50ml',
+      salePrice: '9,900원',
+      originPrice: '50,000원',
+      unitPrice: '10ml 당 708원',
+      discount: '80% 특가',
+      rating: '4.6',
+      reviews: '560',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_05',
+      brandTitle: '르베르다 천연 비누 무배 체험 샘플 키트',
+      salePrice: '1,000원',
+      originPrice: '6,000원',
+      discount: '83% 특가',
+      rating: '4.9',
+      reviews: '1,204',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1608248597263-00079e965874?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_06',
+      brandTitle: '젠바이오 수분 장벽 보습 수딩 크림 100ml',
+      salePrice: '16,500원',
+      originPrice: '38,000원',
+      discount: '57% 특가',
+      rating: '5.0',
+      reviews: '18',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85'
     }
-  }
+  ];
 
-  /* ──────────────────────────────────────────
-     AUTHENTICATION / ONBOARDING
-  ────────────────────────────────────────── */
-  function checkAuth(callback) {
-    if (state.user) {
-      callback();
-    } else {
-      openLoginModal(callback);
+  const PRODUCTS_SET_3 = [
+    {
+      id: 'toss_07',
+      brandTitle: '코노피 코 괄사기 페이셜 마사지 1개',
+      salePrice: '13,400원',
+      originPrice: '25,900원',
+      discount: '48% 특가',
+      rating: '5.0',
+      reviews: '1',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_08',
+      brandTitle: '코노피 코 라인 보정기 민트 케어 세트',
+      salePrice: '21,400원',
+      originPrice: '29,900원',
+      discount: '28% 특가',
+      rating: '4.0',
+      reviews: '2',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_09',
+      brandTitle: '뷰티영 코노피 리프팅 크림 10ml 단독세트',
+      salePrice: '33,400원',
+      originPrice: '59,900원',
+      discount: '44% 특가',
+      rating: '4.8',
+      reviews: '150',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1512290900673-700204739190?auto=format&fit=crop&w=400&q=85'
     }
-  }
+  ];
 
-  function openLoginModal(onSuccess) {
-    const html = `
-      <div style="text-align:center; padding:10px 0;">
-        <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">가입하고 멤버십 혜택을 누리세요</h3>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">소셜 로그인으로 3초만에 가입 완료</p>
-        <div class="login-btn-group">
-          <button class="social-login-btn btn-kakao" onclick="processSocialLogin('Kakao', ${onSuccess ? onSuccess.toString() : 'null'})">
-            Kakao 계정으로 계속하기
-          </button>
-          <button class="social-login-btn btn-apple" onclick="processSocialLogin('Apple', ${onSuccess ? onSuccess.toString() : 'null'})">
-            Apple ID로 계속하기
-          </button>
-          <button class="social-login-btn btn-email" onclick="toggleEmailLoginForm()">
-            이메일로 로그인/회원가입
-          </button>
-        </div>
-        <div class="email-login-form" id="email-login-fields">
-          <input type="email" class="login-input" id="email-input" placeholder="이메일 주소">
-          <input type="password" class="login-input" id="password-input" placeholder="비밀번호">
-          <button class="submit-action-btn" onclick="processEmailLogin(${onSuccess ? onSuccess.toString() : 'null'})">로그인 / 회원가입</button>
-        </div>
-      </div>
-    `;
-    openCommonModal('로그인 / 온보딩', html);
-  }
-
-  function toggleEmailLoginForm() {
-    const el = document.getElementById('email-login-fields');
-    el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
-  }
-
-  function processSocialLogin(provider, cb) {
-    state.user = {
-      name: provider === 'Kakao' ? '이지은' : '박준호',
-      email: `${provider.toLowerCase()}@ryzincorp.com`,
-      provider: provider
-    };
-    saveState();
-    closeCommonModal();
-    showToast(`${provider} 계정으로 로그인되었습니다.`);
-    if (cb) cb();
-  }
-
-  function processEmailLogin(cb) {
-    const email = document.getElementById('email-input').value.trim();
-    if (!email) {
-      showToast('이메일을 입력해주세요.');
-      return;
-    }
-    state.user = {
-      name: email.split('@')[0],
-      email: email,
-      provider: 'email'
-    };
-    saveState();
-    closeCommonModal();
-    showToast('이메일로 로그인 완료되었습니다.');
-    if (cb) cb();
-  }
-
-  function handleLogout() {
-    state.user = null;
-    saveState();
-    showToast('로그아웃 되었습니다.');
-    switchTab('home');
-  }
-
-  function handleProfileAction() {
-    if (state.user) {
-      openProfileEditModal();
-    } else {
-      openLoginModal();
-    }
-  }
-
-  /* ──────────────────────────────────────────
-     PRODUCT SEARCH & FILTER
-  ────────────────────────────────────────── */
-  function openSearchModal() {
-    const html = `
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <div style="position:relative;">
-          <input type="text" class="login-input" id="search-query-input" placeholder="검색어를 입력해 주세요" oninput="performSearch()" style="padding-left:44px;">
-          <svg viewBox="0 0 24 24" style="position:absolute; left:14px; top:15px; width:18px; height:18px; stroke:var(--text-muted); stroke-width:2.2; fill:none;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        </div>
-        <div>
-          <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:10px;">카테고리 필터</div>
-          <div class="pill-scroll" style="padding:0;">
-            <div class="pill active" id="filter-cat-all" onclick="setSearchFilter('전체', this)">전체</div>
-            <div class="pill" onclick="setSearchFilter('설화수', this)">설화수</div>
-            <div class="pill" onclick="setSearchFilter('아이오페', this)">아이오페</div>
-            <div class="pill" onclick="setSearchFilter('에이피뷰티', this)">에이피뷰티</div>
-          </div>
-        </div>
-        <div id="search-results-box" style="margin-top:10px;">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <span>검색어를 입력하시면 상품을 찾아드립니다.</span>
-          </div>
-        </div>
-      </div>
-    `;
-    openCommonModal('상품 검색', html);
-  }
-
-  let activeSearchCategory = '전체';
-  function setSearchFilter(cat, btn) {
-    document.querySelectorAll('#common-modal-body .pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    activeSearchCategory = cat;
-    performSearch();
-  }
-
-  function performSearch() {
-    const q = document.getElementById('search-query-input').value.toLowerCase().trim();
-    const box = document.getElementById('search-results-box');
-
-    // 합산 상품 데이터
-    const allProducts = [
-      ...RANKING.map(p => ({ ...p, type: 'ranking' })),
-      ...DEALS.map(p => ({ ...p, type: 'deal' })),
-      ...GROUP_BUYS.map(p => ({ ...p, type: 'group' }))
-    ];
-
-    let filtered = allProducts.filter(p => {
-      const matchQuery = p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
-      const matchCat = activeSearchCategory === '전체' || p.brand === activeSearchCategory;
-      return matchQuery && matchCat;
-    });
-
-    if (!q && activeSearchCategory === '전체') {
-      box.innerHTML = `
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <span>검색어를 입력하시면 상품을 찾아드립니다.</span>
-        </div>
-      `;
-      return;
-    }
-
-    if (!filtered.length) {
-      box.innerHTML = `
-        <div class="empty-state">
-          <span>검색 결과가 없습니다.</span>
-        </div>
-      `;
-      return;
-    }
-
-    box.innerHTML = `
-      <div class="product-grid" style="padding:0;">
-        ${filtered.map(p => `
-          <div class="prod-card" onclick="openProductDetail('${p.type}', '${p.id}')">
-            <div class="prod-img-wrap">
-              <img src="${p.img}" alt="${p.name}">
-            </div>
-            <div class="prod-info">
-              <div class="prod-brand">${p.brand}</div>
-              <div class="prod-name" style="font-size:11px;">${p.name}</div>
-              <div class="prod-price">${p.price}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }
-
-  /* ──────────────────────────────────────────
-     NOTIFICATION CENTER & SETTINGS
-  ────────────────────────────────────────── */
-  function openNotificationModal() {
-    const badge = document.getElementById('notif-badge');
-    badge.style.display = 'none';
-
-    let html = `
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:12px; font-weight:800; color:var(--text-muted);">알림 수신 설정</span>
-          <button class="my-edit-btn" onclick="openNotifSettings()" style="font-size:11px; padding:4px 12px;">설정 관리</button>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:2px;">
-          ${state.notifications.map(n => `
-            <div class="notif-item">
-              <div class="notif-hdr">
-                <span class="notif-title">${n.title}</span>
-                <span class="notif-time">${n.time}</span>
-              </div>
-              <p class="notif-desc">${n.desc}</p>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-    openCommonModal('알림 센터', html);
-  }
-
-  function openNotifSettings() {
-    const html = `
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px;">
-          <div>
-            <div style="font-size:14px; font-weight:800;">쇼핑 혜택 / 특가 알림</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">맞춤 오늘의 딜 및 공동구매 정보 수신</div>
-          </div>
-          <input type="checkbox" checked style="width:20px; height:20px; accent-color:#000;">
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px;">
-          <div>
-            <div style="font-size:14px; font-weight:800;">라이브 커머스 온에어 알림</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">즐겨찾는 브랜드 라이브 송출 시 즉시 알림</div>
-          </div>
-          <input type="checkbox" checked style="width:20px; height:20px; accent-color:#000;">
-        </div>
-        <button class="submit-action-btn" onclick="saveNotifSettings()">설정 저장</button>
-      </div>
-    `;
-    openCommonModal('알림 환경설정', html);
-  }
-
-  function saveNotifSettings() {
-    closeCommonModal();
-    showToast('알림 환경설정이 저장되었습니다.');
-  }
-
-  /* ──────────────────────────────────────────
-     PRODUCT DETAIL MODAL (GROUP BUY / DEAL / TRIAL)
-  ────────────────────────────────────────── */
-  function openProductDetail(type, id) {
-    let item;
-    if (type === 'group') item = GROUP_BUYS.find(p => p.id === id);
-    if (type === 'deal') item = DEALS.find(p => p.id === id);
-    if (type === 'trial') item = TRIALS.find(p => p.id === id);
-    if (type === 'ranking') item = RANKING.find(p => p.id === id);
-
-    if (!item) return;
-
-    let specificSectionHtml = '';
-    let bottomCtaHtml = '';
-
-    if (type === 'group') {
-      const currentPct = Math.round((item.current / item.target) * 100);
-      specificSectionHtml = `
-        <div style="margin-top:16px; background:#f9fafb; padding:16px; border-radius:12px; border:1px solid var(--border);">
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800;">
-            <span>공동구매 목표 달성률</span>
-            <span style="color:var(--primary);">${item.current}명 / ${item.target}명 (${currentPct}%)</span>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar-fill" style="width:${currentPct}%;"></div>
-          </div>
-          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">목록 달성 시 적용 단가: ${item.price} (현재 ${item.discount} 자동 할인)</div>
-        </div>
-      `;
-      bottomCtaHtml = `
-        <button class="submit-action-btn" style="flex:1;" onclick="handleCheckout('${type}', '${item.id}')">공동구매 즉시 참여</button>
-      `;
-    } else if (type === 'deal') {
-      specificSectionHtml = `
-        <div style="margin-top:16px; background:#f9fafb; padding:16px; border-radius:12px; border:1px solid var(--border);">
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:8px;">
-            <span>한정 수량 남은 잔여 재고</span>
-            <span style="color:var(--primary);">남은 수량 ${item.stock}%</span>
-          </div>
-          <div style="height:6px; background:#e5e7eb; border-radius:3px; overflow:hidden;">
-            <div style="background:var(--primary); height:100%; width:${item.stock}%;"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-top:12px;">
-            <span>오늘의 딜 마감 시간</span>
-            <span style="color:#2563eb;" id="deal-timer-detail">남은 시간 계산 중</span>
-          </div>
-        </div>
-      `;
-      bottomCtaHtml = `
-        <button class="submit-action-btn" style="flex:1;" onclick="handleCheckout('${type}', '${item.id}')">바로 구매하기</button>
-      `;
-    } else if (type === 'trial') {
-      specificSectionHtml = `
-        <div style="margin-top:16px; background:#f9fafb; padding:16px; border-radius:12px; border:1px solid var(--border);">
-          <div style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:4px;">체험단 진행 일정</div>
-          <div style="font-size:12px; color:var(--text-sub); line-height:1.5;">
-            모집 인원: ${item.spots}<br>
-            신청 마감: ${item.deadline}<br>
-            선정 발표: 마감일 1일 후 마이페이지 공지
-          </div>
-        </div>
-      `;
-      bottomCtaHtml = `
-        <button class="submit-action-btn" style="flex:1;" onclick="handleApplyTrial('${item.id}')">체험단 무료 신청</button>
-      `;
-    } else {
-      bottomCtaHtml = `
-        <button class="submit-action-btn" style="flex:1;" onclick="window.location.href='/shop/product.html'">상세 보기</button>
-      `;
-    }
-
-    const isLiked = state.likes.includes(item.id);
-    const likeIconColor = isLiked ? 'var(--primary)' : 'none';
-    const likeStrokeColor = isLiked ? 'var(--primary)' : '#111827';
-
-    const html = `
-      <div style="display:flex; flex-direction:column; padding-bottom:50px;">
-        <div class="detail-hero">
-          <img src="${item.img}" alt="${item.name}">
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-          <div>
-            <div style="font-size:13px; font-weight:800; color:var(--text-muted);">${item.brand}</div>
-            <h2 style="font-size:18px; font-weight:900; color:var(--text-main); margin-top:4px; line-height:1.35;">${item.name}</h2>
-          </div>
-          <button class="hdr-btn" onclick="toggleLike('${item.id}', this)" style="background:#f3f4f6;">
-            <svg viewBox="0 0 24 24" style="fill:${likeIconColor}; stroke:${likeStrokeColor};"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-          </button>
-        </div>
-        <div style="margin-top:12px; display:flex; align-items:baseline; gap:8px;">
-          ${item.discount ? `<span style="font-size:20px; font-weight:900; color:var(--primary);">${item.discount}</span>` : ''}
-          <span style="font-size:20px; font-weight:900; color:var(--text-main);">${item.price}</span>
-          ${item.origin ? `<span style="font-size:12px; color:var(--text-muted); text-decoration:line-through;">${item.origin}</span>` : ''}
-        </div>
-        ${specificSectionHtml}
-        <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px;">
-          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px;">
-            <span style="color:var(--text-muted);">배송 혜택</span>
-            <span style="font-weight:700; color:var(--text-main);">무료배송 (도서산간 제외)</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:13px;">
-            <span style="color:var(--text-muted);">반품 안내</span>
-            <span style="font-weight:700; color:var(--text-main);">수령 후 7일 이내 가능</span>
-          </div>
-        </div>
-      </div>
-      <div class="detail-bottom-cta">
-        <button class="hdr-btn" onclick="shareProduct('${item.name}')" style="background:#f3f4f6; width:48px; height:48px;">
-          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-        </button>
-        ${bottomCtaHtml}
-      </div>
-    `;
-    openCommonModal('상품 상세 정보', html);
-
-    if (type === 'deal') {
-      startDetailCountdown(item.timeLeft);
-    }
-  }
-
-  function toggleLike(id, btn) {
-    const idx = state.likes.indexOf(id);
-    if (idx > -1) {
-      state.likes.splice(idx, 1);
-      btn.querySelector('svg').style.fill = 'none';
-      btn.querySelector('svg').style.stroke = '#111827';
-      showToast('찜 해제되었습니다.');
-    } else {
-      state.likes.push(id);
-      btn.querySelector('svg').style.fill = 'var(--primary)';
-      btn.querySelector('svg').style.stroke = 'var(--primary)';
-      showToast('찜 목록에 추가되었습니다.');
-    }
-    saveState();
-    renderMyPageInfo();
-  }
-
-  function shareProduct(name) {
-    navigator.clipboard.writeText(window.location.href);
-    showToast('공유 링크가 클립보드에 복사되었습니다.');
-  }
-
-  let detailTimerInterval = null;
-  function startDetailCountdown(secs) {
-    if (detailTimerInterval) clearInterval(detailTimerInterval);
-    let rem = secs;
-    const el = document.getElementById('deal-timer-detail');
+  function renderTossScroll(containerId, list) {
+    const el = document.getElementById(containerId);
     if (!el) return;
 
-    function update() {
-      if (rem <= 0) {
-        el.textContent = '종료된 딜';
-        clearInterval(detailTimerInterval);
-        return;
-      }
-      const h = Math.floor(rem / 3600);
-      const m = Math.floor((rem % 3600) / 60);
-      const s = rem % 60;
-      el.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} 남음`;
-      rem--;
-    }
-    update();
-    detailTimerInterval = setInterval(update, 1000);
-  }
-
-  /* ──────────────────────────────────────────
-     CHECKOUT FLOW / GROUP BUY JOIN
-  ────────────────────────────────────────── */
-  function handleCheckout(type, id) {
-    checkAuth(() => {
-      let item;
-      if (type === 'group') item = GROUP_BUYS.find(p => p.id === id);
-      if (type === 'deal') item = DEALS.find(p => p.id === id);
-      if (!item) return;
-
-      const defaultAddress = state.addresses[0] || '배송지를 입력해주세요.';
-      const html = `
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div style="border-bottom:1px solid var(--border); padding-bottom:14px;">
-            <div style="font-size:12px; font-weight:800; color:var(--text-muted);">구매 상품</div>
-            <div style="display:flex; gap:10px; margin-top:8px; align-items:center;">
-              <img src="${item.img}" alt="${item.name}" style="width:50px; height:50px; border-radius:8px; object-fit:cover;">
-              <div>
-                <div style="font-size:13px; font-weight:800;">${item.name}</div>
-                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">구성: 기본 패키지</div>
-              </div>
-            </div>
-          </div>
-          <div style="border-bottom:1px solid var(--border); padding-bottom:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:12px; font-weight:800; color:var(--text-muted);">배송지 정보</span>
-              <button class="my-edit-btn" onclick="openAddressManagement()" style="font-size:11px; padding:4px 12px;">변경</button>
-            </div>
-            <div style="font-size:13px; font-weight:700; color:var(--text-main); margin-top:6px;" id="checkout-address-val">${defaultAddress}</div>
-          </div>
-          <div>
-            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:8px;">최종 결제 금액</div>
-            <div style="display:flex; justify-content:space-between; align-items:baseline;">
-              <span style="font-size:22px; font-weight:900; color:var(--text-main);">${item.price}</span>
-              <span style="font-size:12px; color:var(--text-muted);">무료배송 및 자동 ${item.discount || '0%'} 즉시할인 적용됨</span>
-            </div>
-          </div>
-          <button class="submit-action-btn" onclick="confirmPayment('${type}', '${item.id}')">결제하기 (체크아웃)</button>
-        </div>
-      `;
-      openCommonModal('결제 처리', html);
-    });
-  }
-
-  function confirmPayment(type, id) {
-    let item;
-    if (type === 'group') item = GROUP_BUYS.find(p => p.id === id);
-    if (type === 'deal') item = DEALS.find(p => p.id === id);
-    if (!item) return;
-
-    if (type === 'group') {
-      item.current++;
-    }
-
-    const order = {
-      id: 'RZN_' + Math.floor(Math.random() * 900000 + 100000),
-      title: item.name,
-      price: item.price,
-      img: item.img,
-      date: new Date().toLocaleDateString('ko-KR')
-    };
-
-    state.orders.push(order);
-    saveState();
-
-    const html = `
-      <div style="text-align:center; padding:20px 0;">
-        <svg viewBox="0 0 24 24" style="width:48px; height:48px; stroke:#22c55e; stroke-width:2.2; fill:none; margin:0 auto 14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <h3 style="font-size:18px; font-weight:900; margin-bottom:8px;">주문 결제 확인</h3>
-        <p style="font-size:13px; color:var(--text-sub); line-height:1.5;">성공적으로 주문이 접수되었습니다.<br>주문번호: <strong>${order.id}</strong></p>
-        <button class="submit-action-btn" onclick="closeCommonModal()" style="margin-top:20px;">쇼핑 계속하기</button>
-      </div>
-    `;
-    openCommonModal('주문 완료', html);
-    renderGroupBuys();
-  }
-
-  /* ──────────────────────────────────────────
-     TRIAL RECRUITMENT FLOW
-  ────────────────────────────────────────── */
-  function handleApplyTrial(trialId) {
-    checkAuth(() => {
-      const item = TRIALS.find(t => t.id === trialId);
-      if (!item) return;
-
-      const html = `
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div>
-            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">대상 상품</div>
-            <div style="font-size:14px; font-weight:800;">${item.name}</div>
-          </div>
-          <div>
-            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">배송 주소</div>
-            <input type="text" class="login-input" id="trial-address-input" value="${state.addresses[0] || ''}" placeholder="배송 받으실 정확한 주소">
-          </div>
-          <div>
-            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">신청 사유 및 포부</div>
-            <textarea class="login-input" id="trial-reason-input" style="height:100px; padding:12px; resize:none;" placeholder="작성된 리뷰는 마케팅 용도로 사용될 수 있습니다."></textarea>
-          </div>
-          <button class="submit-action-btn" onclick="submitTrialApplication('${item.id}')">무료 체험단 신청하기</button>
-        </div>
-      `;
-      openCommonModal('체험단 신청', html);
-    });
-  }
-
-  function submitTrialApplication(id) {
-    const addr = document.getElementById('trial-address-input').value.trim();
-    const reason = document.getElementById('trial-reason-input').value.trim();
-
-    if (!addr || !reason) {
-      showToast('배송 주소와 신청 사유를 정확하게 입력해 주세요.');
-      return;
-    }
-
-    const item = TRIALS.find(t => t.id === id);
-    if (!item) return;
-
-    state.appliedTrials.push({
-      id: item.id,
-      brand: item.brand,
-      name: item.name,
-      status: '심사 진행 중',
-      date: new Date().toLocaleDateString('ko-KR'),
-      reason: reason,
-      address: addr
-    });
-
-    saveState();
-    closeCommonModal();
-
-    const successHtml = `
-      <div style="text-align:center; padding:20px 0;">
-        <svg viewBox="0 0 24 24" style="width:48px; height:48px; stroke:#22c55e; stroke-width:2.2; fill:none; margin:0 auto 14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <h3 style="font-size:17px; font-weight:900; margin-bottom:8px;">체험단 신청 접수 완료</h3>
-        <p style="font-size:13px; color:var(--text-sub);">선정 발표일에 선정 결과 알림이 푸시로 자동 전송됩니다.</p>
-        <button class="submit-action-btn" onclick="closeCommonModal()" style="margin-top:20px;">확인</button>
-      </div>
-    `;
-    openCommonModal('신청 완료', successHtml);
-  }
-
-  /* ──────────────────────────────────────────
-     MY PAGE DETAILS
-  ────────────────────────────────────────── */
-  function openPurchaseHistory() {
-    checkAuth(() => {
-      let ordersHtml = '';
-      if (!state.orders.length) {
-        ordersHtml = `
-          <div class="empty-state">
-            <span>주문하신 상품 내역이 존재하지 않습니다.</span>
-          </div>
-        `;
-      } else {
-        ordersHtml = `
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            ${state.orders.map(o => `
-              <div style="display:flex; gap:12px; border-bottom:1px solid var(--border); padding-bottom:12px; align-items:center;">
-                <img src="${o.img}" alt="${o.title}" style="width:52px; height:52px; border-radius:8px; object-fit:cover;">
-                <div style="flex:1;">
-                  <div style="font-size:11px; color:var(--text-muted);">${o.date} | 주문번호 ${o.id}</div>
-                  <div style="font-size:13px; font-weight:800; margin-top:2px;">${o.title}</div>
-                  <div style="font-size:13px; font-weight:900; margin-top:2px;">${o.price}</div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-      openCommonModal('구매 내역', ordersHtml);
-    });
-  }
-
-  function openWishlistModal() {
-    let items = [];
-    const all = [...RANKING, ...DEALS, ...GROUP_BUYS];
-    state.likes.forEach(id => {
-      const match = all.find(p => p.id === id);
-      if (match) items.push(match);
-    });
-
-    let html = '';
-    if (!items.length) {
-      html = `
-        <div class="empty-state">
-          <span>찜하신 관심 상품이 없습니다.</span>
-        </div>
-      `;
-    } else {
-      html = `
-        <div class="product-grid" style="padding:0;">
-          ${items.map(p => `
-            <div class="prod-card" onclick="openProductDetail('ranking', '${p.id}')">
-              <div class="prod-img-wrap">
-                <img src="${p.img}" alt="${p.name}">
-              </div>
-              <div class="prod-info">
-                <div class="prod-brand">${p.brand}</div>
-                <div class="prod-name" style="font-size:11px;">${p.name}</div>
-                <div class="prod-price">${p.price}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-    openCommonModal('관심 상품 목록', html);
-  }
-
-  function openTrialHistory() {
-    checkAuth(() => {
-      let html = '';
-      if (!state.appliedTrials.length) {
-        html = `
-          <div class="empty-state">
-            <span>체험단 신청 이력이 없습니다.</span>
-          </div>
-        `;
-      } else {
-        html = `
-          <div style="display:flex; flex-direction:column; gap:14px;">
-            ${state.appliedTrials.map(t => `
-              <div style="border-bottom:1px solid var(--border); padding-bottom:14px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-size:11px; color:var(--text-muted);">${t.date}</span>
-                  <span style="font-size:11px; font-weight:800; color:${t.status === '선정 완료' ? 'var(--primary)' : '#2563eb'}">${t.status}</span>
-                </div>
-                <div style="font-size:13px; font-weight:800; margin-top:4px;">[${t.brand}] ${t.name}</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">제출한 사유: ${t.reason}</div>
-                ${t.status === '선정 완료' ? `<button class="submit-action-btn" style="height:34px; font-size:12px; margin-top:8px; background:#f3f4f6; color:var(--text-main); border:1px solid var(--border);" onclick="openReviewModal('${t.id}')">리뷰 작성하기</button>` : ''}
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-      openCommonModal('체험단 신청내역', html);
-    });
-  }
-
-  function openReviewModal(trialId) {
-    const html = `
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <div>
-          <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">피부 타입 / 만족도 만족 평점</div>
-          <select class="login-input" id="review-rating-select">
-            <option value="5">★★★★★ 아주 만족스러움 (5점)</option>
-            <option value="4">★★★★ 만족스러움 (4점)</option>
-            <option value="3">★★★ 보통 (3점)</option>
-            <option value="2">★★ 아쉬움 (2점)</option>
-            <option value="1">★ 아주 불만족 (1점)</option>
-          </select>
-        </div>
-        <div>
-          <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">리뷰 내용</div>
-          <textarea class="login-input" id="review-content-input" style="height:120px; padding:12px; resize:none;" placeholder="실제 사용해보신 후 정직한 경험을 나누어 주세요."></textarea>
-        </div>
-        <button class="submit-action-btn" onclick="submitReview('${trialId}')">리뷰 등록 완료</button>
-      </div>
-    `;
-    openCommonModal('체험단 솔직 리뷰 작성', html);
-  }
-
-  function submitReview(trialId) {
-    const rating = document.getElementById('review-rating-select').value;
-    const content = document.getElementById('review-content-input').value.trim();
-
-    if (!content) {
-      showToast('리뷰 내용을 입력해 주세요.');
-      return;
-    }
-
-    closeCommonModal();
-    showToast('리뷰가 정상 등록되었습니다. 적립금 1,000원이 지급되었습니다.');
-  }
-
-  function openDeliveryTracking() {
-    checkAuth(() => {
-      const html = `
-        <div style="text-align:center; padding:20px 0;">
-          <svg viewBox="0 0 24 24" style="width:44px; height:44px; stroke:#2563eb; stroke-width:2; fill:none; margin:0 auto 12px;"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l4 0M13 16l2-4h4l2 4H13z"/></svg>
-          <div style="font-size:14px; font-weight:800; color:var(--text-main);">현재 배송 중인 상품이 존재하지 않습니다.</div>
-          <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">주문이 최종 완료된 후 배송 조회가 활성화됩니다.</p>
-        </div>
-      `;
-      openCommonModal('실시간 배송조회', html);
-    });
-  }
-
-  function openAddressManagement() {
-    checkAuth(() => {
-      const current = state.addresses[0] || '';
-      const html = `
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <div>
-            <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">기본 배송지 주소</div>
-            <input type="text" class="login-input" id="address-manage-input" value="${current}">
-          </div>
-          <button class="submit-action-btn" onclick="saveAddress()">배송지 주소 저장</button>
-        </div>
-      `;
-      openCommonModal('배송지 정보 관리', html);
-    });
-  }
-
-  function saveAddress() {
-    const val = document.getElementById('address-manage-input').value.trim();
-    if (!val) {
-      showToast('주소를 입력해 주세요.');
-      return;
-    }
-    state.addresses[0] = val;
-    saveState();
-    closeCommonModal();
-    showToast('기본 배송지 주소가 정상 변경되었습니다.');
-  }
-
-  function openProfileEditModal() {
-    const html = `
-      <div style="display:flex; flex-direction:column; gap:16px;">
-        <div>
-          <div style="font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:6px;">닉네임 변경</div>
-          <input type="text" class="login-input" id="profile-nickname-input" value="${state.user.name}">
-        </div>
-        <button class="submit-action-btn" onclick="saveProfileNickname()">정보 변경 완료</button>
-      </div>
-    `;
-    openCommonModal('프로필 정보 수정', html);
-  }
-
-  function saveProfileNickname() {
-    const val = document.getElementById('profile-nickname-input').value.trim();
-    if (!val) return;
-    state.user.name = val;
-    saveState();
-    closeCommonModal();
-    showToast('닉네임 정보가 정상 변경되었습니다.');
-  }
-
-  function openNoticeModal() {
-    const html = `
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        <div style="border-bottom:1px solid var(--border); padding-bottom:12px;">
-          <div style="font-size:11px; color:var(--text-muted);">2025.07.15</div>
-          <div style="font-size:14px; font-weight:800; margin-top:2px;">[공지] 라이진 쇼핑몰 시스템 정기 점검 안내</div>
-          <p style="font-size:12px; color:var(--text-sub); margin-top:6px; line-height:1.4;">보다 나은 서비스를 위한 시스템 점검이 07.25(금) 새벽 2시부터 6시까지 진행됩니다.</p>
-        </div>
-        <div>
-          <div style="font-size:11px; color:var(--text-muted);">2025.07.01</div>
-          <div style="font-size:14px; font-weight:800; margin-top:2px;">[안내] 개인정보 처리방침 일부 변경의 건</div>
-          <p style="font-size:12px; color:var(--text-sub); margin-top:6px; line-height:1.4;">신규 물류 센터 확장에 따른 위탁사 정보가 추가되었습니다. 상세 방침을 확인하세요.</p>
-        </div>
-      </div>
-    `;
-    openCommonModal('공지사항', html);
-  }
-
-  /* ──────────────────────────────────────────
-     RENDER UTILITIES
-  ────────────────────────────────────────── */
-  function renderMyPageInfo() {
-    const usernameDisp = document.getElementById('my-username-display');
-    const usersubDisp = document.getElementById('my-usersub-display');
-    const profileActionBtn = document.getElementById('my-profile-action-btn');
-    const logoutGroup = document.getElementById('my-logout-group');
-
-    const quickOrderCnt = document.getElementById('quick-order-cnt');
-    const quickWishCnt = document.getElementById('quick-wish-cnt');
-    const quickTrialCnt = document.getElementById('quick-trial-cnt');
-
-    if (state.user) {
-      usernameDisp.textContent = state.user.name + ' 님';
-      usersubDisp.textContent = state.user.email;
-      profileActionBtn.textContent = '정보 수정';
-      logoutGroup.style.display = 'block';
-    } else {
-      usernameDisp.textContent = '로그인이 필요합니다';
-      usersubDisp.textContent = '라이진 회원으로 더 많은 혜택을 누려보세요';
-      profileActionBtn.textContent = '로그인';
-      logoutGroup.style.display = 'none';
-    }
-
-    quickOrderCnt.textContent = state.orders.length;
-    quickWishCnt.textContent = state.likes.length;
-    quickTrialCnt.textContent = state.appliedTrials.length;
-  }
-
-  function renderRecFeed() {
-    const el = document.getElementById('home-rec-feed');
-    const all = [...RANKING, ...DEALS];
-    el.innerHTML = all.map(p => `
-      <div class="prod-card" onclick="openProductDetail('ranking', '${p.id}')">
-        <div class="prod-img-wrap">
-          <img src="${p.img}" alt="${p.name}">
-        </div>
-        <div class="prod-info">
-          <div class="prod-brand">${p.brand}</div>
-          <div class="prod-name">${p.name}</div>
-          <div class="prod-price">${p.price}</div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderLiveCards(list) {
-    const el = document.getElementById('live-carousel');
     el.innerHTML = list.map(item => `
-      <div class="live-card" onclick="openLiveModal('${item.id}')">
-        <img src="${item.img}" alt="${item.title}">
-        <div class="live-card-overlay">
-          <div class="live-status-badge ${item.isLive ? 'badge-live' : 'badge-upcoming'}">
-            ${item.isLive ? `<span class="pulse-dot"></span>LIVE` : item.time}
-          </div>
-          <div class="live-card-body">
-            <div class="live-card-title">${item.title}</div>
-            <button class="live-card-btn" onclick="event.stopPropagation();${item.isLive ? `openLiveModal('${item.id}')` : `notifyMe(this,'${item.title}')`}">
-              ${item.isLive ? '지금 시청하기' : '알림 신청'}
-            </button>
-          </div>
+      <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
+        <div class="toss-img-box">
+          <img src="${item.img}" alt="${item.brandTitle}">
+          <span class="toss-discount-tag">${item.discount}</span>
+          <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          </button>
         </div>
-      </div>
-    `).join('');
-  }
-
-  function renderVod(list) {
-    const el = document.getElementById('vod-list');
-    el.innerHTML = list.map(item => `
-      <div class="vod-card" onclick="openLiveModal('${item.id}')">
-        <div class="vod-thumb">
-          <img src="${item.img}" alt="${item.title}">
-          <div class="vod-meta">
-            <span class="vod-badge">VOD</span>
-            <span class="vod-views">${item.views}</span>
+        <div class="toss-info">
+          <div class="toss-brand-title">${item.brandTitle}</div>
+          <div class="toss-price-row">
+            <span class="toss-sale-price">${item.salePrice}</span>
+            <span class="toss-origin-price">${item.originPrice}</span>
           </div>
-          <div class="product-chip">
-            <img src="${item.product.img}" alt="${item.product.name}">
-            <div class="chip-info">
-              <div class="chip-name">${item.product.name}</div>
-              <div class="chip-price">${item.product.price}</div>
-            </div>
+          ${item.unitPrice ? `<div class="toss-unit-price">${item.unitPrice}</div>` : ''}
+          <div class="toss-rating-row">
+            <span class="star-icon">★</span>
+            <span>${item.rating} (${item.reviews})</span>
           </div>
-        </div>
-        <div class="vod-title">${item.title}</div>
-      </div>
-    `).join('');
-  }
-
-  function filterVod(tag, btn) {
-    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    const filtered = tag === '뷰티레시피' ? VODS : VODS.filter(v => v.tag === tag);
-    renderVod(filtered.length ? filtered : VODS);
-  }
-
-  function renderRanking() {
-    const el = document.getElementById('home-ranking');
-    el.innerHTML = RANKING.map(p => {
-      const rankClass = p.rank === 1 ? 'gold' : p.rank === 2 ? 'silver' : '';
-      return `
-        <div class="prod-card" onclick="openProductDetail('ranking', '${p.id}')">
-          <div class="prod-img-wrap">
-            <img src="${p.img}" alt="${p.name}">
-            <span class="rank-num ${rankClass}">${p.rank}</span>
-            ${p.exclusive ? '<span class="exclusive-badge">단독</span>' : ''}
-          </div>
-          <div class="prod-info">
-            <div class="prod-brand">${p.brand}<span class="prod-brand-arrow"> ›</span></div>
-            <div class="prod-name">${p.name}</div>
-            <div class="prod-price">${p.price}</div>
-            ${p.benefit ? `<div class="prod-benefit">${p.benefit}</div>` : ''}
-            <div class="chip-row">${(p.tags || []).slice(0, 2).map(t => `<span class="chip-tag">${t}</span>`).join('')}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function renderDeals() {
-    const el = document.getElementById('deal-grid');
-    el.innerHTML = DEALS.map((p, i) => `
-      <div class="prod-card" onclick="openProductDetail('deal', '${p.id}')">
-        <div class="prod-img-wrap">
-          <img src="${p.img}" alt="${p.name}">
-          <span class="rank-num">${i + 1}</span>
-          <span class="discount-badge">${p.discount}</span>
-        </div>
-        <div class="prod-info">
-          <div class="prod-brand">${p.brand}<span class="prod-brand-arrow"> ›</span></div>
-          <div class="prod-name">${p.name}</div>
-          <div class="prod-price">${p.price}</div>
-          <div class="prod-origin">${p.origin}</div>
-          <div class="chip-row"><span class="chip-tag">무료배송</span><span class="chip-tag red">특가</span></div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderGroupBuys() {
-    const el = document.getElementById('group-grid');
-    el.innerHTML = GROUP_BUYS.map((p, i) => `
-      <div class="prod-card" onclick="openProductDetail('group', '${p.id}')">
-        <div class="prod-img-wrap">
-          <img src="${p.img}" alt="${p.name}">
-          <span class="rank-num">${i + 1}</span>
-          <span class="discount-badge">${p.discount}</span>
-        </div>
-        <div class="prod-info">
-          <div class="prod-brand">${p.brand}<span class="prod-brand-arrow"> ›</span></div>
-          <div class="prod-name">${p.name}</div>
-          <div class="prod-price">${p.price}</div>
-          <div class="prod-origin">${p.origin}</div>
-          <div class="chip-row">
-            <span class="chip-tag blue">${p.current}명 참여 중</span>
-            <span class="chip-tag red">${p.deadline}</span>
+          <div class="toss-chip-row">
+            ${item.chips.map(c => `<span class="toss-chip ${c.class}">${c.text}</span>`).join('')}
           </div>
         </div>
       </div>
     `).join('');
   }
 
-  function renderTrials() {
-    const el = document.getElementById('trial-grid');
-    el.innerHTML = TRIALS.map(t => `
-      <div class="trial-card" onclick="openProductDetail('trial', '${t.id}')">
-        <div class="trial-img-wrap">
-          <img src="${t.img}" alt="${t.name}">
-          <span class="trial-spots-badge">${t.spots}</span>
-          <span class="trial-free-badge">무료</span>
-        </div>
-        <div class="trial-info">
-          <div class="trial-brand">${t.brand}</div>
-          <div class="trial-name">${t.name}</div>
-          <div class="trial-deadline">${t.deadline}</div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderHomeUpcomingLives() {
-    const upcoming = LIVES.filter(l => !l.isLive);
-    const el = document.getElementById('home-upcoming-lives');
-    el.innerHTML = upcoming.map(item => `
-      <div class="live-card" onclick="openProductDetail('deal', 'deal_01')">
-        <img src="${item.img}" alt="${item.title}">
-        <div class="live-card-overlay">
-          <div class="live-status-badge badge-upcoming">${item.time}</div>
-          <div class="live-card-body">
-            <div class="live-card-title">${item.title}</div>
-            <button class="live-card-btn" onclick="event.stopPropagation();notifyMe(this,'${item.title}')">알림 신청</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderHomeDeals() {
-    const el = document.getElementById('home-deals');
-    el.innerHTML = DEALS.map(p => `
-      <div class="home-deal-card" onclick="openProductDetail('deal', '${p.id}')">
-        <div class="home-deal-img">
-          <img src="${p.img}" alt="${p.name}">
-          <span class="hd-discount">${p.discount}</span>
-        </div>
-        <div class="hd-info">
-          <div class="hd-brand">${p.brand}</div>
-          <div class="hd-name">${p.name}</div>
-          <div class="hd-price">${p.price}</div>
-          <div class="hd-origin">${p.origin}</div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderMagazine() {
-    const el = document.getElementById('magazine-list');
-    el.innerHTML = MAGAZINES.map(m => `
-      <div class="mag-card" onclick="showToast('매거진 상세 페이지로 이동합니다.')">
-        <div class="mag-thumb">
-          <img src="${m.img}" alt="${m.title}">
-          <div class="mag-ep-badge">
-            <span class="mag-series-name">${m.series}</span>
-            <span class="mag-ep-num">${m.ep}</span>
-          </div>
-        </div>
-        <div class="mag-body">
-          <div class="mag-title">${m.title}</div>
-          <div class="mag-desc">${m.desc}</div>
-          <div class="mag-products">
-            ${m.products.map(p => `<img src="${p}" alt="상품">`).join('')}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  /* ──────────────────────────────────────────
-     MOCK PUSH NOTIFICATION & COUNTDOWN
-  ────────────────────────────────────────── */
-  function startMockPushNotifications() {
-    setInterval(() => {
-      const messages = [
-        '설화수 라이브 단독 패키지 마감 10분 전!',
-        '선정된 체험단 리뷰 제출 기한이 얼마 남지 않았습니다.',
-        '공동구매 목표 인원 달성 임박! 최대 35% 할인 확정'
-      ];
-      const msg = messages[Math.floor(Math.random() * messages.length)];
-
-      state.notifications.unshift({
-        id: Date.now(),
-        title: '라이진 쇼핑 알림',
-        desc: msg,
-        time: '방금 전'
-      });
-
-      const badge = document.getElementById('notif-badge');
-      badge.style.display = 'block';
-      showToast('새로운 알림이 있습니다: ' + msg);
-    }, 45000);
-  }
-
-  function filterCategory(catName, btn) {
-    document.querySelectorAll('.cat-pill-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    showToast(`${catName} 카테고리로 필터링되었습니다.`);
-  }
-
-  function startBannerRolling() {
-    const track = document.getElementById('home-banner-track');
-    const dotsContainer = document.getElementById('home-banner-dots');
-    if (!track || !dotsContainer) return;
-
-    const dots = dotsContainer.querySelectorAll('.banner-dot');
-    const totalSlides = 3;
-    let currentIndex = 0;
-
-    setInterval(() => {
-      currentIndex = (currentIndex + 1) % totalSlides;
-      track.style.transform = `translateX(-${currentIndex * 100}%)`;
-      dots.forEach((dot, idx) => {
-        dot.classList.toggle('active', idx === currentIndex);
-      });
-    }, 3500);
-  }
-
-  /* ──────────────────────────────────────────
-     INITIALIZATION
-  ────────────────────────────────────────── */
-  async function init() {
-    loadState();
-    startBannerRolling();
-    renderMyPageInfo();
-    renderRecFeed();
-    renderVod(VODS);
-    renderRanking();
-    renderDeals();
-    renderGroupBuys();
-    renderTrials();
-    renderHomeUpcomingLives();
-    renderHomeDeals();
-    renderMagazine();
-    startMockPushNotifications();
-
-    let livesToShow = [...LIVES];
-
-    // Supabase 라이브 데이터 연동
-    if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
-      try {
-        const { data, error } = await window.supabaseClient
-          .from('live_control')
-          .select('*')
-          .order('updated_at', { ascending: false });
-
-        if (!error && data?.length) {
-          const remotes = data.map(row => ({
-            id: row.live_id,
-            title: row.title || '라이브 방송',
-            time: 'ON AIR',
-            isLive: row.status === 'ON',
-            img: row.thumbnail_url || (row.profile_image?.replace('#nosplash','')) || LIVES[0].img
-          }));
-          livesToShow = [...remotes, ...LIVES];
-        }
-      } catch (e) {
-        console.warn('Supabase 오류:', e);
-      }
+  function toggleWish(btn) {
+    const svg = btn.querySelector('svg');
+    const isFilled = svg.getAttribute('fill') === '#ff3b30';
+    if (isFilled) {
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', '#ffffff');
+      showToast('위시리스트에서 삭제되었습니다.');
+    } else {
+      svg.setAttribute('fill', '#ff3b30');
+      svg.setAttribute('stroke', '#ff3b30');
+      showToast('위시리스트에 담겼습니다! ❤️');
     }
-
-    renderLiveCards(livesToShow);
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  function switchSubTab(el, tabName) {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    showToast(`'${el.textContent}' 탭으로 이동했습니다.`);
+  }
+
+  function switchNav(el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => {
+      toast.style.transform = 'translateX(-50%) translateY(-100px)';
+    }, 2200);
+  }
+
+  // Init
+  document.addEventListener('DOMContentLoaded', () => {
+    renderTossScroll('scroll-section-1', PRODUCTS_SET_1);
+    renderTossScroll('scroll-section-2', PRODUCTS_SET_2);
+    renderTossScroll('scroll-section-3', PRODUCTS_SET_3);
+  });
 </script>
 </body>
 </html>
