@@ -689,16 +689,10 @@
       display: block;
     }
 
-    .home-gb-discount-tag {
-      position: absolute;
-      bottom: 8px;
-      left: 8px;
-      background: var(--accent-orange);
-      color: #fff;
-      font-size: 11px;
+    .home-gb-discount-pct {
+      font-size: 13px;
       font-weight: 800;
-      padding: 3px 7px;
-      border-radius: 6px;
+      color: var(--accent-orange);
       letter-spacing: -0.02em;
     }
 
@@ -1831,14 +1825,14 @@
           <span class="home-gb-status-badge">${esc(item.status || '모집중')}</span>
           <span class="home-gb-participants">${esc(item.participants || '50명 참여')}</span>
           <img src="${item.img}" alt="${esc(item.brandTitle)}" loading="lazy">
-          <span class="home-gb-discount-tag">${esc(item.discount)}</span>
         </div>
         <div class="home-gb-info">
           <div class="home-gb-title">${esc(item.brandTitle)}</div>
           <div class="home-gb-price-row">
+            <span class="home-gb-discount-pct">${esc(item.discount)}</span>
             <span class="home-gb-sale-price">${esc(item.salePrice)}</span>
-            ${item.originPrice ? `<span class="home-gb-origin-price">${esc(item.originPrice)}</span>` : ''}
           </div>
+          ${item.originPrice ? `<div class="home-gb-origin-price">${esc(item.originPrice)}</div>` : ''}
           <div class="home-gb-goal">${item.target_count || 50}명 달성 시 구매 가능</div>
         </div>
       </div>
