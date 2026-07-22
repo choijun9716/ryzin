@@ -3426,16 +3426,26 @@ Minimum version required to store current data is: `+c+`.
           <button class="sm-action-btn sm-btn-danger sec-del" style="padding:5px 10px; font-size:12px;">삭제</button>
         </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         ${ua(`기획전 제목 (예: 바캉스 기획전, 인플루언서 픽)`,`sec-title`,n.title)}
         ${ua(`기획전 부제목 / 혜택 안내`,`sec-subtitle`,n.subtitle)}
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="sm-label">상단 와이드 커버 배너 이미지 (클릭 업로드)</label>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="sm-thumb-uploader sec-b-uploader" style="width:140px; height:60px; flex-shrink:0;">
+            <img class="sec-b-thumb" src="${$(n.banner_img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">와이드 업로드</div>
+          </div>
+          <input class="sm-input sec-b-url" type="text" value="${$(n.banner_img_url||``)}" placeholder="와이드 배너 이미지 URL">
+        </div>
       </div>
 
       <div style="margin-top:16px; background:#f8fafc; border-radius:8px; padding:14px;">
         <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록된 기획전 상품 카드</h4>
         <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
-    `,o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await na.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim()}),Q(`기획전 정보 저장 완료`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 기획전 섹션을 삭제합니까?`)&&(await na.delete(n.id),Q(`삭제되었습니다.`),await ba(e,t))}),o.querySelector(`.sec-search-add`).addEventListener(`click`,()=>{ya(t,async e=>{await ia.update(e.id,{section_id:n.id}),Q(`[${e.product_code||`상품`}]이 '${n.title}' 기획전에 추가되었습니다.`),await ga(t)})});let s=o.querySelector(`.sec-prod-list`);a.forEach(e=>{let n=document.createElement(`div`);n.style.cssText=`background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;`,n.innerHTML=`
+    `;let s=o.querySelector(`.sec-b-uploader`),c=o.querySelector(`.sec-b-url`);la(s,c,e=>{o.querySelector(`.sec-b-thumb`).src=e}),o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await na.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim(),banner_img_url:c.value.trim()}),Q(`기획전 정보 저장 완료`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 기획전 섹션을 삭제합니까?`)&&(await na.delete(n.id),Q(`삭제되었습니다.`),await ba(e,t))}),o.querySelector(`.sec-search-add`).addEventListener(`click`,()=>{ya(t,async e=>{await ia.update(e.id,{section_id:n.id}),Q(`[${e.product_code||`상품`}]이 '${n.title}' 기획전에 추가되었습니다.`),await ga(t)})});let l=o.querySelector(`.sec-prod-list`);a.forEach(e=>{let n=document.createElement(`div`);n.style.cssText=`background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;`,n.innerHTML=`
         <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
           <span class="sm-rank-badge" style="font-size:10px;">${$(e.product_code||`PROD-00000`)}</span>
           <img src="${$(e.img_url||``)}" style="width:36px; height:36px; border-radius:6px; object-fit:cover; background:#f1f5f9;">
@@ -3445,7 +3455,7 @@ Minimum version required to store current data is: `+c+`.
           </div>
         </div>
         <button class="sm-action-btn sm-btn-danger btn-remove-sec-prod" style="padding:4px 8px; font-size:11px;">기획전 제외</button>
-      `,n.querySelector(`.btn-remove-sec-prod`).addEventListener(`click`,async()=>{await ia.update(e.id,{section_id:null}),Q(`기획전에서 제외되었습니다.`),await ga(t)}),s.appendChild(n)}),i.appendChild(o)})}async function xa(e){let t=await ta.getAll();e.innerHTML=`
+      `,n.querySelector(`.btn-remove-sec-prod`).addEventListener(`click`,async()=>{await ia.update(e.id,{section_id:null}),Q(`기획전에서 제외되었습니다.`),await ga(t)}),l.appendChild(n)}),i.appendChild(o)})}async function xa(e){let t=await ta.getAll();e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${t.length}개)</h2>
       <button id="add-banner" class="sm-action-btn sm-btn-primary">+ 새 배너 추가</button>

@@ -808,9 +808,19 @@ async function renderSectionsPanel(panel, wrapper) {
           <button class="sm-action-btn sm-btn-danger sec-del" style="padding:5px 10px; font-size:12px;">삭제</button>
         </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         ${formField('기획전 제목 (예: 바캉스 기획전, 인플루언서 픽)','sec-title',sec.title)}
         ${formField('기획전 부제목 / 혜택 안내','sec-subtitle',sec.subtitle)}
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="sm-label">상단 와이드 커버 배너 이미지 (클릭 업로드)</label>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="sm-thumb-uploader sec-b-uploader" style="width:140px; height:60px; flex-shrink:0;">
+            <img class="sec-b-thumb" src="${esc(sec.banner_img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">와이드 업로드</div>
+          </div>
+          <input class="sm-input sec-b-url" type="text" value="${esc(sec.banner_img_url || '')}" placeholder="와이드 배너 이미지 URL">
+        </div>
       </div>
 
       <div style="margin-top:16px; background:#f8fafc; border-radius:8px; padding:14px;">
@@ -819,10 +829,17 @@ async function renderSectionsPanel(panel, wrapper) {
       </div>
     `;
 
+    const secUploader = card.querySelector('.sec-b-uploader');
+    const secImgInput = card.querySelector('.sec-b-url');
+    bindImageUploader(secUploader, secImgInput, (url) => {
+      card.querySelector('.sec-b-thumb').src = url;
+    });
+
     card.querySelector('.sec-save').addEventListener('click', async () => {
       await sectionDB.update(sec.id, {
         title: card.querySelector('.sec-title').value.trim(),
         subtitle: card.querySelector('.sec-subtitle').value.trim(),
+        banner_img_url: secImgInput.value.trim(),
       });
       toast('기획전 정보 저장 완료');
     });
