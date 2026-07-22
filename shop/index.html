@@ -728,147 +728,28 @@
     </div>
   </header>
 
-  <!-- ── 히어로 프로모 대형 배너 (PRIZM 스타일 자동 슬라이드) ── -->
+  <!-- ── 히어로 배너 (Supabase 동적 렌더) ── -->
   <div class="hero-banner-wrap">
-    <div class="hero-carousel" id="main-hero-carousel">
-      <div class="hero-slide-card" onclick="window.location.href='/shop/live_teaser.html'">
-        <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=85" alt="오키나와 힐튼">
-        <div class="hero-slide-overlay">
-          <div class="hero-top-info">
-            <span class="label">오늘</span>
-            <span class="time">오후 8시</span>
-          </div>
-          <div class="hero-bottom-info">
-            <h2>오키나와 힐튼 특집</h2>
-            <p>소인 반값 요금 + 주요 관광지 입장권</p>
-            <button class="hero-cta-btn" onclick="event.stopPropagation(); window.location.href='/shop/live_teaser.html';">
-              알림 신청
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-slide-card" onclick="window.location.href='/shop/live_teaser.html'">
-        <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=85" alt="설화수">
-        <div class="hero-slide-overlay">
-          <div class="hero-top-info">
-            <span class="label">내일</span>
-            <span class="time">오전 11시</span>
-          </div>
-          <div class="hero-bottom-info">
-            <h2>설화수 윤조 단독 특가</h2>
-            <p>자음수 리미티드 에디션 80% 혜택</p>
-            <button class="hero-cta-btn" onclick="event.stopPropagation(); window.location.href='/shop/live_teaser.html';">
-              알림 신청
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-slide-card" onclick="window.location.href='/shop/live_teaser.html'">
-        <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=85" alt="에이피뷰티">
-        <div class="hero-slide-overlay">
-          <div class="hero-top-info">
-            <span class="label">07.24 (금)</span>
-            <span class="time">오후 3시</span>
-          </div>
-          <div class="hero-bottom-info">
-            <h2>에이피뷰티 엠디 세럼 론칭</h2>
-            <p>단 1시간 신제품 단독 할인가</p>
-            <button class="hero-cta-btn" onclick="event.stopPropagation(); window.location.href='/shop/live_teaser.html';">
-              알림 신청
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="hero-carousel" id="main-hero-carousel"></div>
   </div>
 
-  <!-- ── 서브 네비 탭 ── -->
-  <nav class="sub-tabs">
-    <div class="sub-tab" onclick="switchSubTab(this)">하루 특가</div>
-    <div class="sub-tab" onclick="switchSubTab(this)">셀러 특가</div>
-    <div class="sub-tab active" onclick="switchSubTab(this)">기획전</div>
-    <div class="sub-tab" onclick="switchSubTab(this)">쿠폰 혜택</div>
-  </nav>
+  <!-- ── 퀵메뉴 탭 (Supabase 동적 렌더) ── -->
+  <nav class="sub-tabs" id="sub-tabs-wrap"></nav>
 
   <!-- ───── MAIN CONTENT ───── -->
-  <main>
-
-    <!-- 섹션 0: LIVE STREAMING (실시간 라이브 커머스) -->
-    <section class="section">
+  <main id="shop-main-content">
+    <!-- 라이브 섹션 (Supabase 동적 렌더) -->
+    <section class="section" id="live-section">
       <div class="sec-header-wrap">
         <div class="sec-title-group">
           <h3>LIVE NOW</h3>
           <p>실시간 프리미엄 라이브 커머스</p>
         </div>
       </div>
-
-      <!-- 라이브 카러셀 스크롤 -->
-      <div class="live-scroll-container">
-        <div class="live-card-item" onclick="window.location.href='/live?id=live01'">
-          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85" alt="설화수 라이브">
-          <div class="live-card-overlay">
-            <div class="live-top-row">
-              <span class="live-badge-onair"><span class="live-pulse-dot"></span>LIVE</span>
-              <span class="live-viewers">3.2천명 시청 중</span>
-            </div>
-            <div class="live-bottom-info">
-              <div class="live-title-text">설화수 X 라이진 — 자음수 리미티드 에디션 단독 특가</div>
-              <button class="live-join-btn">지금 시청하기</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="live-card-item" onclick="window.location.href='/live?id=live02'">
-          <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85" alt="에이피뷰티 라이브">
-          <div class="live-card-overlay">
-            <div class="live-top-row">
-              <span class="live-badge-onair"><span class="live-pulse-dot"></span>LIVE</span>
-              <span class="live-viewers">1.8천명 시청 중</span>
-            </div>
-            <div class="live-bottom-info">
-              <div class="live-title-text">에이피뷰티 에어리 선 세럼 50ml 신제품 론칭</div>
-              <button class="live-join-btn">지금 시청하기</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="live-scroll-container" id="live-scroll-container"></div>
     </section>
-
-    <!-- 섹션 1: 상설관 구경 -->
-    <section class="section">
-      <div class="sec-header-wrap">
-        <div class="sec-title-group">
-          <h3>지금 바로 상설관 구경</h3>
-          <p>특가 상품 보러 가기</p>
-        </div>
-      </div>
-
-      <div class="toss-prod-scroll" id="scroll-section-1">
-        <!-- JS Rendered -->
-      </div>
-
-      <button class="toss-more-btn">더보기</button>
-    </section>
-
-    <!-- 섹션 2: 뷰티영 브랜드 기획전 -->
-    <section class="section">
-      <div class="sec-header-wrap">
-        <div class="sec-title-group">
-          <h3>뷰티영 브랜드 기획전</h3>
-          <p>단독 특가로 만나보세요</p>
-        </div>
-        <div class="sec-timer-badge">00:03</div>
-      </div>
-
-      <div class="toss-prod-scroll" id="scroll-section-2">
-        <!-- JS Rendered -->
-      </div>
-
-      <button class="toss-more-btn">더보기</button>
-    </section>
-
+    <!-- 상품 섹션들 (Supabase 동적 렌더) -->
+    <div id="dynamic-sections"></div>
   </main>
 
   <!-- ── 푸터 (Footer) ── -->
@@ -931,7 +812,155 @@
 </div>
 
 <script>
-  const PRODUCTS_SET_1 = [
+  // ── Supabase 연결 정보 ──
+  const SB_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+  const SB_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+  const SB_H = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+  async function sbGet(table, params = '') {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_H });
+      return r.ok ? r.json() : [];
+    } catch { return []; }
+  }
+
+  // ── 배너 렌더 ──
+  async function renderBanners() {
+    const carousel = document.getElementById('main-hero-carousel');
+    if (!carousel) return;
+    let banners = await sbGet('shop_banners', 'select=*&active=eq.true&order=sort_order.asc');
+    if (!banners.length) {
+      // 폴백: 기본 배너
+      banners = [
+        { img_url:'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=85', label:'오늘', time_text:'오후 8시', title:'오키나와 힐튼 특집', desc:'소인 반값 요금 + 주요 관광지 입장권', link_url:'/shop/live_teaser.html' },
+        { img_url:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=85', label:'내일', time_text:'오전 11시', title:'설화수 윤조 단독 특가', desc:'자음수 리미티드 에디션 80% 혜택', link_url:'/shop/live_teaser.html' },
+        { img_url:'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=85', label:'07.24 (금)', time_text:'오후 3시', title:'에이피뷰티 엠디 세럼 론칭', desc:'단 1시간 신제품 단독 할인가', link_url:'/shop/live_teaser.html' }
+      ];
+    }
+    carousel.innerHTML = banners.map(b => `
+      <div class="hero-slide-card" onclick="window.location.href='${b.link_url || '/shop/live_teaser.html'}'">
+        <img src="${b.img_url}" alt="${b.title}">
+        <div class="hero-slide-overlay">
+          <div class="hero-top-info">
+            <span class="label">${b.label}</span>
+            <span class="time">${b.time_text}</span>
+          </div>
+          <div class="hero-bottom-info">
+            <h2>${b.title}</h2>
+            <p>${b.desc || ''}</p>
+            <button class="hero-cta-btn" onclick="event.stopPropagation(); window.location.href='${b.link_url || '/shop/live_teaser.html'}';">알림 신청</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    initHeroAutoSlide();
+  }
+
+  // ── 퀵메뉴 탭 렌더 ──
+  // ── 퀵메뉴 탭 렌더 ──
+  async function renderMenus() {
+    const nav = document.getElementById('sub-tabs-wrap');
+    if (!nav) return;
+    let menus = await sbGet('shop_menus', 'select=*&active=eq.true&order=sort_order.asc');
+    if (!menus.length) menus = [{name:'셀러 특가'},{name:'기획전'},{name:'쿠폰 혜택'}];
+    nav.innerHTML = menus.map((m, i) =>
+      `<div class="sub-tab${i===0?' active':''}" data-section-id="${m.section_id || ''}" onclick="switchSubTab(this)">${m.name}</div>`
+    ).join('');
+  }
+
+  // ── 라이브 섹션 렌더 ──
+  async function renderLives() {
+    const cont = document.getElementById('live-scroll-container');
+    const sec  = document.getElementById('live-section');
+    if (!cont) return;
+    let lives = await sbGet('shop_lives', 'select=*&active=eq.true&order=sort_order.asc');
+    if (!lives.length) {
+      if (sec) sec.style.display = 'none';
+      return;
+    }
+    if (sec) sec.style.display = '';
+    cont.innerHTML = lives.map(lv => `
+      <div class="live-card-item" onclick="window.location.href='${lv.link_url}'">
+        <img src="${lv.img_url}" alt="${lv.title}">
+        <div class="live-card-overlay">
+          <div class="live-top-row">
+            <span class="live-badge-onair"><span class="live-pulse-dot"></span>LIVE</span>
+            <span class="live-viewers">${lv.viewers}</span>
+          </div>
+          <div class="live-bottom-info">
+            <div class="live-title-text">${lv.title}</div>
+            <button class="live-join-btn">지금 시청하기</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── 상품 섹션 + 상품 동적 렌더 ──
+  async function renderSections() {
+    const wrap = document.getElementById('dynamic-sections');
+    if (!wrap) return;
+    const [sections, products] = await Promise.all([
+      sbGet('shop_sections', 'select=*&active=eq.true&order=sort_order.asc'),
+      sbGet('shop_products', 'select=*&active=eq.true&order=sort_order.asc')
+    ]);
+    const prodBySec = {};
+    products.forEach(p => { if (!prodBySec[p.section_id]) prodBySec[p.section_id] = []; prodBySec[p.section_id].push(p); });
+
+    if (!sections.length) {
+      // 폴백: 기존 정적 상품
+      renderFallbackSections(wrap);
+      return;
+    }
+    wrap.innerHTML = '';
+    sections.forEach(sec => {
+      const prods = prodBySec[sec.id] || [];
+      if (!prods.length) return;
+      const secEl = document.createElement('section');
+      secEl.className = 'section';
+      secEl.id = 'sec-wrap-' + sec.id;
+      secEl.innerHTML = `
+        <div class="sec-header-wrap">
+          <div class="sec-title-group">
+            <h3>${sec.title}</h3>
+            <p>${sec.subtitle || ''}</p>
+          </div>
+          ${sec.show_timer ? '<div class="sec-timer-badge" id="sec-timer-'+sec.id+'">00:00</div>' : ''}
+        </div>
+        <div class="toss-prod-scroll" id="sec-prods-${sec.id}"></div>
+        <button class="toss-more-btn">더보기</button>
+      `;
+      const grid = secEl.querySelector(`#sec-prods-${sec.id}`);
+      grid.innerHTML = prods.map(item => `
+        <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
+          <div class="toss-img-box">
+            <img src="${item.img_url}" alt="${item.brand_title}">
+            <span class="toss-discount-tag">${item.discount}</span>
+            <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </button>
+          </div>
+          <div class="toss-info">
+            <div class="toss-brand-title">${item.brand_title}</div>
+            <div class="toss-price-row">
+              <span class="toss-sale-price">${item.sale_price}</span>
+              <span class="toss-origin-price">${item.origin_price}</span>
+            </div>
+            ${item.unit_price ? `<div class="toss-unit-price">${item.unit_price}</div>` : ''}
+            ${item.rating ? `<div class="toss-rating-row"><span class="star-icon">★</span><span>${item.rating} (${item.reviews})</span></div>` : ''}
+            <div class="toss-chip-row">
+              ${(Array.isArray(item.chips) ? item.chips : JSON.parse(item.chips||'[]')).map(c => `<span class="toss-chip ${c.class||'chip-ship'}">${c.text}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+      wrap.appendChild(secEl);
+    });
+  }
+
+  // ── 폴백: Supabase 데이터 없을 때 기존 정적 데이터 ──
+  function renderFallbackSections(wrap) {
+    const PRODUCTS_SET_1 = [
     {
       id: 'toss_01',
       brandTitle: '코코팜 네이처바이 알로에 에센스 팩 100매',
@@ -991,19 +1020,33 @@
       chips: [{ text: '오늘출발', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=85'
     },
-    {
-      id: 'toss_06',
-      brandTitle: '젠바이오 수분 장벽 보습 수딩 크림 100ml',
-      salePrice: '16,500원',
-      originPrice: '38,000원',
-      discount: '57% 특가',
-      rating: '5.0',
-      reviews: '18',
-      chips: [{ text: '오늘출발', class: 'chip-ship' }],
-      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85'
-    }
-  ];
+    wrap.innerHTML = `
+      <section class="section">
+        <div class="sec-header-wrap">
+          <div class="sec-title-group">
+            <h3>지금 바로 상설관 구경</h3>
+            <p>특가 상품 보러 가기</p>
+          </div>
+        </div>
+        <div class="toss-prod-scroll" id="scroll-section-1"></div>
+        <button class="toss-more-btn">더보기</button>
+      </section>
+      <section class="section">
+        <div class="sec-header-wrap">
+          <div class="sec-title-group">
+            <h3>뷰티영 브랜드 기획전</h3>
+            <p>단독 특가로 만나보세요</p>
+          </div>
+        </div>
+        <div class="toss-prod-scroll" id="scroll-section-2"></div>
+        <button class="toss-more-btn">더보기</button>
+      </section>
+    `;
+    renderTossScroll('scroll-section-1', PRODUCTS_SET_1);
+    renderTossScroll('scroll-section-2', PRODUCTS_SET_2);
+  }
 
+  // ── 기존 방식 렌더 헬퍼 ──
   function renderTossScroll(containerId, list) {
     const el = document.getElementById(containerId);
     if (!el) return;
@@ -1011,25 +1054,25 @@
     el.innerHTML = list.map(item => `
       <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
         <div class="toss-img-box">
-          <img src="${item.img}" alt="${item.brandTitle}">
+          <img src="${item.img || item.img_url}" alt="${item.brandTitle || item.brand_title}">
           <span class="toss-discount-tag">${item.discount}</span>
           <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
             <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
           </button>
         </div>
         <div class="toss-info">
-          <div class="toss-brand-title">${item.brandTitle}</div>
+          <div class="toss-brand-title">${item.brandTitle || item.brand_title}</div>
           <div class="toss-price-row">
-            <span class="toss-sale-price">${item.salePrice}</span>
-            <span class="toss-origin-price">${item.originPrice}</span>
+            <span class="toss-sale-price">${item.salePrice || item.sale_price}</span>
+            <span class="toss-origin-price">${item.originPrice || item.origin_price}</span>
           </div>
-          ${item.unitPrice ? `<div class="toss-unit-price">${item.unitPrice}</div>` : ''}
+          ${(item.unitPrice || item.unit_price) ? `<div class="toss-unit-price">${item.unitPrice || item.unit_price}</div>` : ''}
           <div class="toss-rating-row">
             <span class="star-icon">★</span>
             <span>${item.rating} (${item.reviews})</span>
           </div>
           <div class="toss-chip-row">
-            ${item.chips.map(c => `<span class="toss-chip ${c.class}">${c.text}</span>`).join('')}
+            ${(item.chips || []).map(c => `<span class="toss-chip ${c.class}">${c.text}</span>`).join('')}
           </div>
         </div>
       </div>
@@ -1050,9 +1093,28 @@
     }
   }
 
+  // ── 서브 탭 이동 연동 ──
   function switchSubTab(el) {
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
+
+    // 연결된 section_id가 있으면 스크롤
+    const sectionId = el.getAttribute('data-section-id');
+    if (sectionId) {
+      const targetSec = document.getElementById('sec-wrap-' + sectionId);
+      if (targetSec) {
+        const offset = 64; // 상단 헤더 높이
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = targetSec.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
   }
 
   function switchNav(el) {
@@ -1070,7 +1132,7 @@
     }, 2200);
   }
 
-  // Hero Banner Infinite Continuous Auto-slide (처음으로 거꾸로 돌아가지 않는 무한 정방향 롤링)
+  // Hero Banner Infinite Continuous Auto-slide
   function initHeroAutoSlide() {
     const carousel = document.getElementById('main-hero-carousel');
     if (!carousel) return;
@@ -1097,7 +1159,7 @@
         behavior: 'smooth'
       });
 
-      // 세트가 끝나면 0번 원본 위치로 사용자 눈에 안 띄게 순간 보정
+      // 세트가 끝나면 0번 원본 위치로 순간 보정
       if (index >= totalOriginal) {
         setTimeout(() => {
           carousel.scrollTo({
@@ -1117,11 +1179,19 @@
     }
   }
 
+  // ── 전체 숍 초기화 ──
+  async function initShop() {
+    await Promise.all([
+      renderBanners(),
+      renderMenus(),
+      renderLives(),
+      renderSections()
+    ]);
+  }
+
   // Init
   document.addEventListener('DOMContentLoaded', () => {
-    renderTossScroll('scroll-section-1', PRODUCTS_SET_1);
-    renderTossScroll('scroll-section-2', PRODUCTS_SET_2);
-    initHeroAutoSlide();
+    initShop();
   });
 </script>
 </body>
