@@ -692,7 +692,7 @@
     .home-gb-discount-pct {
       font-size: 13px;
       font-weight: 800;
-      color: var(--accent-orange);
+      color: #ff4040;
       letter-spacing: -0.02em;
     }
 
@@ -1831,7 +1831,7 @@
         <div class="home-gb-info">
           <div class="home-gb-title">${esc(item.brandTitle)}</div>
           <div class="home-gb-price-row">
-            <span class="home-gb-discount-pct">${esc(item.discount)}</span>
+            <span class="home-gb-discount-pct">${esc(item.discount.replace(/\s*OFF\s*/i, '').trim())}</span>
             <span class="home-gb-sale-price">${esc(item.salePrice)}</span>
           </div>
           ${item.originPrice ? `<div class="home-gb-origin-price">${esc(item.originPrice)}</div>` : ''}
