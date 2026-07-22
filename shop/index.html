@@ -914,11 +914,12 @@
     }
 
     .prod-name {
-      font-size: 18px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--text-main);
-      margin: 4px 0 8px; /* brand to name: 4px, name to price: 8px */
-      line-height: 26px;
+      margin: 4px 0 6px;
+      line-height: 1.4;
+      height: calc(13px * 1.4 * 2);
       letter-spacing: -0.01em;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -927,10 +928,10 @@
     }
 
     .prod-price {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       color: var(--text-main);
-      line-height: 30px;
+      line-height: 1.2;
     }
     .prod-benefit { font-size: 12px; font-weight: 700; color: #ef4444; margin-top: 2px; }
     .prod-origin { font-size: 13px; color: var(--text-muted); text-decoration: line-through; margin-top: 1px; }
@@ -2600,7 +2601,7 @@
         </div>
         <div class="prod-info">
           <div class="prod-brand">${p.brand}</div>
-          <div class="prod-name" style="font-size:11px;">${p.name}</div>
+          <div class="prod-name">${p.name}</div>
           <div class="prod-price">${p.price}</div>
         </div>
       </div>
