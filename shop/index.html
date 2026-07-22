@@ -17,7 +17,7 @@
 
   <style>
     :root {
-      --primary: #ef4444;
+      --primary: #111111;
       --text-main: #111111;
       --text-sub: #666666;
       --text-muted: #999999;
@@ -551,38 +551,39 @@
 
     /* ── 공통 섹션 ── */
     .section {
-      padding: 14px 0 14px;
-      border-bottom: 8px solid var(--bg);
+      margin-bottom: 72px;
+      padding: 0;
+      border-bottom: none;
     }
 
-    .section:last-child { border-bottom: none; }
+    .section:last-child { margin-bottom: 40px; }
 
     .sec-header {
-      padding: 0 16px 14px;
+      padding: 0 20px 16px;
       display: flex;
       justify-content: space-between;
       align-items: baseline;
     }
 
     .sec-title {
-      font-size: 17px;
-      font-weight: 600;
+      font-size: 18px;
+      font-weight: 700;
       color: var(--text-main);
       letter-spacing: -0.01em;
     }
 
     .sec-sub {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-muted);
       font-weight: 500;
     }
 
-    /* ── 라이브 카러셀 ── */
+    /* ── 라이브 커러셀 ── */
     .live-scroll {
       display: flex;
-      gap: 12px;
-      padding: 0 16px 2px;
-      scroll-padding: 0 16px;
+      gap: 16px;
+      padding: 0 20px 2px;
+      scroll-padding: 0 20px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
@@ -592,13 +593,13 @@
 
     .live-card {
       flex: 0 0 160px;
-      aspect-ratio: 9 / 16;
-      border-radius: 14px;
+      aspect-ratio: 4 / 5;
+      border-radius: 16px;
       overflow: hidden;
       position: relative;
       scroll-snap-align: start;
       cursor: pointer;
-      background: #0f172a;
+      background: #111111;
     }
 
     .live-card img {
@@ -739,7 +740,7 @@
     .vod-thumb {
       width: 100%;
       aspect-ratio: 9 / 16; /* 라이브/VOD 썸네일: 9:16 */
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
       position: relative;
       background: #111;
@@ -832,7 +833,7 @@
     .product-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 16px;
       padding: 0 20px;
     }
 
@@ -844,7 +845,7 @@
 
     .prod-img-wrap {
       aspect-ratio: 1 / 1;
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
       background: #f3f4f6;
       position: relative;
@@ -860,41 +861,41 @@
 
     .rank-num {
       position: absolute;
-      top: 7px; left: 7px;
-      width: 20px; height: 20px;
-      background: rgba(0,0,0,0.8);
+      top: 8px; left: 8px;
+      width: 22px; height: 22px;
+      background: #111111;
       color: #fff;
       font-size: 11px;
       font-weight: 900;
-      border-radius: 5px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .rank-num.gold { background: #f59e0b; }
+    .rank-num.gold { background: #111111; }
     .rank-num.silver { background: #6b7280; }
 
     .exclusive-badge {
       position: absolute;
-      top: 7px; right: 7px;
-      background: #111827;
+      top: 8px; right: 8px;
+      background: #111111;
       color: #fff;
       font-size: 9px;
       font-weight: 800;
-      padding: 2px 5px;
-      border-radius: 4px;
+      padding: 3px 6px;
+      border-radius: 6px;
     }
 
     .discount-badge {
       position: absolute;
-      top: 7px; right: 7px;
-      background: #ef4444;
+      top: 8px; right: 8px;
+      background: #111111;
       color: #fff;
       font-size: 9px;
       font-weight: 900;
-      padding: 2px 5px;
-      border-radius: 4px;
+      padding: 3px 6px;
+      border-radius: 6px;
     }
 
     .prod-info { padding: 8px 2px 4px; }
@@ -941,12 +942,12 @@
     .chip-tag.red { color: #ef4444; background: #fee2e2; }
     .chip-tag.blue { color: #2563eb; background: #dbeafe; }
 
-    .home-banner { margin: 0 0 0; padding: 16px 16px 0; }
+    .home-banner { margin: 0 0 0; padding: 16px 20px 0; }
 
     .banner-card {
       width: 100%;
       aspect-ratio: 16 / 9;
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
       position: relative;
       cursor: pointer;
@@ -1218,17 +1219,38 @@
 
     .login-input:focus { border-color: var(--text-main); }
 
-    .submit-action-btn {
+    .submit-action-btn, .btn-primary {
       width: 100%;
-      height: 56px; /* 메인 버튼 높이: 56px */
-      border-radius: 12px;
-      background: var(--text-main);
-      color: #fff;
+      height: 52px;
+      border-radius: 16px;
+      background: #111111;
+      color: #ffffff;
       border: none;
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
       margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      height: 52px;
+      border-radius: 16px;
+      background: #ffffff;
+      color: #111111;
+      border: 1px solid #111111;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
     }
 
     /* 알림 센터 모달 스타일 */
