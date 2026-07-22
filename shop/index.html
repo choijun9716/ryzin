@@ -1296,13 +1296,15 @@
         { name: '쿠폰 혜택' }
       ];
     }
-    const allTabHtml = `<div class="sub-tab active" data-section-id="all" onclick="switchSubTab(this)">전체</div>`;
-    const bestTabHtml = `<div class="sub-tab" data-section-id="best10" data-menu-name="베스트 TOP 10" onclick="switchSubTab(this)">베스트 TOP 10</div>`;
+    const bestTabHtml = `<div class="sub-tab active" data-section-id="best10" data-menu-name="베스트 TOP 10" onclick="switchSubTab(this)">베스트 TOP 10</div>`;
     const menuTabsHtml = menus.map((m) =>
       `<div class="sub-tab" data-section-id="${m.section_id || ''}" data-menu-name="${esc(m.name)}" onclick="switchSubTab(this)">${esc(m.name)}</div>`
     ).join('');
 
-    nav.innerHTML = allTabHtml + bestTabHtml + menuTabsHtml;
+    nav.innerHTML = bestTabHtml + menuTabsHtml;
+
+    // 기본 활성 탭: 베스트 TOP 10 즉시 렌더
+    renderQuickTabCardView('베스트 TOP 10', 'best10');
   }
 
   // ── 라이브 섹션 렌더 (폴백 보장) ──
