@@ -647,20 +647,29 @@
       color: #ffffff;
     }
 
-    .home-gb-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+    .home-gb-scroll {
+      display: flex;
       gap: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
       padding: 0 16px 16px;
+      touch-action: pan-x;
+      scroll-snap-type: x mandatory;
     }
+    .home-gb-scroll::-webkit-scrollbar { display: none; }
 
     .home-gb-card {
+      flex-shrink: 0;
+      width: 150px;
       background: var(--surface-card);
       border-radius: 14px;
       overflow: hidden;
       cursor: pointer;
       border: 1px solid var(--border);
       transition: transform 0.15s;
+      scroll-snap-align: start;
     }
     .home-gb-card:active { transform: scale(0.97); }
 
@@ -762,23 +771,8 @@
       margin-top: 2px;
     }
 
-    .home-gb-more-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin: 0 16px 20px;
-      padding: 12px;
-      background: var(--surface-card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      color: var(--text-sub);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .home-gb-more-btn:hover { background: #232530; }
+
+
 
     /* ── FOOTER STYLING ── */
     .footer {
@@ -1135,7 +1129,6 @@
           <h3>공동구매 특가</h3>
           <p>목표 달성 시 최대 83% 초특가 혜택</p>
         </div>
-        <button class="mag-more-btn" onclick="window.location.href='/shop/group_buy.html'">더보기</button>
       </div>
 
       <!-- 카테고리 탭 -->
@@ -1151,14 +1144,9 @@
         <button class="home-gb-cat-btn" onclick="homeGbSelectCat(this, '가전')">가전</button>
       </div>
 
-      <!-- 2열 상품 그리드 -->
-      <div class="home-gb-grid" id="home-gb-grid">
+      <!-- 가로 스크롤 상품 카드 -->
+      <div class="home-gb-scroll" id="home-gb-grid">
         <!-- JS Rendered -->
-      </div>
-
-      <div class="home-gb-more-btn" onclick="window.location.href='/shop/group_buy.html'">
-        공동구매 전체 보기
-        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </div>
     </section>
 
