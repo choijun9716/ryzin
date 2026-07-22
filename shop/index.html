@@ -1024,15 +1024,24 @@
   }
 
   // ── 퀵메뉴 탭 렌더 ──
-  // ── 퀵메뉴 탭 렌더 ──
   async function renderMenus() {
     const nav = document.getElementById('sub-tabs-wrap');
     if (!nav) return;
     let menus = await sbGet('shop_menus', 'select=*&active=eq.true&order=sort_order.asc');
-    if (!menus.length) menus = [{name:'셀러 특가'},{name:'기획전'},{name:'쿠폰 혜택'}];
-    nav.innerHTML = menus.map((m, i) =>
-      `<div class="sub-tab${i===0?' active':''}" data-section-id="${m.section_id || ''}" onclick="switchSubTab(this)">${m.name}</div>`
+    if (!menus.length) {
+      menus = [
+        { name: '셀러 특가' },
+        { name: 'K-뷰티 케어' },
+        { name: '브랜드 기획전' },
+        { name: '쿠폰 혜택' }
+      ];
+    }
+    const allTabHtml = `<div class="sub-tab active" data-section-id="all" onclick="switchSubTab(this)">전체</div>`;
+    const menuTabsHtml = menus.map((m) =>
+      `<div class="sub-tab" data-section-id="${m.section_id || ''}" data-menu-name="${esc(m.name)}" onclick="switchSubTab(this)">${esc(m.name)}</div>`
     ).join('');
+
+    nav.innerHTML = allTabHtml + menuTabsHtml;
   }
 
   // ── 라이브 섹션 렌더 ──
@@ -1288,18 +1297,45 @@
     }
   }
 
-  // ── 서브 탭 이동 (위아래 화면 움직임 완전 제거) ──
+  // ── 서브 탭 이동 및 탭별 상품 카드 필터링 ──
   function switchSubTab(el) {
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
 
-    // 탭 바 내부 순수 가로 스크롤만 수행 (세로 스크롤 0%)
+    // 탭 바 내부 순수 가로 스크롤
     const nav = document.getElementById('sub-tabs-wrap');
     if (nav) {
       const navRect = nav.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
       const scrollLeft = nav.scrollLeft + (elRect.left - navRect.left) - (navRect.width / 2) + (elRect.width / 2);
       nav.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    }
+
+    const sectionId = el.getAttribute('data-section-id');
+    const menuName = el.getAttribute('data-menu-name') || el.textContent.trim();
+    const allSections = document.querySelectorAll('#dynamic-sections > section');
+
+    if (!allSections.length) return;
+
+    if (sectionId === 'all' || menuName === '전체') {
+      // '전체' 탭 클릭 시 모든 상품 섹션 표시
+      allSections.forEach(sec => sec.style.display = '');
+    } else {
+      let found = false;
+      if (sectionId) {
+        const targetSec = document.getElementById('sec-wrap-' + sectionId);
+        if (targetSec) {
+          allSections.forEach(sec => sec.style.display = (sec === targetSec ? '' : 'none'));
+          found = true;
+        }
+      }
+      if (!found) {
+        const allTabs = Array.from(document.querySelectorAll('.sub-tab'));
+        const idx = allTabs.indexOf(el) - 1; // '전체' 탭 제외
+        allSections.forEach((sec, i) => {
+          sec.style.display = (i === idx || idx < 0) ? '' : 'none';
+        });
+      }
     }
   }
 
