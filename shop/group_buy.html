@@ -95,6 +95,50 @@
       font-weight: 600;
     }
 
+    /* ── CATEGORY CIRCLE TABS ── */
+    .category-section {
+      padding: 0 16px 16px;
+    }
+
+    .category-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px 0 12px;
+    }
+    .category-scroll::-webkit-scrollbar { display: none; }
+
+    .category-circle-btn {
+      flex: 0 0 60px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--surface-card);
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-sub);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      line-height: 1.25;
+      word-break: keep-all;
+      padding: 4px;
+    }
+
+    .category-circle-btn.active {
+      background: var(--accent-orange);
+      border-color: var(--accent-orange);
+      color: #ffffff;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(255, 135, 48, 0.35);
+    }
+
     /* ── VERTICAL GRID (2 Columns using Home Card Structure) ── */
     .gb-grid-section {
       padding: 8px 16px 24px;
@@ -396,6 +440,21 @@
     </div>
   </div>
 
+  <!-- Category Section -->
+  <section class="category-section">
+    <div class="category-scroll">
+      <div class="category-circle-btn active" onclick="selectCategory(this)">전체</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">식품</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">뷰티</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">생활.주방</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">건강식품</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">패션</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">펫</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">육아</div>
+      <div class="category-circle-btn" onclick="selectCategory(this)">가전</div>
+    </div>
+  </section>
+
   <!-- Vertical 2-Column Product Cards Section -->
   <section class="gb-grid-section">
     <div class="gb-grid" id="gb-products-grid">
@@ -461,6 +520,7 @@
   const GB_PRODUCTS = [
     {
       id: 'toss_01',
+      category: '뷰티',
       brandTitle: '코코팜 네이처바이 알로에 에센스 팩 100매',
       salePrice: '10,000원',
       originPrice: '50,000원',
@@ -472,6 +532,7 @@
     },
     {
       id: 'toss_02',
+      category: '뷰티',
       brandTitle: '필링빈 페이셜 커피스크럽 클렌저 60g',
       salePrice: '9,300원',
       originPrice: '22,000원',
@@ -483,6 +544,7 @@
     },
     {
       id: 'toss_03',
+      category: '뷰티',
       brandTitle: '참존 탑글램 타임 케어 리프팅 크림 50ml',
       salePrice: '14,900원',
       originPrice: '70,000원',
@@ -494,6 +556,7 @@
     },
     {
       id: 'toss_04',
+      category: '뷰티',
       brandTitle: '에이지랩 스네일 뮤신 브라이트닝 크림 50ml',
       salePrice: '9,900원',
       originPrice: '50,000원',
@@ -506,6 +569,7 @@
     },
     {
       id: 'toss_05',
+      category: '생활.주방',
       brandTitle: '르베르다 천연 비누 무배 체험 샘플 키트',
       salePrice: '1,000원',
       originPrice: '6,000원',
@@ -517,6 +581,7 @@
     },
     {
       id: 'toss_06',
+      category: '뷰티',
       brandTitle: '젠바이오 수분 장벽 보습 수딩 크림 100ml',
       salePrice: '16,500원',
       originPrice: '38,000원',
@@ -525,14 +590,48 @@
       reviews: '18',
       chips: [{ text: '오늘출발', class: 'chip-ship' }],
       img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_07',
+      category: '식품',
+      brandTitle: '경북 고당도 꿀 부사 사과 실속형 3kg',
+      salePrice: '19,800원',
+      originPrice: '35,000원',
+      discount: '43% 공구',
+      rating: '4.8',
+      reviews: '3,402',
+      chips: [{ text: '오늘출발', class: 'chip-ship' }],
+      img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=400&q=85'
+    },
+    {
+      id: 'toss_08',
+      category: '가전',
+      brandTitle: '무선 미니 핸디형 차량용 청소기 고흡입력',
+      salePrice: '29,900원',
+      originPrice: '59,000원',
+      discount: '49% 공구',
+      rating: '4.7',
+      reviews: '984',
+      chips: [{ text: '최저가보상', class: 'chip-guarantee' }],
+      img: 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=400&q=85'
     }
   ];
 
-  function renderGbGrid() {
+  function renderGbGrid(filterCategory = '전체') {
     const el = document.getElementById('gb-products-grid');
     if (!el) return;
 
-    el.innerHTML = GB_PRODUCTS.map(item => `
+    // 카테고리 필터링
+    const filtered = filterCategory === '전체' 
+      ? GB_PRODUCTS 
+      : GB_PRODUCTS.filter(p => p.category === filterCategory);
+
+    if (filtered.length === 0) {
+      el.innerHTML = `<div style="grid-column: span 2; text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 14px; font-weight: 600;">해당 카테고리의 공동구매 상품이 없습니다.</div>`;
+      return;
+    }
+
+    el.innerHTML = filtered.map(item => `
       <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
         <div class="toss-img-box">
           <img src="${item.img}" alt="${item.brandTitle}">
@@ -560,7 +659,19 @@
     `).join('');
   }
 
-  document.addEventListener('DOMContentLoaded', renderGbGrid);
+  function selectCategory(el) {
+    document.querySelectorAll('.category-circle-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    el.classList.add('active');
+    
+    const category = el.textContent.trim();
+    renderGbGrid(category);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderGbGrid('전체');
+  });
 </script>
 </body>
 </html>
