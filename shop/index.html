@@ -941,7 +941,8 @@
             </button>
           </div>
           <div class="toss-info">
-            <div class="toss-brand-title">${item.brand_title}</div>
+            ${item.brand_name ? `<div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px; letter-spacing: -0.01em;">${item.brand_name}</div>` : ''}
+            <div class="toss-brand-title" style="${item.brand_name ? 'font-size: 13px; font-weight: 600;' : ''}">${item.product_title || item.brand_title}</div>
             <div class="toss-price-row">
               <span class="toss-sale-price">${item.sale_price}</span>
               <span class="toss-origin-price">${item.origin_price}</span>

@@ -658,7 +658,8 @@ async function renderSectionsPanel(panel, wrapper) {
     secDiv.querySelector('.add-prod').addEventListener('click', async () => {
       await productDB.insert({
         section_id: sec.id, sort_order: 99,
-        brand_title: '신규 특별 제안 상품', sale_price: '0원', origin_price: '0원',
+        brand_name: '브랜드명', product_title: '상품명', brand_title: '브랜드명 상품명',
+        sale_price: '0원', origin_price: '0원',
         discount: '특가', unit_price: '', rating: '5.0', reviews: '1', img_url: '', chips: '[]'
       });
       toast('새 상품 입력란이 하단에 추가되었습니다.');
@@ -681,6 +682,10 @@ function renderProductCards(list, prods, panel, wrapper) {
     const itemRow = document.createElement('div');
     itemRow.style.cssText = 'display:flex; gap:16px; align-items:flex-start; padding:18px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fafafa; margin-bottom:12px;';
     
+    // 브랜드명과 상품명 분리 추동
+    const bNameVal = p.brand_name || (p.brand_title ? p.brand_title.split(' ')[0] : '');
+    const pTitleVal = p.product_title || (p.brand_title ? p.brand_title.split(' ').slice(1).join(' ') : '');
+
     itemRow.innerHTML = `
       <div style="width:90px; flex-shrink:0;">
         <label class="sm-label">상품 사진 (클릭 업로드)</label>
@@ -690,7 +695,8 @@ function renderProductCards(list, prods, panel, wrapper) {
         </div>
       </div>
       <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        ${formField('브랜드 및 상품명','p-name',p.brand_title,'text',true)}
+        ${formField('브랜드명 (예: 설화수)','p-bname', bNameVal)}
+        ${formField('상품명 (예: 윤조 에센스 90ml)','p-ptitle', pTitleVal)}
         ${formField('현재 판매가 (예: 9,900원)','p-sale',p.sale_price)}
         ${formField('원래 정가 (예: 50,000원)','p-origin',p.origin_price)}
         ${formField('할인율 태그 (예: 80% 특가)','p-disc',p.discount)}
@@ -716,8 +722,14 @@ function renderProductCards(list, prods, panel, wrapper) {
     });
 
     itemRow.querySelector('.p-save').addEventListener('click', async () => {
+      const bName = itemRow.querySelector('.p-bname').value.trim();
+      const pTitle = itemRow.querySelector('.p-ptitle').value.trim();
+      const combinedTitle = (bName + ' ' + pTitle).trim();
+
       await productDB.update(p.id, {
-        brand_title:  itemRow.querySelector('.p-name').value.trim(),
+        brand_name:    bName,
+        product_title: pTitle,
+        brand_title:   combinedTitle,
         sale_price:   itemRow.querySelector('.p-sale').value.trim(),
         origin_price: itemRow.querySelector('.p-origin').value.trim(),
         discount:     itemRow.querySelector('.p-disc').value.trim(),
