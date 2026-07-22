@@ -193,7 +193,7 @@
       transition: all 0.2s;
     }
 
-    /* ── SUB NAV TABS (NORMAL RELATIVE SCROLL) ── */
+    /* ── SUB NAV TABS (FIXED RELATIVE NO Y-BOUNCE) ── */
     .sub-tabs {
       position: relative;
       top: auto;
@@ -204,6 +204,11 @@
       border-bottom: 1px solid var(--border);
       gap: 20px;
       overflow-x: auto;
+      overflow-y: hidden;
+      touch-action: pan-x;
+      overscroll-behavior-y: none;
+      user-select: none;
+      -webkit-user-select: none;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       white-space: nowrap;
