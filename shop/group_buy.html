@@ -312,19 +312,27 @@
 <body>
 <div class="app">
 
-  <!-- Header -->
+  <!-- ── 상단 헤더 (Apple Frosted Glass Common Header) ── -->
   <header class="header">
-    <div class="hdr-title">공동구매 딜</div>
-    <div style="font-size:13px; color:var(--text-sub); font-weight:600;">마감임박순</div>
+    <div class="hdr-logo-wrap" onclick="window.location.href='/shop/index.html'">
+      <span class="hdr-logo-text" style="font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: #ffffff;">RYZIN</span>
+    </div>
+    <div class="hdr-right">
+      <button class="hdr-icon-btn">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      </button>
+      <button class="hdr-icon-btn" onclick="window.location.href='/shop/index.html'">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      </button>
+    </div>
   </header>
 
   <!-- Hero Banner -->
   <div class="gb-hero">
     <div>
-      <h2>🔥 실시간 공동구매</h2>
+      <h2>실시간 공동구매</h2>
       <p>인원 달성 시 최대 83% 할인 적용</p>
     </div>
-    <div style="font-size:24px;">🛒</div>
   </div>
 
   <!-- Vertical 2-Column Product Cards Section -->
