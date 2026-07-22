@@ -524,33 +524,8 @@
     .chip-guarantee { background: #2d1813; color: #fdba74; }
     .chip-best { background: #22232a; color: #cbd5e1; }
 
-    /* ── TOSS MORE BUTTON ── */
-    .toss-more-btn {
-      width: 100%;
-      height: 48px;
-      border-radius: 12px;
-      background: transparent;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 600;
-      border: 1.5px solid rgba(255, 255, 255, 0.45);
-      cursor: pointer;
-      margin-top: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: background 0.15s, border-color 0.15s;
-    }
-
-    .toss-more-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.65);
-    }
-
-    .toss-more-btn:active {
-      background: rgba(255, 255, 255, 0.12);
-    }
+    /* ── TOSS MORE BUTTON (deprecated — replaced by mag-more-btn style in header) ── */
+    .toss-more-btn { display: none; }
 
     /* ── FOOTER STYLING ── */
     .footer {
@@ -1111,10 +1086,12 @@
             <h3>${sec.title}</h3>
             <p>${sec.subtitle || ''}</p>
           </div>
-          ${sec.show_timer ? '<div class="sec-timer-badge" id="sec-timer-'+sec.id+'">00:00</div>' : ''}
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${sec.show_timer ? '<div class="sec-timer-badge" id="sec-timer-'+sec.id+'">00:00</div>' : ''}
+            <button class="mag-more-btn">더보기</button>
+          </div>
         </div>
         <div class="toss-prod-scroll" id="sec-prods-${sec.id}"></div>
-        <button class="toss-more-btn">더보기</button>
       `;
       const grid = secEl.querySelector(`#sec-prods-${sec.id}`);
       grid.innerHTML = prods.map(item => {
@@ -1230,9 +1207,9 @@
             <h3>지금 바로 상설관 구경</h3>
             <p>특가 상품 보러 가기</p>
           </div>
+          <button class="mag-more-btn">더보기</button>
         </div>
         <div class="toss-prod-scroll" id="scroll-section-1"></div>
-        <button class="toss-more-btn">더보기</button>
       </section>
       <section class="section">
         <div class="sec-header-wrap">
@@ -1240,9 +1217,9 @@
             <h3>뷰티영 브랜드 기획전</h3>
             <p>단독 특가로 만나보세요</p>
           </div>
+          <button class="mag-more-btn">더보기</button>
         </div>
         <div class="toss-prod-scroll" id="scroll-section-2"></div>
-        <button class="toss-more-btn">더보기</button>
       </section>
     `;
     renderTossScroll('scroll-section-1', PRODUCTS_SET_1);
