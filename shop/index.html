@@ -870,11 +870,11 @@
       <span class="hdr-logo-text" style="font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: #ffffff;">RYZIN</span>
     </div>
     <div class="hdr-right">
-      <button class="hdr-icon-btn">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <button class="hdr-icon-btn" onclick="showToast('새로운 알림이 없습니다.')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
       </button>
-      <button class="hdr-icon-btn">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      <button class="hdr-icon-btn" onclick="window.location.href='/shop/cart.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
       </button>
     </div>
   </header>
@@ -921,40 +921,11 @@
         <button class="mag-more-btn" onclick="window.location.href='/shop/exhibition.html?title=${encodeURIComponent('RYZIN 뷰티 & 라이프 매거진')}'">더보기</button>
       </div>
 
-      <!-- 피처 카드 -->
-      <div class="mag-feature-card" onclick="">
-        <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" alt="매거진 피처">
-        <div class="mag-feature-overlay">
-          <span class="mag-category-badge">뷰티 트렌드</span>
-          <div class="mag-feature-title">2026 여름 스킨케어<br>루틴 완전 정복</div>
-          <div class="mag-feature-desc">폭염 속에서도 촉촉한 피부를 유지하는 K-뷰티 전문가들의 비밀</div>
-        </div>
-      </div>
+      <!-- 피처 카드 (동적 렌더) -->
+      <div id="mag-feature-card-box"></div>
 
-      <!-- 소형 카드 가로 스크롤 -->
-      <div class="mag-scroll">
-        <div class="mag-small-card" onclick="">
-          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85" alt="매거진">
-          <div class="mag-small-info">
-            <div class="mag-small-badge">라이프스타일</div>
-            <div class="mag-small-title">라이브 쇼핑, 이제는 문화다</div>
-          </div>
-        </div>
-        <div class="mag-small-card" onclick="">
-          <img src="https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85" alt="매거진">
-          <div class="mag-small-info">
-            <div class="mag-small-badge">성분 분석</div>
-            <div class="mag-small-title">나이아신아마이드 vs 비타민C 뭐가 더 좋을까</div>
-          </div>
-        </div>
-        <div class="mag-small-card" onclick="">
-          <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=400&q=85" alt="매거진">
-          <div class="mag-small-info">
-            <div class="mag-small-badge">셀럽 루틴</div>
-            <div class="mag-small-title">연예인들이 선택한 NO.1 선크림</div>
-          </div>
-        </div>
-      </div>
+      <!-- 소형 카드 가로 스크롤 (동적 렌더) -->
+      <div class="mag-scroll" id="mag-scroll-box"></div>
     </section>
   </main>
 
@@ -1516,13 +1487,58 @@
     }
   }
 
+  // ── 매거진 동적 렌더 ──
+  async function renderMagazines() {
+    const featureBox = document.getElementById('mag-feature-card-box');
+    const scrollBox = document.getElementById('mag-scroll-box');
+    if (!featureBox || !scrollBox) return;
+
+    let mags = await sbGet('shop_magazines', 'select=*&order=sort_order.asc');
+    mags = mags.filter(m => m.active !== false);
+
+    if (!mags || !mags.length) {
+      mags = [
+        { is_feature: true, category: '뷰티 트렌드', title: '2026 여름 스킨케어 루틴 완전 정복', desc: '폭염 속에서도 촉촉한 피부를 유지하는 K-뷰티 전문가들의 비밀', img_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85', link_url: '/shop/exhibition.html' },
+        { is_feature: false, category: '라이프스타일', title: '라이브 쇼핑, 이제는 문화다', img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=85', link_url: '/shop/exhibition.html' },
+        { is_feature: false, category: '성분 분석', title: '나이아신아마이드 vs 비타민C 핵심 비교', img_url: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=400&q=85', link_url: '/shop/exhibition.html' }
+      ];
+    }
+
+    const feat = mags.find(m => m.is_feature) || mags[0];
+    const subList = mags.filter(m => m !== feat);
+
+    if (feat) {
+      featureBox.innerHTML = `
+        <div class="mag-feature-card" onclick="window.location.href='${feat.link_url || '/shop/exhibition.html'}'">
+          <img src="${feat.img_url}" alt="${esc(feat.title)}">
+          <div class="mag-feature-overlay">
+            <span class="mag-category-badge">${esc(feat.category || '트렌드')}</span>
+            <div class="mag-feature-title">${esc(feat.title)}</div>
+            <div class="mag-feature-desc">${esc(feat.desc || '')}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    scrollBox.innerHTML = subList.map(m => `
+      <div class="mag-small-card" onclick="window.location.href='${m.link_url || '/shop/exhibition.html'}'">
+        <img src="${m.img_url}" alt="${esc(m.title)}">
+        <div class="mag-small-info">
+          <div class="mag-small-badge">${esc(m.category || '컬처')}</div>
+          <div class="mag-small-title">${esc(m.title)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
   // ── 전체 숍 초기화 ──
   async function initShop() {
     await Promise.all([
       renderBanners(),
       renderMenus(),
       renderLives(),
-      renderSections()
+      renderSections(),
+      renderMagazines()
     ]);
   }
 

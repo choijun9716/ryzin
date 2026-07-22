@@ -79,3 +79,11 @@ export const liveDB = {
   update: (id, d) => dbUpdate('shop_lives', id, d),
   delete: (id) => dbDelete('shop_lives', id),
 };
+
+// ── 매거진 ──
+export const magazineDB = {
+  getAll: () => dbFetch('shop_magazines', 'select=*&order=sort_order.asc'),
+  insert: (d) => dbInsert('shop_magazines', d),
+  update: (id, d) => dbUpdate('shop_magazines', id, d),
+  delete: (id) => dbDelete('shop_magazines', id),
+};

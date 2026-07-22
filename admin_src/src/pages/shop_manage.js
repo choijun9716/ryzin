@@ -5,7 +5,7 @@
 //  - 대시보드 및 라이브송출관리 UI/UX 톤앤매너 적용
 // ============================================================
 
-import { bannerDB, sectionDB, menuDB, productDB } from '../utils/shopDB.js';
+import { bannerDB, sectionDB, menuDB, productDB, magazineDB } from '../utils/shopDB.js';
 
 function generateProductCode() {
   const num = Math.floor(Math.random() * 89999 + 10000);
@@ -393,13 +393,14 @@ export function renderShopManage() {
       </div>
     </div>
 
-    <!-- 핵심 서브 탭 4개 메뉴 -->
+    <!-- 핵심 서브 탭 5개 메뉴 -->
     <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
       ${[
         { key:'products', label:'상품 관리' },
         { key:'sections', label:'기획전 관리' },
         { key:'banners', label:'탑배너 관리' },
-        { key:'menus', label:'퀵메뉴 관리' }
+        { key:'menus', label:'퀵메뉴 관리' },
+        { key:'magazines', label:'매거진 관리' }
       ].map(t => `<button class="sm-tab-btn${t.key===_tab?' active':''}" data-tab="${t.key}">${t.label}</button>`).join('')}
     </div>
 
@@ -452,6 +453,7 @@ async function loadPanel(wrapper) {
     else if (_tab === 'sections') await renderSectionsPanel(panel, wrapper);
     else if (_tab === 'banners') await renderBannersPanel(panel);
     else if (_tab === 'menus') await renderMenusPanel(panel);
+    else if (_tab === 'magazines') await renderMagazinesPanel(panel);
   } catch(e) {
     panel.innerHTML = `
       <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
@@ -1067,6 +1069,120 @@ async function renderMenusPanel(panel) {
       await menuDB.delete(m.id);
       toast('삭제되었습니다.');
       await renderMenusPanel(panel);
+    });
+
+    list.appendChild(card);
+  });
+}
+
+// ──────────────────────────────────────────
+// 5. 매거진 관리 (피처/서브 매거진 등록 및 수정)
+// ──────────────────────────────────────────
+async function renderMagazinesPanel(panel) {
+  let mags = [];
+  try {
+    mags = await magazineDB.getAll();
+  } catch(e) { mags = []; }
+
+  panel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div>
+        <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0 0 2px 0;">매거진 콘텐츠 관리 (${mags.length}개)</h2>
+        <p style="font-size:12px; color:#64748b; margin:0;">홈 화면의 매거진 피처 아티클 및 서브 카드를 추가/수정합니다.</p>
+      </div>
+      <button id="add-mag" class="sm-action-btn sm-btn-primary">+ 새 매거진 아티클 추가</button>
+    </div>
+    <div id="mag-list"></div>
+  `;
+
+  panel.querySelector('#add-mag').addEventListener('click', async () => {
+    await magazineDB.insert({
+      category: '뷰티 트렌드',
+      title: '새 매거진 타이틀',
+      desc: '매거진 요약 설명을 입력하세요',
+      img_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85',
+      link_url: '/shop/exhibition.html',
+      is_feature: false,
+      sort_order: 99
+    });
+    toast('새 매거진 아티클이 추가되었습니다.');
+    await renderMagazinesPanel(panel);
+  });
+
+  const list = panel.querySelector('#mag-list');
+  if (!mags.length) {
+    list.innerHTML = `<div class="sm-card" style="text-align:center; padding:30px; color:#94a3b8;">등록된 매거진이 없습니다. 새 매거진 추가 버튼을 클릭해 보세요.</div>`;
+    return;
+  }
+
+  mags.forEach((m) => {
+    const card = document.createElement('div');
+    card.className = 'sm-card';
+    card.style.marginBottom = '14px';
+
+    card.innerHTML = `
+      <div class="sm-card-header">
+        <div class="sm-card-title">
+          <span>${esc(m.title)}</span>
+          <span style="font-size:11px; font-weight:700; color:${m.is_feature ? '#2563eb' : '#64748b'}; background:${m.is_feature ? '#eff6ff' : '#f1f5f9'}; padding:2px 8px; border-radius:4px;">
+            ${m.is_feature ? '메인 피처 아티클' : '서브 매거진 카드'}
+          </span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="sm-action-btn sm-btn-success mag-save" style="padding:5px 10px; font-size:12px;">저장</button>
+          <button class="sm-action-btn sm-btn-danger mag-del" style="padding:5px 10px; font-size:12px;">삭제</button>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+        ${formField('카테고리 (예: 뷰티 트렌드, 라이프스타일)','mag-cat', m.category)}
+        ${formField('매거진 제목','mag-title', m.title)}
+      </div>
+      <div style="margin-bottom:10px;">
+        ${formField('매거진 요약 설명 (피처 카드에 노출)','mag-desc', m.desc, 'text', true)}
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        ${formField('클릭 시 이동할 링크 URL','mag-link', m.link_url || '/shop/exhibition.html')}
+        <div style="display:flex; align-items:center; gap:8px; margin-top:20px;">
+          <input type="checkbox" class="mag-isfeat" id="mag-feat-${m.id}" ${m.is_feature ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;">
+          <label for="mag-feat-${m.id}" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">메인 피처 아티클로 지정</label>
+        </div>
+      </div>
+      <div>
+        <label class="sm-label">커버 이미지 (클릭 업로드)</label>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="sm-thumb-uploader mag-uploader" style="width:120px; height:64px; flex-shrink:0;">
+            <img class="mag-thumb" src="${esc(m.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">이미지 업로드</div>
+          </div>
+          <input class="sm-input mag-imgurl" type="text" value="${esc(m.img_url || '')}" placeholder="이미지 URL">
+        </div>
+      </div>
+    `;
+
+    const uploader = card.querySelector('.mag-uploader');
+    const inputImg = card.querySelector('.mag-imgurl');
+    bindImageUploader(uploader, inputImg, (url) => {
+      card.querySelector('.mag-thumb').src = url;
+    });
+
+    card.querySelector('.mag-save').addEventListener('click', async () => {
+      await magazineDB.update(m.id, {
+        category: card.querySelector('.mag-cat').value.trim(),
+        title: card.querySelector('.mag-title').value.trim(),
+        desc: card.querySelector('.mag-desc').value.trim(),
+        link_url: card.querySelector('.mag-link').value.trim(),
+        is_feature: card.querySelector('.mag-isfeat').checked,
+        img_url: inputImg.value.trim(),
+      });
+      toast('매거진 저장 완료');
+      await renderMagazinesPanel(panel);
+    });
+
+    card.querySelector('.mag-del').addEventListener('click', async () => {
+      if (!confirm('이 매거진 항목을 삭제합니까?')) return;
+      await magazineDB.delete(m.id);
+      toast('삭제되었습니다.');
+      await renderMagazinesPanel(panel);
     });
 
     list.appendChild(card);
