@@ -383,24 +383,30 @@
       gap: 4px;
     }
 
-    /* ── TOSS PRODUCT CARDS (VERTICAL 2-COLUMN GRID MATCHING GROUP BUY) ── */
+    /* ── TOSS PRODUCT CARDS (HORIZONTAL SLIDE SCROLL) ── */
     .toss-prod-scroll {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px 12px;
-      padding-bottom: 8px;
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scroll-padding: 0 16px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -16px;
+      padding: 0 16px 8px;
     }
 
+    .toss-prod-scroll::-webkit-scrollbar { display: none; }
+
     .toss-card {
-      width: 100%;
+      flex: 0 0 148px;
       display: flex;
       flex-direction: column;
       cursor: pointer;
     }
 
     .toss-img-box {
-      width: 100%;
-      aspect-ratio: 1 / 1;
+      width: 148px;
+      height: 148px;
       border-radius: 16px;
       overflow: hidden;
       position: relative;
