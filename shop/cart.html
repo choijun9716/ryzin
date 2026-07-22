@@ -388,7 +388,7 @@
     /* ── FOOTER STYLING ── */
     .footer {
       background: #090a0c;
-      padding: 40px 16px 50px;
+      padding: 20px 16px;
       border-top: 1px solid var(--border);
       text-align: center;
       color: var(--text-muted);
@@ -401,12 +401,38 @@
       font-size: 16px;
       font-weight: 800;
       color: var(--text-sub);
-      margin-bottom: 16px;
+      margin-bottom: 0;
       letter-spacing: -0.03em;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+      padding: 10px 0;
+    }
+
+    .footer-logo svg {
+      transition: transform 0.2s ease;
+      transform: rotate(180deg);
+    }
+
+    .footer.open .footer-logo svg {
+      transform: rotate(0deg);
+    }
+
+    .footer-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+      opacity: 0;
+      padding-top: 0;
+    }
+
+    .footer.open .footer-body {
+      max-height: 350px;
+      opacity: 1;
+      padding-top: 16px;
     }
 
     .footer-info {
@@ -548,27 +574,29 @@
   </section>
 
   <!-- ── 푸터 (Footer) ── -->
-  <footer class="footer">
-    <div class="footer-logo">
+  <footer class="footer" id="ryzin-footer">
+    <div class="footer-logo" onclick="toggleFooter()">
       <span>RYZIN</span>
-      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" style="transform: rotate(0deg);"><path d="M18 15l-6-6-6 6"/></svg>
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M18 15l-6-6-6 6"/></svg>
     </div>
-    <div class="footer-info">
-      <span>회사명: 라이진 | 대표: 채이준 | 사업자등록번호: 821-29-01197</span>
-      <span>사업장 소재지: 경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2</span>
-      <span>호스팅서비스: Amazon Web Services, Inc</span>
-    </div>
-    <p class="footer-notice">
-      라이진은 통신판매중개자이며, 통신판매의 당사자가 아닙니다. 상품, 상품 정보, 거래, 배송에 관한 의무와 책임은 판매자에게 있습니다.
-    </p>
-    <div class="footer-links">
-      <a href="#" onclick="alert('이용약관')">이용약관</a> |
-      <a href="#" onclick="alert('사업자정보')">사업자정보</a> |
-      <a href="#" onclick="alert('개인정보처리방침')">개인정보처리방침</a> |
-      <a href="#" onclick="alert('입점문의')">입점문의</a>
-    </div>
-    <div class="footer-copyright">
-      © 2026 RYZIN
+    <div class="footer-body">
+      <div class="footer-info">
+        <span>회사명: 라이진 | 대표: 채이준 | 사업자등록번호: 821-29-01197</span>
+        <span>사업장 소재지: 경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2</span>
+        <span>호스팅서비스: Amazon Web Services, Inc</span>
+      </div>
+      <p class="footer-notice">
+        라이진은 통신판매중개자이며, 통신판매의 당사자가 아닙니다. 상품, 상품 정보, 거래, 배송에 관한 의무와 책임은 판매자에게 있습니다.
+      </p>
+      <div class="footer-links">
+        <a href="#" onclick="alert('이용약관')">이용약관</a> |
+        <a href="#" onclick="alert('사업자정보')">사업자정보</a> |
+        <a href="#" onclick="alert('개인정보처리방침')">개인정보처리방침</a> |
+        <a href="#" onclick="alert('입점문의')">입점문의</a>
+      </div>
+      <div class="footer-copyright">
+        © 2026 RYZIN
+      </div>
     </div>
   </footer>
 
@@ -654,6 +682,13 @@
 
   function checkout() {
     alert('선택하신 상품의 결제가 완료되었습니다.');
+  }
+
+  function toggleFooter() {
+    const footer = document.getElementById('ryzin-footer');
+    if (footer) {
+      footer.classList.toggle('open');
+    }
   }
 </script>
 </body>
