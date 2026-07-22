@@ -2719,7 +2719,7 @@
             <div class="prod-name">${p.name}</div>
             <div class="prod-price">${p.price}</div>
             ${p.benefit ? `<div class="prod-benefit">${p.benefit}</div>` : ''}
-            <div class="chip-row">${p.tags.map(t => `<span class="chip-tag">${t}</span>`).join('')}</div>
+            <div class="chip-row">${(p.tags || []).slice(0, 2).map(t => `<span class="chip-tag">${t}</span>`).join('')}</div>
           </div>
         </div>
       `;
