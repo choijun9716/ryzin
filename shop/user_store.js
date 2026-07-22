@@ -43,35 +43,8 @@ export async function getUserProfile() {
 // 2. 장바구니 (Cart Operations)
 export async function getCartItems() {
   const items = await sbFetch(`shop_cart?user_code=eq.${DEFAULT_USER_CODE}&order=created_at.asc`);
-  if (items && items.length) return items;
-
-  // DB에 없을 경우 기본 폴백 장바구니 데이터 2종 반환
-  return [
-    {
-      id: 'cart-fallback-1',
-      user_code: DEFAULT_USER_CODE,
-      product_id: 'PROD-1001',
-      brand_name: '코코팜 네이처바이',
-      product_name: '알로에 에센스 마스크팩 100매 기획세트',
-      price: 10000,
-      origin_price: 50000,
-      qty: 1,
-      img_url: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=400&q=85',
-      selected: true
-    },
-    {
-      id: 'cart-fallback-2',
-      user_code: DEFAULT_USER_CODE,
-      product_id: 'PROD-1002',
-      brand_name: '필링빈',
-      product_name: '페이셜 커피스크럽 클렌저 60g',
-      price: 3990,
-      origin_price: 9900,
-      qty: 1,
-      img_url: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=85',
-      selected: true
-    }
-  ];
+  if (items) return items;
+  return [];
 }
 
 export async function addCartItem(product) {
@@ -114,6 +87,10 @@ export async function deleteSelectedCartItems(selectedIds) {
     await deleteCartItem(id);
   }
   return true;
+}
+
+export async function clearAllCartItems() {
+  return await sbFetch(`shop_cart?user_code=eq.${DEFAULT_USER_CODE}`, 'DELETE');
 }
 
 // 3. 배송지 관리 (Address Operations)

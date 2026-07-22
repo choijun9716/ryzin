@@ -680,13 +680,7 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  function updateGlobalCartBadge() {
-    const badge = document.getElementById('cart-badge');
-    if (!badge) return;
-    const count = cartData.length;
-    badge.textContent = count;
-    badge.style.display = count > 0 ? 'flex' : 'none';
-  }
+
 
   async function loadCart() {
     cartData = await getCartItems();
@@ -694,7 +688,7 @@
   }
 
   function renderCartList() {
-    const container = document.getElementById('cart-items-container');
+    const container = document.getElementById('cart-item-list');
     const ctaWrap = document.querySelector('.bottom-cta-wrap');
 
     if (!cartData || cartData.length === 0) {
