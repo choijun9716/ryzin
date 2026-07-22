@@ -1404,15 +1404,16 @@
       const rankBadgeHtml = isBest10
         ? `<span class="toss-rank-badge ${idx < 3 ? 'top3' : ''}" style="${customBadgeStyle}">${item.best_rank || (idx + 1)}</span>`
         : '';
-      const tagLeftStyle = isBest10 ? 'left: 36px;' : 'left: 8px;';
-      const tagColorStyle = item.badge_color ? `background: ${item.badge_color};` : '';
+      const discountTagHtml = !isBest10
+        ? `<span class="toss-discount-tag" style="left: 8px;">${item.discount || '특가'}</span>`
+        : '';
 
       return `
         <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
           <div class="toss-img-box">
             ${rankBadgeHtml}
             <img src="${item.img_url}" alt="${esc(pTitle)}">
-            <span class="toss-discount-tag" style="${tagLeftStyle} ${tagColorStyle}">${item.discount || '특가'}</span>
+            ${discountTagHtml}
             <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
               <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             </button>
