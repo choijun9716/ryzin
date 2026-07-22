@@ -2996,149 +2996,276 @@ Minimum version required to store current data is: `+c+`.
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`);document.getElementById(`otp-setup-container`),document.getElementById(`qrcode-box`);let a=document.getElementById(`login-otp`),o=null;e&&e.addEventListener(`submit`,async t=>{t.preventDefault();let n=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value;if(n.toLowerCase()===`admin`&&r.trim()===`1234`){U.loginAsDemo();return}let i=e.querySelector(`button[type="submit"]`),a=i?i.textContent:`로그인`;i&&(i.textContent=`로그인 중...`,i.disabled=!0);try{await U.init()}catch(e){console.warn(`Failed to sync users from Supabase before login`,e)}finally{i&&(i.textContent=a,i.disabled=!1)}let o=U.verifyPassword(n,r);if(o){if(U.isDemoMode){U.completeLogin(o),Y(`데모 모드로 접속되었습니다.`),M.navigate(`/`);return}U.completeLogin(o),Y(`환영합니다.`),M.navigate(`/`);return}else X(`로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.`)}),t&&t.addEventListener(`submit`,e=>{if(e.preventDefault(),!o)return;let t=a.value.trim(),n=o.otpSecret||localStorage.getItem(`ryzin_otp_${o.id}`)||null;try{new _i({issuer:`Ryzin Admin`,label:o.id,algorithm:`SHA1`,digits:6,period:30,secret:mi.fromBase32(n)}).validate({token:t,window:1})===null?(X(`인증번호가 올바르지 않습니다.`),a.value=``,a.focus()):(localStorage.setItem(`ryzin_otp_trusted_${o.id}`,`true`),U.completeLogin(o),Y(`OTP 인증 성공! 환영합니다.`),M.navigate(`/`))}catch{X(`인증 과정에 문제가 발생했습니다.`)}}),i&&i.addEventListener(`click`,()=>{o&&confirm(`OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.`)&&(localStorage.removeItem(`ryzin_otp_${o.id}`),alert(`OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.`),n.style.transform=`translateX(0)`,o=null,a.value=``)}),r&&r.addEventListener(`click`,()=>{n.style.transform=`translateX(0)`,o=null,a.value=``})},0),e}var Ki=`https://vybrnhyaeugfwezbygdt.supabase.co`,qi=`sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9`,Ji={"Content-Type":`application/json`,apikey:qi,Authorization:`Bearer ${qi}`,Prefer:`return=representation`};async function Yi(e,t=``){let n=await fetch(`${Ki}/rest/v1/${e}?${t}`,{headers:Ji});if(!n.ok)throw Error(`DB fetch error: ${n.status}`);return n.json()}async function Xi(e,t){let n=await fetch(`${Ki}/rest/v1/${e}`,{method:`POST`,headers:Ji,body:JSON.stringify(t)});if(!n.ok)throw Error(`DB insert error: ${n.status}`);return n.json()}async function Zi(e,t,n){let r=await fetch(`${Ki}/rest/v1/${e}?id=eq.${t}`,{method:`PATCH`,headers:Ji,body:JSON.stringify(n)});if(!r.ok)throw Error(`DB update error: ${r.status}`);return r.json()}async function Qi(e,t){let n=await fetch(`${Ki}/rest/v1/${e}?id=eq.${t}`,{method:`DELETE`,headers:Ji});if(!n.ok)throw Error(`DB delete error: ${n.status}`);return!0}var $i={getAll:()=>Yi(`shop_banners`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_banners`,e),update:(e,t)=>Zi(`shop_banners`,e,t),delete:e=>Qi(`shop_banners`,e)},ea={getAll:()=>Yi(`shop_sections`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_sections`,e),update:(e,t)=>Zi(`shop_sections`,e,t),delete:e=>Qi(`shop_sections`,e)},ta={getAll:()=>Yi(`shop_menus`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_menus`,e),update:(e,t)=>Zi(`shop_menus`,e,t),delete:e=>Qi(`shop_menus`,e)},na={getAll:()=>Yi(`shop_products`,`select=*&order=sort_order.asc`),getBySectionId:e=>Yi(`shop_products`,`select=*&section_id=eq.${e}&order=sort_order.asc`),insert:e=>Xi(`shop_products`,e),update:(e,t)=>Zi(`shop_products`,e,t),delete:e=>Qi(`shop_products`,e)},ra={getAll:()=>Yi(`shop_lives`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_lives`,e),update:(e,t)=>Zi(`shop_lives`,e,t),delete:e=>Qi(`shop_lives`,e)};function ia(e){return String(e||``).replace(/&/g,`&amp;`).replace(/"/g,`&quot;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`)}function aa(e,t=!1){let n=document.createElement(`div`);n.textContent=e,n.style.cssText=`position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
-    background:${t?`#ef4444`:`#1e293b`};color:#fff;padding:12px 24px;
+  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`);document.getElementById(`otp-setup-container`),document.getElementById(`qrcode-box`);let a=document.getElementById(`login-otp`),o=null;e&&e.addEventListener(`submit`,async t=>{t.preventDefault();let n=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value;if(n.toLowerCase()===`admin`&&r.trim()===`1234`){U.loginAsDemo();return}let i=e.querySelector(`button[type="submit"]`),a=i?i.textContent:`로그인`;i&&(i.textContent=`로그인 중...`,i.disabled=!0);try{await U.init()}catch(e){console.warn(`Failed to sync users from Supabase before login`,e)}finally{i&&(i.textContent=a,i.disabled=!1)}let o=U.verifyPassword(n,r);if(o){if(U.isDemoMode){U.completeLogin(o),Y(`데모 모드로 접속되었습니다.`),M.navigate(`/`);return}U.completeLogin(o),Y(`환영합니다.`),M.navigate(`/`);return}else X(`로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.`)}),t&&t.addEventListener(`submit`,e=>{if(e.preventDefault(),!o)return;let t=a.value.trim(),n=o.otpSecret||localStorage.getItem(`ryzin_otp_${o.id}`)||null;try{new _i({issuer:`Ryzin Admin`,label:o.id,algorithm:`SHA1`,digits:6,period:30,secret:mi.fromBase32(n)}).validate({token:t,window:1})===null?(X(`인증번호가 올바르지 않습니다.`),a.value=``,a.focus()):(localStorage.setItem(`ryzin_otp_trusted_${o.id}`,`true`),U.completeLogin(o),Y(`OTP 인증 성공! 환영합니다.`),M.navigate(`/`))}catch{X(`인증 과정에 문제가 발생했습니다.`)}}),i&&i.addEventListener(`click`,()=>{o&&confirm(`OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.`)&&(localStorage.removeItem(`ryzin_otp_${o.id}`),alert(`OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.`),n.style.transform=`translateX(0)`,o=null,a.value=``)}),r&&r.addEventListener(`click`,()=>{n.style.transform=`translateX(0)`,o=null,a.value=``})},0),e}var Ki=`https://vybrnhyaeugfwezbygdt.supabase.co`,qi=`sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9`,Ji={"Content-Type":`application/json`,apikey:qi,Authorization:`Bearer ${qi}`,Prefer:`return=representation`};async function Yi(e,t=``){let n=await fetch(`${Ki}/rest/v1/${e}?${t}`,{headers:Ji});if(!n.ok)throw Error(`DB fetch error: ${n.status}`);return n.json()}async function Xi(e,t){let n=await fetch(`${Ki}/rest/v1/${e}`,{method:`POST`,headers:Ji,body:JSON.stringify(t)});if(!n.ok)throw Error(`DB insert error: ${n.status}`);return n.json()}async function Zi(e,t,n){let r=await fetch(`${Ki}/rest/v1/${e}?id=eq.${t}`,{method:`PATCH`,headers:Ji,body:JSON.stringify(n)});if(!r.ok)throw Error(`DB update error: ${r.status}`);return r.json()}async function Qi(e,t){let n=await fetch(`${Ki}/rest/v1/${e}?id=eq.${t}`,{method:`DELETE`,headers:Ji});if(!n.ok)throw Error(`DB delete error: ${n.status}`);return!0}var $i={getAll:()=>Yi(`shop_banners`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_banners`,e),update:(e,t)=>Zi(`shop_banners`,e,t),delete:e=>Qi(`shop_banners`,e)},ea={getAll:()=>Yi(`shop_sections`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_sections`,e),update:(e,t)=>Zi(`shop_sections`,e,t),delete:e=>Qi(`shop_sections`,e)},ta={getAll:()=>Yi(`shop_menus`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_menus`,e),update:(e,t)=>Zi(`shop_menus`,e,t),delete:e=>Qi(`shop_menus`,e)},na={getAll:()=>Yi(`shop_products`,`select=*&order=sort_order.asc`),getBySectionId:e=>Yi(`shop_products`,`select=*&section_id=eq.${e}&order=sort_order.asc`),insert:e=>Xi(`shop_products`,e),update:(e,t)=>Zi(`shop_products`,e,t),delete:e=>Qi(`shop_products`,e)},ra={getAll:()=>Yi(`shop_lives`,`select=*&order=sort_order.asc`),insert:e=>Xi(`shop_lives`,e),update:(e,t)=>Zi(`shop_lives`,e,t),delete:e=>Qi(`shop_lives`,e)};function ia(e){let t=document.createElement(`style`);t.innerHTML=`
+    .sm-input { 
+      width: 100%; 
+      padding: 10px 14px; 
+      border: 1.5px solid #e2e8f0; 
+      border-radius: 10px; 
+      font-size: 14px; 
+      outline: none; 
+      transition: all 0.2s; 
+      background: #fff; 
+      box-sizing: border-box; 
+      color: #0f172a; 
+    }
+    .sm-input:focus { 
+      border-color: #3b82f6; 
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12); 
+    }
+    .sm-label { 
+      display: block; 
+      font-size: 11px; 
+      font-weight: 700; 
+      color: #64748b; 
+      margin-bottom: 6px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.04em; 
+    }
+    .sm-tab-btn { 
+      padding: 10px 20px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      border: none; 
+      transition: all 0.18s; 
+      background: transparent; 
+      color: #64748b; 
+    }
+    .sm-tab-btn.active { 
+      background: #0f172a; 
+      color: #fff; 
+    }
+    .sm-tab-btn:hover:not(.active) { 
+      background: #e2e8f0; 
+      color: #0f172a; 
+    }
+    .sm-card { 
+      background: #fff; 
+      border: 1.5px solid #e2e8f0; 
+      border-radius: 16px; 
+      padding: 24px; 
+      box-shadow: 0 4px 16px rgba(0,0,0,0.03); 
+      margin-bottom: 20px; 
+    }
+    .sm-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px solid #f1f5f9;
+    }
+    .sm-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+    .sm-action-btn { 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center;
+      gap: 6px; 
+      padding: 8px 16px; 
+      border-radius: 8px; 
+      font-size: 13px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      border: none; 
+      transition: all 0.18s; 
+    }
+    .sm-action-btn:hover { 
+      opacity: 0.9; 
+      transform: translateY(-1px); 
+    }
+    .sm-btn-primary { 
+      background: linear-gradient(135deg, #3b82f6, #2563eb); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(37,99,235,0.2); 
+    }
+    .sm-btn-danger { 
+      background: linear-gradient(135deg, #ef4444, #dc2626); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(220,38,38,0.2); 
+    }
+    .sm-btn-neutral { 
+      background: #fff; 
+      color: #374151; 
+      border: 1.5px solid #e2e8f0; 
+    }
+    .sm-btn-neutral:hover { 
+      background: #f8fafc; 
+    }
+    .sm-btn-success {
+      background: linear-gradient(135deg, #10b981, #059669); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(5,150,105,0.2);
+    }
+  `,e.appendChild(t)}function aa(e){return String(e||``).replace(/&/g,`&amp;`).replace(/"/g,`&quot;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`)}function oa(e,t=!1){let n=document.createElement(`div`);n.textContent=e,n.style.cssText=`position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+    background:${t?`#ef4444`:`#0f172a`};color:#fff;padding:12px 24px;
     border-radius:40px;font-size:13px;font-weight:600;z-index:9999;
-    box-shadow:0 8px 24px rgba(0,0,0,0.3);`,document.body.appendChild(n),setTimeout(()=>n.remove(),2400)}function oa(e){return`<div style="background:var(--bg-secondary);border-radius:12px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color);">${e}</div>`}function sa(e,t,n,r=`text`,i=!1){return`<div${i?` style="grid-column:span 2;"`:``}>
-    <label style="font-size:11px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${ia(e)}</label>
-    <input class="${t}" type="${r}" value="${ia(n)}" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;">
+    box-shadow:0 8px 24px rgba(0,0,0,0.3);`,document.body.appendChild(n),setTimeout(()=>n.remove(),2200)}function sa(e,t,n,r=`text`,i=!1){return`<div${i?` style="grid-column:span 2;"`:``}>
+    <label class="sm-label">${aa(e)}</label>
+    <input class="sm-input ${t}" type="${r}" value="${aa(n)}">
   </div>`}function ca(e,t,n){return`<div style="grid-column:span 2;">
-    <label style="font-size:11px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${ia(e)}</label>
+    <label class="sm-label">${aa(e)}</label>
     <div style="display:flex;gap:8px;">
-      <input class="${t}" value="${ia(n)}" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:12px;">
-      <button class="${t}-preview" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-secondary);font-size:12px;cursor:pointer;white-space:nowrap;">미리보기</button>
+      <input class="sm-input ${t}" value="${aa(n)}">
+      <button class="sm-action-btn sm-btn-neutral ${t}-preview" type="button">미리보기</button>
     </div>
-  </div>`}var la=`banners`,ua=[];function da(){let e=document.createElement(`div`);return e.style.cssText=`padding:24px;max-width:960px;`,e.innerHTML=`
-    <div style="margin-bottom:24px;">
-      <h1 style="font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:4px;">쇼핑몰 관리</h1>
-      <p style="color:var(--text-secondary);font-size:14px;">홈 화면 전체 콘텐츠를 실시간으로 편집합니다.</p>
-    </div>
-
-    <div id="sm-tabs" style="display:flex;gap:4px;margin-bottom:28px;border-bottom:2px solid var(--border-color);">
-      ${[`banners`,`lives`,`sections`,`menus`].map(e=>`<button class="sm-tab${e===la?` active`:``}" data-tab="${e}"
-          style="padding:10px 18px;border:none;background:none;font-size:13px;font-weight:${e===la?`700`:`600`};
-          color:${e===la?`var(--primary)`:`var(--text-secondary)`};cursor:pointer;
-          border-bottom:2px solid ${e===la?`var(--primary)`:`transparent`};margin-bottom:-2px;transition:all .15s;">
-          ${{banners:`상단 배너`,lives:`라이브`,sections:`상품 섹션`,menus:`퀵메뉴`}[e]}
-        </button>`).join(``)}
+  </div>`}var la=`banners`,ua=[];function da(){let e=document.createElement(`div`);e.style.cssText=`display:flex; flex-direction:column; height:calc(100vh - 48px); background:#f8fafc; overflow:hidden;`,ia(e);let t=document.createElement(`div`);return t.style.cssText=`max-width:960px; margin:0 auto; padding:40px 24px; width:100%; overflow-y:auto; height:100%; box-sizing:border-box;`,t.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+      <div>
+        <h1 style="margin:0; font-size:26px; font-weight:800; color:#0f172a;">쇼핑몰 관리</h1>
+        <p style="margin:6px 0 0; font-size:14px; color:#64748b;">홈 화면 배너, 퀵메뉴, 라이브 및 상품 섹션을 Supabase 실시간 연동으로 편집합니다.</p>
+      </div>
     </div>
 
-    <div id="sm-loading" style="text-align:center;padding:40px;color:var(--text-secondary);font-size:14px;">
-      ⏳ 데이터 불러오는 중...
+    <div id="sm-tabs" style="display:flex; gap:8px; margin-bottom:28px; border-bottom:1.5px solid #e2e8f0; padding-bottom:12px;">
+      ${[`banners`,`lives`,`sections`,`menus`].map(e=>`<button class="sm-tab-btn${e===la?` active`:``}" data-tab="${e}">${{banners:`상단 배너`,lives:`라이브 NOW`,sections:`상품 섹션`,menus:`퀵메뉴`}[e]}</button>`).join(``)}
+    </div>
+
+    <div id="sm-loading" style="text-align:center;padding:40px;color:#64748b;font-size:14px;font-weight:600;">
+      ⏳ 데이터를 동기화하는 중...
     </div>
     <div id="sm-panel"></div>
-  `,e.querySelectorAll(`.sm-tab`).forEach(t=>{t.addEventListener(`click`,()=>{la=t.dataset.tab,e.querySelectorAll(`.sm-tab`).forEach(e=>{let t=e.dataset.tab===la;e.style.color=t?`var(--primary)`:`var(--text-secondary)`,e.style.fontWeight=t?`700`:`600`,e.style.borderBottom=`2px solid ${t?`var(--primary)`:`transparent`}`,e.classList.toggle(`active`,t)}),fa(e)})}),setTimeout(async()=>{try{ua=await ea.getAll()}catch{ua=[]}await fa(e)},0),e}async function fa(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{la===`banners`?await pa(n):la===`lives`?await ha(n):la===`sections`?await ga(n,e):la===`menus`&&await va(n)}catch(e){n.innerHTML=`<div style="color:var(--status-error);padding:20px;">오류: ${e.message}<br>Supabase SQL 스크립트를 먼저 실행해 주세요.</div>`}t.style.display=`none`}async function pa(e){let t=await $i.getAll();e.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">홈 상단 슬라이드 배너</h2>
-      <button id="add-banner" class="btn btn-primary btn-sm">+ 추가</button>
+  `,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.addEventListener(`click`,()=>{la=e.dataset.tab,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.classList.toggle(`active`,e.dataset.tab===la)}),fa(t)})}),e.appendChild(t),setTimeout(async()=>{try{ua=await ea.getAll()}catch{ua=[]}await fa(t)},0),e}async function fa(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{la===`banners`?await pa(n):la===`lives`?await ma(n):la===`sections`?await ha(n,e):la===`menus`&&await _a(n)}catch(e){n.innerHTML=`
+      <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
+        <h4 style="margin:0 0 8px 0; font-weight:700;">데이터 연동 실패</h4>
+        <p style="margin:0; font-size:13px;">${e.message}. Supabase SQL 쿼리 설치 및 RLS 정책을 확인해주세요.</p>
+      </div>
+    `}t.style.display=`none`}async function pa(e){let t=await $i.getAll();e.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${t.length}개)</h2>
+      <button id="add-banner" class="sm-action-btn sm-btn-primary">+ 새 배너 추가</button>
     </div>
     <div id="banner-list"></div>
-  `,e.querySelector(`#add-banner`).addEventListener(`click`,async()=>{await $i.insert({sort_order:99,title:`새 배너`,desc:``,label:``,time_text:``,img_url:``,link_url:`/shop/live_teaser.html`}),aa(`배너 추가됨`),await pa(e)}),ma(e.querySelector(`#banner-list`),t,e)}function ma(e,t,n){e.innerHTML=``,t.forEach((r,i)=>{let a=document.createElement(`div`);a.innerHTML=oa(`
-      <div style="display:flex;gap:14px;align-items:flex-start;">
-        <img class="b-thumb" src="${ia(r.img_url)}" alt="" style="width:110px;height:74px;object-fit:cover;border-radius:8px;background:#333;flex-shrink:0;">
-        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          ${sa(`제목`,`b-title`,r.title)}
-          ${sa(`부제목`,`b-desc`,r.desc)}
-          ${sa(`날짜 라벨`,`b-label`,r.label)}
-          ${sa(`시간`,`b-time`,r.time_text)}
-          ${ca(`이미지 URL`,`b-img`,r.img_url)}
-          ${sa(`링크 URL`,`b-link`,r.link_url,`text`,!0)}
+  `,e.querySelector(`#add-banner`).addEventListener(`click`,async()=>{await $i.insert({sort_order:99,title:`새 특집 배너`,desc:``,label:`오늘`,time_text:`오후 8시`,img_url:``,link_url:`/shop/live_teaser.html`}),oa(`새 배너가 생성되었습니다.`),await pa(e)});let n=e.querySelector(`#banner-list`);t.forEach((r,i)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.innerHTML=`
+      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:140px; flex-shrink:0;">
+          <label class="sm-label">배너 프리뷰</label>
+          <img class="b-thumb" src="${aa(r.img_url)}" style="width:100%; height:94px; object-fit:cover; border-radius:10px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
+        </div>
+        <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          ${sa(`배너 대제목 (타이틀)`,`b-title`,r.title)}
+          ${sa(`소제목 (서브 타이틀)`,`b-desc`,r.desc)}
+          ${sa(`라벨 뱃지 (예: 오늘, 내일)`,`b-label`,r.label)}
+          ${sa(`시간 문구 (예: 오후 8시)`,`b-time`,r.time_text)}
+          ${ca(`배너 이미지 URL`,`b-img`,r.img_url)}
+          ${sa(`클릭 시 이동할 링크 URL`,`b-link`,r.link_url,`text`,!0)}
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);">
-        <div style="display:flex;gap:8px;">
-          <span style="font-size:12px;color:var(--text-secondary);align-self:center;">#${i+1}</span>
-          <button class="b-up btn btn-secondary btn-sm" ${i===0?`disabled`:``}>▲</button>
-          <button class="b-dn btn btn-secondary btn-sm" ${i===t.length-1?`disabled`:``}>▼</button>
+      <div style="display:flex; justify-content:space-between; margin-top:20px; padding-top:16px; border-top:1.5px solid #f1f5f9; align-items:center;">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <span style="font-size:12px; font-weight:700; color:#94a3b8; margin-right:6px;">순서 #${i+1}</span>
+          <button class="sm-action-btn sm-btn-neutral b-up" ${i===0?`disabled`:``}>▲ 위로</button>
+          <button class="sm-action-btn sm-btn-neutral b-dn" ${i===t.length-1?`disabled`:``}>▼ 아래로</button>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="b-save btn btn-primary btn-sm">저장</button>
-          <button class="b-del btn btn-danger btn-sm">삭제</button>
+        <div style="display:flex; gap:8px;">
+          <button class="sm-action-btn sm-btn-success b-save">저장</button>
+          <button class="sm-action-btn sm-btn-danger b-del">삭제</button>
         </div>
       </div>
-    `);let o=a.firstElementChild;o.querySelector(`.b-img-preview`).addEventListener(`click`,()=>{o.querySelector(`.b-thumb`).src=o.querySelector(`.b-img`).value.trim()}),o.querySelector(`.b-save`).addEventListener(`click`,async()=>{await $i.update(r.id,{title:o.querySelector(`.b-title`).value.trim(),desc:o.querySelector(`.b-desc`).value.trim(),label:o.querySelector(`.b-label`).value.trim(),time_text:o.querySelector(`.b-time`).value.trim(),img_url:o.querySelector(`.b-img`).value.trim(),link_url:o.querySelector(`.b-link`).value.trim()}),aa(`배너 저장됨`)}),o.querySelector(`.b-del`).addEventListener(`click`,async()=>{confirm(`삭제하시겠습니까?`)&&(await $i.delete(r.id),aa(`배너 삭제됨`),await pa(n))}),o.querySelector(`.b-up`).addEventListener(`click`,async()=>{i!==0&&(await $i.update(t[i-1].id,{sort_order:i}),await $i.update(r.id,{sort_order:i-1}),await pa(n))}),o.querySelector(`.b-dn`).addEventListener(`click`,async()=>{i!==t.length-1&&(await $i.update(t[i+1].id,{sort_order:i}),await $i.update(r.id,{sort_order:i+1}),await pa(n))}),e.appendChild(o)})}async function ha(e){let t=await ra.getAll();e.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">LIVE NOW 섹션</h2>
-      <button id="add-live" class="btn btn-primary btn-sm">+ 추가</button>
+    `,a.querySelector(`.b-img-preview`).addEventListener(`click`,()=>{a.querySelector(`.b-thumb`).src=a.querySelector(`.b-img`).value.trim()}),a.querySelector(`.b-save`).addEventListener(`click`,async()=>{await $i.update(r.id,{title:a.querySelector(`.b-title`).value.trim(),desc:a.querySelector(`.b-desc`).value.trim(),label:a.querySelector(`.b-label`).value.trim(),time_text:a.querySelector(`.b-time`).value.trim(),img_url:a.querySelector(`.b-img`).value.trim(),link_url:a.querySelector(`.b-link`).value.trim()}),oa(`배너 정보가 동기화되었습니다.`)}),a.querySelector(`.b-del`).addEventListener(`click`,async()=>{confirm(`배너를 삭제하시겠습니까?`)&&(await $i.delete(r.id),oa(`배너가 제거되었습니다.`),await pa(e))}),a.querySelector(`.b-up`).addEventListener(`click`,async()=>{i!==0&&(await $i.update(t[i-1].id,{sort_order:i}),await $i.update(r.id,{sort_order:i-1}),await pa(e))}),a.querySelector(`.b-dn`).addEventListener(`click`,async()=>{i!==t.length-1&&(await $i.update(t[i+1].id,{sort_order:i}),await $i.update(r.id,{sort_order:i+1}),await pa(e))}),n.appendChild(a)})}async function ma(e){let t=await ra.getAll();e.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">라이브 큐레이션 관리 (${t.length}개)</h2>
+      <button id="add-live" class="sm-action-btn sm-btn-primary">+ 새 라이브 추가</button>
     </div>
     <div id="live-list"></div>
-  `,e.querySelector(`#add-live`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,title:`새 라이브`,viewers:``,img_url:``,link_url:``}),aa(`라이브 추가됨`),await ha(e)});let n=e.querySelector(`#live-list`);t.forEach((t,r)=>{let i=document.createElement(`div`);i.innerHTML=oa(`
-      <div style="display:flex;gap:14px;align-items:flex-start;">
-        <img class="lv-thumb" src="${ia(t.img_url)}" alt="" style="width:100px;height:68px;object-fit:cover;border-radius:8px;background:#333;flex-shrink:0;">
-        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          ${sa(`라이브 제목`,`lv-title`,t.title,`text`,!0)}
-          ${sa(`시청자 수 텍스트`,`lv-viewers`,t.viewers)}
-          ${sa(`링크 URL`,`lv-link`,t.link_url)}
+  `,e.querySelector(`#add-live`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,title:`새로운 라이브 방송`,viewers:`0명 시청 중`,img_url:``,link_url:``}),oa(`새 라이브가 생성되었습니다.`),await ma(e)});let n=e.querySelector(`#live-list`);t.forEach((t,r)=>{let i=document.createElement(`div`);i.className=`sm-card`,i.innerHTML=`
+      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:140px; flex-shrink:0;">
+          <label class="sm-label">방송 썸네일</label>
+          <img class="lv-thumb" src="${aa(t.img_url)}" style="width:100%; height:94px; object-fit:cover; border-radius:10px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
+        </div>
+        <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          ${sa(`방송 타이틀`,`lv-title`,t.title,`text`,!0)}
+          ${sa(`시청자 수 문구`,`lv-viewers`,t.viewers)}
+          ${sa(`이동 링크 URL`,`lv-link`,t.link_url)}
           ${ca(`썸네일 이미지 URL`,`lv-img`,t.img_url)}
         </div>
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);">
-        <button class="lv-save btn btn-primary btn-sm">저장</button>
-        <button class="lv-del btn btn-danger btn-sm">삭제</button>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; padding-top:16px; border-top:1.5px solid #f1f5f9;">
+        <button class="sm-action-btn sm-btn-success lv-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
       </div>
-    `);let a=i.firstElementChild;a.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{a.querySelector(`.lv-thumb`).src=a.querySelector(`.lv-img`).value.trim()}),a.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await ra.update(t.id,{title:a.querySelector(`.lv-title`).value.trim(),viewers:a.querySelector(`.lv-viewers`).value.trim(),link_url:a.querySelector(`.lv-link`).value.trim(),img_url:a.querySelector(`.lv-img`).value.trim()}),aa(`라이브 저장됨`)}),a.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`삭제하시겠습니까?`)&&(await ra.delete(t.id),aa(`삭제됨`),await ha(e))}),n.appendChild(a)})}async function ga(e,t){ua=await ea.getAll();let n=await na.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">상품 섹션</h2>
-      <button id="add-section" class="btn btn-primary btn-sm">+ 섹션 추가</button>
+    `,i.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{i.querySelector(`.lv-thumb`).src=i.querySelector(`.lv-img`).value.trim()}),i.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await ra.update(t.id,{title:i.querySelector(`.lv-title`).value.trim(),viewers:i.querySelector(`.lv-viewers`).value.trim(),link_url:i.querySelector(`.lv-link`).value.trim(),img_url:i.querySelector(`.lv-img`).value.trim()}),oa(`라이브 제어 카드 저장 완료`)}),i.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`라이브 정보를 삭제합니까?`)&&(await ra.delete(t.id),oa(`제거되었습니다.`),await ma(e))}),n.appendChild(i)})}async function ha(e,t){ua=await ea.getAll();let n=await na.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">상설관 및 기획전 상품 섹션 (${ua.length}개)</h2>
+      <button id="add-section" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
     </div>
     <div id="section-list"></div>
-  `,e.querySelector(`#add-section`).addEventListener(`click`,async()=>{await ea.insert({sort_order:99,title:`새 섹션`,subtitle:``,show_timer:!1}),ua=await ea.getAll(),aa(`섹션 추가됨`),await ga(e,t)});let i=e.querySelector(`#section-list`);ua.forEach((n,a)=>{let o=r[n.id]||[],s=document.createElement(`div`);s.style.cssText=`margin-bottom:24px;`,s.innerHTML=`
-      <div style="background:var(--bg-secondary);border-radius:12px;border:1px solid var(--border-color);overflow:hidden;">
-        <!-- 섹션 헤더 -->
-        <div style="padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-color);background:rgba(0,0,0,0.15);">
-          <span style="font-size:12px;color:var(--text-secondary);min-width:20px;">#${a+1}</span>
-          <input class="sec-title" value="${ia(n.title)}" placeholder="섹션 제목"
-            style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:14px;font-weight:700;">
-          <input class="sec-sub" value="${ia(n.subtitle)}" placeholder="부제목"
-            style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;">
-            <input type="checkbox" class="sec-timer" ${n.show_timer?`checked`:``}>타이머
+  `,e.querySelector(`#add-section`).addEventListener(`click`,async()=>{await ea.insert({sort_order:99,title:`새로운 추천 기획전`,subtitle:`단독 특별 혜택가 구성`,show_timer:!1}),ua=await ea.getAll(),oa(`새 상품 섹션이 생성되었습니다.`),await ha(e,t)});let i=e.querySelector(`#section-list`);ua.forEach((n,a)=>{let o=r[n.id]||[],s=document.createElement(`div`);s.className=`sm-card`,s.style.cssText=`padding:0; overflow:hidden; margin-bottom:28px; border-color:#cbd5e1;`,s.innerHTML=`
+      <!-- 섹션 바디 헤더 -->
+      <div style="padding:20px 24px; background:#f8fafc; border-bottom:1.5px solid #e2e8f0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:13px; font-weight:800; color:#94a3b8; min-width:30px;">#${a+1}</span>
+        <div style="flex:1; min-width:240px; display:flex; gap:10px;">
+          <input class="sm-input sec-title" value="${aa(n.title)}" placeholder="섹션 주제목" style="font-weight:700;">
+          <input class="sm-input sec-sub" value="${aa(n.subtitle)}" placeholder="섹션 부제목(설명)">
+        </div>
+        <div style="display:flex; align-items:center; gap:16px; margin:0 8px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;">
+            <input type="checkbox" class="sec-timer" ${n.show_timer?`checked`:``} style="width:16px; height:16px; cursor:pointer;"> 타이머 표시
           </label>
-          <button class="sec-save btn btn-primary btn-sm">저장</button>
-          <button class="sec-del btn btn-danger btn-sm">섹션삭제</button>
         </div>
-        <!-- 상품 목록 -->
-        <div style="padding:16px 20px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <span style="font-size:13px;font-weight:600;color:var(--text-secondary);">상품 ${o.length}개</span>
-            <button class="add-prod btn btn-secondary btn-sm">+ 상품 추가</button>
-          </div>
-          <div class="prod-list"></div>
+        <div style="display:flex; gap:6px;">
+          <button class="sm-action-btn sm-btn-success sec-save">섹션 저장</button>
+          <button class="sm-action-btn sm-btn-danger sec-del">삭제</button>
         </div>
       </div>
-    `;let c=s.firstElementChild;c.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await ea.update(n.id,{title:c.querySelector(`.sec-title`).value.trim(),subtitle:c.querySelector(`.sec-sub`).value.trim(),show_timer:c.querySelector(`.sec-timer`).checked}),ua=await ea.getAll(),aa(`섹션 저장됨`)}),c.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`"${n.title}" 섹션과 모든 상품을 삭제합니까?`)&&(await ea.delete(n.id),ua=await ea.getAll(),aa(`섹션 삭제됨`),await ga(e,t))}),c.querySelector(`.add-prod`).addEventListener(`click`,async()=>{await na.insert({section_id:n.id,sort_order:99,brand_title:`새 상품`,sale_price:``,origin_price:``,discount:``,unit_price:``,rating:``,reviews:``,img_url:``,chips:`[]`}),aa(`상품 추가됨`),await ga(e,t)}),_a(c.querySelector(`.prod-list`),o,e,t),i.appendChild(s)})}function _a(e,t,n,r){if(e.innerHTML=``,t.length===0){e.innerHTML=`<p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:16px 0;">상품이 없습니다. 추가해주세요.</p>`;return}t.forEach((t,i)=>{let a=document.createElement(`div`);a.innerHTML=`<div style="display:flex;gap:12px;align-items:flex-start;background:var(--bg-primary);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid var(--border-color);">
-      <img class="p-thumb" src="${ia(t.img_url)}" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:6px;background:#333;flex-shrink:0;">
-      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        ${sa(`상품명`,`p-name`,t.brand_title,`text`,!0)}
-        ${sa(`할인가`,`p-sale`,t.sale_price)}
-        ${sa(`정가`,`p-origin`,t.origin_price)}
-        ${sa(`할인율 뱃지 (예: 80% 특가)`,`p-disc`,t.discount)}
-        ${sa(`단가 텍스트`,`p-unit`,t.unit_price)}
-        ${sa(`평점`,`p-rating`,t.rating)}
-        ${sa(`리뷰 수`,`p-reviews`,t.reviews)}
-        ${ca(`이미지 URL`,`p-img`,t.img_url)}
+      <!-- 내부 상품 영역 -->
+      <div style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #f1f5f9;">
+          <h4 style="margin:0; font-size:14px; font-weight:700; color:#475569;">등록된 상품 (${o.length}개)</h4>
+          <button class="sm-action-btn sm-btn-neutral add-prod" style="padding:6px 12px; font-size:12px;">+ 상품 추가</button>
+        </div>
+        <div class="prod-list"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <button class="p-save btn btn-primary btn-sm">저장</button>
-        <button class="p-del btn btn-danger btn-sm">삭제</button>
+    `,s.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await ea.update(n.id,{title:s.querySelector(`.sec-title`).value.trim(),subtitle:s.querySelector(`.sec-sub`).value.trim(),show_timer:s.querySelector(`.sec-timer`).checked}),ua=await ea.getAll(),oa(`섹션이 저장되었습니다.`)}),s.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`"${n.title}" 섹션 및 섹션 내 모든 등록 상품을 삭제하시겠습니까?`)&&(await ea.delete(n.id),ua=await ea.getAll(),oa(`섹션이 삭제되었습니다.`),await ha(e,t))}),s.querySelector(`.add-prod`).addEventListener(`click`,async()=>{await na.insert({section_id:n.id,sort_order:99,brand_title:`신규 특별 제안 상품`,sale_price:`0원`,origin_price:`0원`,discount:`특가`,unit_price:``,rating:`5.0`,reviews:`1`,img_url:``,chips:`[]`}),oa(`새 상품 입력란이 하단에 추가되었습니다.`),await ha(e,t)}),ga(s.querySelector(`.prod-list`),o,e,t),i.appendChild(s)})}function ga(e,t,n,r){if(e.innerHTML=``,t.length===0){e.innerHTML=`<div style="text-align:center; padding:32px 0; color:#94a3b8; font-size:13px;">등록된 특가 상품이 없습니다. 오른쪽의 '상품 추가' 버튼을 눌러주세요.</div>`;return}t.forEach((t,i)=>{let a=document.createElement(`div`);a.style.cssText=`display:flex; gap:16px; align-items:flex-start; padding:18px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fafafa; margin-bottom:12px;`,a.innerHTML=`
+      <div style="width:90px; flex-shrink:0;">
+        <label class="sm-label">상품 사진</label>
+        <img class="p-thumb" src="${aa(t.img_url)}" style="width:100%; height:74px; object-fit:cover; border-radius:8px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
       </div>
-    </div>`;let o=a.firstElementChild;o.querySelector(`.p-img-preview`).addEventListener(`click`,()=>{o.querySelector(`.p-thumb`).src=o.querySelector(`.p-img`).value.trim()}),o.querySelector(`.p-save`).addEventListener(`click`,async()=>{await na.update(t.id,{brand_title:o.querySelector(`.p-name`).value.trim(),sale_price:o.querySelector(`.p-sale`).value.trim(),origin_price:o.querySelector(`.p-origin`).value.trim(),discount:o.querySelector(`.p-disc`).value.trim(),unit_price:o.querySelector(`.p-unit`).value.trim(),rating:o.querySelector(`.p-rating`).value.trim(),reviews:o.querySelector(`.p-reviews`).value.trim(),img_url:o.querySelector(`.p-img`).value.trim()}),aa(`상품 저장됨`)}),o.querySelector(`.p-del`).addEventListener(`click`,async()=>{confirm(`삭제?`)&&(await na.delete(t.id),aa(`삭제됨`),await ga(n,r))}),e.appendChild(o)})}async function va(e){let[t,n]=await Promise.all([ta.getAll(),ea.getAll()]);ua=n;let r=`<option value="">-- 없음 --</option>`+n.map(e=>`<option value="${e.id}">${ia(e.title)}</option>`).join(``);e.innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">배너 하단 퀵메뉴</h2>
-      <button id="add-menu" class="btn btn-primary btn-sm">+ 추가</button>
+      <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        ${sa(`브랜드 및 상품명`,`p-name`,t.brand_title,`text`,!0)}
+        ${sa(`현재 판매가 (예: 9,900원)`,`p-sale`,t.sale_price)}
+        ${sa(`원래 정가 (예: 50,000원)`,`p-origin`,t.origin_price)}
+        ${sa(`할인율 태그 (예: 80% 특가)`,`p-disc`,t.discount)}
+        ${sa(`단가 정보 (예: 10ml 당 708원)`,`p-unit`,t.unit_price)}
+        ${sa(`평점 (예: 4.8)`,`p-rating`,t.rating)}
+        ${sa(`리뷰 수 (예: 124)`,`p-reviews`,t.reviews)}
+        ${ca(`상품 이미지 URL`,`p-img`,t.img_url)}
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:20px;">
+        <button class="sm-action-btn sm-btn-success p-save" style="padding:6px 12px; font-size:12px;">저장</button>
+        <button class="sm-action-btn sm-btn-danger p-del" style="padding:6px 12px; font-size:12px;">삭제</button>
+      </div>
+    `,a.querySelector(`.p-img-preview`).addEventListener(`click`,()=>{a.querySelector(`.p-thumb`).src=a.querySelector(`.p-img`).value.trim()}),a.querySelector(`.p-save`).addEventListener(`click`,async()=>{await na.update(t.id,{brand_title:a.querySelector(`.p-name`).value.trim(),sale_price:a.querySelector(`.p-sale`).value.trim(),origin_price:a.querySelector(`.p-origin`).value.trim(),discount:a.querySelector(`.p-disc`).value.trim(),unit_price:a.querySelector(`.p-unit`).value.trim(),rating:a.querySelector(`.p-rating`).value.trim(),reviews:a.querySelector(`.p-reviews`).value.trim(),img_url:a.querySelector(`.p-img`).value.trim()}),oa(`상품 정보 동기화 성공`)}),a.querySelector(`.p-del`).addEventListener(`click`,async()=>{confirm(`상품을 삭제하시겠습니까?`)&&(await na.delete(t.id),oa(`제거되었습니다.`),await ha(n,r))}),e.appendChild(a)})}async function _a(e){let[t,n]=await Promise.all([ta.getAll(),ea.getAll()]);ua=n;let r=`<option value="">-- 섹션 연결 안함 --</option>`+n.map(e=>`<option value="${e.id}">${aa(e.title)}</option>`).join(``);e.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">배너 하단 가로 퀵메뉴 탭 (${t.length}개)</h2>
+      <button id="add-menu" class="sm-action-btn sm-btn-primary">+ 새 메뉴 탭 추가</button>
     </div>
-    <p style="color:var(--text-secondary);font-size:12px;margin-bottom:16px;">각 메뉴를 클릭했을 때 스크롤될 상품 섹션을 연결할 수 있습니다.</p>
+    <p style="color:#64748b; font-size:13px; margin:0 0 20px 0;">탭을 클릭하면 매끄럽게 연결한 상품 섹션(상설관/기획전)으로 이동합니다.</p>
     <div id="menu-list"></div>
-  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ta.insert({sort_order:99,name:`새 메뉴`,section_id:null}),aa(`메뉴 추가됨`),await va(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.innerHTML=`<div style="background:var(--bg-secondary);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border-color);display:flex;align-items:center;gap:10px;">
-      <span style="font-size:12px;color:var(--text-secondary);min-width:22px;">#${n+1}</span>
-      <input class="m-name" value="${ia(t.name)}" placeholder="메뉴명"
-        style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:14px;font-weight:600;">
-      <select class="m-sec" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;min-width:160px;">
-        ${r.replace(`value="${t.section_id}"`,`value="${t.section_id}" selected`)}
-      </select>
-      <button class="m-save btn btn-primary btn-sm">저장</button>
-      <button class="m-del btn btn-danger btn-sm">삭제</button>
-    </div>`;let o=a.firstElementChild,s=o.querySelector(`.m-sec`);s.value=t.section_id||``,o.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ta.update(t.id,{name:o.querySelector(`.m-name`).value.trim(),section_id:s.value||null}),aa(`메뉴 저장됨`)}),o.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`삭제?`)&&(await ta.delete(t.id),aa(`삭제됨`),await va(e))}),i.appendChild(o)})}x(),j();async function ya(){let e=document.getElementById(`app`);if(e.innerHTML=`
+  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ta.insert({sort_order:99,name:`새 카테고리 탭`,section_id:null}),oa(`새 탭이 추가되었습니다.`),await _a(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.style.cssText=`padding:16px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:12px;`,a.innerHTML=`
+      <span style="font-size:13px; font-weight:800; color:#94a3b8; min-width:30px;">#${n+1}</span>
+      <div style="flex:1; min-width:200px;">
+        <label class="sm-label" style="margin-bottom:4px;">탭 메뉴 텍스트</label>
+        <input class="sm-input m-name" value="${aa(t.name)}" placeholder="메뉴 이름" style="font-weight:600;">
+      </div>
+      <div style="width:240px;">
+        <label class="sm-label" style="margin-bottom:4px;">이동 연동할 상품 섹션</label>
+        <select class="sm-input m-sec" style="font-weight:600; cursor:pointer; height:41px; padding:0 12px;">
+          ${r}
+        </select>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:20px;">
+        <button class="sm-action-btn sm-btn-success m-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger m-del">삭제</button>
+      </div>
+    `;let o=a.querySelector(`.m-sec`);o.value=t.section_id||``,a.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ta.update(t.id,{name:a.querySelector(`.m-name`).value.trim(),section_id:o.value||null}),oa(`저장 완료`)}),a.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`이 탭 메뉴를 삭제하시겠습니까?`)&&(await ta.delete(t.id),oa(`삭제되었습니다.`),await _a(e))}),i.appendChild(a)})}x(),j();async function va(){let e=document.getElementById(`app`);if(e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
@@ -3148,4 +3275,4 @@ Minimum version required to store current data is: `+c+`.
         <div style="color:var(--danger); font-weight:600; font-size:var(--text-lg);">구글 시트 연동에 실패했습니다.</div>
         <div style="color:var(--text-secondary);">SheetDB API 주소나 네트워크 상태를 확인해주세요.</div>
       </div>
-    `;return}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild(Qe());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!U.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=U.getCurrentUser();if(U.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>Gi()),M.register(`/`,()=>ft()),M.register(`/live_stream`,()=>Mt()),M.register(`/projects`,()=>Wt()),M.register(`/projects/new`,()=>Wt()),M.register(`/projects/:id`,e=>Kt(e)),M.register(`/hosts`,()=>Ft()),M.register(`/hosts/:id`,e=>Lt(e)),M.register(`/brands`,()=>Bt()),M.register(`/brands/:id`,e=>Ht(e)),M.register(`/finance`,()=>nn()),M.register(`/settlement`,()=>rn()),M.register(`/contracts`,()=>sn()),M.register(`/marketing`,()=>dn()),M.register(`/crm`,()=>fn()),M.register(`/shop_manage`,()=>da()),M.register(`/settings`,()=>pn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}ya();
+    `;return}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild(Qe());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!U.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=U.getCurrentUser();if(U.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>Gi()),M.register(`/`,()=>ft()),M.register(`/live_stream`,()=>Mt()),M.register(`/projects`,()=>Wt()),M.register(`/projects/new`,()=>Wt()),M.register(`/projects/:id`,e=>Kt(e)),M.register(`/hosts`,()=>Ft()),M.register(`/hosts/:id`,e=>Lt(e)),M.register(`/brands`,()=>Bt()),M.register(`/brands/:id`,e=>Ht(e)),M.register(`/finance`,()=>nn()),M.register(`/settlement`,()=>rn()),M.register(`/contracts`,()=>sn()),M.register(`/marketing`,()=>dn()),M.register(`/crm`,()=>fn()),M.register(`/shop_manage`,()=>da()),M.register(`/settings`,()=>pn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}va();

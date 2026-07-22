@@ -1,165 +1,285 @@
-// ===== 쇼핑몰 관리 페이지 (Supabase 연동) =====
+// ===== 쇼핑몰 관리 페이지 (Supabase 연동 + 라이브 관리 톤앤매너 리뉴얼) =====
 import { bannerDB, sectionDB, menuDB, productDB, liveDB } from '../utils/shopDB.js';
+
+// ── 공통 CSS 스타일 주입 ──
+function injectShopManageStyles(container) {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .sm-input { 
+      width: 100%; 
+      padding: 10px 14px; 
+      border: 1.5px solid #e2e8f0; 
+      border-radius: 10px; 
+      font-size: 14px; 
+      outline: none; 
+      transition: all 0.2s; 
+      background: #fff; 
+      box-sizing: border-box; 
+      color: #0f172a; 
+    }
+    .sm-input:focus { 
+      border-color: #3b82f6; 
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12); 
+    }
+    .sm-label { 
+      display: block; 
+      font-size: 11px; 
+      font-weight: 700; 
+      color: #64748b; 
+      margin-bottom: 6px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.04em; 
+    }
+    .sm-tab-btn { 
+      padding: 10px 20px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      border: none; 
+      transition: all 0.18s; 
+      background: transparent; 
+      color: #64748b; 
+    }
+    .sm-tab-btn.active { 
+      background: #0f172a; 
+      color: #fff; 
+    }
+    .sm-tab-btn:hover:not(.active) { 
+      background: #e2e8f0; 
+      color: #0f172a; 
+    }
+    .sm-card { 
+      background: #fff; 
+      border: 1.5px solid #e2e8f0; 
+      border-radius: 16px; 
+      padding: 24px; 
+      box-shadow: 0 4px 16px rgba(0,0,0,0.03); 
+      margin-bottom: 20px; 
+    }
+    .sm-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px solid #f1f5f9;
+    }
+    .sm-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+    .sm-action-btn { 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center;
+      gap: 6px; 
+      padding: 8px 16px; 
+      border-radius: 8px; 
+      font-size: 13px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      border: none; 
+      transition: all 0.18s; 
+    }
+    .sm-action-btn:hover { 
+      opacity: 0.9; 
+      transform: translateY(-1px); 
+    }
+    .sm-btn-primary { 
+      background: linear-gradient(135deg, #3b82f6, #2563eb); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(37,99,235,0.2); 
+    }
+    .sm-btn-danger { 
+      background: linear-gradient(135deg, #ef4444, #dc2626); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(220,38,38,0.2); 
+    }
+    .sm-btn-neutral { 
+      background: #fff; 
+      color: #374151; 
+      border: 1.5px solid #e2e8f0; 
+    }
+    .sm-btn-neutral:hover { 
+      background: #f8fafc; 
+    }
+    .sm-btn-success {
+      background: linear-gradient(135deg, #10b981, #059669); 
+      color: #fff; 
+      box-shadow: 0 4px 12px rgba(5,150,105,0.2);
+    }
+  `;
+  container.appendChild(style);
+}
 
 // ── 유틸 ──
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
 function toast(msg, isErr = false) {
   const t = document.createElement('div');
   t.textContent = msg;
   t.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
-    background:${isErr ? '#ef4444' : '#1e293b'};color:#fff;padding:12px 24px;
+    background:${isErr ? '#ef4444' : '#0f172a'};color:#fff;padding:12px 24px;
     border-radius:40px;font-size:13px;font-weight:600;z-index:9999;
     box-shadow:0 8px 24px rgba(0,0,0,0.3);`;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2400);
+  setTimeout(() => t.remove(), 2200);
 }
-function cardBox(inner) {
-  return `<div style="background:var(--bg-secondary);border-radius:12px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color);">${inner}</div>`;
-}
-function inputRow(label, cls, val, type = 'text', full = false) {
+
+// ── 폼 생성 헬퍼 ──
+function formField(label, cls, val, type = 'text', full = false) {
   return `<div${full ? ' style="grid-column:span 2;"' : ''}>
-    <label style="font-size:11px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${esc(label)}</label>
-    <input class="${cls}" type="${type}" value="${esc(val)}" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;">
+    <label class="sm-label">${esc(label)}</label>
+    <input class="sm-input ${cls}" type="${type}" value="${esc(val)}">
   </div>`;
 }
-function imgRow(label, cls, val) {
+
+function imgUploadField(label, cls, val) {
   return `<div style="grid-column:span 2;">
-    <label style="font-size:11px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:4px;">${esc(label)}</label>
+    <label class="sm-label">${esc(label)}</label>
     <div style="display:flex;gap:8px;">
-      <input class="${cls}" value="${esc(val)}" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:12px;">
-      <button class="${cls}-preview" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-secondary);font-size:12px;cursor:pointer;white-space:nowrap;">미리보기</button>
+      <input class="sm-input ${cls}" value="${esc(val)}">
+      <button class="sm-action-btn sm-btn-neutral ${cls}-preview" type="button">미리보기</button>
     </div>
   </div>`;
 }
 
-// ── 탭 상태 ──
+// ── 상태 ──
 let _tab = 'banners';
-let _sections = []; // 섹션 캐시 (퀵메뉴·상품 탭에서 공유)
+let _sections = [];
 
 // ─────────────────────────────────────
 export function renderShopManage() {
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'padding:24px;max-width:960px;';
+  const container = document.createElement('div');
+  container.style.cssText = 'display:flex; flex-direction:column; height:calc(100vh - 48px); background:#f8fafc; overflow:hidden;';
+  injectShopManageStyles(container);
 
-  wrap.innerHTML = `
-    <div style="margin-bottom:24px;">
-      <h1 style="font-size:22px;font-weight:800;color:var(--text-primary);margin-bottom:4px;">쇼핑몰 관리</h1>
-      <p style="color:var(--text-secondary);font-size:14px;">홈 화면 전체 콘텐츠를 실시간으로 편집합니다.</p>
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'max-width:960px; margin:0 auto; padding:40px 24px; width:100%; overflow-y:auto; height:100%; box-sizing:border-box;';
+
+  wrapper.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+      <div>
+        <h1 style="margin:0; font-size:26px; font-weight:800; color:#0f172a;">쇼핑몰 관리</h1>
+        <p style="margin:6px 0 0; font-size:14px; color:#64748b;">홈 화면 배너, 퀵메뉴, 라이브 및 상품 섹션을 Supabase 실시간 연동으로 편집합니다.</p>
+      </div>
     </div>
 
-    <div id="sm-tabs" style="display:flex;gap:4px;margin-bottom:28px;border-bottom:2px solid var(--border-color);">
+    <div id="sm-tabs" style="display:flex; gap:8px; margin-bottom:28px; border-bottom:1.5px solid #e2e8f0; padding-bottom:12px;">
       ${['banners','lives','sections','menus'].map(k => {
-        const labels = {banners:'상단 배너',lives:'라이브',sections:'상품 섹션',menus:'퀵메뉴'};
-        return `<button class="sm-tab${k===_tab?' active':''}" data-tab="${k}"
-          style="padding:10px 18px;border:none;background:none;font-size:13px;font-weight:${k===_tab?'700':'600'};
-          color:${k===_tab?'var(--primary)':'var(--text-secondary)'};cursor:pointer;
-          border-bottom:2px solid ${k===_tab?'var(--primary)':'transparent'};margin-bottom:-2px;transition:all .15s;">
-          ${labels[k]}
-        </button>`;
+        const labels = {banners:'상단 배너',lives:'라이브 NOW',sections:'상품 섹션',menus:'퀵메뉴'};
+        return `<button class="sm-tab-btn${k===_tab?' active':''}" data-tab="${k}">${labels[k]}</button>`;
       }).join('')}
     </div>
 
-    <div id="sm-loading" style="text-align:center;padding:40px;color:var(--text-secondary);font-size:14px;">
-      ⏳ 데이터 불러오는 중...
+    <div id="sm-loading" style="text-align:center;padding:40px;color:#64748b;font-size:14px;font-weight:600;">
+      ⏳ 데이터를 동기화하는 중...
     </div>
     <div id="sm-panel"></div>
   `;
 
-  // 탭 이벤트
-  wrap.querySelectorAll('.sm-tab').forEach(btn => {
+  // 탭 클릭 이벤트
+  wrapper.querySelectorAll('.sm-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       _tab = btn.dataset.tab;
-      wrap.querySelectorAll('.sm-tab').forEach(b => {
-        const active = b.dataset.tab === _tab;
-        b.style.color = active ? 'var(--primary)' : 'var(--text-secondary)';
-        b.style.fontWeight = active ? '700' : '600';
-        b.style.borderBottom = `2px solid ${active ? 'var(--primary)' : 'transparent'}`;
-        b.classList.toggle('active', active);
+      wrapper.querySelectorAll('.sm-tab-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === _tab);
       });
-      loadPanel(wrap);
+      loadPanel(wrapper);
     });
   });
 
-  // DOM 삽입 후 비동기 초기화 (라우터가 동기 HTMLElement 반환을 요구하므로)
+  container.appendChild(wrapper);
+
+  // 로드 연동
   setTimeout(async () => {
     try {
       _sections = await sectionDB.getAll();
     } catch(e) {
       _sections = [];
     }
-    await loadPanel(wrap);
+    await loadPanel(wrapper);
   }, 0);
 
-  return wrap; // 즉시 반환 → 라우터가 DOM에 붙임
+  return container;
 }
 
-async function loadPanel(wrap) {
-  const loading = wrap.querySelector('#sm-loading');
-  const panel = wrap.querySelector('#sm-panel');
+async function loadPanel(wrapper) {
+  const loading = wrapper.querySelector('#sm-loading');
+  const panel = wrapper.querySelector('#sm-panel');
   loading.style.display = 'block';
   panel.innerHTML = '';
 
   try {
     if (_tab === 'banners') await renderBannersPanel(panel);
     else if (_tab === 'lives') await renderLivesPanel(panel);
-    else if (_tab === 'sections') await renderSectionsPanel(panel, wrap);
+    else if (_tab === 'sections') await renderSectionsPanel(panel, wrapper);
     else if (_tab === 'menus') await renderMenusPanel(panel);
   } catch(e) {
-    panel.innerHTML = `<div style="color:var(--status-error);padding:20px;">오류: ${e.message}<br>Supabase SQL 스크립트를 먼저 실행해 주세요.</div>`;
+    panel.innerHTML = `
+      <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
+        <h4 style="margin:0 0 8px 0; font-weight:700;">데이터 연동 실패</h4>
+        <p style="margin:0; font-size:13px;">${e.message}. Supabase SQL 쿼리 설치 및 RLS 정책을 확인해주세요.</p>
+      </div>
+    `;
   }
   loading.style.display = 'none';
 }
 
 // ─────────────────────────────────────
-// ① 배너 탭
+// ① 상단 배너 탭
 async function renderBannersPanel(panel) {
   const banners = await bannerDB.getAll();
   panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">홈 상단 슬라이드 배너</h2>
-      <button id="add-banner" class="btn btn-primary btn-sm">+ 추가</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${banners.length}개)</h2>
+      <button id="add-banner" class="sm-action-btn sm-btn-primary">+ 새 배너 추가</button>
     </div>
     <div id="banner-list"></div>
   `;
+
   panel.querySelector('#add-banner').addEventListener('click', async () => {
-    await bannerDB.insert({ sort_order: 99, title:'새 배너', desc:'', label:'', time_text:'', img_url:'', link_url:'/shop/live_teaser.html' });
-    toast('배너 추가됨');
+    await bannerDB.insert({ sort_order: 99, title:'새 특집 배너', desc:'', label:'오늘', time_text:'오후 8시', img_url:'', link_url:'/shop/live_teaser.html' });
+    toast('새 배너가 생성되었습니다.');
     await renderBannersPanel(panel);
   });
-  renderBannerCards(panel.querySelector('#banner-list'), banners, panel);
-}
 
-function renderBannerCards(list, banners, panel) {
-  list.innerHTML = '';
+  const list = panel.querySelector('#banner-list');
   banners.forEach((b, i) => {
-    const div = document.createElement('div');
-    div.innerHTML = cardBox(`
-      <div style="display:flex;gap:14px;align-items:flex-start;">
-        <img class="b-thumb" src="${esc(b.img_url)}" alt="" style="width:110px;height:74px;object-fit:cover;border-radius:8px;background:#333;flex-shrink:0;">
-        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          ${inputRow('제목','b-title',b.title)}
-          ${inputRow('부제목','b-desc',b.desc)}
-          ${inputRow('날짜 라벨','b-label',b.label)}
-          ${inputRow('시간','b-time',b.time_text)}
-          ${imgRow('이미지 URL','b-img',b.img_url)}
-          ${inputRow('링크 URL','b-link',b.link_url,'text',true)}
+    const card = document.createElement('div');
+    card.className = 'sm-card';
+    card.innerHTML = `
+      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:140px; flex-shrink:0;">
+          <label class="sm-label">배너 프리뷰</label>
+          <img class="b-thumb" src="${esc(b.img_url)}" style="width:100%; height:94px; object-fit:cover; border-radius:10px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
+        </div>
+        <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          ${formField('배너 대제목 (타이틀)','b-title',b.title)}
+          ${formField('소제목 (서브 타이틀)','b-desc',b.desc)}
+          ${formField('라벨 뱃지 (예: 오늘, 내일)','b-label',b.label)}
+          ${formField('시간 문구 (예: 오후 8시)','b-time',b.time_text)}
+          ${imgUploadField('배너 이미지 URL','b-img',b.img_url)}
+          ${formField('클릭 시 이동할 링크 URL','b-link',b.link_url,'text',true)}
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);">
-        <div style="display:flex;gap:8px;">
-          <span style="font-size:12px;color:var(--text-secondary);align-self:center;">#${i+1}</span>
-          <button class="b-up btn btn-secondary btn-sm" ${i===0?'disabled':''}>▲</button>
-          <button class="b-dn btn btn-secondary btn-sm" ${i===banners.length-1?'disabled':''}>▼</button>
+      <div style="display:flex; justify-content:space-between; margin-top:20px; padding-top:16px; border-top:1.5px solid #f1f5f9; align-items:center;">
+        <div style="display:flex; gap:6px; align-items:center;">
+          <span style="font-size:12px; font-weight:700; color:#94a3b8; margin-right:6px;">순서 #${i+1}</span>
+          <button class="sm-action-btn sm-btn-neutral b-up" ${i===0?'disabled':''}>▲ 위로</button>
+          <button class="sm-action-btn sm-btn-neutral b-dn" ${i===banners.length-1?'disabled':''}>▼ 아래로</button>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="b-save btn btn-primary btn-sm">저장</button>
-          <button class="b-del btn btn-danger btn-sm">삭제</button>
+        <div style="display:flex; gap:8px;">
+          <button class="sm-action-btn sm-btn-success b-save">저장</button>
+          <button class="sm-action-btn sm-btn-danger b-del">삭제</button>
         </div>
       </div>
-    `);
-    const card = div.firstElementChild;
+    `;
 
     card.querySelector('.b-img-preview').addEventListener('click', () => {
       card.querySelector('.b-thumb').src = card.querySelector('.b-img').value.trim();
@@ -173,12 +293,12 @@ function renderBannerCards(list, banners, panel) {
         img_url: card.querySelector('.b-img').value.trim(),
         link_url: card.querySelector('.b-link').value.trim(),
       });
-      toast('배너 저장됨');
+      toast('배너 정보가 동기화되었습니다.');
     });
     card.querySelector('.b-del').addEventListener('click', async () => {
-      if (!confirm('삭제하시겠습니까?')) return;
+      if (!confirm('배너를 삭제하시겠습니까?')) return;
       await bannerDB.delete(b.id);
-      toast('배너 삭제됨');
+      toast('배너가 제거되었습니다.');
       await renderBannersPanel(panel);
     });
     card.querySelector('.b-up').addEventListener('click', async () => {
@@ -193,45 +313,52 @@ function renderBannerCards(list, banners, panel) {
       await bannerDB.update(b.id, { sort_order: i+1 });
       await renderBannersPanel(panel);
     });
+
     list.appendChild(card);
   });
 }
 
 // ─────────────────────────────────────
-// ② 라이브 탭
+// ② 라이브 NOW 탭
 async function renderLivesPanel(panel) {
   const lives = await liveDB.getAll();
   panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">LIVE NOW 섹션</h2>
-      <button id="add-live" class="btn btn-primary btn-sm">+ 추가</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">라이브 큐레이션 관리 (${lives.length}개)</h2>
+      <button id="add-live" class="sm-action-btn sm-btn-primary">+ 새 라이브 추가</button>
     </div>
     <div id="live-list"></div>
   `;
+
   panel.querySelector('#add-live').addEventListener('click', async () => {
-    await liveDB.insert({ sort_order:99, title:'새 라이브', viewers:'', img_url:'', link_url:'' });
-    toast('라이브 추가됨');
+    await liveDB.insert({ sort_order:99, title:'새로운 라이브 방송', viewers:'0명 시청 중', img_url:'', link_url:'' });
+    toast('새 라이브가 생성되었습니다.');
     await renderLivesPanel(panel);
   });
+
   const list = panel.querySelector('#live-list');
   lives.forEach((lv, i) => {
-    const div = document.createElement('div');
-    div.innerHTML = cardBox(`
-      <div style="display:flex;gap:14px;align-items:flex-start;">
-        <img class="lv-thumb" src="${esc(lv.img_url)}" alt="" style="width:100px;height:68px;object-fit:cover;border-radius:8px;background:#333;flex-shrink:0;">
-        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          ${inputRow('라이브 제목','lv-title',lv.title,'text',true)}
-          ${inputRow('시청자 수 텍스트','lv-viewers',lv.viewers)}
-          ${inputRow('링크 URL','lv-link',lv.link_url)}
-          ${imgRow('썸네일 이미지 URL','lv-img',lv.img_url)}
+    const card = document.createElement('div');
+    card.className = 'sm-card';
+    card.innerHTML = `
+      <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:140px; flex-shrink:0;">
+          <label class="sm-label">방송 썸네일</label>
+          <img class="lv-thumb" src="${esc(lv.img_url)}" style="width:100%; height:94px; object-fit:cover; border-radius:10px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
+        </div>
+        <div style="flex:1; min-width:280px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          ${formField('방송 타이틀','lv-title',lv.title,'text',true)}
+          ${formField('시청자 수 문구','lv-viewers',lv.viewers)}
+          ${formField('이동 링크 URL','lv-link',lv.link_url)}
+          ${imgUploadField('썸네일 이미지 URL','lv-img',lv.img_url)}
         </div>
       </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);">
-        <button class="lv-save btn btn-primary btn-sm">저장</button>
-        <button class="lv-del btn btn-danger btn-sm">삭제</button>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; padding-top:16px; border-top:1.5px solid #f1f5f9;">
+        <button class="sm-action-btn sm-btn-success lv-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
       </div>
-    `);
-    const card = div.firstElementChild;
+    `;
+
     card.querySelector('.lv-img-preview').addEventListener('click', () => {
       card.querySelector('.lv-thumb').src = card.querySelector('.lv-img').value.trim();
     });
@@ -242,21 +369,22 @@ async function renderLivesPanel(panel) {
         link_url: card.querySelector('.lv-link').value.trim(),
         img_url:  card.querySelector('.lv-img').value.trim(),
       });
-      toast('라이브 저장됨');
+      toast('라이브 제어 카드 저장 완료');
     });
     card.querySelector('.lv-del').addEventListener('click', async () => {
-      if (!confirm('삭제하시겠습니까?')) return;
+      if (!confirm('라이브 정보를 삭제합니까?')) return;
       await liveDB.delete(lv.id);
-      toast('삭제됨');
+      toast('제거되었습니다.');
       await renderLivesPanel(panel);
     });
+
     list.appendChild(card);
   });
 }
 
 // ─────────────────────────────────────
 // ③ 상품 섹션 탭
-async function renderSectionsPanel(panel, wrap) {
+async function renderSectionsPanel(panel, wrapper) {
   _sections = await sectionDB.getAll();
   const products = await productDB.getAll();
   const prodBySec = {};
@@ -266,129 +394,146 @@ async function renderSectionsPanel(panel, wrap) {
   });
 
   panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">상품 섹션</h2>
-      <button id="add-section" class="btn btn-primary btn-sm">+ 섹션 추가</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">상설관 및 기획전 상품 섹션 (${_sections.length}개)</h2>
+      <button id="add-section" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
     </div>
     <div id="section-list"></div>
   `;
+
   panel.querySelector('#add-section').addEventListener('click', async () => {
-    await sectionDB.insert({ sort_order:99, title:'새 섹션', subtitle:'', show_timer:false });
+    await sectionDB.insert({ sort_order:99, title:'새로운 추천 기획전', subtitle:'단독 특별 혜택가 구성', show_timer:false });
     _sections = await sectionDB.getAll();
-    toast('섹션 추가됨');
-    await renderSectionsPanel(panel, wrap);
+    toast('새 상품 섹션이 생성되었습니다.');
+    await renderSectionsPanel(panel, wrapper);
   });
 
-  const secList = panel.querySelector('#section-list');
+  const list = panel.querySelector('#section-list');
   _sections.forEach((sec, si) => {
     const prods = prodBySec[sec.id] || [];
     const secDiv = document.createElement('div');
-    secDiv.style.cssText = 'margin-bottom:24px;';
+    secDiv.className = 'sm-card';
+    secDiv.style.cssText = 'padding:0; overflow:hidden; margin-bottom:28px; border-color:#cbd5e1;';
+    
     secDiv.innerHTML = `
-      <div style="background:var(--bg-secondary);border-radius:12px;border:1px solid var(--border-color);overflow:hidden;">
-        <!-- 섹션 헤더 -->
-        <div style="padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-color);background:rgba(0,0,0,0.15);">
-          <span style="font-size:12px;color:var(--text-secondary);min-width:20px;">#${si+1}</span>
-          <input class="sec-title" value="${esc(sec.title)}" placeholder="섹션 제목"
-            style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:14px;font-weight:700;">
-          <input class="sec-sub" value="${esc(sec.subtitle)}" placeholder="부제목"
-            style="flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;">
-            <input type="checkbox" class="sec-timer" ${sec.show_timer ? 'checked' : ''}>타이머
-          </label>
-          <button class="sec-save btn btn-primary btn-sm">저장</button>
-          <button class="sec-del btn btn-danger btn-sm">섹션삭제</button>
+      <!-- 섹션 바디 헤더 -->
+      <div style="padding:20px 24px; background:#f8fafc; border-bottom:1.5px solid #e2e8f0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:13px; font-weight:800; color:#94a3b8; min-width:30px;">#${si+1}</span>
+        <div style="flex:1; min-width:240px; display:flex; gap:10px;">
+          <input class="sm-input sec-title" value="${esc(sec.title)}" placeholder="섹션 주제목" style="font-weight:700;">
+          <input class="sm-input sec-sub" value="${esc(sec.subtitle)}" placeholder="섹션 부제목(설명)">
         </div>
-        <!-- 상품 목록 -->
-        <div style="padding:16px 20px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <span style="font-size:13px;font-weight:600;color:var(--text-secondary);">상품 ${prods.length}개</span>
-            <button class="add-prod btn btn-secondary btn-sm">+ 상품 추가</button>
-          </div>
-          <div class="prod-list"></div>
+        <div style="display:flex; align-items:center; gap:16px; margin:0 8px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;">
+            <input type="checkbox" class="sec-timer" ${sec.show_timer ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"> 타이머 표시
+          </label>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="sm-action-btn sm-btn-success sec-save">섹션 저장</button>
+          <button class="sm-action-btn sm-btn-danger sec-del">삭제</button>
         </div>
       </div>
+      <!-- 내부 상품 영역 -->
+      <div style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid #f1f5f9;">
+          <h4 style="margin:0; font-size:14px; font-weight:700; color:#475569;">등록된 상품 (${prods.length}개)</h4>
+          <button class="sm-action-btn sm-btn-neutral add-prod" style="padding:6px 12px; font-size:12px;">+ 상품 추가</button>
+        </div>
+        <div class="prod-list"></div>
+      </div>
     `;
-    const card = secDiv.firstElementChild;
-    card.querySelector('.sec-save').addEventListener('click', async () => {
+
+    secDiv.querySelector('.sec-save').addEventListener('click', async () => {
       await sectionDB.update(sec.id, {
-        title: card.querySelector('.sec-title').value.trim(),
-        subtitle: card.querySelector('.sec-sub').value.trim(),
-        show_timer: card.querySelector('.sec-timer').checked,
+        title: secDiv.querySelector('.sec-title').value.trim(),
+        subtitle: secDiv.querySelector('.sec-sub').value.trim(),
+        show_timer: secDiv.querySelector('.sec-timer').checked,
       });
       _sections = await sectionDB.getAll();
-      toast('섹션 저장됨');
+      toast('섹션이 저장되었습니다.');
     });
-    card.querySelector('.sec-del').addEventListener('click', async () => {
-      if (!confirm(`"${sec.title}" 섹션과 모든 상품을 삭제합니까?`)) return;
+
+    secDiv.querySelector('.sec-del').addEventListener('click', async () => {
+      if (!confirm(`"${sec.title}" 섹션 및 섹션 내 모든 등록 상품을 삭제하시겠습니까?`)) return;
       await sectionDB.delete(sec.id);
       _sections = await sectionDB.getAll();
-      toast('섹션 삭제됨');
-      await renderSectionsPanel(panel, wrap);
+      toast('섹션이 삭제되었습니다.');
+      await renderSectionsPanel(panel, wrapper);
     });
-    card.querySelector('.add-prod').addEventListener('click', async () => {
+
+    secDiv.querySelector('.add-prod').addEventListener('click', async () => {
       await productDB.insert({
-        section_id: sec.id, sort_order:99,
-        brand_title:'새 상품', sale_price:'', origin_price:'', discount:'',
-        unit_price:'', rating:'', reviews:'', img_url:'', chips:'[]',
+        section_id: sec.id, sort_order: 99,
+        brand_title: '신규 특별 제안 상품', sale_price: '0원', origin_price: '0원',
+        discount: '특가', unit_price: '', rating: '5.0', reviews: '1', img_url: '', chips: '[]'
       });
-      toast('상품 추가됨');
-      await renderSectionsPanel(panel, wrap);
+      toast('새 상품 입력란이 하단에 추가되었습니다.');
+      await renderSectionsPanel(panel, wrapper);
     });
-    renderProductCards(card.querySelector('.prod-list'), prods, panel, wrap);
-    secList.appendChild(secDiv);
+
+    renderProductCards(secDiv.querySelector('.prod-list'), prods, panel, wrapper);
+    list.appendChild(secDiv);
   });
 }
 
-function renderProductCards(list, prods, panel, wrap) {
+function renderProductCards(list, prods, panel, wrapper) {
   list.innerHTML = '';
   if (prods.length === 0) {
-    list.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;text-align:center;padding:16px 0;">상품이 없습니다. 추가해주세요.</p>';
+    list.innerHTML = `<div style="text-align:center; padding:32px 0; color:#94a3b8; font-size:13px;">등록된 특가 상품이 없습니다. 오른쪽의 '상품 추가' 버튼을 눌러주세요.</div>`;
     return;
   }
+
   prods.forEach((p, pi) => {
-    const div = document.createElement('div');
-    div.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-start;background:var(--bg-primary);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid var(--border-color);">
-      <img class="p-thumb" src="${esc(p.img_url)}" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:6px;background:#333;flex-shrink:0;">
-      <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        ${inputRow('상품명','p-name',p.brand_title,'text',true)}
-        ${inputRow('할인가','p-sale',p.sale_price)}
-        ${inputRow('정가','p-origin',p.origin_price)}
-        ${inputRow('할인율 뱃지 (예: 80% 특가)','p-disc',p.discount)}
-        ${inputRow('단가 텍스트','p-unit',p.unit_price)}
-        ${inputRow('평점','p-rating',p.rating)}
-        ${inputRow('리뷰 수','p-reviews',p.reviews)}
-        ${imgRow('이미지 URL','p-img',p.img_url)}
+    const itemRow = document.createElement('div');
+    itemRow.style.cssText = 'display:flex; gap:16px; align-items:flex-start; padding:18px; border-radius:12px; border:1.5px solid #e2e8f0; background:#fafafa; margin-bottom:12px;';
+    
+    itemRow.innerHTML = `
+      <div style="width:90px; flex-shrink:0;">
+        <label class="sm-label">상품 사진</label>
+        <img class="p-thumb" src="${esc(p.img_url)}" style="width:100%; height:74px; object-fit:cover; border-radius:8px; border:1.5px solid #e2e8f0; background:#f1f5f9;">
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <button class="p-save btn btn-primary btn-sm">저장</button>
-        <button class="p-del btn btn-danger btn-sm">삭제</button>
+      <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        ${formField('브랜드 및 상품명','p-name',p.brand_title,'text',true)}
+        ${formField('현재 판매가 (예: 9,900원)','p-sale',p.sale_price)}
+        ${formField('원래 정가 (예: 50,000원)','p-origin',p.origin_price)}
+        ${formField('할인율 태그 (예: 80% 특가)','p-disc',p.discount)}
+        ${formField('단가 정보 (예: 10ml 당 708원)','p-unit',p.unit_price)}
+        ${formField('평점 (예: 4.8)','p-rating',p.rating)}
+        ${formField('리뷰 수 (예: 124)','p-reviews',p.reviews)}
+        ${imgUploadField('상품 이미지 URL','p-img',p.img_url)}
       </div>
-    </div>`;
-    const card = div.firstElementChild;
-    card.querySelector('.p-img-preview').addEventListener('click', () => {
-      card.querySelector('.p-thumb').src = card.querySelector('.p-img').value.trim();
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:20px;">
+        <button class="sm-action-btn sm-btn-success p-save" style="padding:6px 12px; font-size:12px;">저장</button>
+        <button class="sm-action-btn sm-btn-danger p-del" style="padding:6px 12px; font-size:12px;">삭제</button>
+      </div>
+    `;
+
+    itemRow.querySelector('.p-img-preview').addEventListener('click', () => {
+      itemRow.querySelector('.p-thumb').src = itemRow.querySelector('.p-img').value.trim();
     });
-    card.querySelector('.p-save').addEventListener('click', async () => {
+
+    itemRow.querySelector('.p-save').addEventListener('click', async () => {
       await productDB.update(p.id, {
-        brand_title:  card.querySelector('.p-name').value.trim(),
-        sale_price:   card.querySelector('.p-sale').value.trim(),
-        origin_price: card.querySelector('.p-origin').value.trim(),
-        discount:     card.querySelector('.p-disc').value.trim(),
-        unit_price:   card.querySelector('.p-unit').value.trim(),
-        rating:       card.querySelector('.p-rating').value.trim(),
-        reviews:      card.querySelector('.p-reviews').value.trim(),
-        img_url:      card.querySelector('.p-img').value.trim(),
+        brand_title:  itemRow.querySelector('.p-name').value.trim(),
+        sale_price:   itemRow.querySelector('.p-sale').value.trim(),
+        origin_price: itemRow.querySelector('.p-origin').value.trim(),
+        discount:     itemRow.querySelector('.p-disc').value.trim(),
+        unit_price:   itemRow.querySelector('.p-unit').value.trim(),
+        rating:       itemRow.querySelector('.p-rating').value.trim(),
+        reviews:      itemRow.querySelector('.p-reviews').value.trim(),
+        img_url:      itemRow.querySelector('.p-img').value.trim(),
       });
-      toast('상품 저장됨');
+      toast('상품 정보 동기화 성공');
     });
-    card.querySelector('.p-del').addEventListener('click', async () => {
-      if (!confirm('삭제?')) return;
+
+    itemRow.querySelector('.p-del').addEventListener('click', async () => {
+      if (!confirm('상품을 삭제하시겠습니까?')) return;
       await productDB.delete(p.id);
-      toast('삭제됨');
-      await renderSectionsPanel(panel, wrap);
+      toast('제거되었습니다.');
+      await renderSectionsPanel(panel, wrapper);
     });
-    list.appendChild(card);
+
+    list.appendChild(itemRow);
   });
 }
 
@@ -398,52 +543,66 @@ async function renderMenusPanel(panel) {
   const [menus, sections] = await Promise.all([menuDB.getAll(), sectionDB.getAll()]);
   _sections = sections;
 
-  const secOptions = `<option value="">-- 없음 --</option>` +
+  const secOptions = `<option value="">-- 섹션 연결 안함 --</option>` +
     sections.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join('');
 
   panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <h2 style="font-size:16px;font-weight:700;color:var(--text-primary);">배너 하단 퀵메뉴</h2>
-      <button id="add-menu" class="btn btn-primary btn-sm">+ 추가</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin:0;">배너 하단 가로 퀵메뉴 탭 (${menus.length}개)</h2>
+      <button id="add-menu" class="sm-action-btn sm-btn-primary">+ 새 메뉴 탭 추가</button>
     </div>
-    <p style="color:var(--text-secondary);font-size:12px;margin-bottom:16px;">각 메뉴를 클릭했을 때 스크롤될 상품 섹션을 연결할 수 있습니다.</p>
+    <p style="color:#64748b; font-size:13px; margin:0 0 20px 0;">탭을 클릭하면 매끄럽게 연결한 상품 섹션(상설관/기획전)으로 이동합니다.</p>
     <div id="menu-list"></div>
   `;
+
   panel.querySelector('#add-menu').addEventListener('click', async () => {
-    await menuDB.insert({ sort_order:99, name:'새 메뉴', section_id: null });
-    toast('메뉴 추가됨');
+    await menuDB.insert({ sort_order:99, name:'새 카테고리 탭', section_id: null });
+    toast('새 탭이 추가되었습니다.');
     await renderMenusPanel(panel);
   });
+
   const list = panel.querySelector('#menu-list');
   menus.forEach((m, i) => {
-    const div = document.createElement('div');
-    div.innerHTML = `<div style="background:var(--bg-secondary);border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--border-color);display:flex;align-items:center;gap:10px;">
-      <span style="font-size:12px;color:var(--text-secondary);min-width:22px;">#${i+1}</span>
-      <input class="m-name" value="${esc(m.name)}" placeholder="메뉴명"
-        style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:14px;font-weight:600;">
-      <select class="m-sec" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;min-width:160px;">
-        ${secOptions.replace(`value="${m.section_id}"`, `value="${m.section_id}" selected`)}
-      </select>
-      <button class="m-save btn btn-primary btn-sm">저장</button>
-      <button class="m-del btn btn-danger btn-sm">삭제</button>
-    </div>`;
-    const card = div.firstElementChild;
-    // select 선택 표시
+    const card = document.createElement('div');
+    card.className = 'sm-card';
+    card.style.cssText = 'padding:16px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:12px;';
+
+    card.innerHTML = `
+      <span style="font-size:13px; font-weight:800; color:#94a3b8; min-width:30px;">#${i+1}</span>
+      <div style="flex:1; min-width:200px;">
+        <label class="sm-label" style="margin-bottom:4px;">탭 메뉴 텍스트</label>
+        <input class="sm-input m-name" value="${esc(m.name)}" placeholder="메뉴 이름" style="font-weight:600;">
+      </div>
+      <div style="width:240px;">
+        <label class="sm-label" style="margin-bottom:4px;">이동 연동할 상품 섹션</label>
+        <select class="sm-input m-sec" style="font-weight:600; cursor:pointer; height:41px; padding:0 12px;">
+          ${secOptions}
+        </select>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:20px;">
+        <button class="sm-action-btn sm-btn-success m-save">저장</button>
+        <button class="sm-action-btn sm-btn-danger m-del">삭제</button>
+      </div>
+    `;
+
     const sel = card.querySelector('.m-sec');
     sel.value = m.section_id || '';
+
     card.querySelector('.m-save').addEventListener('click', async () => {
       await menuDB.update(m.id, {
         name: card.querySelector('.m-name').value.trim(),
         section_id: sel.value || null,
       });
-      toast('메뉴 저장됨');
+      toast('저장 완료');
     });
+
     card.querySelector('.m-del').addEventListener('click', async () => {
-      if (!confirm('삭제?')) return;
+      if (!confirm('이 탭 메뉴를 삭제하시겠습니까?')) return;
       await menuDB.delete(m.id);
-      toast('삭제됨');
+      toast('삭제되었습니다.');
       await renderMenusPanel(panel);
     });
+
     list.appendChild(card);
   });
 }
