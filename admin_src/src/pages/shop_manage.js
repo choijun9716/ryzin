@@ -1,19 +1,18 @@
 // ============================================================
-//  RYZIN SHOP MANAGE ADMIN — 커머스 통합 관리 센터 (모달 + 상품코드 + 검색 연동)
-//  - 상품 마스터 리스트 (테이블 형태) & 모달 등록/수정
-//  - 고유 상품 코드 (product_code: PROD-XXXXX) 자동 생성 및 관리
-//  - 기획전 및 라이브 상품 추가 시 코드/이름 실시간 검색 모달 연동
-//  - 이모티콘 100% 모조리 제외, live_stream 슬림 UI/UX 적용
+//  RYZIN SHOP MANAGE ADMIN — 쇼핑몰 관리 센터
+//  - 서브 탭 4개 구조: [상품 관리] [기획전 관리] [탑배너 관리] [퀵메뉴 관리]
+//  - 이모티콘 100% 완전 금지
+//  - 대시보드 및 라이브송출관리 UI/UX 톤앤매너 적용
 // ============================================================
 
-import { bannerDB, sectionDB, menuDB, productDB, liveDB } from '../utils/shopDB.js';
+import { bannerDB, sectionDB, menuDB, productDB } from '../utils/shopDB.js';
 
 function generateProductCode() {
   const num = Math.floor(Math.random() * 89999 + 10000);
   return `PROD-${num}`;
 }
 
-// ── 공통 CSS 스타일 주입 ──
+// ── 공통 CSS 스타일 주입 (대시보드 & 라이브관리 디자인 스타일 적용) ──
 function injectShopManageStyles(container) {
   const style = document.createElement('style');
   style.innerHTML = `
@@ -43,7 +42,7 @@ function injectShopManageStyles(container) {
       letter-spacing: -0.01em; 
     }
     .sm-tab-btn { 
-      padding: 9px 16px; 
+      padding: 9px 18px; 
       border-radius: 8px; 
       font-size: 13px; 
       font-weight: 700; 
@@ -387,22 +386,20 @@ export function renderShopManage() {
     <div style="margin-bottom:24px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
         <div>
-          <h1 style="font-size:20px; font-weight:800; color:#0f172a; margin:0 0 4px 0; letter-spacing:-0.02em;">쇼핑몰 라이브 & 커머스 관리 센터</h1>
-          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">상품 마스터 리스트, 고유 상품 코드, 모달 등록, 기획전/라이브 검색 연동을 통합 관리합니다.</p>
+          <h1 style="font-size:20px; font-weight:800; color:#0f172a; margin:0 0 4px 0; letter-spacing:-0.02em;">쇼핑몰 관리 센터</h1>
+          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">상품 관리, 기획전 관리, 탑배너 관리, 퀵메뉴 관리를 통합 운영합니다.</p>
         </div>
         <button id="btn-refresh" class="sm-action-btn sm-btn-primary">전체 새로고침</button>
       </div>
     </div>
 
-    <!-- 서브 탭 메뉴 -->
+    <!-- 핵심 서브 탭 4개 메뉴 -->
     <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
       ${[
-        { key:'products', label:'마스터 상품 리스트 (모달 등록)' },
-        { key:'sections', label:'상품 섹션 & 기획전' },
-        { key:'best10', label:'베스트 TOP 10 랭킹' },
-        { key:'lives', label:'라이브 NOW / 예정' },
-        { key:'banners', label:'상단 배너' },
-        { key:'menus', label:'퀵메뉴 탭 설정' }
+        { key:'products', label:'상품 관리' },
+        { key:'sections', label:'기획전 관리' },
+        { key:'banners', label:'탑배너 관리' },
+        { key:'menus', label:'퀵메뉴 관리' }
       ].map(t => `<button class="sm-tab-btn${t.key===_tab?' active':''}" data-tab="${t.key}">${t.label}</button>`).join('')}
     </div>
 
@@ -453,8 +450,6 @@ async function loadPanel(wrapper) {
 
     if (_tab === 'products') await renderProductsMasterPanel(panel, wrapper);
     else if (_tab === 'sections') await renderSectionsPanel(panel, wrapper);
-    else if (_tab === 'best10') await renderBest10Panel(panel);
-    else if (_tab === 'lives') await renderLivesPanel(panel);
     else if (_tab === 'banners') await renderBannersPanel(panel);
     else if (_tab === 'menus') await renderMenusPanel(panel);
   } catch(e) {
@@ -469,14 +464,14 @@ async function loadPanel(wrapper) {
 }
 
 // ──────────────────────────────────────────
-// 1. 마스터 상품 리스트 & 모달 등록 탭
+// 1. 상품 관리 (마스터 리스트 + 모달 등록/수정 + 베스트 랭킹/뱃지 색상)
 // ──────────────────────────────────────────
 async function renderProductsMasterPanel(panel, wrapper) {
   panel.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
       <div>
-        <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 마스터 상품 리스트 (${_allProducts.length}개 등록)</h2>
-        <p style="font-size:12px; color:#64748b; margin:0;">고유 상품 코드(product_code) 기반으로 상품을 모달을 통해 간편히 등록/관리합니다.</p>
+        <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 상품 리스트 (${_allProducts.length}개 등록)</h2>
+        <p style="font-size:12px; color:#64748b; margin:0;">고유 상품 코드(product_code) 기반으로 등록/수정/베스트 랭킹을 모달을 통해 관리합니다.</p>
       </div>
       <div style="display:flex; gap:10px;">
         <input id="prod-search-input" class="sm-input" placeholder="상품 코드 또는 상품명 검색..." style="width:240px;">
@@ -493,7 +488,7 @@ async function renderProductsMasterPanel(panel, wrapper) {
             <th style="width:100px;">브랜드</th>
             <th>상품명</th>
             <th style="width:90px;">판매가</th>
-            <th style="width:80px;">할인율</th>
+            <th style="width:80px;">베스트 순위</th>
             <th style="width:90px;">뱃지 색상</th>
             <th style="width:110px; text-align:center;">관리</th>
           </tr>
@@ -523,6 +518,8 @@ async function renderProductsMasterPanel(panel, wrapper) {
     tbody.innerHTML = filtered.map(p => {
       const pCode = p.product_code || generateProductCode();
       const defaultColor = p.badge_color || '#ef4444';
+      const bestRankText = (p.best_rank && p.best_rank > 0) ? `RANK #${p.best_rank}` : '-';
+
       return `
         <tr>
           <td><span class="sm-rank-badge" style="background:#1e293b;">${esc(pCode)}</span></td>
@@ -532,7 +529,7 @@ async function renderProductsMasterPanel(panel, wrapper) {
           <td style="font-weight:700;">${esc(p.brand_name || '-')}</td>
           <td style="font-weight:600; color:#0f172a;">${esc(p.product_title || p.brand_title)}</td>
           <td style="font-weight:700; color:#2563eb;">${esc(p.sale_price)}</td>
-          <td style="color:#dc2626; font-weight:700;">${esc(p.discount || '-')}</td>
+          <td style="font-weight:800; color:#dc2626;">${esc(bestRankText)}</td>
           <td>
             <div style="display:flex; align-items:center; gap:6px;">
               <span style="display:inline-block; width:14px; height:14px; border-radius:4px; background:${esc(defaultColor)};"></span>
@@ -581,6 +578,7 @@ function openProductModal(productObj, wrapper) {
   const modalContainer = wrapper.querySelector('#sm-modal-container');
 
   const defaultColor = (productObj && productObj.badge_color) || '#ef4444';
+  const defaultRank = (productObj && productObj.best_rank) || 0;
 
   modalContainer.innerHTML = `
     <div class="sm-modal-backdrop" id="modal-backdrop">
@@ -595,9 +593,9 @@ function openProductModal(productObj, wrapper) {
             <input class="sm-input" id="m-pcode" value="${esc(prodCode)}" readonly style="background:#f8fafc; font-weight:800; color:#2563eb;">
           </div>
           <div>
-            <label class="sm-label">연속 등록할 상품 섹션</label>
+            <label class="sm-label">기획전 섹션 선택</label>
             <select class="sm-input" id="m-psection" style="font-weight:700; cursor:pointer; height:37px;">
-              <option value="">-- 섹션 지정 안함 --</option>
+              <option value="">-- 기획전 선택 안함 --</option>
               ${_sections.map(s => `<option value="${s.id}" ${(productObj && productObj.section_id === s.id) ? 'selected' : ''}>${esc(s.title)}</option>`).join('')}
             </select>
           </div>
@@ -606,6 +604,10 @@ function openProductModal(productObj, wrapper) {
           ${formField('판매가 (예: 9,900원)','m-sale', productObj ? productObj.sale_price : '')}
           ${formField('원래 정가 (예: 50,000원)','m-origin', productObj ? productObj.origin_price : '')}
           ${formField('할인 태그 (예: 80% 특가)','m-disc', productObj ? productObj.discount : '')}
+          <div>
+            <label class="sm-label">베스트 TOP 10 순위 (1~10, 0:미지정)</label>
+            <input class="sm-input" id="m-bestrank" type="number" min="0" max="10" value="${defaultRank}" style="font-weight:800;">
+          </div>
           <div>
             <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
             <div class="color-picker-box">
@@ -655,6 +657,7 @@ function openProductModal(productObj, wrapper) {
     const secId = modalContainer.querySelector('#m-psection').value || null;
     const bName = modalContainer.querySelector('#m-bname').value.trim();
     const pTitle = modalContainer.querySelector('#m-ptitle').value.trim();
+    const rankVal = parseInt(modalContainer.querySelector('#m-bestrank').value) || 0;
     const combinedTitle = bName ? `${bName} ${pTitle}` : pTitle;
 
     const payload = {
@@ -666,6 +669,7 @@ function openProductModal(productObj, wrapper) {
       sale_price:    modalContainer.querySelector('#m-sale').value.trim(),
       origin_price:  modalContainer.querySelector('#m-origin').value.trim(),
       discount:      modalContainer.querySelector('#m-disc').value.trim(),
+      best_rank:     rankVal,
       badge_color:   colorText.value.trim() || '#ef4444',
       md_comment:    modalContainer.querySelector('#m-mdcomment').value.trim(),
       img_url:       inputImg.value.trim(),
@@ -688,7 +692,7 @@ function openProductModal(productObj, wrapper) {
 }
 
 // ──────────────────────────────────────────
-// 상품 코드/이름 검색 선택 모달 (기획전 & 라이브 연동용)
+// 상품 코드/이름 검색 선택 모달
 // ──────────────────────────────────────────
 function openProductSearchModal(wrapper, onSelectProduct) {
   const modalContainer = wrapper.querySelector('#sm-modal-container');
@@ -761,7 +765,7 @@ function openProductSearchModal(wrapper, onSelectProduct) {
 }
 
 // ──────────────────────────────────────────
-// ② 상품 섹션 & 기획전 (검색 모달 연동)
+// 2. 기획전 관리 (검색 모달 연동)
 // ──────────────────────────────────────────
 async function renderSectionsPanel(panel, wrapper) {
   _sections = await sectionDB.getAll();
@@ -774,15 +778,15 @@ async function renderSectionsPanel(panel, wrapper) {
 
   panel.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">기획전 상품 섹션 관리 (${_sections.length}개 섹션)</h2>
-      <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">기획전 관리 (${_sections.length}개 섹션)</h2>
+      <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 기획전 섹션 추가</button>
     </div>
     <div id="section-list"></div>
   `;
 
   panel.querySelector('#add-sec').addEventListener('click', async () => {
     await sectionDB.insert({ sort_order:99, title:'새 기획전 섹션', subtitle:'단독 특가로 만나보세요', show_timer:false });
-    toast('새 섹션이 생성되었습니다.');
+    toast('새 기획전 섹션이 생성되었습니다.');
     await renderSectionsPanel(panel, wrapper);
   });
 
@@ -800,17 +804,17 @@ async function renderSectionsPanel(panel, wrapper) {
         </div>
         <div style="display:flex; gap:6px;">
           <button class="sm-action-btn sm-btn-primary sec-search-add" style="padding:5px 10px; font-size:12px;">+ 코드/이름 검색 추가</button>
-          <button class="sm-action-btn sm-btn-success sec-save" style="padding:5px 10px; font-size:12px;">섹션 저장</button>
-          <button class="sm-action-btn sm-btn-danger sec-del" style="padding:5px 10px; font-size:12px;">섹션 삭제</button>
+          <button class="sm-action-btn sm-btn-success sec-save" style="padding:5px 10px; font-size:12px;">저장</button>
+          <button class="sm-action-btn sm-btn-danger sec-del" style="padding:5px 10px; font-size:12px;">삭제</button>
         </div>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
-        ${formField('섹션 제목 (예: 바캉스 기획전, 인플루언서 픽)','sec-title',sec.title)}
-        ${formField('섹션 부제목 / 혜택 안내','sec-subtitle',sec.subtitle)}
+        ${formField('기획전 제목 (예: 바캉스 기획전, 인플루언서 픽)','sec-title',sec.title)}
+        ${formField('기획전 부제목 / 혜택 안내','sec-subtitle',sec.subtitle)}
       </div>
 
       <div style="margin-top:16px; background:#f8fafc; border-radius:8px; padding:14px;">
-        <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록된 섹션 상품 카드</h4>
+        <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록된 기획전 상품 카드</h4>
         <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
     `;
@@ -820,21 +824,20 @@ async function renderSectionsPanel(panel, wrapper) {
         title: card.querySelector('.sec-title').value.trim(),
         subtitle: card.querySelector('.sec-subtitle').value.trim(),
       });
-      toast('섹션 정보 저장 완료');
+      toast('기획전 정보 저장 완료');
     });
 
     card.querySelector('.sec-del').addEventListener('click', async () => {
-      if (!confirm('이 섹션을 삭제합니까?')) return;
+      if (!confirm('이 기획전 섹션을 삭제합니까?')) return;
       await sectionDB.delete(sec.id);
       toast('삭제되었습니다.');
       await renderSectionsPanel(panel, wrapper);
     });
 
-    // 코드/이름 검색하여 해당 섹션에 상품 할당 추가
     card.querySelector('.sec-search-add').addEventListener('click', () => {
       openProductSearchModal(wrapper, async (selectedProd) => {
         await productDB.update(selectedProd.id, { section_id: sec.id });
-        toast(`[${selectedProd.product_code || '상품'}]이 '${sec.title}' 섹션에 추가되었습니다.`);
+        toast(`[${selectedProd.product_code || '상품'}]이 '${sec.title}' 기획전에 추가되었습니다.`);
         await loadPanel(wrapper);
       });
     });
@@ -853,12 +856,12 @@ async function renderSectionsPanel(panel, wrapper) {
             <div style="font-size:11px; color:#2563eb; font-weight:700;">${esc(p.sale_price)}</div>
           </div>
         </div>
-        <button class="sm-action-btn sm-btn-danger btn-remove-sec-prod" style="padding:4px 8px; font-size:11px;">섹션 제외</button>
+        <button class="sm-action-btn sm-btn-danger btn-remove-sec-prod" style="padding:4px 8px; font-size:11px;">기획전 제외</button>
       `;
 
       itemRow.querySelector('.btn-remove-sec-prod').addEventListener('click', async () => {
         await productDB.update(p.id, { section_id: null });
-        toast('섹션에서 제외되었습니다.');
+        toast('기획전에서 제외되었습니다.');
         await loadPanel(wrapper);
       });
 
@@ -870,204 +873,7 @@ async function renderSectionsPanel(panel, wrapper) {
 }
 
 // ──────────────────────────────────────────
-// ③ 베스트 TOP 10 랭킹 설정
-// ──────────────────────────────────────────
-async function renderBest10Panel(panel) {
-  const products = _allProducts;
-  const bestProducts = products
-    .filter(p => (p.best_rank && p.best_rank > 0))
-    .sort((a,b) => (a.best_rank || 99) - (b.best_rank || 99))
-    .slice(0, 10);
-
-  const displayList = bestProducts.length ? bestProducts : products.slice(0, 10);
-
-  panel.innerHTML = `
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
-      <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
-        베스트 TOP 10 랭킹 & 뱃지 색상 설정
-      </h3>
-      <p style="font-size:12px; margin:0; line-height:1.4; color:#64748b;">
-        쇼핑몰 홈 [베스트 TOP 10] 탭 클릭 시 표시될 1위부터 10위까지 순위와 뱃지 배경 색상을 커스텀 설정합니다.
-      </p>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">베스트 TOP 10 등록 상품 (${displayList.length}개)</h2>
-    </div>
-    <div id="best10-list"></div>
-  `;
-
-  const list = panel.querySelector('#best10-list');
-
-  displayList.forEach((p, idx) => {
-    const defaultRank = p.best_rank || (idx + 1);
-    const defaultColor = p.badge_color || '#ef4444';
-
-    const card = document.createElement('div');
-    card.className = 'sm-card';
-    card.innerHTML = `
-      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="width:110px; flex-shrink:0;">
-          <div style="margin-bottom:6px;">
-            <span class="sm-rank-badge top3" style="background:${esc(defaultColor)}">RANK #${defaultRank}</span>
-          </div>
-          <div class="sm-thumb-uploader b10-uploader" style="width:100%; height:86px;">
-            <img class="b10-thumb" src="${esc(p.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
-            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
-          </div>
-        </div>
-        <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div>
-            <label class="sm-label">상품 코드: ${esc(p.product_code || 'PROD-00000')}</label>
-            <label class="sm-label">베스트 순위 (1~10)</label>
-            <input class="sm-input b10-rank" type="number" min="1" max="10" value="${defaultRank}" style="font-weight:800;">
-          </div>
-          <div>
-            <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
-            <div class="color-picker-box">
-              <input class="color-picker-input b10-picker" type="color" value="${esc(defaultColor)}">
-              <input class="sm-input b10-color" type="text" value="${esc(defaultColor)}" placeholder="#ef4444" style="font-weight:700;">
-            </div>
-          </div>
-          ${formField('브랜드명','b10-bname', p.brand_name || '')}
-          ${formField('상품명','b10-title', p.product_title || p.brand_title || '')}
-          ${formField('판매가','b10-sale', p.sale_price)}
-          ${formField('할인 태그','b10-disc', p.discount)}
-          ${imgUploadField('이미지 URL','b10-img', p.img_url)}
-        </div>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
-        <button class="sm-action-btn sm-btn-success b10-save">저장</button>
-      </div>
-    `;
-
-    const uploader = card.querySelector('.b10-uploader');
-    const inputImg = card.querySelector('.b10-img');
-    bindImageUploader(uploader, inputImg, (url) => {
-      card.querySelector('.b10-thumb').src = url;
-    });
-
-    const picker = card.querySelector('.b10-picker');
-    const colorText = card.querySelector('.b10-color');
-
-    picker.addEventListener('input', (e) => {
-      colorText.value = e.target.value;
-      card.querySelector('.sm-rank-badge').style.background = e.target.value;
-    });
-    colorText.addEventListener('input', (e) => {
-      picker.value = e.target.value;
-      card.querySelector('.sm-rank-badge').style.background = e.target.value;
-    });
-
-    card.querySelector('.b10-save').addEventListener('click', async () => {
-      const rankVal = parseInt(card.querySelector('.b10-rank').value) || (idx + 1);
-      const colorVal = card.querySelector('.b10-color').value.trim() || '#ef4444';
-      const bName = card.querySelector('.b10-bname').value.trim();
-      const pTitle = card.querySelector('.b10-title').value.trim();
-      const combinedTitle = bName ? `${bName} ${pTitle}` : pTitle;
-
-      await productDB.update(p.id, {
-        best_rank: rankVal,
-        badge_color: colorVal,
-        brand_name: bName,
-        product_title: pTitle,
-        brand_title: combinedTitle,
-        sale_price: card.querySelector('.b10-sale').value.trim(),
-        discount: card.querySelector('.b10-disc').value.trim(),
-        img_url: card.querySelector('.b10-img').value.trim(),
-      });
-      toast(`베스트 #${rankVal}위 저장 완료`);
-    });
-
-    list.appendChild(card);
-  });
-}
-
-// ──────────────────────────────────────────
-// ④ 라이브 NOW 탭 (검색 추가 지원)
-// ──────────────────────────────────────────
-async function renderLivesPanel(panel) {
-  const lives = await liveDB.getAll();
-  panel.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">라이브 방송 목록 (${lives.length}개)</h2>
-      <button id="add-live" class="sm-action-btn sm-btn-primary">+ 새 라이브 추가</button>
-    </div>
-    <div id="live-list"></div>
-  `;
-
-  panel.querySelector('#add-live').addEventListener('click', async () => {
-    await liveDB.insert({ sort_order:99, title:'신규 라이브 방송', viewers:'0명 시청 중', img_url:'', link_url:'', status:'live' });
-    toast('새 라이브가 생성되었습니다.');
-    await renderLivesPanel(panel);
-  });
-
-  const list = panel.querySelector('#live-list');
-  lives.forEach((lv) => {
-    const card = document.createElement('div');
-    card.className = 'sm-card';
-    const isUpcoming = lv.status === 'upcoming';
-    card.innerHTML = `
-      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-        <div style="width:130px; flex-shrink:0;">
-          <label class="sm-label">방송 썸네일 (클릭 업로드)</label>
-          <div class="sm-thumb-uploader lv-uploader" style="width:100%; height:86px;">
-            <img class="lv-thumb" src="${esc(lv.img_url || '')}" style="width:100%; height:100%; object-fit:cover;">
-            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
-          </div>
-        </div>
-        <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          ${formField('방송 타이틀','lv-title',lv.title,'text',true)}
-          <div>
-            <label class="sm-label">진행 상태</label>
-            <select class="sm-input lv-status" style="font-weight:700; cursor:pointer;">
-              <option value="live" ${!isUpcoming ? 'selected' : ''}>방송 중 (버튼: 지금 시청하기)</option>
-              <option value="upcoming" ${isUpcoming ? 'selected' : ''}>방송 예정 (버튼: 라이브 확인하기)</option>
-            </select>
-          </div>
-          ${formField('시청자 수 / 시간 문구','lv-viewers',lv.viewers)}
-          ${formField('이동 링크 URL','lv-link',lv.link_url)}
-          ${imgUploadField('썸네일 이미지 URL','lv-img',lv.img_url)}
-        </div>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
-        <button class="sm-action-btn sm-btn-success lv-save">저장</button>
-        <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
-      </div>
-    `;
-
-    const uploader = card.querySelector('.lv-uploader');
-    const input = card.querySelector('.lv-img');
-    bindImageUploader(uploader, input, (url) => {
-      card.querySelector('.lv-thumb').src = url;
-    });
-
-    card.querySelector('.lv-img-preview').addEventListener('click', () => {
-      card.querySelector('.lv-thumb').src = card.querySelector('.lv-img').value.trim();
-    });
-    card.querySelector('.lv-save').addEventListener('click', async () => {
-      await liveDB.update(lv.id, {
-        title:    card.querySelector('.lv-title').value.trim(),
-        viewers:  card.querySelector('.lv-viewers').value.trim(),
-        link_url: card.querySelector('.lv-link').value.trim(),
-        img_url:   card.querySelector('.lv-img').value.trim(),
-        status:   card.querySelector('.lv-status').value,
-      });
-      toast('라이브 정보 저장 완료');
-    });
-    card.querySelector('.lv-del').addEventListener('click', async () => {
-      if (!confirm('라이브를 삭제합니까?')) return;
-      await liveDB.delete(lv.id);
-      toast('삭제되었습니다.');
-      await renderLivesPanel(panel);
-    });
-
-    list.appendChild(card);
-  });
-}
-
-// ──────────────────────────────────────────
-// ⑤ 상단 배너 탭
+// 3. 탑배너 관리
 // ──────────────────────────────────────────
 async function renderBannersPanel(panel) {
   const banners = await bannerDB.getAll();
@@ -1145,22 +951,22 @@ async function renderBannersPanel(panel) {
 }
 
 // ──────────────────────────────────────────
-// ⑥ 퀵메뉴 탭 설정
+// 4. 퀵메뉴 관리
 // ──────────────────────────────────────────
 async function renderMenusPanel(panel) {
   const [menus, sections] = await Promise.all([menuDB.getAll(), sectionDB.getAll()]);
   _sections = sections;
 
-  const secOptions = `<option value="">-- 상품 섹션 연결 안함 --</option>` +
+  const secOptions = `<option value="">-- 기획전 섹션 연결 안함 --</option>` +
     sections.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join('');
 
   panel.innerHTML = `
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
       <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
-        퀵메뉴 탭 & 베스트 랭킹 안내
+        퀵메뉴 탭 설정 안내
       </h3>
       <p style="font-size:12px; margin:0; line-height:1.4; color:#64748b;">
-        쇼핑몰 홈 상단 퀵탭에는 [전체] 및 [베스트 TOP 10] 탭이 자동 생성되며, 아래 추가한 탭 클릭 시 매핑된 상품 섹션이 표출됩니다.
+        쇼핑몰 홈 상단 퀵탭에는 [전체] 및 [베스트 TOP 10] 탭이 자동 생성되며, 아래 추가한 탭 클릭 시 매핑된 기획전 섹션이 표출됩니다.
       </p>
     </div>
 
@@ -1190,7 +996,7 @@ async function renderMenusPanel(panel) {
         <input class="sm-input m-name" value="${esc(m.name)}" placeholder="예: 셀러 특가" style="font-weight:700;">
       </div>
       <div style="width:240px;">
-        <label class="sm-label" style="margin-bottom:3px;">연동 상품 섹션</label>
+        <label class="sm-label" style="margin-bottom:3px;">연동 기획전 섹션</label>
         <select class="sm-input m-sec" style="font-weight:700; cursor:pointer; height:37px; padding:0 10px;">
           ${secOptions}
         </select>
