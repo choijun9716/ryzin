@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>RYZIN SHOP — 내 정보</title>
+  <title>내 정보 — RYZIN SHOP</title>
 
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,8 +18,8 @@
       --text-main: #ffffff;
       --text-sub: #94a3b8;
       --text-muted: #64748b;
+      --accent-blue: #2563eb;
       --accent-orange: #FF8730;
-      --accent-red: #FF3B30;
       --border: #232530;
     }
 
@@ -51,370 +51,236 @@
       position: sticky;
       top: 0;
       z-index: 200;
+      height: 52px;
       background: rgba(12, 13, 16, 0.85);
       backdrop-filter: saturate(180%) blur(20px);
       -webkit-backdrop-filter: saturate(180%) blur(20px);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 16px;
+      padding: 0 16px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .hdr-logo-text {
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      color: #ffffff;
-      cursor: pointer;
-    }
-
-    .hdr-right {
+    .hdr-user-title {
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .hdr-icon-btn {
-      background: none;
-      border: none;
-      color: #ffffff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .hdr-icon-btn svg {
-      width: 24px;
-      height: 24px;
-      stroke: currentColor;
-      stroke-width: 2;
-      fill: none;
-    }
-
-    /* ── USER PROFILE INFO ── */
-    .profile-section {
-      padding: 24px 16px;
-    }
-
-    .user-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .user-avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: var(--text-sub);
-    }
-
-    .user-name {
-      font-size: 20px;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 4px;
-    }
-
-    .user-grade {
-      font-size: 13px;
-      color: var(--accent-orange);
-      font-weight: 600;
-    }
-
-    /* Benefit Grid */
-    .benefit-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-
-    .benefit-card {
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px 12px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
       gap: 4px;
-    }
-
-    .benefit-val {
-      font-size: 16px;
+      font-size: 19px;
       font-weight: 800;
       color: #ffffff;
-    }
-
-    .benefit-lbl {
-      font-size: 12px;
-      color: var(--text-sub);
-      font-weight: 500;
-    }
-
-    /* ── DELIVERY STATUS ── */
-    .delivery-section {
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px 16px;
-      margin-bottom: 28px;
-    }
-
-    .delivery-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .delivery-steps {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    .step-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .step-num {
-      font-size: 18px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .step-num.active {
-      color: var(--accent-orange);
-    }
-
-    .step-lbl {
-      font-size: 12px;
-      color: var(--text-sub);
-      font-weight: 500;
-    }
-
-    /* ── MENU LIST ── */
-    .menu-list {
-      display: flex;
-      flex-direction: column;
-      border-top: 1px solid var(--border);
-      margin-bottom: 24px;
-    }
-
-    .menu-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-main);
       cursor: pointer;
     }
 
-    .menu-item span {
+    .hdr-right { display: flex; gap: 8px; }
+
+    .tb-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
       display: flex;
       align-items: center;
-    }
-
-    .menu-arrow {
-      color: var(--text-muted);
-    }
-
-    /* ── MORE INFO BUTTON (WHITE BORDER & WHITE TEXT) ── */
-    .more-btn-wrap {
-      display: flex;
       justify-content: center;
-      padding: 8px 0;
-    }
-
-    .more-white-btn {
-      background: transparent;
-      border: 1px solid #ffffff;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 12px 24px;
-      border-radius: 30px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-
-    .more-white-btn:active {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV ── */
-    .bottom-nav-wrap {
-      position: fixed;
-      bottom: calc(16px + env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 32px);
-      max-width: 390px;
-      z-index: 300;
-    }
-
-    .bottom-nav {
-      width: 100%;
-      height: 64px;
-      border-radius: 40px;
-      background: rgba(22, 23, 28, 0.78);
-      backdrop-filter: saturate(180%) blur(24px);
-      -webkit-backdrop-filter: saturate(180%) blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 0 10px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      cursor: pointer;
-      color: rgba(255, 255, 255, 0.45);
-      text-decoration: none;
       position: relative;
-      transition: color 0.15s;
     }
 
-    .nav-item.active {
-      color: var(--accent-orange);
-    }
-
-    .nav-item svg {
-      width: 22px;
-      height: 22px;
-      fill: currentColor;
-    }
-
-    .nav-item span {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
+    .tb-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: #ffffff;
+      stroke-width: 1.6;
+      fill: none;
     }
 
     .nav-badge-count {
       position: absolute;
-      top: -2px;
-      right: 2px;
-      background: var(--accent-orange);
-      color: #ffffff;
+      top: 4px; right: 4px;
+      background: #ef4444;
+      color: #fff;
       font-size: 10px;
-      font-weight: 700;
-      width: 16px;
-      height: 16px;
+      font-weight: 900;
+      width: 15px; height: 15px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
 
-    /* ── FOOTER STYLING ── */
-    .footer {
-      background: #090a0c;
-      padding: 20px 16px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 11px;
-      line-height: 1.6;
-      margin-top: 20px;
-    }
-
-    .footer-logo {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--text-sub);
-      margin-bottom: 0;
-      letter-spacing: -0.03em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-      user-select: none;
-      padding: 10px 0;
-    }
-
-    .footer-logo svg {
-      transition: transform 0.2s ease;
-      transform: rotate(180deg);
-    }
-
-    .footer.open .footer-logo svg {
-      transform: rotate(0deg);
-    }
-
-    .footer-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-      opacity: 0;
-      padding-top: 0;
-    }
-
-    .footer.open .footer-body {
-      max-height: 350px;
-      opacity: 1;
-      padding-top: 16px;
-    }
-
-    .footer-info {
-      margin-bottom: 16px;
+    /* ── BODY CONTENT ── */
+    .content {
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 14px;
     }
 
-    .footer-info span {
-      display: inline-block;
-    }
-
-    .footer-notice {
-      color: var(--text-muted);
-      margin-bottom: 20px;
-      font-size: 10px;
-      padding: 0 8px;
-    }
-
-    .footer-links {
+    /* 1. 멤버십 절약 안내 블루 배너 (첨부 1번 스크린샷 100% 매칭) */
+    .membership-banner {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border-radius: 14px;
+      padding: 14px 16px;
       display: flex;
-      justify-content: center;
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25);
+    }
+
+    .membership-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .mem-badge {
+      background: #ffffff;
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 900;
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* 2. 주문/리뷰/관심상품 3종 퀵 카드 + 포인트/쿠폰 */
+    .profile-main-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 16px 14px;
+    }
+
+    .quick-3-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      text-align: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .quick-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .quick-item svg {
+      width: 22px; height: 22px;
+      stroke: #ffffff;
+      stroke-width: 1.6;
+      fill: none;
+    }
+
+    .quick-item span {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .point-coupon-row {
+      display: flex;
+      align-items: center;
+      padding-top: 14px;
+    }
+
+    .pc-col {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      cursor: pointer;
+    }
+
+    .pc-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+
+    .pc-val {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .pc-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    /* 3. 메뉴 리스트 그룹 카드 */
+    .menu-group-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .menu-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .menu-row:last-child { border-bottom: none; }
+    .menu-row:active { background: rgba(255,255,255,0.05); }
+
+    .menu-left {
+      display: flex;
+      align-items: center;
       gap: 12px;
-      margin-bottom: 20px;
-      color: var(--text-sub);
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
     }
 
-    .footer-links span {
-      color: var(--text-sub);
-      font-weight: 500;
-      cursor: default;
+    .menu-left svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-sub);
+      stroke-width: 1.8;
+      fill: none;
     }
 
-    .footer-copyright {
-      font-size: 10px;
-      color: var(--text-muted);
+    .chevron svg {
+      width: 16px; height: 16px;
+      stroke: var(--text-muted);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* 토스트 */
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: rgba(30,41,59,0.95);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+      border: 1px solid rgba(255,255,255,0.15);
     }
   </style>
 </head>
@@ -422,124 +288,137 @@
 <body>
 <div class="app">
 
-  <!-- Common Header -->
+  <!-- ── 상단 헤더 ── -->
   <header class="header">
-    <div class="hdr-logo-wrap" onclick="window.location.href='/shop/index.html'">
-      <span class="hdr-logo-text">RYZIN</span>
+    <div class="hdr-user-title" onclick="showToast('프로필 정보 설정')">
+      <span>채이준님</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
     </div>
     <div class="hdr-right">
-      <button class="hdr-icon-btn">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      <button class="tb-icon-btn" onclick="showToast('검색 화면으로 이동합니다.')">
+        <svg viewBox="0 0 24 24"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
       </button>
-      <button class="hdr-icon-btn" onclick="window.location.href='/shop/cart.html'">
-        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      <button class="tb-icon-btn" onclick="window.location.href='/shop/cart.html'">
+        <span class="nav-badge-count">2</span>
+        <svg viewBox="0 0 24 24"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
       </button>
     </div>
   </header>
 
-  <!-- User Profile Section -->
-  <section class="profile-section">
-    <!-- User summary card -->
-    <div class="user-card">
-      <div class="user-avatar">
-        <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+  <!-- ── 바디 영역 ── -->
+  <div class="content">
+
+    <!-- 1. 멤버십 절약 배너 -->
+    <div class="membership-banner" onclick="showToast('멤버십 혜택 페이지로 이동합니다.')">
+      <div class="membership-banner-left">
+        <span class="mem-badge">W</span>
+        <span>멤버 회원은 평균 월 8만원 이상 절약 중이에요</span>
       </div>
-      <div>
-        <h3 class="user-name">홍길동님</h3>
-        <span class="user-grade">RYZIN 멤버십 회원</span>
-      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
     </div>
 
-    <!-- Benefit Info -->
-    <div class="benefit-grid">
-      <div class="benefit-card">
-        <span class="benefit-val">5,000 P</span>
-        <span class="benefit-lbl">포인트</span>
+    <!-- 2. 주요 3종 퀵 카드 + 포인트/쿠폰 -->
+    <div class="profile-main-card">
+      <div class="quick-3-grid">
+        <div class="quick-item" onclick="showToast('주문·배송 내역 페이지로 이동합니다.')">
+          <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>주문·배송내역</span>
+        </div>
+        <div class="quick-item" onclick="showToast('나의 작성 리뷰 모아보기')">
+          <svg viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <span>리뷰</span>
+        </div>
+        <div class="quick-item" onclick="showToast('관심 상품(찜 목록)으로 이동합니다.')">
+          <svg viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          <span>관심 상품</span>
+        </div>
       </div>
-      <div class="benefit-card">
-        <span class="benefit-val">3 장</span>
-        <span class="benefit-lbl">보유 쿠폰</span>
-      </div>
-      <div class="benefit-card">
-        <span class="benefit-val">실버</span>
-        <span class="benefit-lbl">멤버십 등급</span>
-      </div>
-    </div>
 
-    <!-- Order & Delivery Status -->
-    <div class="delivery-section">
-      <h4 class="delivery-title">주문 / 배송 조회</h4>
-      <div class="delivery-steps">
-        <div class="step-item">
-          <span class="step-num">1</span>
-          <span class="step-lbl">결제완료</span>
+      <div class="point-coupon-row">
+        <div class="pc-col" onclick="showToast('포인트 내역 확인')">
+          <span class="pc-label">포인트</span>
+          <span class="pc-val">0원 <svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M9 18l6-6-6-6"/></svg></span>
         </div>
-        <div class="step-item">
-          <span class="step-num active">2</span>
-          <span class="step-lbl">배송중</span>
-        </div>
-        <div class="step-item">
-          <span class="step-num">0</span>
-          <span class="step-lbl">배송완료</span>
+        <div class="pc-divider"></div>
+        <div class="pc-col" onclick="showToast('쿠폰함 확인')">
+          <span class="pc-label">쿠폰</span>
+          <span class="pc-val">0장 <svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M9 18l6-6-6-6"/></svg></span>
         </div>
       </div>
     </div>
 
-    <!-- Menu List -->
-    <div class="menu-list">
-      <div class="menu-item" onclick="alert('주문 내역으로 이동합니다.')">
-        <span>주문 내역</span>
-        <span class="menu-arrow">></span>
+    <!-- 3. 서비스 관리 그룹 1 -->
+    <div class="menu-group-card">
+      <div class="menu-row" onclick="showToast('배송지 관리 설정')">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>배송지 관리</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
       </div>
-      <div class="menu-item" onclick="alert('위시리스트로 이동합니다.')">
-        <span>위시리스트</span>
-        <span class="menu-arrow">></span>
+      <div class="menu-row" onclick="showToast('결제수단 관리 설정')">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <span>결제수단 관리</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
       </div>
-      <div class="menu-item" onclick="alert('배송지 관리로 이동합니다.')">
-        <span>배송지 관리</span>
-        <span class="menu-arrow">></span>
-      </div>
-      <div class="menu-item" onclick="alert('고객 센터로 이동합니다.')">
-        <span>고객 센터</span>
-        <span class="menu-arrow">></span>
+      <div class="menu-row" onclick="showToast('라이진 멤버십 안내')">
+        <div class="menu-left">
+          <span style="font-weight:900; font-size:15px; color:#2563eb; width:18px; text-align:center;">W</span>
+          <span>와이즐리 멤버십</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
       </div>
     </div>
 
-    <!-- More Info Button (White Text & Border) -->
-    <div class="more-btn-wrap">
-      <button class="more-white-btn" onclick="alert('서비스 정보 메뉴로 이동합니다.')">
-        고객 안내 더보기
-      </button>
+    <!-- 4. 알림 설정 그룹 2 -->
+    <div class="menu-group-card">
+      <div class="menu-row" onclick="showToast('재입고·출시 알림 설정')">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span>재입고·출시 알림</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+      <div class="menu-row" onclick="showToast('알림 설정 페이지')">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>알림 설정</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
     </div>
 
-  </section>
+    <!-- 5. 고객센터 그룹 3 -->
+    <div class="menu-group-card">
+      <div class="menu-row" onclick="showToast('고객센터 연결')">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+          <span>고객센터</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+      <div class="menu-row" onclick="showToast('공지사항 확인')">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>공지사항</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
 
-  <!-- ── 푸터 (Footer) ── -->
-  <footer class="footer" id="ryzin-footer">
-    <div class="footer-logo" onclick="toggleFooter()">
-      <span>RYZIN</span>
-      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M18 15l-6-6-6 6"/></svg>
-    </div>
-    <div class="footer-body">
-      <div class="footer-info">
-        <span>회사명: 라이진 | 대표: 채이준 | 사업자등록번호: 821-29-01197</span>
-        <span>사업장 소재지: 경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2</span>
-        <span>호스팅서비스: Amazon Web Services, Inc</span>
-      </div>
-      <p class="footer-notice">
-        라이진은 통신판매중개자이며, 통신판매의 당사자가 아닙니다. 상품, 상품 정보, 거래, 배송에 관한 의무와 책임은 판매자에게 있습니다.
-      </p>
-      <div class="footer-links">
-        <span>이용약관</span> |
-        <span>사업자정보</span> |
-        <span>개인정보처리방침</span> |
-        <span>입점문의</span>
-      </div>
-      <div class="footer-copyright">
-        © 2026 RYZIN
+    <!-- 6. 계정 로그아웃 그룹 4 -->
+    <div class="menu-group-card">
+      <div class="menu-row" onclick="showToast('로그아웃 되었습니다.')">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          <span style="color:var(--text-sub);">로그아웃</span>
+        </div>
       </div>
     </div>
-  </footer>
+
+  </div>
 
   <!-- ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV ── -->
   <div class="bottom-nav-wrap">
@@ -568,14 +447,20 @@
     </nav>
   </div>
 
+  <!-- 토스트 -->
+  <div id="toast"></div>
+
 </div>
 
 <script>
-  function toggleFooter() {
-    const footer = document.getElementById('ryzin-footer');
-    if (footer) {
-      footer.classList.toggle('open');
-    }
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => {
+      toast.style.transform = 'translateX(-50%) translateY(-100px)';
+    }, 2200);
   }
 </script>
 </body>
