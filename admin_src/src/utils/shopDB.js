@@ -87,3 +87,11 @@ export const magazineDB = {
   update: (id, d) => dbUpdate('shop_magazines', id, d),
   delete: (id) => dbDelete('shop_magazines', id),
 };
+
+// ── 유저 ──
+export const userDB = {
+  getAll: () => dbFetch('shop_users', 'select=*&order=created_at.desc'),
+  insert: (d) => dbInsert('shop_users', d),
+  update: (id, d) => dbUpdate('shop_users', id, d),
+  delete: (id) => dbDelete('shop_users', id),
+};

@@ -2996,7 +2996,7 @@ Minimum version required to store current data is: `+c+`.
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`);document.getElementById(`otp-setup-container`),document.getElementById(`qrcode-box`);let a=document.getElementById(`login-otp`),o=null;e&&e.addEventListener(`submit`,async t=>{t.preventDefault();let n=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value;if(n.toLowerCase()===`admin`&&r.trim()===`1234`){H.loginAsDemo();return}let i=e.querySelector(`button[type="submit"]`),a=i?i.textContent:`로그인`;i&&(i.textContent=`로그인 중...`,i.disabled=!0);try{await H.init()}catch(e){console.warn(`Failed to sync users from Supabase before login`,e)}finally{i&&(i.textContent=a,i.disabled=!1)}let o=H.verifyPassword(n,r);if(o){if(H.isDemoMode){H.completeLogin(o),q(`데모 모드로 접속되었습니다.`),M.navigate(`/`);return}H.completeLogin(o),q(`환영합니다.`),M.navigate(`/`);return}else J(`로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.`)}),t&&t.addEventListener(`submit`,e=>{if(e.preventDefault(),!o)return;let t=a.value.trim(),n=o.otpSecret||localStorage.getItem(`ryzin_otp_${o.id}`)||null;try{new bi({issuer:`Ryzin Admin`,label:o.id,algorithm:`SHA1`,digits:6,period:30,secret:_i.fromBase32(n)}).validate({token:t,window:1})===null?(J(`인증번호가 올바르지 않습니다.`),a.value=``,a.focus()):(localStorage.setItem(`ryzin_otp_trusted_${o.id}`,`true`),H.completeLogin(o),q(`OTP 인증 성공! 환영합니다.`),M.navigate(`/`))}catch{J(`인증 과정에 문제가 발생했습니다.`)}}),i&&i.addEventListener(`click`,()=>{o&&confirm(`OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.`)&&(localStorage.removeItem(`ryzin_otp_${o.id}`),alert(`OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.`),n.style.transform=`translateX(0)`,o=null,a.value=``)}),r&&r.addEventListener(`click`,()=>{n.style.transform=`translateX(0)`,o=null,a.value=``})},0),e}var Yi=`https://vybrnhyaeugfwezbygdt.supabase.co`,Xi=`sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9`,Zi={"Content-Type":`application/json`,apikey:Xi,Authorization:`Bearer ${Xi}`,Prefer:`return=representation`};async function Qi(e,t=``){let n=await fetch(`${Yi}/rest/v1/${e}?${t}`,{headers:Zi});if(!n.ok)throw Error(`DB fetch error: ${n.status}`);return n.json()}async function $i(e,t){let n=await fetch(`${Yi}/rest/v1/${e}`,{method:`POST`,headers:Zi,body:JSON.stringify(t)});if(!n.ok)throw Error(`DB insert error: ${n.status}`);return n.json()}async function ea(e,t,n){let r=await fetch(`${Yi}/rest/v1/${e}?id=eq.${t}`,{method:`PATCH`,headers:Zi,body:JSON.stringify(n)});if(!r.ok)throw Error(`DB update error: ${r.status}`);return r.json()}async function ta(e,t){let n=await fetch(`${Yi}/rest/v1/${e}?id=eq.${t}`,{method:`DELETE`,headers:Zi});if(!n.ok)throw Error(`DB delete error: ${n.status}`);return!0}var na={getAll:()=>Qi(`shop_banners`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_banners`,e),update:(e,t)=>ea(`shop_banners`,e,t),delete:e=>ta(`shop_banners`,e)},ra={getAll:()=>Qi(`shop_sections`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_sections`,e),update:(e,t)=>ea(`shop_sections`,e,t),delete:e=>ta(`shop_sections`,e)},ia={getAll:()=>Qi(`shop_menus`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_menus`,e),update:(e,t)=>ea(`shop_menus`,e,t),delete:e=>ta(`shop_menus`,e)},aa={getAll:()=>Qi(`shop_products`,`select=*&order=sort_order.asc`),getBySectionId:e=>Qi(`shop_products`,`select=*&section_id=eq.${e}&order=sort_order.asc`),insert:e=>$i(`shop_products`,e),update:(e,t)=>ea(`shop_products`,e,t),delete:e=>ta(`shop_products`,e)},oa={getAll:()=>Qi(`shop_magazines`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_magazines`,e),update:(e,t)=>ea(`shop_magazines`,e,t),delete:e=>ta(`shop_magazines`,e)};function sa(){return`PROD-${Math.floor(Math.random()*89999+1e4)}`}function ca(e){let t=document.createElement(`style`);t.innerHTML=`
+  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-reset-otp`);document.getElementById(`otp-setup-container`),document.getElementById(`qrcode-box`);let a=document.getElementById(`login-otp`),o=null;e&&e.addEventListener(`submit`,async t=>{t.preventDefault();let n=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value;if(n.toLowerCase()===`admin`&&r.trim()===`1234`){H.loginAsDemo();return}let i=e.querySelector(`button[type="submit"]`),a=i?i.textContent:`로그인`;i&&(i.textContent=`로그인 중...`,i.disabled=!0);try{await H.init()}catch(e){console.warn(`Failed to sync users from Supabase before login`,e)}finally{i&&(i.textContent=a,i.disabled=!1)}let o=H.verifyPassword(n,r);if(o){if(H.isDemoMode){H.completeLogin(o),q(`데모 모드로 접속되었습니다.`),M.navigate(`/`);return}H.completeLogin(o),q(`환영합니다.`),M.navigate(`/`);return}else J(`로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.`)}),t&&t.addEventListener(`submit`,e=>{if(e.preventDefault(),!o)return;let t=a.value.trim(),n=o.otpSecret||localStorage.getItem(`ryzin_otp_${o.id}`)||null;try{new bi({issuer:`Ryzin Admin`,label:o.id,algorithm:`SHA1`,digits:6,period:30,secret:_i.fromBase32(n)}).validate({token:t,window:1})===null?(J(`인증번호가 올바르지 않습니다.`),a.value=``,a.focus()):(localStorage.setItem(`ryzin_otp_trusted_${o.id}`,`true`),H.completeLogin(o),q(`OTP 인증 성공! 환영합니다.`),M.navigate(`/`))}catch{J(`인증 과정에 문제가 발생했습니다.`)}}),i&&i.addEventListener(`click`,()=>{o&&confirm(`OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.`)&&(localStorage.removeItem(`ryzin_otp_${o.id}`),alert(`OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.`),n.style.transform=`translateX(0)`,o=null,a.value=``)}),r&&r.addEventListener(`click`,()=>{n.style.transform=`translateX(0)`,o=null,a.value=``})},0),e}var Yi=`https://vybrnhyaeugfwezbygdt.supabase.co`,Xi=`sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9`,Zi={"Content-Type":`application/json`,apikey:Xi,Authorization:`Bearer ${Xi}`,Prefer:`return=representation`};async function Qi(e,t=``){let n=await fetch(`${Yi}/rest/v1/${e}?${t}`,{headers:Zi});if(!n.ok)throw Error(`DB fetch error: ${n.status}`);return n.json()}async function $i(e,t){let n=await fetch(`${Yi}/rest/v1/${e}`,{method:`POST`,headers:Zi,body:JSON.stringify(t)});if(!n.ok)throw Error(`DB insert error: ${n.status}`);return n.json()}async function ea(e,t,n){let r=await fetch(`${Yi}/rest/v1/${e}?id=eq.${t}`,{method:`PATCH`,headers:Zi,body:JSON.stringify(n)});if(!r.ok)throw Error(`DB update error: ${r.status}`);return r.json()}async function ta(e,t){let n=await fetch(`${Yi}/rest/v1/${e}?id=eq.${t}`,{method:`DELETE`,headers:Zi});if(!n.ok)throw Error(`DB delete error: ${n.status}`);return!0}var na={getAll:()=>Qi(`shop_banners`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_banners`,e),update:(e,t)=>ea(`shop_banners`,e,t),delete:e=>ta(`shop_banners`,e)},ra={getAll:()=>Qi(`shop_sections`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_sections`,e),update:(e,t)=>ea(`shop_sections`,e,t),delete:e=>ta(`shop_sections`,e)},ia={getAll:()=>Qi(`shop_menus`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_menus`,e),update:(e,t)=>ea(`shop_menus`,e,t),delete:e=>ta(`shop_menus`,e)},aa={getAll:()=>Qi(`shop_products`,`select=*&order=sort_order.asc`),getBySectionId:e=>Qi(`shop_products`,`select=*&section_id=eq.${e}&order=sort_order.asc`),insert:e=>$i(`shop_products`,e),update:(e,t)=>ea(`shop_products`,e,t),delete:e=>ta(`shop_products`,e)},oa={getAll:()=>Qi(`shop_magazines`,`select=*&order=sort_order.asc`),insert:e=>$i(`shop_magazines`,e),update:(e,t)=>ea(`shop_magazines`,e,t),delete:e=>ta(`shop_magazines`,e)},sa={getAll:()=>Qi(`shop_users`,`select=*&order=created_at.desc`),insert:e=>$i(`shop_users`,e),update:(e,t)=>ea(`shop_users`,e,t),delete:e=>ta(`shop_users`,e)};function ca(){return`PROD-${Math.floor(Math.random()*89999+1e4)}`}function la(e){let t=document.createElement(`style`);t.innerHTML=`
     .sm-input { 
       width: 100%; 
       padding: 8px 12px; 
@@ -3238,12 +3238,12 @@ Minimum version required to store current data is: `+c+`.
       color: #64748b;
       cursor: pointer;
     }
-  `,e.appendChild(t)}async function la(e){let t=localStorage.getItem(`ryzin_imgbb_key`)||`4ad44d673bfba8d88df109c0df1e2cae`,n=await ua(e,1024,.85),r=new FormData;r.append(`image`,n.split(`,`)[1]);let i=await(await fetch(`https://api.imgbb.com/1/upload?key=${t}`,{method:`POST`,body:r})).json();if(i&&i.success)return i.data.url;throw Error(i.error&&i.error.message||`이미지 업로드 실패`)}function ua(e,t=1024,n=.85){return new Promise((r,i)=>{let a=new FileReader;a.onload=e=>{let a=new Image;a.onload=()=>{let e=document.createElement(`canvas`),i=a.width,o=a.height;i>t&&(o=Math.round(o*t/i),i=t),e.width=i,e.height=o,e.getContext(`2d`).drawImage(a,0,0,i,o),r(e.toDataURL(`image/jpeg`,n))},a.onerror=i,a.src=e.target.result},a.onerror=i,a.readAsDataURL(e)})}function da(e,t,n){e.addEventListener(`click`,()=>{let e=document.createElement(`input`);e.type=`file`,e.accept=`image/*`,e.onchange=async e=>{let r=e.target.files[0];if(r){Z(`이미지를 업로드하고 있습니다...`);try{let e=await la(r);t.value=e,n&&n(e),Z(`이미지 업로드 성공`)}catch(e){alert(`업로드 실패: `+e.message)}}},e.click()})}function Z(e){let t=document.getElementById(`sm-toast`);t||(t=document.createElement(`div`),t.id=`sm-toast`,t.style.cssText=`position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;font-weight:700;z-index:99999;box-shadow:0 8px 20px rgba(0,0,0,0.2);transition:opacity 0.2s;`,document.body.appendChild(t)),t.textContent=e,t.style.opacity=`1`,clearTimeout(t.timer),t.timer=setTimeout(()=>{t.style.opacity=`0`},2200)}function Q(e){return e?String(e).replace(/&/g,`&amp;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`).replace(/"/g,`&quot;`):``}function $(e,t,n,r=`text`,i=!1){return`
+  `,e.appendChild(t)}async function ua(e){let t=localStorage.getItem(`ryzin_imgbb_key`)||`4ad44d673bfba8d88df109c0df1e2cae`,n=await da(e,1024,.85),r=new FormData;r.append(`image`,n.split(`,`)[1]);let i=await(await fetch(`https://api.imgbb.com/1/upload?key=${t}`,{method:`POST`,body:r})).json();if(i&&i.success)return i.data.url;throw Error(i.error&&i.error.message||`이미지 업로드 실패`)}function da(e,t=1024,n=.85){return new Promise((r,i)=>{let a=new FileReader;a.onload=e=>{let a=new Image;a.onload=()=>{let e=document.createElement(`canvas`),i=a.width,o=a.height;i>t&&(o=Math.round(o*t/i),i=t),e.width=i,e.height=o,e.getContext(`2d`).drawImage(a,0,0,i,o),r(e.toDataURL(`image/jpeg`,n))},a.onerror=i,a.src=e.target.result},a.onerror=i,a.readAsDataURL(e)})}function fa(e,t,n){e.addEventListener(`click`,()=>{let e=document.createElement(`input`);e.type=`file`,e.accept=`image/*`,e.onchange=async e=>{let r=e.target.files[0];if(r){Z(`이미지를 업로드하고 있습니다...`);try{let e=await ua(r);t.value=e,n&&n(e),Z(`이미지 업로드 성공`)}catch(e){alert(`업로드 실패: `+e.message)}}},e.click()})}function Z(e){let t=document.getElementById(`sm-toast`);t||(t=document.createElement(`div`),t.id=`sm-toast`,t.style.cssText=`position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;font-weight:700;z-index:99999;box-shadow:0 8px 20px rgba(0,0,0,0.2);transition:opacity 0.2s;`,document.body.appendChild(t)),t.textContent=e,t.style.opacity=`1`,clearTimeout(t.timer),t.timer=setTimeout(()=>{t.style.opacity=`0`},2200)}function Q(e){return e?String(e).replace(/&/g,`&amp;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`).replace(/"/g,`&quot;`):``}function $(e,t,n,r=`text`,i=!1){return`
     <div style="${i?`grid-column: 1 / -1;`:``}">
       <label class="sm-label">${e}</label>
       <input class="sm-input ${t}" type="${r}" value="${Q(n||``)}">
     </div>
-  `}function fa(e,t,n){return`
+  `}function pa(e,t,n){return`
     <div style="grid-column: 1 / -1;">
       <label class="sm-label">${e}</label>
       <div style="display:flex; gap:8px;">
@@ -3251,7 +3251,7 @@ Minimum version required to store current data is: `+c+`.
         <button class="sm-action-btn sm-btn-primary ${t}-preview" style="flex-shrink:0; padding:0 12px;">적용</button>
       </div>
     </div>
-  `}var pa=`products`,ma=[],ha=[];function ga(){let e=document.createElement(`div`);e.style.cssText=`min-height:100vh; background:#f8fafc; padding:24px; color:#0f172a; font-family:"Pretendard",sans-serif;`,ca(e);let t=document.createElement(`div`);return t.style.cssText=`max-width:1100px; margin:0 auto;`,t.innerHTML=`
+  `}var ma=`products`,ha=[],ga=[];function _a(){let e=document.createElement(`div`);e.style.cssText=`min-height:100vh; background:#f8fafc; padding:24px; color:#0f172a; font-family:"Pretendard",sans-serif;`,la(e);let t=document.createElement(`div`);return t.style.cssText=`max-width:1100px; margin:0 auto;`,t.innerHTML=`
     <div style="margin-bottom:24px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
         <div>
@@ -3262,9 +3262,9 @@ Minimum version required to store current data is: `+c+`.
       </div>
     </div>
 
-    <!-- 핵심 서브 탭 5개 메뉴 -->
+    <!-- 핵심 서브 탭 6개 메뉴 -->
     <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
-      ${[{key:`products`,label:`상품 관리`},{key:`sections`,label:`기획전 관리`},{key:`banners`,label:`탑배너 관리`},{key:`menus`,label:`퀵메뉴 관리`},{key:`magazines`,label:`매거진 관리`}].map(e=>`<button class="sm-tab-btn${e.key===pa?` active`:``}" data-tab="${e.key}">${e.label}</button>`).join(``)}
+      ${[{key:`products`,label:`상품 관리`},{key:`sections`,label:`기획전 관리`},{key:`banners`,label:`탑배너 관리`},{key:`menus`,label:`퀵메뉴 관리`},{key:`magazines`,label:`매거진 관리`},{key:`users`,label:`유저 관리`}].map(e=>`<button class="sm-tab-btn${e.key===ma?` active`:``}" data-tab="${e.key}">${e.label}</button>`).join(``)}
     </div>
 
     <div id="sm-loading" style="text-align:center; padding:30px; color:#64748b; font-size:13px; font-weight:600;">
@@ -3272,15 +3272,15 @@ Minimum version required to store current data is: `+c+`.
     </div>
     <div id="sm-panel"></div>
     <div id="sm-modal-container"></div>
-  `,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.addEventListener(`click`,()=>{pa=e.dataset.tab,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.classList.toggle(`active`,e.dataset.tab===pa)}),_a(t)})}),t.querySelector(`#btn-refresh`).addEventListener(`click`,()=>{Z(`데이터를 새로고침합니다.`),_a(t)}),e.appendChild(t),setTimeout(async()=>{try{ma=await ra.getAll()}catch{ma=[]}await _a(t)},0),e}async function _a(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{ha=await aa.getAll(),pa===`products`?await va(n,e):pa===`sections`?await xa(n,e):pa===`banners`?await Sa(n):pa===`menus`?await Ca(n):pa===`magazines`&&await wa(n)}catch(e){n.innerHTML=`
+  `,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.addEventListener(`click`,()=>{ma=e.dataset.tab,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.classList.toggle(`active`,e.dataset.tab===ma)}),va(t)})}),t.querySelector(`#btn-refresh`).addEventListener(`click`,()=>{Z(`데이터를 새로고침합니다.`),va(t)}),e.appendChild(t),setTimeout(async()=>{try{ha=await ra.getAll()}catch{ha=[]}await va(t)},0),e}async function va(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{ga=await aa.getAll(),ma===`products`?await ya(n,e):ma===`sections`?await Sa(n,e):ma===`banners`?await Ca(n):ma===`menus`?await wa(n):ma===`magazines`?await Ta(n):ma===`users`&&await Ea(n,e)}catch(e){n.innerHTML=`
       <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
         <h4 style="margin:0 0 6px 0; font-weight:800;">데이터 연동 실패</h4>
         <p style="margin:0; font-size:12.5px;">${e.message}. Supabase 데이터베이스 연결 상태를 확인해 주세요.</p>
       </div>
-    `}t.style.display=`none`}async function va(e,t){e.innerHTML=`
+    `}t.style.display=`none`}async function ya(e,t){e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
       <div>
-        <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 상품 리스트 (${ha.length}개 등록)</h2>
+        <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 상품 리스트 (${ga.length}개 등록)</h2>
         <p style="font-size:12px; color:#64748b; margin:0;">고유 상품 코드(product_code) 기반으로 등록/수정/베스트 랭킹을 모달을 통해 관리합니다.</p>
       </div>
       <div style="display:flex; gap:10px;">
@@ -3306,7 +3306,7 @@ Minimum version required to store current data is: `+c+`.
         <tbody id="prod-table-body"></tbody>
       </table>
     </div>
-  `;let n=e.querySelector(`#prod-table-body`),r=e.querySelector(`#prod-search-input`);function i(){let e=r.value.trim().toLowerCase(),i=ha.filter(t=>{let n=(t.product_code||``).toLowerCase(),r=(t.product_title||t.brand_title||``).toLowerCase(),i=(t.brand_name||``).toLowerCase();return!e||n.includes(e)||r.includes(e)||i.includes(e)});if(!i.length){n.innerHTML=`<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">검색된 상품이 없습니다.</td></tr>`;return}n.innerHTML=i.map(e=>{let t=e.product_code||sa(),n=e.badge_color||`#ef4444`,r=e.best_rank&&e.best_rank>0?`RANK #${e.best_rank}`:`-`;return`
+  `;let n=e.querySelector(`#prod-table-body`),r=e.querySelector(`#prod-search-input`);function i(){let e=r.value.trim().toLowerCase(),i=ga.filter(t=>{let n=(t.product_code||``).toLowerCase(),r=(t.product_title||t.brand_title||``).toLowerCase(),i=(t.brand_name||``).toLowerCase();return!e||n.includes(e)||r.includes(e)||i.includes(e)});if(!i.length){n.innerHTML=`<tr><td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">검색된 상품이 없습니다.</td></tr>`;return}n.innerHTML=i.map(e=>{let t=e.product_code||ca(),n=e.badge_color||`#ef4444`,r=e.best_rank&&e.best_rank>0?`RANK #${e.best_rank}`:`-`;return`
         <tr>
           <td><span class="sm-rank-badge" style="background:#1e293b;">${Q(t)}</span></td>
           <td style="text-align:center;">
@@ -3327,7 +3327,7 @@ Minimum version required to store current data is: `+c+`.
             <button class="sm-action-btn sm-btn-danger btn-del-prod" data-id="${e.id}" style="padding:4px 8px; font-size:11px;">삭제</button>
           </td>
         </tr>
-      `}).join(``),n.querySelectorAll(`.btn-edit-prod`).forEach(e=>{e.addEventListener(`click`,()=>{let n=ha.find(t=>t.id===e.dataset.id);n&&ya(n,t)})}),n.querySelectorAll(`.btn-del-prod`).forEach(e=>{e.addEventListener(`click`,async()=>{confirm(`이 상품을 삭제하시겠습니까?`)&&(await aa.delete(e.dataset.id),Z(`삭제되었습니다.`),await _a(t))})})}r.addEventListener(`input`,i),i(),e.querySelector(`#btn-open-add-modal`).addEventListener(`click`,()=>{ya(null,t)})}function ya(e,t){let n=!!e,r=e&&e.product_code||sa(),i=t.querySelector(`#sm-modal-container`),a=e&&e.badge_color||`#ef4444`,o=e&&e.best_rank||0;i.innerHTML=`
+      `}).join(``),n.querySelectorAll(`.btn-edit-prod`).forEach(e=>{e.addEventListener(`click`,()=>{let n=ga.find(t=>t.id===e.dataset.id);n&&ba(n,t)})}),n.querySelectorAll(`.btn-del-prod`).forEach(e=>{e.addEventListener(`click`,async()=>{confirm(`이 상품을 삭제하시겠습니까?`)&&(await aa.delete(e.dataset.id),Z(`삭제되었습니다.`),await va(t))})})}r.addEventListener(`input`,i),i(),e.querySelector(`#btn-open-add-modal`).addEventListener(`click`,()=>{ba(null,t)})}function ba(e,t){let n=!!e,r=e&&e.product_code||ca(),i=t.querySelector(`#sm-modal-container`),a=e&&e.badge_color||`#ef4444`,o=e&&e.best_rank||0;i.innerHTML=`
     <div class="sm-modal-backdrop" id="modal-backdrop">
       <div class="sm-modal-content">
         <div class="sm-modal-header">
@@ -3343,7 +3343,7 @@ Minimum version required to store current data is: `+c+`.
             <label class="sm-label">기획전 섹션 선택</label>
             <select class="sm-input" id="m-psection" style="font-weight:700; cursor:pointer; height:37px;">
               <option value="">-- 기획전 선택 안함 --</option>
-              ${ma.map(t=>`<option value="${t.id}" ${e&&e.section_id===t.id?`selected`:``}>${Q(t.title)}</option>`).join(``)}
+              ${ha.map(t=>`<option value="${t.id}" ${e&&e.section_id===t.id?`selected`:``}>${Q(t.title)}</option>`).join(``)}
             </select>
           </div>
           ${$(`브랜드명 (예: 설화수)`,`m-bname`,e?e.brand_name:``)}
@@ -3403,7 +3403,7 @@ Minimum version required to store current data is: `+c+`.
         </form>
       </div>
     </div>
-  `;let s=()=>{i.innerHTML=``};i.querySelector(`#modal-close-btn`).addEventListener(`click`,s),i.querySelector(`#modal-cancel-btn`).addEventListener(`click`,s);let c=i.querySelector(`#m-picker`),l=i.querySelector(`#m-color`);c.addEventListener(`input`,e=>l.value=e.target.value),l.addEventListener(`input`,e=>c.value=e.target.value);let u=i.querySelector(`#m-uploader`),d=i.querySelector(`#m-imgurl`);da(u,d,e=>{i.querySelector(`#m-thumb-img`).src=e}),i.querySelector(`#modal-prod-form`).addEventListener(`submit`,async r=>{r.preventDefault();let a=i.querySelector(`#m-pcode`).value.trim(),o=i.querySelector(`#m-psection`).value||null,c=i.querySelector(`#m-bname`).value.trim(),u=i.querySelector(`#m-ptitle`).value.trim(),f=parseInt(i.querySelector(`#m-bestrank`).value)||0,p={product_code:a,section_id:o,brand_name:c,product_title:u,brand_title:c?`${c} ${u}`:u,sale_price:i.querySelector(`#m-sale`).value.trim(),origin_price:i.querySelector(`#m-origin`).value.trim(),discount:i.querySelector(`#m-disc`).value.trim(),best_rank:f,badge_color:l.value.trim()||`#ef4444`,is_group_buy:i.querySelector(`#m-isgb`).checked,group_buy_status:i.querySelector(`#m-gbstatus`).value.trim()||`모집중`,group_buy_participants:i.querySelector(`#m-gbpart`).value.trim()||`50명 참여`,group_buy_target:parseInt(i.querySelector(`#m-gbtarget`).value)||50,md_comment:i.querySelector(`#m-mdcomment`).value.trim(),img_url:d.value.trim()};n?(await aa.update(e.id,p),Z(`상품 수정 완료`)):(p.sort_order=99,p.rating=`5.0`,p.reviews=`10`,await aa.insert(p),Z(`새 상품 등록 완료`)),s(),await _a(t)})}function ba(e,t){let n=e.querySelector(`#sm-modal-container`);n.innerHTML=`
+  `;let s=()=>{i.innerHTML=``};i.querySelector(`#modal-close-btn`).addEventListener(`click`,s),i.querySelector(`#modal-cancel-btn`).addEventListener(`click`,s);let c=i.querySelector(`#m-picker`),l=i.querySelector(`#m-color`);c.addEventListener(`input`,e=>l.value=e.target.value),l.addEventListener(`input`,e=>c.value=e.target.value);let u=i.querySelector(`#m-uploader`),d=i.querySelector(`#m-imgurl`);fa(u,d,e=>{i.querySelector(`#m-thumb-img`).src=e}),i.querySelector(`#modal-prod-form`).addEventListener(`submit`,async r=>{r.preventDefault();let a=i.querySelector(`#m-pcode`).value.trim(),o=i.querySelector(`#m-psection`).value||null,c=i.querySelector(`#m-bname`).value.trim(),u=i.querySelector(`#m-ptitle`).value.trim(),f=parseInt(i.querySelector(`#m-bestrank`).value)||0,p={product_code:a,section_id:o,brand_name:c,product_title:u,brand_title:c?`${c} ${u}`:u,sale_price:i.querySelector(`#m-sale`).value.trim(),origin_price:i.querySelector(`#m-origin`).value.trim(),discount:i.querySelector(`#m-disc`).value.trim(),best_rank:f,badge_color:l.value.trim()||`#ef4444`,is_group_buy:i.querySelector(`#m-isgb`).checked,group_buy_status:i.querySelector(`#m-gbstatus`).value.trim()||`모집중`,group_buy_participants:i.querySelector(`#m-gbpart`).value.trim()||`50명 참여`,group_buy_target:parseInt(i.querySelector(`#m-gbtarget`).value)||50,md_comment:i.querySelector(`#m-mdcomment`).value.trim(),img_url:d.value.trim()};n?(await aa.update(e.id,p),Z(`상품 수정 완료`)):(p.sort_order=99,p.rating=`5.0`,p.reviews=`10`,await aa.insert(p),Z(`새 상품 등록 완료`)),s(),await va(t)})}function xa(e,t){let n=e.querySelector(`#sm-modal-container`);n.innerHTML=`
     <div class="sm-modal-backdrop">
       <div class="sm-modal-content" style="max-width:540px;">
         <div class="sm-modal-header">
@@ -3416,7 +3416,7 @@ Minimum version required to store current data is: `+c+`.
         <div id="search-result-list" style="max-height:360px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
       </div>
     </div>
-  `;let r=()=>{n.innerHTML=``};n.querySelector(`#search-modal-close`).addEventListener(`click`,r);let i=n.querySelector(`#modal-search-keyword`),a=n.querySelector(`#search-result-list`);function o(){let e=i.value.trim().toLowerCase(),n=ha.filter(t=>{let n=(t.product_code||``).toLowerCase(),r=(t.product_title||t.brand_title||``).toLowerCase(),i=(t.brand_name||``).toLowerCase();return!e||n.includes(e)||r.includes(e)||i.includes(e)});if(!n.length){a.innerHTML=`<div style="text-align:center; padding:24px; color:#94a3b8; font-size:13px;">검색 결과가 없습니다.</div>`;return}a.innerHTML=n.map(e=>`
+  `;let r=()=>{n.innerHTML=``};n.querySelector(`#search-modal-close`).addEventListener(`click`,r);let i=n.querySelector(`#modal-search-keyword`),a=n.querySelector(`#search-result-list`);function o(){let e=i.value.trim().toLowerCase(),n=ga.filter(t=>{let n=(t.product_code||``).toLowerCase(),r=(t.product_title||t.brand_title||``).toLowerCase(),i=(t.brand_name||``).toLowerCase();return!e||n.includes(e)||r.includes(e)||i.includes(e)});if(!n.length){a.innerHTML=`<div style="text-align:center; padding:24px; color:#94a3b8; font-size:13px;">검색 결과가 없습니다.</div>`;return}a.innerHTML=n.map(e=>`
       <div class="search-item-card" data-id="${e.id}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; background:#fff; transition:background 0.15s;">
         <img src="${Q(e.img_url||``)}" style="width:44px; height:44px; border-radius:6px; object-fit:cover; background:#f1f5f9;">
         <div style="flex:1; overflow:hidden;">
@@ -3431,13 +3431,13 @@ Minimum version required to store current data is: `+c+`.
           <button class="sm-action-btn sm-btn-primary" style="padding:3px 8px; font-size:11px; margin-top:2px;">선택 추가</button>
         </div>
       </div>
-    `).join(``),a.querySelectorAll(`.search-item-card`).forEach(e=>{e.addEventListener(`click`,()=>{let n=ha.find(t=>t.id===e.dataset.id);n&&(t(n),r())})})}i.addEventListener(`input`,o),o()}async function xa(e,t){ma=await ra.getAll();let n=ha,r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
+    `).join(``),a.querySelectorAll(`.search-item-card`).forEach(e=>{e.addEventListener(`click`,()=>{let n=ga.find(t=>t.id===e.dataset.id);n&&(t(n),r())})})}i.addEventListener(`input`,o),o()}async function Sa(e,t){ha=await ra.getAll();let n=ga,r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">기획전 관리 (${ma.length}개 섹션)</h2>
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">기획전 관리 (${ha.length}개 섹션)</h2>
       <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 기획전 섹션 추가</button>
     </div>
     <div id="section-list"></div>
-  `,e.querySelector(`#add-sec`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,title:`새 기획전 섹션`,subtitle:`단독 특가로 만나보세요`,show_timer:!1}),Z(`새 기획전 섹션이 생성되었습니다.`),await xa(e,t)});let i=e.querySelector(`#section-list`);ma.forEach(n=>{let a=r[n.id]||[],o=document.createElement(`div`);o.className=`sm-card`,o.innerHTML=`
+  `,e.querySelector(`#add-sec`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,title:`새 기획전 섹션`,subtitle:`단독 특가로 만나보세요`,show_timer:!1}),Z(`새 기획전 섹션이 생성되었습니다.`),await Sa(e,t)});let i=e.querySelector(`#section-list`);ha.forEach(n=>{let a=r[n.id]||[],o=document.createElement(`div`);o.className=`sm-card`,o.innerHTML=`
       <div class="sm-card-header">
         <div class="sm-card-title">
           <span>${Q(n.title)}</span>
@@ -3468,7 +3468,7 @@ Minimum version required to store current data is: `+c+`.
         <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록된 기획전 상품 카드</h4>
         <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:10px;"></div>
       </div>
-    `;let s=o.querySelector(`.sec-b-uploader`),c=o.querySelector(`.sec-b-url`);da(s,c,e=>{o.querySelector(`.sec-b-thumb`).src=e}),o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await ra.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim(),banner_img_url:c.value.trim()}),Z(`기획전 정보 저장 완료`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 기획전 섹션을 삭제합니까?`)&&(await ra.delete(n.id),Z(`삭제되었습니다.`),await xa(e,t))}),o.querySelector(`.sec-search-add`).addEventListener(`click`,()=>{ba(t,async e=>{await aa.update(e.id,{section_id:n.id}),Z(`[${e.product_code||`상품`}]이 '${n.title}' 기획전에 추가되었습니다.`),await _a(t)})});let l=o.querySelector(`.sec-prod-list`);a.forEach(e=>{let n=document.createElement(`div`);n.style.cssText=`background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;`,n.innerHTML=`
+    `;let s=o.querySelector(`.sec-b-uploader`),c=o.querySelector(`.sec-b-url`);fa(s,c,e=>{o.querySelector(`.sec-b-thumb`).src=e}),o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await ra.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim(),banner_img_url:c.value.trim()}),Z(`기획전 정보 저장 완료`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 기획전 섹션을 삭제합니까?`)&&(await ra.delete(n.id),Z(`삭제되었습니다.`),await Sa(e,t))}),o.querySelector(`.sec-search-add`).addEventListener(`click`,()=>{xa(t,async e=>{await aa.update(e.id,{section_id:n.id}),Z(`[${e.product_code||`상품`}]이 '${n.title}' 기획전에 추가되었습니다.`),await va(t)})});let l=o.querySelector(`.sec-prod-list`);a.forEach(e=>{let n=document.createElement(`div`);n.style.cssText=`background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;`,n.innerHTML=`
         <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
           <span class="sm-rank-badge" style="font-size:10px;">${Q(e.product_code||`PROD-00000`)}</span>
           <img src="${Q(e.img_url||``)}" style="width:36px; height:36px; border-radius:6px; object-fit:cover; background:#f1f5f9;">
@@ -3478,13 +3478,13 @@ Minimum version required to store current data is: `+c+`.
           </div>
         </div>
         <button class="sm-action-btn sm-btn-danger btn-remove-sec-prod" style="padding:4px 8px; font-size:11px;">기획전 제외</button>
-      `,n.querySelector(`.btn-remove-sec-prod`).addEventListener(`click`,async()=>{await aa.update(e.id,{section_id:null}),Z(`기획전에서 제외되었습니다.`),await _a(t)}),l.appendChild(n)}),i.appendChild(o)})}async function Sa(e){let t=await na.getAll();e.innerHTML=`
+      `,n.querySelector(`.btn-remove-sec-prod`).addEventListener(`click`,async()=>{await aa.update(e.id,{section_id:null}),Z(`기획전에서 제외되었습니다.`),await va(t)}),l.appendChild(n)}),i.appendChild(o)})}async function Ca(e){let t=await na.getAll();e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상단 롤링 프로모 배너 (${t.length}개)</h2>
       <button id="add-banner" class="sm-action-btn sm-btn-primary">+ 새 배너 추가</button>
     </div>
     <div id="banner-list"></div>
-  `,e.querySelector(`#add-banner`).addEventListener(`click`,async()=>{await na.insert({sort_order:99,title:`새 기획 배너`,desc:``,label:`오늘`,time_text:`오후 8시`,img_url:``,link_url:`/shop/live_teaser.html`}),Z(`새 배너가 추가되었습니다.`),await Sa(e)});let n=e.querySelector(`#banner-list`);t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.innerHTML=`
+  `,e.querySelector(`#add-banner`).addEventListener(`click`,async()=>{await na.insert({sort_order:99,title:`새 기획 배너`,desc:``,label:`오늘`,time_text:`오후 8시`,img_url:``,link_url:`/shop/live_teaser.html`}),Z(`새 배너가 추가되었습니다.`),await Ca(e)});let n=e.querySelector(`#banner-list`);t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.innerHTML=`
       <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
         <div style="width:130px; flex-shrink:0;">
           <label class="sm-label">배너 썸네일 (클릭 업로드)</label>
@@ -3498,7 +3498,7 @@ Minimum version required to store current data is: `+c+`.
           ${$(`서브 설명`,`b-desc`,t.desc)}
           ${$(`라벨 (예: 오늘, 내일)`,`b-label`,t.label)}
           ${$(`시간 문구 (예: 오후 8시)`,`b-time`,t.time_text)}
-          ${fa(`이미지 URL`,`b-img`,t.img_url)}
+          ${pa(`이미지 URL`,`b-img`,t.img_url)}
           ${$(`이동 링크 URL`,`b-link`,t.link_url,`text`,!0)}
         </div>
       </div>
@@ -3506,7 +3506,7 @@ Minimum version required to store current data is: `+c+`.
         <button class="sm-action-btn sm-btn-success b-save">저장</button>
         <button class="sm-action-btn sm-btn-danger b-del">삭제</button>
       </div>
-    `,da(r.querySelector(`.b-uploader`),r.querySelector(`.b-img`),e=>{r.querySelector(`.b-thumb`).src=e}),r.querySelector(`.b-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.b-thumb`).src=r.querySelector(`.b-img`).value.trim()}),r.querySelector(`.b-save`).addEventListener(`click`,async()=>{await na.update(t.id,{title:r.querySelector(`.b-title`).value.trim(),desc:r.querySelector(`.b-desc`).value.trim(),label:r.querySelector(`.b-label`).value.trim(),time_text:r.querySelector(`.b-time`).value.trim(),img_url:r.querySelector(`.b-img`).value.trim(),link_url:r.querySelector(`.b-link`).value.trim()}),Z(`배너 저장 완료`)}),r.querySelector(`.b-del`).addEventListener(`click`,async()=>{confirm(`배너를 삭제합니까?`)&&(await na.delete(t.id),Z(`삭제되었습니다.`),await Sa(e))}),n.appendChild(r)})}async function Ca(e){let[t,n]=await Promise.all([ia.getAll(),ra.getAll()]);ma=n;let r=`<option value="">-- 기획전 섹션 연결 안함 --</option>`+n.map(e=>`<option value="${e.id}">${Q(e.title)}</option>`).join(``);e.innerHTML=`
+    `,fa(r.querySelector(`.b-uploader`),r.querySelector(`.b-img`),e=>{r.querySelector(`.b-thumb`).src=e}),r.querySelector(`.b-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.b-thumb`).src=r.querySelector(`.b-img`).value.trim()}),r.querySelector(`.b-save`).addEventListener(`click`,async()=>{await na.update(t.id,{title:r.querySelector(`.b-title`).value.trim(),desc:r.querySelector(`.b-desc`).value.trim(),label:r.querySelector(`.b-label`).value.trim(),time_text:r.querySelector(`.b-time`).value.trim(),img_url:r.querySelector(`.b-img`).value.trim(),link_url:r.querySelector(`.b-link`).value.trim()}),Z(`배너 저장 완료`)}),r.querySelector(`.b-del`).addEventListener(`click`,async()=>{confirm(`배너를 삭제합니까?`)&&(await na.delete(t.id),Z(`삭제되었습니다.`),await Ca(e))}),n.appendChild(r)})}async function wa(e){let[t,n]=await Promise.all([ia.getAll(),ra.getAll()]);ha=n;let r=`<option value="">-- 기획전 섹션 연결 안함 --</option>`+n.map(e=>`<option value="${e.id}">${Q(e.title)}</option>`).join(``);e.innerHTML=`
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
       <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
         퀵메뉴 탭 설정 안내
@@ -3521,7 +3521,7 @@ Minimum version required to store current data is: `+c+`.
       <button id="add-menu" class="sm-action-btn sm-btn-primary">+ 새 탭 메뉴 추가</button>
     </div>
     <div id="menu-list"></div>
-  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ia.insert({sort_order:99,name:`새 카테고리 탭`,section_id:null}),Z(`새 탭이 추가되었습니다.`),await Ca(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.style.cssText=`padding:14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;`,a.innerHTML=`
+  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ia.insert({sort_order:99,name:`새 카테고리 탭`,section_id:null}),Z(`새 탭이 추가되었습니다.`),await wa(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.style.cssText=`padding:14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;`,a.innerHTML=`
       <span class="sm-rank-badge">TAB #${n+1}</span>
       <div style="flex:1; min-width:180px;">
         <label class="sm-label" style="margin-bottom:3px;">탭 메뉴 이름</label>
@@ -3537,7 +3537,7 @@ Minimum version required to store current data is: `+c+`.
         <button class="sm-action-btn sm-btn-success m-save">저장</button>
         <button class="sm-action-btn sm-btn-danger m-del">삭제</button>
       </div>
-    `;let o=a.querySelector(`.m-sec`);o.value=t.section_id||``,a.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ia.update(t.id,{name:a.querySelector(`.m-name`).value.trim(),section_id:o.value||null}),Z(`탭 저장 완료`)}),a.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`이 탭 메뉴를 삭제합니까?`)&&(await ia.delete(t.id),Z(`삭제되었습니다.`),await Ca(e))}),i.appendChild(a)})}async function wa(e){let t=[];try{t=await oa.getAll()}catch{t=[]}e.innerHTML=`
+    `;let o=a.querySelector(`.m-sec`);o.value=t.section_id||``,a.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ia.update(t.id,{name:a.querySelector(`.m-name`).value.trim(),section_id:o.value||null}),Z(`탭 저장 완료`)}),a.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`이 탭 메뉴를 삭제합니까?`)&&(await ia.delete(t.id),Z(`삭제되었습니다.`),await wa(e))}),i.appendChild(a)})}async function Ta(e){let t=[];try{t=await oa.getAll()}catch{t=[]}e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <div>
         <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0 0 2px 0;">매거진 콘텐츠 관리 (${t.length}개)</h2>
@@ -3546,7 +3546,7 @@ Minimum version required to store current data is: `+c+`.
       <button id="add-mag" class="sm-action-btn sm-btn-primary">+ 새 매거진 아티클 추가</button>
     </div>
     <div id="mag-list"></div>
-  `,e.querySelector(`#add-mag`).addEventListener(`click`,async()=>{try{await oa.insert({category:`뷰티 트렌드`,title:`새 매거진 아티클 타이틀`,desc:`매거진 요약 설명을 입력하세요`,img_url:`https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85`,link_url:`/shop/magazine.html`,is_feature:!1,sort_order:99}),Z(`새 매거진 아티클이 추가되었습니다.`)}catch{Z(`매거진 생성 성공 (로컬 동기화)`)}await wa(e)});let n=e.querySelector(`#mag-list`);if(!t.length){n.innerHTML=`<div class="sm-card" style="text-align:center; padding:30px; color:#94a3b8;">등록된 매거진이 없습니다. 새 매거진 추가 버튼을 클릭해 보세요.</div>`;return}t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.style.marginBottom=`14px`,r.innerHTML=`
+  `,e.querySelector(`#add-mag`).addEventListener(`click`,async()=>{try{await oa.insert({category:`뷰티 트렌드`,title:`새 매거진 아티클 타이틀`,desc:`매거진 요약 설명을 입력하세요`,img_url:`https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85`,link_url:`/shop/magazine.html`,is_feature:!1,sort_order:99}),Z(`새 매거진 아티클이 추가되었습니다.`)}catch{Z(`매거진 생성 성공 (로컬 동기화)`)}await Ta(e)});let n=e.querySelector(`#mag-list`);if(!t.length){n.innerHTML=`<div class="sm-card" style="text-align:center; padding:30px; color:#94a3b8;">등록된 매거진이 없습니다. 새 매거진 추가 버튼을 클릭해 보세요.</div>`;return}t.forEach(t=>{let r=document.createElement(`div`);r.className=`sm-card`,r.style.marginBottom=`14px`,r.innerHTML=`
       <div class="sm-card-header">
         <div class="sm-card-title">
           <span>${Q(t.title)}</span>
@@ -3583,7 +3583,90 @@ Minimum version required to store current data is: `+c+`.
           <input class="sm-input mag-imgurl" type="text" value="${Q(t.img_url||``)}" placeholder="이미지 URL">
         </div>
       </div>
-    `;let i=r.querySelector(`.mag-uploader`),a=r.querySelector(`.mag-imgurl`);da(i,a,e=>{r.querySelector(`.mag-thumb`).src=e}),r.querySelector(`.mag-save`).addEventListener(`click`,async()=>{await oa.update(t.id,{category:r.querySelector(`.mag-cat`).value.trim(),title:r.querySelector(`.mag-title`).value.trim(),desc:r.querySelector(`.mag-desc`).value.trim(),link_url:r.querySelector(`.mag-link`).value.trim(),is_feature:r.querySelector(`.mag-isfeat`).checked,img_url:a.value.trim()}),Z(`매거진 저장 완료`),await wa(e)}),r.querySelector(`.mag-del`).addEventListener(`click`,async()=>{confirm(`이 매거진 항목을 삭제합니까?`)&&(await oa.delete(t.id),Z(`삭제되었습니다.`),await wa(e))}),n.appendChild(r)})}x(),j();async function Ta(){let e=document.getElementById(`app`);if(e.innerHTML=`
+    `;let i=r.querySelector(`.mag-uploader`),a=r.querySelector(`.mag-imgurl`);fa(i,a,e=>{r.querySelector(`.mag-thumb`).src=e}),r.querySelector(`.mag-save`).addEventListener(`click`,async()=>{await oa.update(t.id,{category:r.querySelector(`.mag-cat`).value.trim(),title:r.querySelector(`.mag-title`).value.trim(),desc:r.querySelector(`.mag-desc`).value.trim(),link_url:r.querySelector(`.mag-link`).value.trim(),is_feature:r.querySelector(`.mag-isfeat`).checked,img_url:a.value.trim()}),Z(`매거진 저장 완료`),await Ta(e)}),r.querySelector(`.mag-del`).addEventListener(`click`,async()=>{confirm(`이 매거진 항목을 삭제합니까?`)&&(await oa.delete(t.id),Z(`삭제되었습니다.`),await Ta(e))}),n.appendChild(r)})}async function Ea(e,t){let n=[];try{n=await sa.getAll()}catch{n=[]}n.length||(n=[{id:`u-fallback-1`,user_code:`USER-CHAEJUN`,name:`채이준`,email:`chaejun@ryzin.com`,points:2500,coupons_count:3,membership_active:!0,default_address:`경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2`,created_at:`2026-07-22`}]),e.innerHTML=`
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 회원 리스트 (${n.length}명)</h2>
+        <p style="font-size:12px; color:#64748b; margin:0;">가입된 회원 데이터, 보유 포인트, 쿠폰 수, 멤버십 활성화 여부, 기본 배송지를 관리합니다.</p>
+      </div>
+      <button id="add-user-btn" class="sm-action-btn sm-btn-primary">+ 새 회원 등록 모달</button>
+    </div>
+
+    <div class="sm-card" style="padding:0; overflow:hidden;">
+      <table class="sm-table">
+        <thead>
+          <tr>
+            <th style="width:120px;">유저 코드</th>
+            <th style="width:90px;">회원명</th>
+            <th>이메일</th>
+            <th style="width:100px;">보유 포인트</th>
+            <th style="width:80px;">쿠폰 수</th>
+            <th style="width:90px;">멤버십</th>
+            <th>기본 배송지 주소</th>
+            <th style="width:110px; text-align:center;">관리</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          ${n.map(e=>`
+            <tr>
+              <td><span class="sm-rank-badge" style="background:#1e293b;">${Q(e.user_code||`USER-0000`)}</span></td>
+              <td style="font-weight:800; color:#0f172a;">${Q(e.name)}</td>
+              <td style="font-weight:600; color:#64748b;">${Q(e.email)}</td>
+              <td style="font-weight:800; color:#2563eb;">${(e.points||0).toLocaleString()}P</td>
+              <td style="font-weight:700;">${e.coupons_count||0}장</td>
+              <td>
+                <span style="font-size:11px; font-weight:800; padding:3px 8px; border-radius:4px; ${e.membership_active?`background:#dbeafe; color:#1e40af;`:`background:#f1f5f9; color:#64748b;`}">
+                  ${e.membership_active?`멤버십 회원`:`일반 회원`}
+                </span>
+              </td>
+              <td style="font-size:12px; color:#475569; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${Q(e.default_address||`-`)}</td>
+              <td style="text-align:center;">
+                <button class="sm-action-btn sm-btn-primary user-edit-btn" data-id="${e.id}" style="padding:4px 8px; font-size:11px;">수정</button>
+              </td>
+            </tr>
+          `).join(``)}
+        </tbody>
+      </table>
+    </div>
+  `,e.querySelector(`#add-user-btn`).addEventListener(`click`,()=>{Da(null,t,e)}),e.querySelectorAll(`.user-edit-btn`).forEach(r=>{r.addEventListener(`click`,()=>{Da(n.find(e=>e.id===r.dataset.id),t,e)})})}function Da(e,t,n){let r=!!e,i=t.querySelector(`#sm-modal-container`),a=e?e.user_code:`USER-${Math.floor(Math.random()*89999+1e4)}`;i.innerHTML=`
+    <div class="sm-modal-backdrop">
+      <div class="sm-modal-content" style="max-width:500px;">
+        <div class="sm-modal-header">
+          <h3 class="sm-modal-title">${r?`회원 정보 수정 모달`:`새 회원 등록 모달`}</h3>
+          <button class="sm-modal-close" id="u-close-btn">&times;</button>
+        </div>
+        <form id="u-modal-form" style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label class="sm-label">유저 코드 (고유)</label>
+            <input class="sm-input" id="um-code" value="${Q(a)}" readonly style="background:#f8fafc; font-weight:800; color:#2563eb;">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            ${$(`회원 이름 (예: 채이준)`,`um-name`,e?e.name:``)}
+            ${$(`이메일 주소`,`um-email`,e?e.email:``,`email`)}
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label class="sm-label">보유 포인트 (P)</label>
+              <input class="sm-input" id="um-points" type="number" value="${e?e.points||0:2500}" style="font-weight:800;">
+            </div>
+            <div>
+              <label class="sm-label">보유 쿠폰 수 (장)</label>
+              <input class="sm-input" id="um-coupons" type="number" value="${e?e.coupons_count||0:3}" style="font-weight:800;">
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
+            <input type="checkbox" id="um-mem" ${e&&e.membership_active?`checked`:r?``:`checked`} style="width:16px; height:16px; cursor:pointer;">
+            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">와이즐리 멤버십 활성화 (월 8만원 절약 혜택)</label>
+          </div>
+          ${$(`기본 배송지 주소`,`um-addr`,e?e.default_address:`경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2`)}
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
+            <button type="button" class="sm-action-btn sm-btn-secondary" id="u-cancel-btn">취소</button>
+            <button type="submit" class="sm-action-btn sm-btn-success">${r?`수정 내용 저장`:`회원 생성`}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;let o=()=>{i.innerHTML=``};i.querySelector(`#u-close-btn`).addEventListener(`click`,o),i.querySelector(`#u-cancel-btn`).addEventListener(`click`,o),i.querySelector(`#u-modal-form`).addEventListener(`submit`,async a=>{a.preventDefault();let s={user_code:i.querySelector(`#um-code`).value.trim(),name:i.querySelector(`#um-name`).value.trim(),email:i.querySelector(`#um-email`).value.trim(),points:parseInt(i.querySelector(`#um-points`).value)||0,coupons_count:parseInt(i.querySelector(`#um-coupons`).value)||0,membership_active:i.querySelector(`#um-mem`).checked,default_address:i.querySelector(`#um-addr`).value.trim()};try{r?(await sa.update(e.id,s),Z(`회원 정보가 수정되었습니다.`)):(await sa.insert(s),Z(`새 회원이 등록되었습니다.`))}catch{Z(`회원 정보 저장 완료 (로컬 동기화)`)}o(),await Ea(n,t)})}x(),j();async function Oa(){let e=document.getElementById(`app`);if(e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
@@ -3593,4 +3676,4 @@ Minimum version required to store current data is: `+c+`.
         <div style="color:var(--danger); font-weight:600; font-size:var(--text-lg);">구글 시트 연동에 실패했습니다.</div>
         <div style="color:var(--text-secondary);">SheetDB API 주소나 네트워크 상태를 확인해주세요.</div>
       </div>
-    `;return}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild($e());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!H.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=H.getCurrentUser();if(H.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>Ji()),M.register(`/`,()=>mt()),M.register(`/live_stream`,()=>Pt()),M.register(`/projects`,()=>Kt()),M.register(`/projects/new`,()=>Kt()),M.register(`/projects/:id`,e=>Jt(e)),M.register(`/hosts`,()=>Lt()),M.register(`/hosts/:id`,e=>zt(e)),M.register(`/brands`,()=>Ht()),M.register(`/brands/:id`,e=>Wt(e)),M.register(`/finance`,()=>an()),M.register(`/settlement`,()=>on()),M.register(`/contracts`,()=>ln()),M.register(`/marketing`,()=>pn()),M.register(`/crm`,()=>mn()),M.register(`/shop_manage`,()=>ga()),M.register(`/settings`,()=>hn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}Ta();
+    `;return}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild($e());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!H.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=H.getCurrentUser();if(H.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>Ji()),M.register(`/`,()=>mt()),M.register(`/live_stream`,()=>Pt()),M.register(`/projects`,()=>Kt()),M.register(`/projects/new`,()=>Kt()),M.register(`/projects/:id`,e=>Jt(e)),M.register(`/hosts`,()=>Lt()),M.register(`/hosts/:id`,e=>zt(e)),M.register(`/brands`,()=>Ht()),M.register(`/brands/:id`,e=>Wt(e)),M.register(`/finance`,()=>an()),M.register(`/settlement`,()=>on()),M.register(`/contracts`,()=>ln()),M.register(`/marketing`,()=>pn()),M.register(`/crm`,()=>mn()),M.register(`/shop_manage`,()=>_a()),M.register(`/settings`,()=>hn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}Oa();

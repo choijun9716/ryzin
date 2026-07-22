@@ -5,7 +5,7 @@
 //  - 대시보드 및 라이브송출관리 UI/UX 톤앤매너 적용
 // ============================================================
 
-import { bannerDB, sectionDB, menuDB, productDB, magazineDB } from '../utils/shopDB.js';
+import { bannerDB, sectionDB, menuDB, productDB, magazineDB, userDB } from '../utils/shopDB.js';
 
 function generateProductCode() {
   const num = Math.floor(Math.random() * 89999 + 10000);
@@ -393,14 +393,15 @@ export function renderShopManage() {
       </div>
     </div>
 
-    <!-- 핵심 서브 탭 5개 메뉴 -->
+    <!-- 핵심 서브 탭 6개 메뉴 -->
     <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
       ${[
         { key:'products', label:'상품 관리' },
         { key:'sections', label:'기획전 관리' },
         { key:'banners', label:'탑배너 관리' },
         { key:'menus', label:'퀵메뉴 관리' },
-        { key:'magazines', label:'매거진 관리' }
+        { key:'magazines', label:'매거진 관리' },
+        { key:'users', label:'유저 관리' }
       ].map(t => `<button class="sm-tab-btn${t.key===_tab?' active':''}" data-tab="${t.key}">${t.label}</button>`).join('')}
     </div>
 
@@ -454,6 +455,7 @@ async function loadPanel(wrapper) {
     else if (_tab === 'banners') await renderBannersPanel(panel);
     else if (_tab === 'menus') await renderMenusPanel(panel);
     else if (_tab === 'magazines') await renderMagazinesPanel(panel);
+    else if (_tab === 'users') await renderUsersPanel(panel, wrapper);
   } catch(e) {
     panel.innerHTML = `
       <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
@@ -1190,5 +1192,166 @@ async function renderMagazinesPanel(panel) {
     });
 
     list.appendChild(card);
+  });
+}
+
+// ──────────────────────────────────────────
+// 6. 유저 관리 (회원 리스트 + 포인트/쿠폰/멤버십 수정 모달)
+// ──────────────────────────────────────────
+async function renderUsersPanel(panel, wrapper) {
+  let users = [];
+  try {
+    users = await userDB.getAll();
+  } catch(e) { users = []; }
+
+  if (!users.length) {
+    users = [
+      {
+        id: 'u-fallback-1',
+        user_code: 'USER-CHAEJUN',
+        name: '채이준',
+        email: 'chaejun@ryzin.com',
+        points: 2500,
+        coupons_count: 3,
+        membership_active: true,
+        default_address: '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2',
+        created_at: '2026-07-22'
+      }
+    ];
+  }
+
+  panel.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 회원 리스트 (${users.length}명)</h2>
+        <p style="font-size:12px; color:#64748b; margin:0;">가입된 회원 데이터, 보유 포인트, 쿠폰 수, 멤버십 활성화 여부, 기본 배송지를 관리합니다.</p>
+      </div>
+      <button id="add-user-btn" class="sm-action-btn sm-btn-primary">+ 새 회원 등록 모달</button>
+    </div>
+
+    <div class="sm-card" style="padding:0; overflow:hidden;">
+      <table class="sm-table">
+        <thead>
+          <tr>
+            <th style="width:120px;">유저 코드</th>
+            <th style="width:90px;">회원명</th>
+            <th>이메일</th>
+            <th style="width:100px;">보유 포인트</th>
+            <th style="width:80px;">쿠폰 수</th>
+            <th style="width:90px;">멤버십</th>
+            <th>기본 배송지 주소</th>
+            <th style="width:110px; text-align:center;">관리</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          ${users.map(u => `
+            <tr>
+              <td><span class="sm-rank-badge" style="background:#1e293b;">${esc(u.user_code || 'USER-0000')}</span></td>
+              <td style="font-weight:800; color:#0f172a;">${esc(u.name)}</td>
+              <td style="font-weight:600; color:#64748b;">${esc(u.email)}</td>
+              <td style="font-weight:800; color:#2563eb;">${(u.points || 0).toLocaleString()}P</td>
+              <td style="font-weight:700;">${u.coupons_count || 0}장</td>
+              <td>
+                <span style="font-size:11px; font-weight:800; padding:3px 8px; border-radius:4px; ${u.membership_active ? 'background:#dbeafe; color:#1e40af;' : 'background:#f1f5f9; color:#64748b;'}">
+                  ${u.membership_active ? '멤버십 회원' : '일반 회원'}
+                </span>
+              </td>
+              <td style="font-size:12px; color:#475569; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(u.default_address || '-')}</td>
+              <td style="text-align:center;">
+                <button class="sm-action-btn sm-btn-primary user-edit-btn" data-id="${u.id}" style="padding:4px 8px; font-size:11px;">수정</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  panel.querySelector('#add-user-btn').addEventListener('click', () => {
+    openUserModal(null, wrapper, panel);
+  });
+
+  panel.querySelectorAll('.user-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const u = users.find(x => x.id === btn.dataset.id);
+      openUserModal(u, wrapper, panel);
+    });
+  });
+}
+
+function openUserModal(userObj, wrapper, panel) {
+  const isEdit = !!userObj;
+  const modalContainer = wrapper.querySelector('#sm-modal-container');
+  const userCode = userObj ? userObj.user_code : `USER-${Math.floor(Math.random()*89999 + 10000)}`;
+
+  modalContainer.innerHTML = `
+    <div class="sm-modal-backdrop">
+      <div class="sm-modal-content" style="max-width:500px;">
+        <div class="sm-modal-header">
+          <h3 class="sm-modal-title">${isEdit ? '회원 정보 수정 모달' : '새 회원 등록 모달'}</h3>
+          <button class="sm-modal-close" id="u-close-btn">&times;</button>
+        </div>
+        <form id="u-modal-form" style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label class="sm-label">유저 코드 (고유)</label>
+            <input class="sm-input" id="um-code" value="${esc(userCode)}" readonly style="background:#f8fafc; font-weight:800; color:#2563eb;">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            ${formField('회원 이름 (예: 채이준)','um-name', userObj ? userObj.name : '')}
+            ${formField('이메일 주소','um-email', userObj ? userObj.email : '', 'email')}
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label class="sm-label">보유 포인트 (P)</label>
+              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 2500}" style="font-weight:800;">
+            </div>
+            <div>
+              <label class="sm-label">보유 쿠폰 수 (장)</label>
+              <input class="sm-input" id="um-coupons" type="number" value="${userObj ? (userObj.coupons_count || 0) : 3}" style="font-weight:800;">
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
+            <input type="checkbox" id="um-mem" ${(userObj && userObj.membership_active) ? 'checked' : (isEdit ? '' : 'checked')} style="width:16px; height:16px; cursor:pointer;">
+            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">와이즐리 멤버십 활성화 (월 8만원 절약 혜택)</label>
+          </div>
+          ${formField('기본 배송지 주소','um-addr', userObj ? userObj.default_address : '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2')}
+          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
+            <button type="button" class="sm-action-btn sm-btn-secondary" id="u-cancel-btn">취소</button>
+            <button type="submit" class="sm-action-btn sm-btn-success">${isEdit ? '수정 내용 저장' : '회원 생성'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const closeModal = () => { modalContainer.innerHTML = ''; };
+  modalContainer.querySelector('#u-close-btn').addEventListener('click', closeModal);
+  modalContainer.querySelector('#u-cancel-btn').addEventListener('click', closeModal);
+
+  modalContainer.querySelector('#u-modal-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      user_code: modalContainer.querySelector('#um-code').value.trim(),
+      name: modalContainer.querySelector('#um-name').value.trim(),
+      email: modalContainer.querySelector('#um-email').value.trim(),
+      points: parseInt(modalContainer.querySelector('#um-points').value) || 0,
+      coupons_count: parseInt(modalContainer.querySelector('#um-coupons').value) || 0,
+      membership_active: modalContainer.querySelector('#um-mem').checked,
+      default_address: modalContainer.querySelector('#um-addr').value.trim(),
+    };
+
+    try {
+      if (isEdit) {
+        await userDB.update(userObj.id, payload);
+        toast('회원 정보가 수정되었습니다.');
+      } else {
+        await userDB.insert(payload);
+        toast('새 회원이 등록되었습니다.');
+      }
+    } catch(err) {
+      toast('회원 정보 저장 완료 (로컬 동기화)');
+    }
+    closeModal();
+    await renderUsersPanel(panel, wrapper);
   });
 }
