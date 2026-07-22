@@ -17,19 +17,19 @@
 
   <style>
     :root {
-      --bg: #121316;
-      --surface: #1c1d22;
-      --surface-card: #22232a;
+      --bg: #0b0c0e;
+      --surface: #14151a;
+      --surface-card: #1c1d24;
       --text-main: #ffffff;
       --text-sub: #94a3b8;
       --text-muted: #64748b;
-      --accent-red: #ff3b30;
-      --accent-blue: #3b82f6;
-      --accent-yellow: #f59e0b;
-      --border: #272832;
-      --chip-navy: #1e293b;
-      --chip-burgundy: #3f1d24;
-      --chip-dark: #262626;
+      --accent-red: #ff3366;
+      --accent-purple: #a855f7;
+      --accent-yellow: #fbbf24;
+      --border: #232530;
+      --chip-navy: #1e1b2e;
+      --chip-burgundy: #361726;
+      --chip-dark: #22232a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -164,7 +164,7 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: #ffffff;
+      background: linear-gradient(90deg, #ff3366, #a855f7);
       border-radius: 2px;
     }
 
@@ -195,7 +195,7 @@
     }
 
     .sec-timer-badge {
-      background: #272832;
+      background: #232530;
       color: #ffffff;
       font-size: 12px;
       font-weight: 600;
@@ -225,7 +225,7 @@
       overflow: hidden;
       position: relative;
       cursor: pointer;
-      background: #1c1d22;
+      background: #1c1d24;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
@@ -238,7 +238,7 @@
     .live-card-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 40%, rgba(0,0,0,0.85) 100%);
+      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.85) 100%);
       padding: 14px;
       display: flex;
       flex-direction: column;
@@ -252,7 +252,7 @@
     }
 
     .live-badge-onair {
-      background: #ff3b30;
+      background: linear-gradient(135deg, #ff3366, #e11d48);
       color: #ffffff;
       font-size: 11px;
       font-weight: 700;
@@ -346,7 +346,7 @@
       border-radius: 16px;
       overflow: hidden;
       position: relative;
-      background: #2a2b32;
+      background: #1c1d24;
     }
 
     .toss-img-box img {
@@ -359,7 +359,7 @@
       position: absolute;
       top: 8px;
       left: 8px;
-      background: var(--accent-red);
+      background: linear-gradient(135deg, #ff3366, #e11d48);
       color: #ffffff;
       font-size: 12px;
       font-weight: 700;
@@ -461,20 +461,20 @@
       border-radius: 4px;
     }
 
-    .chip-ship { background: #1e293b; color: #60a5fa; }
-    .chip-guarantee { background: #3f1d24; color: #f87171; }
-    .chip-best { background: #262626; color: #d1d5db; }
+    .chip-ship { background: #1e1b2e; color: #d8b4fe; }
+    .chip-guarantee { background: #361726; color: #fda4af; }
+    .chip-best { background: #22232a; color: #cbd5e1; }
 
     /* ── TOSS MORE BUTTON ── */
     .toss-more-btn {
       width: 100%;
       height: 48px;
       border-radius: 12px;
-      background: #1e293b;
-      color: #60a5fa;
+      background: #1e1b2e;
+      color: #d8b4fe;
       font-size: 14px;
       font-weight: 600;
-      border: none;
+      border: 1px solid rgba(216, 180, 254, 0.15);
       cursor: pointer;
       margin-top: 16px;
       display: flex;
@@ -485,7 +485,7 @@
     }
 
     .toss-more-btn:active {
-      background: #334155;
+      background: #2e2846;
     }
 
     /* ── FLOATING PILL TRANSLUCENT BOTTOM NAV ── */
@@ -569,10 +569,10 @@
       <span class="hdr-logo-text" style="font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: #ffffff;">RYZIN</span>
     </div>
     <div class="hdr-right">
-      <button class="hdr-icon-btn" onclick="showToast('알림 센터를 엽니다.')">
+      <button class="hdr-icon-btn">
         <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
       </button>
-      <button class="hdr-icon-btn" onclick="showToast('장바구니가 비어있습니다.')">
+      <button class="hdr-icon-btn">
         <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
       </button>
     </div>
@@ -580,7 +580,7 @@
 
   <!-- ── 히어로 프로모 배너 ── -->
   <div class="hero-banner-wrap">
-    <div class="hero-promo-card" onclick="showToast('여행 필수품 기획전으로 이동합니다.')">
+    <div class="hero-promo-card">
       <div class="hero-promo-text">
         <h2>여행 필수품<br>모았어요</h2>
         <p>모바일 악세서리 모음</p>
@@ -654,7 +654,7 @@
         <!-- JS Rendered -->
       </div>
 
-      <button class="toss-more-btn" onclick="showToast('상설관 더보기 목록을 불러옵니다.')">더보기</button>
+      <button class="toss-more-btn">더보기</button>
     </section>
 
     <!-- 섹션 2: 뷰티영 브랜드 기획전 -->
@@ -671,7 +671,7 @@
         <!-- JS Rendered -->
       </div>
 
-      <button class="toss-more-btn" onclick="showToast('기획전 상품 목록을 더 불러옵니다.')">더보기</button>
+      <button class="toss-more-btn">더보기</button>
     </section>
 
   </main>
@@ -679,7 +679,7 @@
   <!-- ── FLOATING PILL TRANSLUCENT BOTTOM NAV ── -->
   <div class="bottom-nav-wrap">
     <nav class="bottom-nav">
-      <div class="nav-item" onclick="switchNav(this); showToast('카테고리 메뉴를 엽니다.')">
+      <div class="nav-item" onclick="switchNav(this)">
         <svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>
         <span>카테고리</span>
       </div>
@@ -695,7 +695,7 @@
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-1.83.62-3.51 1.66-4.85 1.5 1.5 3.55 2.45 5.84 2.45s4.34-.95 5.84-2.45C18.38 8.49 19 10.17 19 12c0 4.41-3.59 8-8 8zm-3.5-9a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm7 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
         <span>내 정보</span>
       </div>
-      <div class="nav-item" onclick="switchNav(this); showToast('장바구니함이 연결되었습니다.')">
+      <div class="nav-item" onclick="switchNav(this)">
         <span class="nav-badge-count">1</span>
         <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h6v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/></svg>
         <span>장바구니</span>
@@ -831,7 +831,6 @@
   function switchSubTab(el) {
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    showToast(`'${el.textContent}' 탭으로 이동했습니다.`);
   }
 
   function switchNav(el) {
