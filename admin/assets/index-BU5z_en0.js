@@ -3011,8 +3011,8 @@ Minimum version required to store current data is: `+c+`.
       color: #0f172a; 
     }
     .sm-input:focus { 
-      border-color: #3b82f6; 
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.12); 
+      border-color: #2563eb; 
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12); 
     }
     .sm-label { 
       display: block; 
@@ -3147,6 +3147,20 @@ Minimum version required to store current data is: `+c+`.
     .sm-rank-badge.top3 {
       background: #ef4444;
     }
+    .color-picker-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .color-picker-input {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+    }
   `,e.appendChild(t)}async function sa(e){let t=localStorage.getItem(`ryzin_imgbb_key`)||`4ad44d673bfba8d88df109c0df1e2cae`,n=await ca(e,1024,.85),r=new FormData;r.append(`image`,n.split(`,`)[1]);let i=await(await fetch(`https://api.imgbb.com/1/upload?key=${t}`,{method:`POST`,body:r})).json();if(i&&i.success)return i.data.url;throw Error(i.error&&i.error.message||`이미지 업로드 실패`)}function ca(e,t=1024,n=.85){return new Promise((r,i)=>{let a=new FileReader;a.onload=e=>{let a=new Image;a.onload=()=>{let e=document.createElement(`canvas`),i=a.width,o=a.height;i>t&&(o=Math.round(o*t/i),i=t),e.width=i,e.height=o,e.getContext(`2d`).drawImage(a,0,0,i,o),r(e.toDataURL(`image/jpeg`,n))},a.onerror=i,a.src=e.target.result},a.onerror=i,a.readAsDataURL(e)})}function la(e,t,n){e.addEventListener(`click`,()=>{let e=document.createElement(`input`);e.type=`file`,e.accept=`image/*`,e.onchange=async e=>{let r=e.target.files[0];if(r){Q(`이미지를 업로드하고 있습니다...`);try{let e=await sa(r);t.value=e,n&&n(e),Q(`이미지 업로드 성공`)}catch(e){alert(`업로드 실패: `+e.message)}}},e.click()})}function Q(e){let t=document.getElementById(`sm-toast`);t||(t=document.createElement(`div`),t.id=`sm-toast`,t.style.cssText=`position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;font-weight:700;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,0.2);transition:opacity 0.2s;`,document.body.appendChild(t)),t.textContent=e,t.style.opacity=`1`,clearTimeout(t.timer),t.timer=setTimeout(()=>{t.style.opacity=`0`},2200)}function ua(e){return e?String(e).replace(/&/g,`&amp;`).replace(/</g,`&lt;`).replace(/>/g,`&gt;`).replace(/"/g,`&quot;`):``}function $(e,t,n,r=`text`,i=!1){return`
     <div style="${i?`grid-column: 1 / -1;`:``}">
       <label class="sm-label">${e}</label>
@@ -3164,23 +3178,23 @@ Minimum version required to store current data is: `+c+`.
     <div style="margin-bottom:24px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
         <div>
-          <h1 style="font-size:20px; font-weight:800; color:#0f172a; margin:0 0 4px 0; letter-spacing:-0.02em;">쇼핑몰 라이브 & 커머스 관리</h1>
-          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">상단 배너, 라이브 방송, 퀵메뉴 탭, 상품 섹션 및 MD 추천 코멘트를 관리합니다.</p>
+          <h1 style="font-size:20px; font-weight:800; color:#0f172a; margin:0 0 4px 0; letter-spacing:-0.02em;">쇼핑몰 라이브 & 커머스 관리 센터</h1>
+          <p style="font-size:13px; color:#64748b; margin:0; font-weight:500;">상단 배너, 라이브 방송, 베스트 TOP 10 랭킹 및 뱃지 컬러, 퀵메뉴 탭을 통합 설정합니다.</p>
         </div>
         <button id="btn-refresh" class="sm-action-btn sm-btn-primary">전체 새로고침</button>
       </div>
     </div>
 
-    <!-- 슬림 서브 탭 메뉴 -->
+    <!-- 슬림 서브 탭 메뉴 (이모티콘 완전 제외) -->
     <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:10px; overflow-x:auto;">
-      ${[{key:`banners`,label:`상단 배너`},{key:`lives`,label:`라이브 NOW / 예정`},{key:`menus`,label:`퀵메뉴 탭 설정`},{key:`sections`,label:`상품 섹션 & MD 추천 관리`}].map(e=>`<button class="sm-tab-btn${e.key===fa?` active`:``}" data-tab="${e.key}">${e.label}</button>`).join(``)}
+      ${[{key:`banners`,label:`상단 배너`},{key:`lives`,label:`라이브 NOW / 예정`},{key:`best10`,label:`베스트 TOP 10 랭킹 설정`},{key:`menus`,label:`퀵메뉴 탭 설정`},{key:`sections`,label:`상품 섹션 & MD 추천 관리`}].map(e=>`<button class="sm-tab-btn${e.key===fa?` active`:``}" data-tab="${e.key}">${e.label}</button>`).join(``)}
     </div>
 
     <div id="sm-loading" style="text-align:center; padding:30px; color:#64748b; font-size:13px; font-weight:600;">
       데이터를 동기화하는 중...
     </div>
     <div id="sm-panel"></div>
-  `,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.addEventListener(`click`,()=>{fa=e.dataset.tab,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.classList.toggle(`active`,e.dataset.tab===fa)}),ha(t)})}),t.querySelector(`#btn-refresh`).addEventListener(`click`,()=>{Q(`데이터를 새로고침합니다.`),ha(t)}),e.appendChild(t),setTimeout(async()=>{try{pa=await na.getAll()}catch{pa=[]}await ha(t)},0),e}async function ha(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{fa===`banners`?await ga(n):fa===`lives`?await _a(n):fa===`menus`?await va(n):fa===`sections`&&await ya(n,e)}catch(e){n.innerHTML=`
+  `,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.addEventListener(`click`,()=>{fa=e.dataset.tab,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.classList.toggle(`active`,e.dataset.tab===fa)}),ha(t)})}),t.querySelector(`#btn-refresh`).addEventListener(`click`,()=>{Q(`데이터를 새로고침합니다.`),ha(t)}),e.appendChild(t),setTimeout(async()=>{try{pa=await na.getAll()}catch{pa=[]}await ha(t)},0),e}async function ha(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{fa===`banners`?await ga(n):fa===`lives`?await _a(n):fa===`best10`?await va(n):fa===`menus`?await ya(n):fa===`sections`&&await ba(n,e)}catch(e){n.innerHTML=`
       <div class="sm-card" style="border-color:#fca5a5; background:#fef2f2; color:#b91c1c;">
         <h4 style="margin:0 0 6px 0; font-weight:800;">데이터 연동 실패</h4>
         <p style="margin:0; font-size:12.5px;">${e.message}. Supabase 데이터베이스 설정을 확인해 주세요.</p>
@@ -3246,7 +3260,54 @@ Minimum version required to store current data is: `+c+`.
         <button class="sm-action-btn sm-btn-success lv-save">저장</button>
         <button class="sm-action-btn sm-btn-danger lv-del">삭제</button>
       </div>
-    `,la(r.querySelector(`.lv-uploader`),r.querySelector(`.lv-img`),e=>{r.querySelector(`.lv-thumb`).src=e}),r.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.lv-thumb`).src=r.querySelector(`.lv-img`).value.trim()}),r.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await aa.update(t.id,{title:r.querySelector(`.lv-title`).value.trim(),viewers:r.querySelector(`.lv-viewers`).value.trim(),link_url:r.querySelector(`.lv-link`).value.trim(),img_url:r.querySelector(`.lv-img`).value.trim(),status:r.querySelector(`.lv-status`).value}),Q(`라이브 정보 저장 완료`)}),r.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`라이브를 삭제합니까?`)&&(await aa.delete(t.id),Q(`삭제되었습니다.`),await _a(e))}),n.appendChild(r)})}async function va(e){let[t,n]=await Promise.all([ra.getAll(),na.getAll()]);pa=n;let r=`<option value="">-- 상품 섹션 연결 안함 --</option>`+n.map(e=>`<option value="${e.id}">${ua(e.title)}</option>`).join(``);e.innerHTML=`
+    `,la(r.querySelector(`.lv-uploader`),r.querySelector(`.lv-img`),e=>{r.querySelector(`.lv-thumb`).src=e}),r.querySelector(`.lv-img-preview`).addEventListener(`click`,()=>{r.querySelector(`.lv-thumb`).src=r.querySelector(`.lv-img`).value.trim()}),r.querySelector(`.lv-save`).addEventListener(`click`,async()=>{await aa.update(t.id,{title:r.querySelector(`.lv-title`).value.trim(),viewers:r.querySelector(`.lv-viewers`).value.trim(),link_url:r.querySelector(`.lv-link`).value.trim(),img_url:r.querySelector(`.lv-img`).value.trim(),status:r.querySelector(`.lv-status`).value}),Q(`라이브 정보 저장 완료`)}),r.querySelector(`.lv-del`).addEventListener(`click`,async()=>{confirm(`라이브를 삭제합니까?`)&&(await aa.delete(t.id),Q(`삭제되었습니다.`),await _a(e))}),n.appendChild(r)})}async function va(e){let t=await ia.getAll(),n=t.filter(e=>e.best_rank&&e.best_rank>0).sort((e,t)=>(e.best_rank||99)-(t.best_rank||99)).slice(0,10),r=n.length?n:t.slice(0,10);e.innerHTML=`
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
+      <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
+        베스트 TOP 10 랭킹 & 뱃지 커스텀 색상 설정
+      </h3>
+      <p style="font-size:12px; margin:0; line-height:1.4; color:#64748b;">
+        • 쇼핑몰 홈 <strong>[베스트 TOP 10]</strong> 탭 클릭 시 표시될 1위부터 10위까지 순위와 <strong>순위 뱃지 배경 색상(Badge Color)</strong>을 직접 설정할 수 있습니다.
+      </p>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">베스트 TOP 10 랭킹 등록 상품 목록 (${r.length}개)</h2>
+    </div>
+    <div id="best10-list"></div>
+  `;let i=e.querySelector(`#best10-list`);r.forEach((e,t)=>{let n=e.best_rank||t+1,r=e.badge_color||`#ef4444`,a=document.createElement(`div`);a.className=`sm-card`,a.innerHTML=`
+      <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="width:110px; flex-shrink:0;">
+          <div style="margin-bottom:6px;">
+            <span class="sm-rank-badge top3" style="background:${ua(r)}">RANK #${n}</span>
+          </div>
+          <div class="sm-thumb-uploader b10-uploader" style="width:100%; height:86px;">
+            <img class="b10-thumb" src="${ua(e.img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
+            <div class="sm-thumb-uploader-overlay">클릭 업로드</div>
+          </div>
+        </div>
+        <div style="flex:1; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label class="sm-label">베스트 TOP 10 순위 (1~10)</label>
+            <input class="sm-input b10-rank" type="number" min="1" max="10" value="${n}" style="font-weight:800;">
+          </div>
+          <div>
+            <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
+            <div class="color-picker-box">
+              <input class="color-picker-input b10-picker" type="color" value="${ua(r)}">
+              <input class="sm-input b10-color" type="text" value="${ua(r)}" placeholder="#ef4444" style="font-weight:700;">
+            </div>
+          </div>
+          ${$(`브랜드명`,`b10-bname`,e.brand_name||``)}
+          ${$(`상품명`,`b10-title`,e.product_title||e.brand_title||``)}
+          ${$(`판매가`,`b10-sale`,e.sale_price)}
+          ${$(`할인 태그 (예: 50% OFF)`,`b10-disc`,e.discount)}
+          ${da(`상품 이미지 URL`,`b10-img`,e.img_url)}
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
+        <button class="sm-action-btn sm-btn-success b10-save">저장</button>
+      </div>
+    `,la(a.querySelector(`.b10-uploader`),a.querySelector(`.b10-img`),e=>{a.querySelector(`.b10-thumb`).src=e});let o=a.querySelector(`.b10-picker`),s=a.querySelector(`.b10-color`);o.addEventListener(`input`,e=>{s.value=e.target.value,a.querySelector(`.sm-rank-badge`).style.background=e.target.value}),s.addEventListener(`input`,e=>{o.value=e.target.value,a.querySelector(`.sm-rank-badge`).style.background=e.target.value}),a.querySelector(`.b10-save`).addEventListener(`click`,async()=>{let n=parseInt(a.querySelector(`.b10-rank`).value)||t+1,r=a.querySelector(`.b10-color`).value.trim()||`#ef4444`,i=a.querySelector(`.b10-bname`).value.trim(),o=a.querySelector(`.b10-title`).value.trim(),s=i?`${i} ${o}`:o;await ia.update(e.id,{best_rank:n,badge_color:r,brand_name:i,product_title:o,brand_title:s,sale_price:a.querySelector(`.b10-sale`).value.trim(),discount:a.querySelector(`.b10-disc`).value.trim(),img_url:a.querySelector(`.b10-img`).value.trim()}),Q(`베스트 #${n}위 상품 및 뱃지 색상 저장 완료`)}),i.appendChild(a)})}async function ya(e){let[t,n]=await Promise.all([ra.getAll(),na.getAll()]);pa=n;let r=`<option value="">-- 상품 섹션 연결 안함 --</option>`+n.map(e=>`<option value="${e.id}">${ua(e.title)}</option>`).join(``);e.innerHTML=`
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:20px; color:#334155;">
       <h3 style="font-size:13px; font-weight:800; margin:0 0 4px 0;">
         퀵메뉴 탭 & 베스트 랭킹 안내
@@ -3261,7 +3322,7 @@ Minimum version required to store current data is: `+c+`.
       <button id="add-menu" class="sm-action-btn sm-btn-primary">+ 새 탭 메뉴 추가</button>
     </div>
     <div id="menu-list"></div>
-  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,name:`새 카테고리 탭`,section_id:null}),Q(`새 탭이 추가되었습니다.`),await va(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.style.cssText=`padding:14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;`,a.innerHTML=`
+  `,e.querySelector(`#add-menu`).addEventListener(`click`,async()=>{await ra.insert({sort_order:99,name:`새 카테고리 탭`,section_id:null}),Q(`새 탭이 추가되었습니다.`),await ya(e)});let i=e.querySelector(`#menu-list`);t.forEach((t,n)=>{let a=document.createElement(`div`);a.className=`sm-card`,a.style.cssText=`padding:14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;`,a.innerHTML=`
       <span class="sm-rank-badge">TAB #${n+1}</span>
       <div style="flex:1; min-width:180px;">
         <label class="sm-label" style="margin-bottom:3px;">탭 메뉴 이름</label>
@@ -3277,13 +3338,13 @@ Minimum version required to store current data is: `+c+`.
         <button class="sm-action-btn sm-btn-success m-save">저장</button>
         <button class="sm-action-btn sm-btn-danger m-del">삭제</button>
       </div>
-    `;let o=a.querySelector(`.m-sec`);o.value=t.section_id||``,a.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ra.update(t.id,{name:a.querySelector(`.m-name`).value.trim(),section_id:o.value||null}),Q(`탭 저장 완료`)}),a.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`이 탭 메뉴를 삭제합니까?`)&&(await ra.delete(t.id),Q(`삭제되었습니다.`),await va(e))}),i.appendChild(a)})}async function ya(e,t){pa=await na.getAll();let n=await ia.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
+    `;let o=a.querySelector(`.m-sec`);o.value=t.section_id||``,a.querySelector(`.m-save`).addEventListener(`click`,async()=>{await ra.update(t.id,{name:a.querySelector(`.m-name`).value.trim(),section_id:o.value||null}),Q(`탭 저장 완료`)}),a.querySelector(`.m-del`).addEventListener(`click`,async()=>{confirm(`이 탭 메뉴를 삭제합니까?`)&&(await ra.delete(t.id),Q(`삭제되었습니다.`),await ya(e))}),i.appendChild(a)})}async function ba(e,t){pa=await na.getAll();let n=await ia.getAll(),r={};n.forEach(e=>{r[e.section_id]||(r[e.section_id]=[]),r[e.section_id].push(e)}),e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <h2 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상품 섹션 & MD 추천 관리 (${pa.length}개 섹션)</h2>
       <button id="add-sec" class="sm-action-btn sm-btn-primary">+ 새 상품 섹션 추가</button>
     </div>
     <div id="section-list"></div>
-  `,e.querySelector(`#add-sec`).addEventListener(`click`,async()=>{await na.insert({sort_order:99,title:`새 기획전 섹션`,subtitle:`단독 특가로 만나보세요`,show_timer:!1}),Q(`새 섹션이 생성되었습니다.`),await ya(e,t)});let i=e.querySelector(`#section-list`);pa.forEach(n=>{let a=r[n.id]||[],o=document.createElement(`div`);o.className=`sm-card`,o.innerHTML=`
+  `,e.querySelector(`#add-sec`).addEventListener(`click`,async()=>{await na.insert({sort_order:99,title:`새 기획전 섹션`,subtitle:`단독 특가로 만나보세요`,show_timer:!1}),Q(`새 섹션이 생성되었습니다.`),await ba(e,t)});let i=e.querySelector(`#section-list`);pa.forEach(n=>{let a=r[n.id]||[],o=document.createElement(`div`);o.className=`sm-card`,o.innerHTML=`
       <div class="sm-card-header">
         <div class="sm-card-title">
           <span>${ua(n.title)}</span>
@@ -3304,10 +3365,10 @@ Minimum version required to store current data is: `+c+`.
         <h4 style="font-size:12.5px; font-weight:800; color:#334155; margin:0 0 10px 0;">등록 상품 리스트</h4>
         <div class="sec-prod-list" style="display:flex; flex-direction:column; gap:12px;"></div>
       </div>
-    `,o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await na.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim()}),Q(`섹션 정보가 저장되었습니다.`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 섹션과 포함된 상품들을 모두 삭제합니까?`)&&(await na.delete(n.id),Q(`섹션이 삭제되었습니다.`),await ya(e,t))}),o.querySelector(`.sec-add-prod`).addEventListener(`click`,async()=>{await ia.insert({section_id:n.id,sort_order:99,brand_name:`브랜드`,product_title:`신규 상품`,brand_title:`브랜드 신규 상품`,sale_price:`10,000원`,origin_price:`20,000원`,discount:`50% OFF`,unit_price:``,rating:`5.0`,reviews:`10`,md_comment:`MD 강력 추천 상품`,img_url:``,chips:[]}),Q(`새 상품 카드가 추가되었습니다.`),await ya(e,t)});let s=o.querySelector(`.sec-prod-list`);a.forEach((n,r)=>{let i=document.createElement(`div`);i.style.cssText=`background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:14px; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;`;let a=n.brand_name||``,o=n.product_title||``;if(!a&&n.brand_title){let e=n.brand_title.split(` `);e.length>1?(a=e[0],o=e.slice(1).join(` `)):o=n.brand_title}i.innerHTML=`
+    `,o.querySelector(`.sec-save`).addEventListener(`click`,async()=>{await na.update(n.id,{title:o.querySelector(`.sec-title`).value.trim(),subtitle:o.querySelector(`.sec-subtitle`).value.trim()}),Q(`섹션 정보가 저장되었습니다.`)}),o.querySelector(`.sec-del`).addEventListener(`click`,async()=>{confirm(`이 섹션과 포함된 상품들을 모두 삭제합니까?`)&&(await na.delete(n.id),Q(`섹션이 삭제되었습니다.`),await ba(e,t))}),o.querySelector(`.sec-add-prod`).addEventListener(`click`,async()=>{await ia.insert({section_id:n.id,sort_order:99,brand_name:`브랜드`,product_title:`신규 상품`,brand_title:`브랜드 신규 상품`,sale_price:`10,000원`,origin_price:`20,000원`,discount:`50% OFF`,unit_price:``,rating:`5.0`,reviews:`10`,md_comment:`MD 강력 추천 상품`,badge_color:`#ef4444`,best_rank:0,img_url:``,chips:[]}),Q(`새 상품 카드가 추가되었습니다.`),await ba(e,t)});let s=o.querySelector(`.sec-prod-list`);a.forEach((n,r)=>{let i=document.createElement(`div`);i.style.cssText=`background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:14px; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;`;let a=n.brand_name||``,o=n.product_title||``;if(!a&&n.brand_title){let e=n.brand_title.split(` `);e.length>1?(a=e[0],o=e.slice(1).join(` `)):o=n.brand_title}let c=n.badge_color||`#ef4444`;i.innerHTML=`
         <div style="width:100px; flex-shrink:0;">
           <div style="margin-bottom:4px;">
-            <span class="sm-rank-badge ${r<3?`top3`:``}">RANK #${r+1}</span>
+            <span class="sm-rank-badge ${r<3?`top3`:``}" style="background:${ua(c)}">ITEM #${r+1}</span>
           </div>
           <div class="sm-thumb-uploader p-uploader" style="width:100%; height:80px;">
             <img class="p-thumb" src="${ua(n.img_url||``)}" style="width:100%; height:100%; object-fit:cover;">
@@ -3320,6 +3381,13 @@ Minimum version required to store current data is: `+c+`.
           ${$(`판매가 (예: 9,900원)`,`p-sale`,n.sale_price)}
           ${$(`원래 정가 (예: 50,000원)`,`p-origin`,n.origin_price)}
           ${$(`할인 태그 (예: 80% 특가)`,`p-disc`,n.discount)}
+          <div>
+            <label class="sm-label">뱃지 배경 색상 (Badge Color)</label>
+            <div class="color-picker-box">
+              <input class="color-picker-input p-picker" type="color" value="${ua(c)}">
+              <input class="sm-input p-color" type="text" value="${ua(c)}" placeholder="#ef4444" style="font-weight:700;">
+            </div>
+          </div>
           ${$(`MD 추천 코멘트`,`p-md`,n.md_comment||`MD 강력 추천`)}
           ${da(`상품 이미지 URL`,`p-img`,n.img_url)}
         </div>
@@ -3327,7 +3395,7 @@ Minimum version required to store current data is: `+c+`.
           <button class="sm-action-btn sm-btn-success p-save" style="padding:5px 10px; font-size:11.5px;">저장</button>
           <button class="sm-action-btn sm-btn-danger p-del" style="padding:5px 10px; font-size:11.5px;">삭제</button>
         </div>
-      `,la(i.querySelector(`.p-uploader`),i.querySelector(`.p-img`),e=>{i.querySelector(`.p-thumb`).src=e}),i.querySelector(`.p-img-preview`).addEventListener(`click`,()=>{i.querySelector(`.p-thumb`).src=i.querySelector(`.p-img`).value.trim()}),i.querySelector(`.p-save`).addEventListener(`click`,async()=>{let e=i.querySelector(`.p-bname`).value.trim(),t=i.querySelector(`.p-ptitle`).value.trim(),r=e?`${e} ${t}`:t;await ia.update(n.id,{brand_name:e,product_title:t,brand_title:r,sale_price:i.querySelector(`.p-sale`).value.trim(),origin_price:i.querySelector(`.p-origin`).value.trim(),discount:i.querySelector(`.p-disc`).value.trim(),md_comment:i.querySelector(`.p-md`).value.trim(),img_url:i.querySelector(`.p-img`).value.trim()}),Q(`상품 정보 동기화 완료`)}),i.querySelector(`.p-del`).addEventListener(`click`,async()=>{confirm(`상품을 삭제하시겠습니까?`)&&(await ia.delete(n.id),Q(`삭제되었습니다.`),await ya(e,t))}),s.appendChild(i)}),i.appendChild(o)})}x(),j();async function ba(){let e=document.getElementById(`app`);if(e.innerHTML=`
+      `,la(i.querySelector(`.p-uploader`),i.querySelector(`.p-img`),e=>{i.querySelector(`.p-thumb`).src=e});let l=i.querySelector(`.p-picker`),u=i.querySelector(`.p-color`);l.addEventListener(`input`,e=>{u.value=e.target.value,i.querySelector(`.sm-rank-badge`).style.background=e.target.value}),u.addEventListener(`input`,e=>{l.value=e.target.value,i.querySelector(`.sm-rank-badge`).style.background=e.target.value}),i.querySelector(`.p-img-preview`).addEventListener(`click`,()=>{i.querySelector(`.p-thumb`).src=i.querySelector(`.p-img`).value.trim()}),i.querySelector(`.p-save`).addEventListener(`click`,async()=>{let e=i.querySelector(`.p-bname`).value.trim(),t=i.querySelector(`.p-ptitle`).value.trim(),r=e?`${e} ${t}`:t;await ia.update(n.id,{brand_name:e,product_title:t,brand_title:r,sale_price:i.querySelector(`.p-sale`).value.trim(),origin_price:i.querySelector(`.p-origin`).value.trim(),discount:i.querySelector(`.p-disc`).value.trim(),badge_color:i.querySelector(`.p-color`).value.trim()||`#ef4444`,md_comment:i.querySelector(`.p-md`).value.trim(),img_url:i.querySelector(`.p-img`).value.trim()}),Q(`상품 정보 및 뱃지 색상 저장 완료`)}),i.querySelector(`.p-del`).addEventListener(`click`,async()=>{confirm(`상품을 삭제하시겠습니까?`)&&(await ia.delete(n.id),Q(`삭제되었습니다.`),await ba(e,t))}),s.appendChild(i)}),i.appendChild(o)})}x(),j();async function xa(){let e=document.getElementById(`app`);if(e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
@@ -3337,4 +3405,4 @@ Minimum version required to store current data is: `+c+`.
         <div style="color:var(--danger); font-weight:600; font-size:var(--text-lg);">구글 시트 연동에 실패했습니다.</div>
         <div style="color:var(--text-secondary);">SheetDB API 주소나 네트워크 상태를 확인해주세요.</div>
       </div>
-    `;return}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild($e());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!H.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=H.getCurrentUser();if(H.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>qi()),M.register(`/`,()=>mt()),M.register(`/live_stream`,()=>Pt()),M.register(`/projects`,()=>Kt()),M.register(`/projects/new`,()=>Kt()),M.register(`/projects/:id`,e=>Jt(e)),M.register(`/hosts`,()=>Lt()),M.register(`/hosts/:id`,e=>zt(e)),M.register(`/brands`,()=>Ht()),M.register(`/brands/:id`,e=>Wt(e)),M.register(`/finance`,()=>an()),M.register(`/settlement`,()=>on()),M.register(`/contracts`,()=>ln()),M.register(`/marketing`,()=>pn()),M.register(`/crm`,()=>mn()),M.register(`/shop_manage`,()=>ma()),M.register(`/settings`,()=>hn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}ba();
+    `;return}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild($e());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!H.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=H.getCurrentUser();if(H.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>qi()),M.register(`/`,()=>mt()),M.register(`/live_stream`,()=>Pt()),M.register(`/projects`,()=>Kt()),M.register(`/projects/new`,()=>Kt()),M.register(`/projects/:id`,e=>Jt(e)),M.register(`/hosts`,()=>Lt()),M.register(`/hosts/:id`,e=>zt(e)),M.register(`/brands`,()=>Ht()),M.register(`/brands/:id`,e=>Wt(e)),M.register(`/finance`,()=>an()),M.register(`/settlement`,()=>on()),M.register(`/contracts`,()=>ln()),M.register(`/marketing`,()=>pn()),M.register(`/crm`,()=>mn()),M.register(`/shop_manage`,()=>ma()),M.register(`/settings`,()=>hn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}xa();

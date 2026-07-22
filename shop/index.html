@@ -1081,7 +1081,7 @@
       ];
     }
     const allTabHtml = `<div class="sub-tab active" data-section-id="all" onclick="switchSubTab(this)">전체</div>`;
-    const bestTabHtml = `<div class="sub-tab" data-section-id="best10" data-menu-name="베스트 TOP 10" onclick="switchSubTab(this)">🏆 베스트 TOP 10</div>`;
+    const bestTabHtml = `<div class="sub-tab" data-section-id="best10" data-menu-name="베스트 TOP 10" onclick="switchSubTab(this)">베스트 TOP 10</div>`;
     const menuTabsHtml = menus.map((m) =>
       `<div class="sub-tab" data-section-id="${m.section_id || ''}" data-menu-name="${esc(m.name)}" onclick="switchSubTab(this)">${esc(m.name)}</div>`
     ).join('');
@@ -1359,12 +1359,12 @@
     const isBest10 = tabName.includes('베스트') || sectionId === 'best10';
 
     qtView.style.display = 'block';
-    qtTitle.textContent = isBest10 ? '🏆 실시간 베스트 TOP 10' : `${tabName} 큐레이션`;
+    qtTitle.textContent = isBest10 ? '실시간 베스트 TOP 10' : `${tabName} 큐레이션`;
     qtSub.textContent = isBest10 ? '지금 가장 인기 있는 TOP 10 랭킹 상품' : `${tabName} 추천 인기 상품`;
 
     let products = [];
     if (isBest10) {
-      products = await sbGet('shop_products', 'select=*&active=eq.true&order=rating.desc,reviews.desc&limit=10');
+      products = await sbGet('shop_products', 'select=*&active=eq.true&order=best_rank.asc,rating.desc&limit=10');
     } else if (sectionId) {
       products = await sbGet('shop_products', `select=*&section_id=eq.${sectionId}&active=eq.true&order=sort_order.asc`);
     }
@@ -1373,9 +1373,9 @@
       const limitCount = isBest10 ? 10 : 6;
       const allProds = await sbGet('shop_products', `select=*&active=eq.true&order=sort_order.asc&limit=${limitCount}`);
       products = allProds.length ? allProds : [
-        { id:'qt1', brand_name:'설화수', product_title:'자음수 리미티드 세트 90ml', sale_price:'49,000원', origin_price:'98,000원', discount:'50% OFF', rating:'4.9', reviews:'830', img_url:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85' },
-        { id:'qt2', brand_name:'에이피뷰티', product_title:'엠디 세럼 50ml 기획전', sale_price:'32,000원', origin_price:'64,000원', discount:'50% OFF', rating:'4.8', reviews:'210', img_url:'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85' },
-        { id:'qt3', brand_name:'야다', product_title:'오리온 딥 클렌징 크림 100ml', sale_price:'12,900원', origin_price:'39,000원', discount:'66% OFF', rating:'5.0', reviews:'292', img_url:'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=600&q=85' }
+        { id:'qt1', brand_name:'설화수', product_title:'자음수 리미티드 세트 90ml', sale_price:'49,000원', origin_price:'98,000원', discount:'50% OFF', rating:'4.9', reviews:'830', img_url:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85', badge_color:'#ef4444' },
+        { id:'qt2', brand_name:'에이피뷰티', product_title:'엠디 세럼 50ml 기획전', sale_price:'32,000원', origin_price:'64,000원', discount:'50% OFF', rating:'4.8', reviews:'210', img_url:'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85', badge_color:'#ef4444' },
+        { id:'qt3', brand_name:'야다', product_title:'오리온 딥 클렌징 크림 100ml', sale_price:'12,900원', origin_price:'39,000원', discount:'66% OFF', rating:'5.0', reviews:'292', img_url:'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=600&q=85', badge_color:'#ef4444' }
       ];
     }
 
@@ -1392,17 +1392,19 @@
         }
       }
 
+      const customBadgeStyle = item.badge_color ? `background: ${item.badge_color};` : '';
       const rankBadgeHtml = isBest10
-        ? `<span class="toss-rank-badge ${idx < 3 ? 'top3' : ''}">${idx + 1}</span>`
+        ? `<span class="toss-rank-badge ${idx < 3 ? 'top3' : ''}" style="${customBadgeStyle}">${item.best_rank || (idx + 1)}</span>`
         : '';
       const tagLeftStyle = isBest10 ? 'left: 36px;' : 'left: 8px;';
+      const tagColorStyle = item.badge_color ? `background: ${item.badge_color};` : '';
 
       return `
         <div class="toss-card" onclick="window.location.href='/shop/product.html?id=${item.id}'">
           <div class="toss-img-box">
             ${rankBadgeHtml}
             <img src="${item.img_url}" alt="${esc(pTitle)}">
-            <span class="toss-discount-tag" style="${tagLeftStyle}">${item.discount || '특가'}</span>
+            <span class="toss-discount-tag" style="${tagLeftStyle} ${tagColorStyle}">${item.discount || '특가'}</span>
             <button class="toss-wish-btn" onclick="event.stopPropagation(); toggleWish(this)">
               <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             </button>
