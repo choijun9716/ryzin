@@ -193,8 +193,12 @@
       transition: all 0.2s;
     }
 
-    /* ── SUB NAV TABS ── */
+    /* ── SUB NAV TABS (STICKY TOP) ── */
     .sub-tabs {
+      position: sticky;
+      top: 49px;
+      z-index: 150;
+      background: var(--bg);
       display: flex;
       padding: 0 16px;
       border-bottom: 1px solid var(--border);
@@ -1284,36 +1288,18 @@
     }
   }
 
-  // ── 서브 탭 이동 연동 ──
+  // ── 서브 탭 이동 (위아래 화면 움직임 완전 제거) ──
   function switchSubTab(el) {
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
 
-    try {
-      el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    } catch(e) {}
-
-    const sectionId = el.getAttribute('data-section-id');
-    let targetSec = sectionId ? document.getElementById('sec-wrap-' + sectionId) : null;
-
-    if (!targetSec) {
-      const allTabs = Array.from(document.querySelectorAll('.sub-tab'));
-      const idx = allTabs.indexOf(el);
-      const allSections = document.querySelectorAll('#dynamic-sections > section');
-      if (allSections && allSections[idx]) {
-        targetSec = allSections[idx];
-      }
-    }
-
-    if (targetSec) {
-      const headerOffset = 70;
-      const elementPosition = targetSec.getBoundingClientRect().top + window.pageYOffset;
-      const offsetPosition = elementPosition - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    // 탭 바 내부 순수 가로 스크롤만 수행 (세로 스크롤 0%)
+    const nav = document.getElementById('sub-tabs-wrap');
+    if (nav) {
+      const navRect = nav.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const scrollLeft = nav.scrollLeft + (elRect.left - navRect.left) - (navRect.width / 2) + (elRect.width / 2);
+      nav.scrollTo({ left: scrollLeft, behavior: 'smooth' });
     }
   }
 
