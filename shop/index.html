@@ -198,8 +198,13 @@
       display: flex;
       padding: 0 16px;
       border-bottom: 1px solid var(--border);
-      gap: 24px;
+      gap: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
     }
+    .sub-tabs::-webkit-scrollbar { display: none; }
 
     .sub-tab {
       padding: 12px 0 14px;
@@ -1278,22 +1283,31 @@
     document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
 
-    // 연결된 section_id가 있으면 스크롤
-    const sectionId = el.getAttribute('data-section-id');
-    if (sectionId) {
-      const targetSec = document.getElementById('sec-wrap-' + sectionId);
-      if (targetSec) {
-        const offset = 64; // 상단 헤더 높이
-        const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = targetSec.getBoundingClientRect().top;
-        const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
+    try {
+      el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } catch(e) {}
 
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
+    const sectionId = el.getAttribute('data-section-id');
+    let targetSec = sectionId ? document.getElementById('sec-wrap-' + sectionId) : null;
+
+    if (!targetSec) {
+      const allTabs = Array.from(document.querySelectorAll('.sub-tab'));
+      const idx = allTabs.indexOf(el);
+      const allSections = document.querySelectorAll('#dynamic-sections > section');
+      if (allSections && allSections[idx]) {
+        targetSec = allSections[idx];
       }
+    }
+
+    if (targetSec) {
+      const headerOffset = 70;
+      const elementPosition = targetSec.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   }
 
