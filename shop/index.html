@@ -953,21 +953,43 @@
     }, 2200);
   }
 
-  // Hero Banner Auto-slide (dots 미노출)
+  // Hero Banner Infinite Continuous Auto-slide (처음으로 거꾸로 돌아가지 않는 무한 정방향 롤링)
   function initHeroAutoSlide() {
     const carousel = document.getElementById('main-hero-carousel');
     if (!carousel) return;
-    const cards = carousel.querySelectorAll('.hero-slide-card');
-    if (cards.length <= 1) return;
+    const originalCards = Array.from(carousel.querySelectorAll('.hero-slide-card'));
+    if (originalCards.length <= 1) return;
 
-    let currentIndex = 0;
+    // 무한 롤링을 위해 카드 복제
+    originalCards.forEach(card => {
+      const clone = card.cloneNode(true);
+      carousel.appendChild(clone);
+    });
+
+    let index = 0;
+    const totalOriginal = originalCards.length;
+
     setInterval(() => {
-      currentIndex = (currentIndex + 1) % cards.length;
-      const targetCard = cards[currentIndex];
+      index++;
+      const allCards = carousel.querySelectorAll('.hero-slide-card');
+      const targetCard = allCards[index];
+      if (!targetCard) return;
+      
       carousel.scrollTo({
         left: targetCard.offsetLeft - 16,
         behavior: 'smooth'
       });
+
+      // 세트가 끝나면 0번 원본 위치로 사용자 눈에 안 띄게 순간 보정
+      if (index >= totalOriginal) {
+        setTimeout(() => {
+          carousel.scrollTo({
+            left: allCards[0].offsetLeft - 16,
+            behavior: 'auto'
+          });
+          index = 0;
+        }, 650);
+      }
     }, 3500);
   }
 
