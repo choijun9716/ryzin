@@ -306,6 +306,67 @@
       align-items: center;
       justify-content: center;
     }
+
+    /* ── FOOTER STYLING ── */
+    .footer {
+      background: #090a0c;
+      padding: 40px 16px 50px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 11px;
+      line-height: 1.6;
+      margin-top: 20px;
+    }
+
+    .footer-logo {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-sub);
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .footer-info {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .footer-info span {
+      display: inline-block;
+    }
+
+    .footer-notice {
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-size: 10px;
+      padding: 0 8px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      color: var(--text-sub);
+    }
+
+    .footer-links a {
+      color: inherit;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-copyright {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 
@@ -341,6 +402,31 @@
       <!-- JS Rendered -->
     </div>
   </section>
+
+  <!-- ── 푸터 (Footer) ── -->
+  <footer class="footer">
+    <div class="footer-logo">
+      <span>RYZIN</span>
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" style="transform: rotate(0deg);"><path d="M18 15l-6-6-6 6"/></svg>
+    </div>
+    <div class="footer-info">
+      <span>회사명: 라이진 | 대표: 채이준 | 사업자등록번호: 821-29-01197</span>
+      <span>사업장 소재지: 경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2</span>
+      <span>호스팅서비스: Amazon Web Services, Inc</span>
+    </div>
+    <p class="footer-notice">
+      라이진은 통신판매중개자이며, 통신판매의 당사자가 아닙니다. 상품, 상품 정보, 거래, 배송에 관한 의무와 책임은 판매자에게 있습니다.
+    </p>
+    <div class="footer-links">
+      <a href="#" onclick="alert('이용약관')">이용약관</a> |
+      <a href="#" onclick="alert('사업자정보')">사업자정보</a> |
+      <a href="#" onclick="alert('개인정보처리방침')">개인정보처리방침</a> |
+      <a href="#" onclick="alert('입점문의')">입점문의</a>
+    </div>
+    <div class="footer-copyright">
+      © 2026 RYZIN
+    </div>
+  </footer>
 
   <!-- ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV ── -->
   <div class="bottom-nav-wrap">
