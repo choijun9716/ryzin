@@ -1035,30 +1035,31 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  // ── 배너 렌더 ──
+  // ── 배너 렌더 (폴백 보장) ──
   async function renderBanners() {
     const carousel = document.getElementById('main-hero-carousel');
     if (!carousel) return;
-    let banners = await sbGet('shop_banners', 'select=*&active=eq.true&order=sort_order.asc');
-    if (!banners.length) {
-      // 폴백: 기본 배너
+    let banners = await sbGet('shop_banners', 'select=*&order=sort_order.asc');
+    banners = banners.filter(b => b.active !== false);
+    
+    if (!banners || !banners.length) {
       banners = [
-        { img_url:'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=85', label:'오늘', time_text:'오후 8시', title:'오키나와 힐튼 특집', desc:'소인 반값 요금 + 주요 관광지 입장권', link_url:'/shop/live_teaser.html' },
-        { img_url:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=85', label:'내일', time_text:'오전 11시', title:'설화수 윤조 단독 특가', desc:'자음수 리미티드 에디션 80% 혜택', link_url:'/shop/live_teaser.html' },
+        { img_url:'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=85', label:'오늘', time_text:'오후 8시', title:'오키나와 힐튼 라이브 특집', desc:'소인 반값 요금 + 주요 관광지 입장권 혜택', link_url:'/shop/live_teaser.html' },
+        { img_url:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=85', label:'내일', time_text:'오전 11시', title:'설화수 윤조 에센스 단독 특가', desc:'자음수 리미티드 에디션 80% 혜택', link_url:'/shop/live_teaser.html' },
         { img_url:'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=85', label:'07.24 (금)', time_text:'오후 3시', title:'에이피뷰티 엠디 세럼 론칭', desc:'단 1시간 신제품 단독 할인가', link_url:'/shop/live_teaser.html' }
       ];
     }
     carousel.innerHTML = banners.map(b => `
       <div class="hero-slide-card" onclick="window.location.href='${b.link_url || '/shop/live_teaser.html'}'">
-        <img src="${b.img_url}" alt="${b.title}">
+        <img src="${b.img_url}" alt="${esc(b.title)}">
         <div class="hero-slide-overlay">
           <div class="hero-top-info">
-            <span class="label">${b.label}</span>
-            <span class="time">${b.time_text}</span>
+            <span class="label">${esc(b.label || '특집')}</span>
+            <span class="time">${esc(b.time_text || '라이브')}</span>
           </div>
           <div class="hero-bottom-info">
-            <h2>${b.title}</h2>
-            <p>${b.desc || ''}</p>
+            <h2>${esc(b.title)}</h2>
+            <p>${esc(b.desc || '')}</p>
             <button class="hero-cta-btn" onclick="event.stopPropagation(); window.location.href='${b.link_url || '/shop/live_teaser.html'}';">알림 신청</button>
           </div>
         </div>
@@ -1071,8 +1072,9 @@
   async function renderMenus() {
     const nav = document.getElementById('sub-tabs-wrap');
     if (!nav) return;
-    let menus = await sbGet('shop_menus', 'select=*&active=eq.true&order=sort_order.asc');
-    if (!menus.length) {
+    let menus = await sbGet('shop_menus', 'select=*&order=sort_order.asc');
+    menus = menus.filter(m => m.active !== false);
+    if (!menus || !menus.length) {
       menus = [
         { name: '셀러 특가' },
         { name: 'K-뷰티 케어' },
@@ -1089,15 +1091,19 @@
     nav.innerHTML = allTabHtml + bestTabHtml + menuTabsHtml;
   }
 
-  // ── 라이브 섹션 렌더 ──
+  // ── 라이브 섹션 렌더 (폴백 보장) ──
   async function renderLives() {
     const cont = document.getElementById('live-scroll-container');
     const sec  = document.getElementById('live-section');
     if (!cont) return;
-    let lives = await sbGet('shop_lives', 'select=*&active=eq.true&order=sort_order.asc');
-    if (!lives.length) {
-      if (sec) sec.style.display = 'none';
-      return;
+    let lives = await sbGet('shop_lives', 'select=*&order=sort_order.asc');
+    lives = lives.filter(l => l.active !== false);
+
+    if (!lives || !lives.length) {
+      lives = [
+        { title: '설화수 자음수 단독 특가 라이브', viewers: '1,240명 시청 중', img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85', link_url: '/shop/live_teaser.html', status: 'live' },
+        { title: '에이피뷰티 신상 세럼 사전 공개', viewers: '오후 8시 예정', img_url: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85', link_url: '/shop/live_teaser.html', status: 'upcoming' }
+      ];
     }
     if (sec) sec.style.display = '';
     cont.innerHTML = lives.map(lv => {
@@ -1110,14 +1116,14 @@
 
       return `
         <div class="live-card-item" onclick="window.location.href='${lv.link_url || '/shop/live_teaser.html'}'">
-          <img src="${lv.img_url}" alt="${lv.title}">
+          <img src="${lv.img_url}" alt="${esc(lv.title)}">
           <div class="live-card-overlay">
             <div class="live-top-row">
               ${badgeHtml}
-              <span class="live-viewers">${lv.viewers || ''}</span>
+              <span class="live-viewers">${esc(lv.viewers || '')}</span>
             </div>
             <div class="live-bottom-info">
-              <div class="live-title-text">${lv.title}</div>
+              <div class="live-title-text">${esc(lv.title)}</div>
               <button class="live-join-btn" style="${btnStyle}">${btnText}</button>
             </div>
           </div>
@@ -1126,19 +1132,21 @@
     }).join('');
   }
 
-  // ── 상품 섹션 + 상품 동적 렌더 ──
+  // ── 상품 섹션 + 상품 동적 렌더 (폴백 보장) ──
   async function renderSections() {
     const wrap = document.getElementById('dynamic-sections');
     if (!wrap) return;
-    const [sections, products] = await Promise.all([
-      sbGet('shop_sections', 'select=*&active=eq.true&order=sort_order.asc'),
-      sbGet('shop_products', 'select=*&active=eq.true&order=sort_order.asc')
+    let [sections, products] = await Promise.all([
+      sbGet('shop_sections', 'select=*&order=sort_order.asc'),
+      sbGet('shop_products', 'select=*&order=sort_order.asc')
     ]);
+    sections = sections.filter(s => s.active !== false);
+    products = products.filter(p => p.active !== false);
+
     const prodBySec = {};
     products.forEach(p => { if (!prodBySec[p.section_id]) prodBySec[p.section_id] = []; prodBySec[p.section_id].push(p); });
 
-    if (!sections.length) {
-      // 폴백: 기존 정적 상품
+    if (!sections || !sections.length) {
       renderFallbackSections(wrap);
       return;
     }
