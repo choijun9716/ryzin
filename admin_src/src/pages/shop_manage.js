@@ -178,7 +178,7 @@ export function renderShopManage() {
     </div>
 
     <div id="sm-loading" style="text-align:center;padding:40px;color:#64748b;font-size:14px;font-weight:600;">
-      ⏳ 데이터를 동기화하는 중...
+      데이터를 동기화하는 중...
     </div>
     <div id="sm-panel"></div>
   `;

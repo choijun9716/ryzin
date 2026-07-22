@@ -3128,7 +3128,7 @@ Minimum version required to store current data is: `+c+`.
     </div>
 
     <div id="sm-loading" style="text-align:center;padding:40px;color:#64748b;font-size:14px;font-weight:600;">
-      ⏳ 데이터를 동기화하는 중...
+      데이터를 동기화하는 중...
     </div>
     <div id="sm-panel"></div>
   `,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.addEventListener(`click`,()=>{la=e.dataset.tab,t.querySelectorAll(`.sm-tab-btn`).forEach(e=>{e.classList.toggle(`active`,e.dataset.tab===la)}),fa(t)})}),e.appendChild(t),setTimeout(async()=>{try{ua=await ea.getAll()}catch{ua=[]}await fa(t)},0),e}async function fa(e){let t=e.querySelector(`#sm-loading`),n=e.querySelector(`#sm-panel`);t.style.display=`block`,n.innerHTML=``;try{la===`banners`?await pa(n):la===`lives`?await ma(n):la===`sections`?await ha(n,e):la===`menus`&&await _a(n)}catch(e){n.innerHTML=`
