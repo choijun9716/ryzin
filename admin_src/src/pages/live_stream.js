@@ -58,7 +58,11 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       live_id: liveId,
       title: config.brandName,
       subtitle: config.title,
-      profile_image: (config.logoUrl || '') + (config.showSplash === false ? '#nosplash' : ''),
+      profile_image: (config.logoUrl || '') + 
+                     (config.showSplash === false ? '#nosplash' : '') +
+                     `#widgetText=${encodeURIComponent(config.widgetText || '라이브 보기')}` +
+                     `#widgetPosition=${config.widgetPosition || 'right'}` +
+                     `#widgetImageUrl=${config.widgetImageUrl || ''}`,
       stream_url: config.streamUrl || '',
       viewers: parseInt(stats.viewers) || 0,
       hearts: parseInt(stats.hearts) || 0,
@@ -490,8 +494,31 @@ function renderLiveEditView(container, liveId, showView) {
           config.brandName = data.title || `라이브 ${displayIdx}`;
           config.title = data.subtitle || '단독 특가 라이브 방송 중!';
           config.streamUrl = data.stream_url || '';
-          config.logoUrl = (data.profile_image || '').replace('#nosplash', '');
-          config.showSplash = !(data.profile_image || '').endsWith('#nosplash');
+          const rawLogoUrl = data.profile_image || '';
+          let widgetText = '라이브 보기';
+          let widgetPosition = 'right';
+          let widgetImageUrl = '';
+
+          const hashParts = rawLogoUrl.split('#');
+          let cleanLogoUrl = hashParts[0];
+
+          hashParts.slice(1).forEach(part => {
+            if (part === 'nosplash') {
+              // nosplash flag
+            } else if (part.startsWith('widgetText=')) {
+              widgetText = decodeURIComponent(part.replace('widgetText=', ''));
+            } else if (part.startsWith('widgetPosition=')) {
+              widgetPosition = part.replace('widgetPosition=', '');
+            } else if (part.startsWith('widgetImageUrl=')) {
+              widgetImageUrl = part.replace('widgetImageUrl=', '');
+            }
+          });
+
+          config.logoUrl = cleanLogoUrl;
+          config.showSplash = !rawLogoUrl.includes('#nosplash');
+          config.widgetText = widgetText;
+          config.widgetPosition = widgetPosition;
+          config.widgetImageUrl = widgetImageUrl;
           config.thumbnailUrl = data.thumbnail_url || '';
           config.liveStartTime = data.start_time || '';
           config.showViewers = data.show_viewers !== false;
@@ -722,6 +749,38 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
         <div style="font-size:10px; color:#94a3b8; margin-top:4px;">위 HTML 코드를 원하는 웹사이트에 붙여넣으세요</div>
       </div>
+
+      <div style="width:100%; border-top:1.5px solid #e2e8f0; padding-top:16px; margin-top:16px;">
+        <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; margin-bottom:12px;">라이브 위젯 설정</div>
+        
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px; letter-spacing:0.05em;">위젯 문구</label>
+          <input type="text" id="cfg-widgetText" class="modern-input" style="padding:6px 10px; font-size:12px; height:32px;" value="${config.widgetText || '라이브 보기'}">
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px; letter-spacing:0.05em;">위젯 노출 위치</label>
+          <select id="cfg-widgetPosition" class="modern-input" style="padding:4px 10px; font-size:12px; height:32px;">
+            <option value="right" ${config.widgetPosition !== 'left' ? 'selected' : ''}>우측 끝 밀착</option>
+            <option value="left" ${config.widgetPosition === 'left' ? 'selected' : ''}>좌측 끝 밀착</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px; letter-spacing:0.05em;">위젯 단색/커스텀 이미지</label>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:44px; height:44px; border-radius:50%; border:1.5px solid #e2e8f0; overflow:hidden; background:#fff; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+              <img id="widget-image-preview" src="${config.widgetImageUrl || ''}" style="width:100%; height:100%; object-fit:cover; display:${config.widgetImageUrl ? 'block' : 'none'};">
+              <span id="widget-image-placeholder" style="font-size:10px; color:#cbd5e1; display:${config.widgetImageUrl ? 'none' : 'block'};">단색</span>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+              <input type="file" id="cfg-widgetImageFile" accept="image/*" style="display:none;">
+              <button id="btn-upload-widget-img" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; font-weight:700; justify-content:center;">이미지 업로드</button>
+              <button id="btn-reset-widget-img" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; font-weight:700; justify-content:center; color:#ef4444; border-color:#fee2e2;">단색 화이트 리셋</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
   layout.appendChild(rightPanel);
@@ -751,6 +810,82 @@ function renderLiveEditView(container, liveId, showView) {
 
   const btnCopyWide = layout.querySelector('#btn-copy-embed-wide');
   if (btnCopyWide) btnCopyWide.addEventListener('click', () => copyEmbed('embed-url-wide', 'btn-copy-embed-wide'));
+
+  // [NEW] 위젯 관련 설정 이벤트 바인딩
+  const inputWidgetText = layout.querySelector('#cfg-widgetText');
+  if (inputWidgetText) {
+    inputWidgetText.addEventListener('input', (e) => {
+      config.widgetText = e.target.value;
+      saveLiveConfig(liveId, config);
+      syncToSheetDB(liveId, config, stats, products);
+    });
+  }
+
+  const selectWidgetPosition = layout.querySelector('#cfg-widgetPosition');
+  if (selectWidgetPosition) {
+    selectWidgetPosition.addEventListener('change', (e) => {
+      config.widgetPosition = e.target.value;
+      saveLiveConfig(liveId, config);
+      syncToSheetDB(liveId, config, stats, products);
+    });
+  }
+
+  const btnUploadWidgetImg = layout.querySelector('#btn-upload-widget-img');
+  const fileWidgetImg = layout.querySelector('#cfg-widgetImageFile');
+  if (btnUploadWidgetImg && fileWidgetImg) {
+    btnUploadWidgetImg.addEventListener('click', () => fileWidgetImg.click());
+    fileWidgetImg.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      btnUploadWidgetImg.disabled = true;
+      btnUploadWidgetImg.textContent = '업로드 중...';
+      try {
+        const isLogo = false;
+        const maxWidth = 256;
+        const maxHeight = 256;
+        const quality = 0.88;
+        const base64 = await compressImage(file, maxWidth, maxHeight, quality);
+
+        const url = await uploadToImgBB(base64);
+        config.widgetImageUrl = url;
+        saveLiveConfig(liveId, config);
+        
+        const imgPreview = layout.querySelector('#widget-image-preview') || document.getElementById('widget-image-preview');
+        const placeholder = layout.querySelector('#widget-image-placeholder') || document.getElementById('widget-image-placeholder');
+        if (imgPreview && placeholder) {
+          imgPreview.src = url;
+          imgPreview.style.display = 'block';
+          placeholder.style.display = 'none';
+        }
+        
+        syncToSheetDB(liveId, config, stats, products, true);
+      } catch (err) {
+        console.error('이미지 업로드 오류:', err);
+        alert('이미지 업로드 실패: ' + err.message);
+      } finally {
+        btnUploadWidgetImg.disabled = false;
+        btnUploadWidgetImg.textContent = '이미지 업로드';
+      }
+    });
+  }
+
+  const btnResetWidgetImg = layout.querySelector('#btn-reset-widget-img');
+  if (btnResetWidgetImg) {
+    btnResetWidgetImg.addEventListener('click', () => {
+      config.widgetImageUrl = '';
+      saveLiveConfig(liveId, config);
+      
+      const imgPreview = layout.querySelector('#widget-image-preview') || document.getElementById('widget-image-preview');
+      const placeholder = layout.querySelector('#widget-image-placeholder') || document.getElementById('widget-image-placeholder');
+      if (imgPreview && placeholder) {
+        imgPreview.src = '';
+        imgPreview.style.display = 'none';
+        placeholder.style.display = 'block';
+      }
+      
+      syncToSheetDB(liveId, config, stats, products, true);
+    });
+  }
 
   // ── 탭 패널 렌더 함수들 ───────────────────────────────────
   const renderConfigTab = () => {
@@ -2419,8 +2554,30 @@ function renderLiveEditView(container, liveId, showView) {
         config.brandName = newData.title || '';
         config.title = newData.subtitle || '';
         const logoStr = newData.profile_image || '';
+        let widgetText = '라이브 보기';
+        let widgetPosition = 'right';
+        let widgetImageUrl = '';
+
+        const hashParts = logoStr.split('#');
+        let cleanLogoUrl = hashParts[0];
+
+        hashParts.slice(1).forEach(part => {
+          if (part === 'nosplash') {
+            // nosplash flag
+          } else if (part.startsWith('widgetText=')) {
+            widgetText = decodeURIComponent(part.replace('widgetText=', ''));
+          } else if (part.startsWith('widgetPosition=')) {
+            widgetPosition = part.replace('widgetPosition=', '');
+          } else if (part.startsWith('widgetImageUrl=')) {
+            widgetImageUrl = part.replace('widgetImageUrl=', '');
+          }
+        });
+
         config.showSplash = !logoStr.includes('#nosplash');
-        config.logoUrl = logoStr.replace('#nosplash', '');
+        config.logoUrl = cleanLogoUrl;
+        config.widgetText = widgetText;
+        config.widgetPosition = widgetPosition;
+        config.widgetImageUrl = widgetImageUrl;
         config.streamUrl = newData.stream_url || '';
         config.showViewers = newData.show_viewers !== false;
         config.thumbnailUrl = newData.thumbnail_url || '';

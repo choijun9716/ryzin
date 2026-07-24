@@ -23,6 +23,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeLiveBtn = document.getElementById('btn-close-live');
     
     if (banner) {
+      // 깜빡임 방지를 위해 로컬스토리지 캐시에서 위젯 위치/이미지/문구 우선 적용
+      try {
+        const c = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`));
+        if (c) {
+          const bannerText = banner.querySelector('.banner-label-text');
+          if (bannerText) {
+            bannerText.innerHTML = (c.widgetText || '라이브 보기').replace(' ', '<br>');
+          }
+          const isLeft = c.widgetPosition === 'left';
+          banner.style.right = isLeft ? 'auto' : '0';
+          banner.style.left = isLeft ? '0' : 'auto';
+          const circle = banner.querySelector('.banner-circle');
+          if (circle) {
+            circle.style.borderRadius = isLeft ? '0 38px 38px 0' : '38px 0 0 38px';
+            circle.style.borderLeft = isLeft ? 'none' : '1px solid #e2e8f0';
+            circle.style.borderRight = isLeft ? '1px solid #e2e8f0' : 'none';
+            circle.style.boxShadow = isLeft ? '4px 8px 24px rgba(0,0,0,0.16)' : '-4px 8px 24px rgba(0,0,0,0.16)';
+            if (c.widgetImageUrl) {
+              circle.style.backgroundImage = `url('${c.widgetImageUrl}')`;
+              circle.style.backgroundSize = 'cover';
+              circle.style.backgroundPosition = 'center';
+              if (bannerText) bannerText.style.display = 'none';
+            }
+          }
+          const closeBtn = banner.querySelector('#btn-close-widget');
+          if (closeBtn) {
+            closeBtn.style.left = isLeft ? 'auto' : '-4px';
+            closeBtn.style.right = isLeft ? '-4px' : 'auto';
+          }
+        }
+      } catch (e) {}
+
       banner.style.display = 'flex';
 
       // 닫기 버튼 클릭 처리 (이벤트 버블링 방지)
@@ -245,7 +277,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const rawLogoUrl = row.profile_image || '';
-    const showSplash = !rawLogoUrl.endsWith('#nosplash');
+    const showSplash = !rawLogoUrl.includes('#nosplash');
+    
+    // [NEW] 위젯 해시 파라미터 디코딩
+    let widgetText = '라이브 보기';
+    let widgetPosition = 'right';
+    let widgetImageUrl = '';
+    
+    const hashParts = rawLogoUrl.split('#');
+    const cleanLogoUrl = hashParts[0];
+    
+    hashParts.slice(1).forEach(part => {
+      if (part === 'nosplash') {
+        // nosplash flag
+      } else if (part.startsWith('widgetText=')) {
+        widgetText = decodeURIComponent(part.replace('widgetText=', ''));
+      } else if (part.startsWith('widgetPosition=')) {
+        widgetPosition = part.replace('widgetPosition=', '');
+      } else if (part.startsWith('widgetImageUrl=')) {
+        widgetImageUrl = part.replace('widgetImageUrl=', '');
+      }
+    });
     
     // 스플래시 제어
     if (showSplash === false) {
@@ -262,14 +314,17 @@ document.addEventListener('DOMContentLoaded', () => {
       liveId: row.live_id || 'live01',
       brandName: row.title || 'Ryzin Corp',
       title: row.subtitle || '단독 특가 라이브 방송 중!',
-      logoUrl: rawLogoUrl.replace('#nosplash', '') || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
+      logoUrl: cleanLogoUrl || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
       streamUrl: row.stream_url || '',
       showViewers: row.show_viewers !== false,
       showSplash: showSplash,
       thumbnailUrl: row.thumbnail_url || '',
       liveStartTime: row.start_time || '',
       isLive: row.status === 'ON',
-      likeImageUrl: row.like_image_url || ''
+      likeImageUrl: row.like_image_url || '',
+      widgetText: widgetText,
+      widgetPosition: widgetPosition,
+      widgetImageUrl: widgetImageUrl
     };
 
     const stats = {
@@ -437,6 +492,52 @@ document.addEventListener('DOMContentLoaded', () => {
           thumbImg.style.display = 'block';
         } else if (thumbImg) {
           thumbImg.style.display = 'none';
+        }
+
+        // [NEW] 라이브 위젯 UI 업데이트 (위치, 이미지, 문구)
+        const banner = document.getElementById('live-floating-banner');
+        if (banner) {
+          // 1. 문구 적용
+          const bannerText = banner.querySelector('.banner-label-text');
+          if (bannerText) {
+            const rawText = c.widgetText || '라이브 보기';
+            bannerText.innerHTML = rawText.replace(' ', '<br>');
+          }
+
+          // 2. 위치 적용 (좌측 vs 우측)
+          const isLeft = c.widgetPosition === 'left';
+          banner.style.right = isLeft ? 'auto' : '0';
+          banner.style.left = isLeft ? '0' : 'auto';
+
+          const circle = banner.querySelector('.banner-circle');
+          if (circle) {
+            circle.style.borderRadius = isLeft ? '0 38px 38px 0' : '38px 0 0 38px';
+            circle.style.borderLeft = isLeft ? 'none' : '1px solid #e2e8f0';
+            circle.style.borderRight = isLeft ? '1px solid #e2e8f0' : 'none';
+            circle.style.boxShadow = isLeft ? '4px 8px 24px rgba(0,0,0,0.16)' : '-4px 8px 24px rgba(0,0,0,0.16)';
+
+            // 3. 이미지 적용
+            if (c.widgetImageUrl) {
+              circle.style.backgroundImage = `url('${c.widgetImageUrl}')`;
+              circle.style.backgroundSize = 'cover';
+              circle.style.backgroundPosition = 'center';
+              if (bannerText) bannerText.style.display = 'none';
+            } else {
+              circle.style.backgroundImage = 'none';
+              circle.style.backgroundColor = '#ffffff';
+              if (bannerText) {
+                bannerText.style.display = 'block';
+                bannerText.style.color = '#000000';
+              }
+            }
+          }
+
+          // 4. 닫기(X) 버튼 위치 보정
+          const closeBtn = banner.querySelector('#btn-close-widget');
+          if (closeBtn) {
+            closeBtn.style.left = isLeft ? 'auto' : '-4px';
+            closeBtn.style.right = isLeft ? '-4px' : 'auto';
+          }
         }
 
 
