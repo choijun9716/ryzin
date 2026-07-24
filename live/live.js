@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
           e.stopPropagation();
+          e.preventDefault();
           banner.style.opacity = '0';
           banner.style.transform = 'scale(0.8)';
           setTimeout(() => {
@@ -106,7 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      banner.addEventListener('click', () => {
+      banner.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         // 임베드 스타일 강제 제거
         document.body.classList.remove('embed-mode');
         document.documentElement.classList.remove('embed-mode-active');
