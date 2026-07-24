@@ -15,10 +15,54 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   LIVE_ID = window.INJECTED_LIVE_ID || urlParams.get('id') || 'live01';
 
+  // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
+  window.currentWidgetPosition = 'right';
+  window.resizeParentIframe = function(expand) {
+    const width = expand ? '100%' : '92px';
+    const height = expand ? '100%' : '112px';
+    const bottom = expand ? '0' : '74px';
+    const position = window.currentWidgetPosition || 'right';
+
+    if (window.parent) {
+      window.parent.postMessage({
+        type: 'ryzin-widget-resize',
+        expand: expand,
+        width: width,
+        height: height,
+        bottom: bottom,
+        position: position
+      }, '*');
+    }
+
+    try {
+      const myIframe = window.frameElement;
+      if (myIframe) {
+        myIframe.style.width = width;
+        myIframe.style.height = height;
+        myIframe.style.bottom = bottom;
+        myIframe.style.top = expand ? '0' : 'auto';
+        if (expand) {
+          myIframe.style.left = '0';
+          myIframe.style.right = '0';
+        } else {
+          if (position === 'left') {
+            myIframe.style.left = '0';
+            myIframe.style.right = 'auto';
+          } else {
+            myIframe.style.right = '0';
+            myIframe.style.left = 'auto';
+          }
+        }
+      }
+    } catch(e) {}
+  };
+
   // [NEW] Embed/Iframe 모드에 따른 플로팅 배너 초기 활성화
   const isEmbedParam = urlParams.get('embed') === '1';
   if (isEmbedParam) {
     document.body.classList.add('embed-mode');
+    resizeParentIframe(false); // 위젯 모드 크기로 초기화
+
     const banner = document.getElementById('live-floating-banner');
     const closeLiveBtn = document.getElementById('btn-close-live');
     
@@ -104,12 +148,14 @@ document.addEventListener('DOMContentLoaded', () => {
           banner.style.display = 'flex';
           banner.style.opacity = '1';
           banner.style.transform = 'scale(1)';
+          resizeParentIframe(false); // [NEW] 위젯 크기로 축소
         });
       }
 
       banner.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        resizeParentIframe(true); // [NEW] 전체화면 크기로 확장
         // 임베드 스타일 강제 제거
         document.body.classList.remove('embed-mode');
         document.documentElement.classList.remove('embed-mode-active');
@@ -300,6 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
         widgetImageUrl = part.replace('widgetImageUrl=', '');
       }
     });
+    window.currentWidgetPosition = widgetPosition;
     
     // 스플래시 제어
     if (showSplash === false) {
@@ -508,8 +555,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // 2. 위치 적용 (좌측 vs 우측)
           const isLeft = c.widgetPosition === 'left';
-          banner.style.right = isLeft ? 'auto' : '0';
-          banner.style.left = isLeft ? '0' : 'auto';
+          window.currentWidgetPosition = c.widgetPosition;
+          
+          const container = document.querySelector('.live-container');
+          if (container && (container.style.display === 'none' || document.body.classList.contains('embed-mode'))) {
+            resizeParentIframe(false);
+          }
+          
+          banner.style.right = '0';
+          banner.style.left = '0';
 
           const circle = banner.querySelector('.banner-circle');
           if (circle) {

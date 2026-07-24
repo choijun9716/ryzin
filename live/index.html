@@ -26,9 +26,7 @@
   <link rel="stylesheet" href="live.css?v=202607211451">
   <style>
     /* Embed Mode Overrides */
-    html.embed-mode-active,
-    html.embed-mode-active body {
-      pointer-events: none !important;
+    body.embed-mode {
       background: transparent !important;
     }
     body.embed-mode .live-container {
@@ -40,9 +38,10 @@
 
     /* Floating Banner CSS */
     #live-floating-banner {
-      position: fixed;
-      bottom: 74px;
-      right: 16px;
+      position: absolute;
+      bottom: 12px;
+      left: 8px;
+      right: 8px;
       width: 76px;
       height: 76px;
       z-index: 999999;

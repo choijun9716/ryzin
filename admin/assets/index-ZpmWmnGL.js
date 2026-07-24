@@ -275,7 +275,59 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <span style="font-size:12px; color:#0f172a; font-family:monospace; font-weight:600; white-space:nowrap; margin-right:4px;">ryzincorp.com/live/${t}</span>
       <button id="btn-copy-live-url" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; height:28px; line-height:1; border-radius:6px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; font-weight:700; white-space:nowrap;">복사</button>
     </div>
-  `,y.appendChild(b),setTimeout(()=>{let e=document.getElementById(`btn-copy-live-url`);e&&e.addEventListener(`click`,async()=>{let n=`https://ryzincorp.com/live/${t}`;try{await navigator.clipboard.writeText(n),e.textContent=`복사 완료!`,e.style.color=`#10b981`,e.style.borderColor=`#a7f3d0`,e.style.backgroundColor=`#ecfdf5`,setTimeout(()=>{e.textContent=`복사`,e.style.color=``,e.style.borderColor=``,e.style.backgroundColor=``},2e3)}catch(e){console.warn(`URL 복사 오류:`,e)}})},100);let C=null;o.isLive&&setTimeout(()=>{let e=document.getElementById(`onair-timer-text`);if(e){let t=o.liveStartTime?new Date(o.liveStartTime).getTime():0,n=Date.now();(!t||t>n)&&(t=n);let r=()=>{let n=Date.now()-t,r=Math.floor(n/36e5),i=Math.floor(n%36e5/6e4),a=Math.floor(n%6e4/1e3);e.textContent=`${r.toString().padStart(2,`0`)}:${i.toString().padStart(2,`0`)}:${a.toString().padStart(2,`0`)}`};r(),C=setInterval(r,1e3)}},100);let w=()=>{C&&=(clearInterval(C),null)},T=document.createElement(`div`);T.style.cssText=`flex:1; overflow-y:auto; padding:28px;`,y.appendChild(T),v.appendChild(y);let E=document.createElement(`div`);E.style.cssText=`width:340px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; padding:24px 20px; background:#fff; border-left:1.5px solid #e2e8f0; gap:16px; overflow-y:auto;`;let D=`${window.location.origin.includes(`localhost:5173`)?`http://localhost:8080/live/`:`/live/`}?id=${t}`,O=`${`https://ryzincorp.com/live/${t}`}?embed=1`,k=`<iframe src="${O}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999;" allow="autoplay; fullscreen" allowfullscreen></iframe>`,A=`<iframe src="${O}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;`${t}`,E.innerHTML=`
+  `,y.appendChild(b),setTimeout(()=>{let e=document.getElementById(`btn-copy-live-url`);e&&e.addEventListener(`click`,async()=>{let n=`https://ryzincorp.com/live/${t}`;try{await navigator.clipboard.writeText(n),e.textContent=`복사 완료!`,e.style.color=`#10b981`,e.style.borderColor=`#a7f3d0`,e.style.backgroundColor=`#ecfdf5`,setTimeout(()=>{e.textContent=`복사`,e.style.color=``,e.style.borderColor=``,e.style.backgroundColor=``},2e3)}catch(e){console.warn(`URL 복사 오류:`,e)}})},100);let C=null;o.isLive&&setTimeout(()=>{let e=document.getElementById(`onair-timer-text`);if(e){let t=o.liveStartTime?new Date(o.liveStartTime).getTime():0,n=Date.now();(!t||t>n)&&(t=n);let r=()=>{let n=Date.now()-t,r=Math.floor(n/36e5),i=Math.floor(n%36e5/6e4),a=Math.floor(n%6e4/1e3);e.textContent=`${r.toString().padStart(2,`0`)}:${i.toString().padStart(2,`0`)}:${a.toString().padStart(2,`0`)}`};r(),C=setInterval(r,1e3)}},100);let w=()=>{C&&=(clearInterval(C),null)},T=document.createElement(`div`);T.style.cssText=`flex:1; overflow-y:auto; padding:28px;`,y.appendChild(T),v.appendChild(y);let E=document.createElement(`div`);E.style.cssText=`width:340px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; padding:24px 20px; background:#fff; border-left:1.5px solid #e2e8f0; gap:16px; overflow-y:auto;`;let D=`${window.location.origin.includes(`localhost:5173`)?`http://localhost:8080/live/`:`/live/`}?id=${t}`,O=`${`https://ryzincorp.com/live/${t}`}?embed=1`,k=`<iframe id="ryzin-live-iframe" src="${O}" style="position:fixed; bottom:74px; right:0; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'ryzin-widget-resize') {
+      var iframe = document.getElementById('ryzin-live-iframe');
+      if (iframe) {
+        iframe.style.width = e.data.width;
+        iframe.style.height = e.data.height;
+        iframe.style.bottom = e.data.bottom;
+        if (e.data.expand) {
+          iframe.style.left = '0';
+          iframe.style.right = '0';
+          iframe.style.top = '0';
+        } else {
+          iframe.style.top = 'auto';
+          if (e.data.position === 'left') {
+            iframe.style.left = '0';
+            iframe.style.right = 'auto';
+          } else {
+            iframe.style.right = '0';
+            iframe.style.left = 'auto';
+          }
+        }
+      }
+    }
+  });
+<\/script>`,A=`<iframe id="ryzin-live-iframe" src="${O}" style="position:fixed; bottom:74px; left:0; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'ryzin-widget-resize') {
+      var iframe = document.getElementById('ryzin-live-iframe');
+      if (iframe) {
+        iframe.style.width = e.data.width;
+        iframe.style.height = e.data.height;
+        iframe.style.bottom = e.data.bottom;
+        if (e.data.expand) {
+          iframe.style.left = '0';
+          iframe.style.right = '0';
+          iframe.style.top = '0';
+        } else {
+          iframe.style.top = 'auto';
+          if (e.data.position === 'left') {
+            iframe.style.left = '0';
+            iframe.style.right = 'auto';
+          } else {
+            iframe.style.right = '0';
+            iframe.style.left = 'auto';
+          }
+        }
+      }
+    }
+  });
+<\/script>`;`${t}`,E.innerHTML=`
     <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
       <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em;">모바일 미리보기</div>
       ${S}

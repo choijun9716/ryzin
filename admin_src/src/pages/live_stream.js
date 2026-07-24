@@ -714,8 +714,61 @@ function renderLiveEditView(container, liveId, showView) {
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
   const embedUrlWithParam = `${viewerUrl}?embed=1`;
-  const embedCodeMobile = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-  const embedCodeWide = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+  const embedCodeMobile = `<iframe id="ryzin-live-iframe" src="${embedUrlWithParam}" style="position:fixed; bottom:74px; right:0; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'ryzin-widget-resize') {
+      var iframe = document.getElementById('ryzin-live-iframe');
+      if (iframe) {
+        iframe.style.width = e.data.width;
+        iframe.style.height = e.data.height;
+        iframe.style.bottom = e.data.bottom;
+        if (e.data.expand) {
+          iframe.style.left = '0';
+          iframe.style.right = '0';
+          iframe.style.top = '0';
+        } else {
+          iframe.style.top = 'auto';
+          if (e.data.position === 'left') {
+            iframe.style.left = '0';
+            iframe.style.right = 'auto';
+          } else {
+            iframe.style.right = '0';
+            iframe.style.left = 'auto';
+          }
+        }
+      }
+    }
+  });
+</script>`;
+
+  const embedCodeWide = `<iframe id="ryzin-live-iframe" src="${embedUrlWithParam}" style="position:fixed; bottom:74px; left:0; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<script>
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'ryzin-widget-resize') {
+      var iframe = document.getElementById('ryzin-live-iframe');
+      if (iframe) {
+        iframe.style.width = e.data.width;
+        iframe.style.height = e.data.height;
+        iframe.style.bottom = e.data.bottom;
+        if (e.data.expand) {
+          iframe.style.left = '0';
+          iframe.style.right = '0';
+          iframe.style.top = '0';
+        } else {
+          iframe.style.top = 'auto';
+          if (e.data.position === 'left') {
+            iframe.style.left = '0';
+            iframe.style.right = 'auto';
+          } else {
+            iframe.style.right = '0';
+            iframe.style.left = 'auto';
+          }
+        }
+      }
+    }
+  });
+</script>`;
 
   const shareGatewayUrl = `https://ryzincorp.com/live/${liveId}`;
 
