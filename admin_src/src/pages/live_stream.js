@@ -62,7 +62,8 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
                      (config.showSplash === false ? '#nosplash' : '') +
                      `#widgetText=${encodeURIComponent(config.widgetText || '라이브 보기')}` +
                      `#widgetPosition=${config.widgetPosition || 'right'}` +
-                     `#widgetImageUrl=${config.widgetImageUrl || ''}`,
+                     `#widgetImageUrl=${config.widgetImageUrl || ''}` +
+                     `#showOnMain=${config.showOnMain === true}`,
       stream_url: config.streamUrl || '',
       viewers: parseInt(stats.viewers) || 0,
       hearts: parseInt(stats.hearts) || 0,
@@ -498,6 +499,7 @@ function renderLiveEditView(container, liveId, showView) {
           let widgetText = '라이브 보기';
           let widgetPosition = 'right';
           let widgetImageUrl = '';
+          let showOnMain = false;
 
           const hashParts = rawLogoUrl.split('#');
           let cleanLogoUrl = hashParts[0];
@@ -511,6 +513,8 @@ function renderLiveEditView(container, liveId, showView) {
               widgetPosition = part.replace('widgetPosition=', '');
             } else if (part.startsWith('widgetImageUrl=')) {
               widgetImageUrl = part.replace('widgetImageUrl=', '');
+            } else if (part.startsWith('showOnMain=')) {
+              showOnMain = part.replace('showOnMain=', '') === 'true';
             }
           });
 
@@ -519,6 +523,7 @@ function renderLiveEditView(container, liveId, showView) {
           config.widgetText = widgetText;
           config.widgetPosition = widgetPosition;
           config.widgetImageUrl = widgetImageUrl;
+          config.showOnMain = showOnMain;
           config.thumbnailUrl = data.thumbnail_url || '';
           config.liveStartTime = data.start_time || '';
           config.showViewers = data.show_viewers !== false;
@@ -826,6 +831,11 @@ function renderLiveEditView(container, liveId, showView) {
             </div>
           </div>
         </div>
+
+        <div style="margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="cfg-showOnMain" style="width:16px; height:16px; cursor:pointer;" ${config.showOnMain === true ? 'checked' : ''}>
+          <label for="cfg-showOnMain" style="font-size:11px; font-weight:700; color:#94a3b8; letter-spacing:0.05em; cursor:pointer; user-select:none;">라이진 메인에 위젯 노출</label>
+        </div>
       </div>
     </div>
   `;
@@ -876,6 +886,15 @@ function renderLiveEditView(container, liveId, showView) {
       config.widgetPosition = e.target.value;
       saveLiveConfig(liveId, config);
       syncToSheetDB(liveId, config, stats, products);
+    });
+  }
+
+  const checkboxShowOnMain = layout.querySelector('#cfg-showOnMain');
+  if (checkboxShowOnMain) {
+    checkboxShowOnMain.addEventListener('change', (e) => {
+      config.showOnMain = e.target.checked;
+      saveLiveConfig(liveId, config);
+      syncToSheetDB(liveId, config, stats, products, true);
     });
   }
 
@@ -2606,6 +2625,7 @@ function renderLiveEditView(container, liveId, showView) {
         let widgetText = '라이브 보기';
         let widgetPosition = 'right';
         let widgetImageUrl = '';
+        let showOnMain = false;
 
         const hashParts = logoStr.split('#');
         let cleanLogoUrl = hashParts[0];
@@ -2619,6 +2639,8 @@ function renderLiveEditView(container, liveId, showView) {
             widgetPosition = part.replace('widgetPosition=', '');
           } else if (part.startsWith('widgetImageUrl=')) {
             widgetImageUrl = part.replace('widgetImageUrl=', '');
+          } else if (part.startsWith('showOnMain=')) {
+            showOnMain = part.replace('showOnMain=', '') === 'true';
           }
         });
 
@@ -2627,6 +2649,7 @@ function renderLiveEditView(container, liveId, showView) {
         config.widgetText = widgetText;
         config.widgetPosition = widgetPosition;
         config.widgetImageUrl = widgetImageUrl;
+        config.showOnMain = showOnMain;
         config.streamUrl = newData.stream_url || '';
         config.showViewers = newData.show_viewers !== false;
         config.thumbnailUrl = newData.thumbnail_url || '';

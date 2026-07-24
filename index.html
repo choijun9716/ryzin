@@ -618,6 +618,78 @@
     </script>
     <script src="script.js"></script>
     <!-- script.js will handle Channel IO and other logic -->
+
+    <!-- Supabase JS SDK & Config for Realtime Live Widget -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/admin/supabase_config.js"></script>
+    <script>
+        (async function() {
+            if (typeof supabase === 'undefined' || !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) return;
+            const db = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+            
+            try {
+                const { data, error } = await db.from('live_control').select('*');
+                if (error || !data) return;
+
+                const mainLive = data.find(item => {
+                    const profileImg = item.profile_image || '';
+                    return profileImg.includes('#showOnMain=true');
+                });
+
+                if (!mainLive) return;
+
+                const profileImg = mainLive.profile_image || '';
+                let widgetPosition = 'right';
+                const hashParts = profileImg.split('#');
+                hashParts.slice(1).forEach(part => {
+                    if (part.startsWith('widgetPosition=')) {
+                        widgetPosition = part.replace('widgetPosition=', '');
+                    }
+                });
+
+                const iframe = document.createElement('iframe');
+                iframe.id = 'ryzin-live-iframe';
+                iframe.src = `https://ryzincorp.com/live/?id=${mainLive.live_id}&widget=1`;
+                iframe.style.cssText = `position:fixed; bottom:74px; ${widgetPosition === 'left' ? 'left:0;' : 'right:0;'} width:92px; height:112px; border:none; z-index:999999; background:transparent;`;
+                iframe.setAttribute('allow', 'autoplay; fullscreen');
+                iframe.setAttribute('allowfullscreen', 'true');
+                document.body.appendChild(iframe);
+
+                window.addEventListener('message', function(e) {
+                    if (e.data && e.data.type === 'ryzin-widget-resize') {
+                        if (iframe) {
+                            iframe.style.width = e.data.width;
+                            iframe.style.height = e.data.height;
+                            iframe.style.bottom = e.data.bottom;
+                            iframe.style.top = 'auto';
+                            
+                            if (e.data.expand) {
+                                iframe.style.borderRadius = '20px';
+                                iframe.style.overflow = 'hidden';
+                                iframe.style.border = '1px solid #e2e8f0';
+                                iframe.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+                            } else {
+                                iframe.style.borderRadius = '50%';
+                                iframe.style.overflow = 'visible';
+                                iframe.style.border = 'none';
+                                iframe.style.boxShadow = 'none';
+                            }
+
+                            if (e.data.position === 'left') {
+                                iframe.style.left = '0';
+                                iframe.style.right = 'auto';
+                            } else {
+                                iframe.style.right = '0';
+                                iframe.style.left = 'auto';
+                            }
+                        }
+                    }
+                });
+            } catch(err) {
+                console.warn("Main widget initialization failed:", err);
+            }
+        })();
+    </script>
 </body>
 
 </html>
