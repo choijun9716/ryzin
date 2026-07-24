@@ -1674,3 +1674,36 @@ if (btnSubmitLead) {
     }
   });
 }
+
+// --- PIP (Picture-in-Picture) 지원 로직 ---
+const videoEl = document.getElementById('live-video');
+const btnPip = document.getElementById('btn-pip');
+
+if (videoEl && btnPip) {
+  // 브라우저가 PIP를 지원하는지 체크
+  if (document.pictureInPictureEnabled && typeof videoEl.requestPictureInPicture === 'function') {
+    btnPip.style.display = 'flex'; // 지원 시 활성화
+
+    btnPip.addEventListener('click', async () => {
+      try {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        } else {
+          await videoEl.requestPictureInPicture();
+        }
+      } catch (err) {
+        console.warn('Picture-in-Picture error:', err);
+      }
+    });
+
+    // PIP 모드 상태 변경에 따른 아이콘/스타일 변경 감지
+    videoEl.addEventListener('enterpictureinpicture', () => {
+      btnPip.classList.add('pip-active');
+    });
+
+    videoEl.addEventListener('leavepictureinpicture', () => {
+      btnPip.classList.remove('pip-active');
+    });
+  }
+}
+
