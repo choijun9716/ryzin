@@ -22,6 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const banner = document.getElementById('live-floating-banner');
     if (banner) {
       banner.style.display = 'flex';
+
+      // 닫기 버튼 클릭 처리 (이벤트 버블링 방지)
+      const closeBtn = document.getElementById('btn-close-widget');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          banner.style.opacity = '0';
+          banner.style.transform = 'scale(0.8)';
+          setTimeout(() => banner.remove(), 300);
+        });
+      }
+
       banner.addEventListener('click', () => {
         // 임베드 스타일 강제 제거
         document.body.classList.remove('embed-mode');
@@ -383,24 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
           thumbImg.style.display = 'none';
         }
 
-        // [NEW] 플로팅 배너 이미지 및 텍스트 동기화
-        const bannerThumbImg = document.getElementById('banner-thumb-img');
-        const bannerFallbackIcon = document.getElementById('banner-fallback-icon');
-        const bannerTextEl = document.querySelector('#live-floating-banner .banner-text');
 
-        if (bannerTextEl && c.brandName) {
-          bannerTextEl.textContent = c.brandName;
-        }
-
-        const targetThumb = c.thumbnailUrl || c.logoUrl;
-        if (targetThumb && bannerThumbImg) {
-          bannerThumbImg.src = targetThumb;
-          bannerThumbImg.style.display = 'block';
-          if (bannerFallbackIcon) bannerFallbackIcon.style.display = 'none';
-        } else if (bannerThumbImg) {
-          bannerThumbImg.style.display = 'none';
-          if (bannerFallbackIcon) bannerFallbackIcon.style.display = 'flex';
-        }
 
 
         // 카운트다운 타이머 관련 전역 변수 해제 (중복 방지)
