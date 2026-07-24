@@ -714,8 +714,8 @@ function renderLiveEditView(container, liveId, showView) {
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
   const embedUrlWithParam = `${viewerUrl}?embed=1`;
-  const embedCodeMobile = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999; pointer-events:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-  const embedCodeWide = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999; pointer-events:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+  const embedCodeMobile = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+  const embedCodeWide = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
 
   const shareGatewayUrl = `https://ryzincorp.com/live/${liveId}`;
 
