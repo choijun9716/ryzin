@@ -724,7 +724,7 @@ function renderLiveEditView(container, liveId, showView) {
   const embedCodeMobile = `<iframe src="${embedUrlWithParam}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden; border:1.5px solid #e2e8f0;"></iframe>`;
   const embedCodeWide = `<iframe src="${embedUrlWithParam}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none; border-radius:12px; overflow:hidden;"></iframe>`;
 
-  const widgetCode = `<iframe id="ryzin-live-iframe" src="${widgetUrlWithParam}" style="position:fixed; bottom:74px; right:0; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  const widgetCode = `<iframe id="ryzin-live-iframe" src="${widgetUrlWithParam}" style="position:fixed; bottom:74px; right:12px; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
 <script>
   window.addEventListener('message', function(e) {
     if (e.data && e.data.type === 'ryzin-widget-resize') {
@@ -748,10 +748,10 @@ function renderLiveEditView(container, liveId, showView) {
         }
 
         if (e.data.position === 'left') {
-          iframe.style.left = '0';
+          iframe.style.left = '12px';
           iframe.style.right = 'auto';
         } else {
-          iframe.style.right = '0';
+          iframe.style.right = '12px';
           iframe.style.left = 'auto';
         }
       }

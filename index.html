@@ -652,7 +652,7 @@
                 const iframe = document.createElement('iframe');
                 iframe.id = 'ryzin-live-iframe';
                 iframe.src = `https://ryzincorp.com/live/?id=${mainLive.live_id}&widget=1`;
-                iframe.style.cssText = `position:fixed; bottom:74px; ${widgetPosition === 'left' ? 'left:0;' : 'right:0;'} width:92px; height:112px; border:none; z-index:999999; background:transparent;`;
+                iframe.style.cssText = `position:fixed; bottom:74px; ${widgetPosition === 'left' ? 'left:12px;' : 'right:12px;'} width:92px; height:112px; border:none; z-index:999999; background:transparent;`;
                 iframe.setAttribute('allow', 'autoplay; fullscreen');
                 iframe.setAttribute('allowfullscreen', 'true');
                 document.body.appendChild(iframe);
@@ -678,10 +678,10 @@
                             }
 
                             if (e.data.position === 'left') {
-                                iframe.style.left = '0';
+                                iframe.style.left = '12px';
                                 iframe.style.right = 'auto';
                             } else {
-                                iframe.style.right = '0';
+                                iframe.style.right = '12px';
                                 iframe.style.left = 'auto';
                             }
                         }
