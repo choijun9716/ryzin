@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (isEmbedParam) {
     document.body.classList.add('embed-mode');
     const banner = document.getElementById('live-floating-banner');
+    const closeLiveBtn = document.getElementById('btn-close-live');
+    
     if (banner) {
       banner.style.display = 'flex';
 
@@ -30,7 +32,46 @@ document.addEventListener('DOMContentLoaded', () => {
           e.stopPropagation();
           banner.style.opacity = '0';
           banner.style.transform = 'scale(0.8)';
-          setTimeout(() => banner.remove(), 300);
+          setTimeout(() => {
+            banner.remove();
+            if (closeLiveBtn) closeLiveBtn.remove();
+          }, 300);
+        });
+      }
+
+      // 라이브 닫기(복귀) 버튼 이벤트
+      if (closeLiveBtn) {
+        closeLiveBtn.addEventListener('click', () => {
+          // 1. 비디오 중지
+          const video = document.getElementById('live-video');
+          if (video) {
+            video.pause();
+          }
+
+          // 2. 라이브 컨테이너 숨김 스타일 동적 적용 및 클래스 복원
+          document.body.classList.add('embed-mode');
+          document.documentElement.classList.add('embed-mode-active');
+          
+          let hasHideStyle = false;
+          const styleTags = document.querySelectorAll('style');
+          styleTags.forEach(tag => {
+            if (tag.innerHTML.includes('.live-container { display: none !important; }')) {
+              hasHideStyle = true;
+            }
+          });
+          if (!hasHideStyle) {
+            const style = document.createElement('style');
+            style.innerHTML = '.live-container { display: none !important; } #splash-screen { display: none !important; }';
+            document.head.appendChild(style);
+          }
+
+          // 3. 라이브 닫기 버튼 숨김
+          closeLiveBtn.style.display = 'none';
+
+          // 4. 배너 복원
+          banner.style.display = 'flex';
+          banner.style.opacity = '1';
+          banner.style.transform = 'scale(1)';
         });
       }
 
@@ -47,10 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
-        // 배너 애니메이션 후 제거
-        banner.style.opacity = '0';
-        banner.style.transform = 'scale(0.8)';
-        setTimeout(() => banner.remove(), 300);
+        // 배너 숨김 (완전히 remove하지 않고 숨김)
+        banner.style.display = 'none';
 
         // 컨테이너 노출 및 페이드인
         const container = document.querySelector('.live-container');
@@ -61,6 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => {
             container.style.opacity = '1';
           }, 50);
+        }
+
+        // 라이브 닫기 버튼 노출
+        if (closeLiveBtn) {
+          closeLiveBtn.style.display = 'flex';
         }
 
         // 비디오 자동 재생 시작

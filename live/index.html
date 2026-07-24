@@ -40,7 +40,7 @@
     #live-floating-banner {
       position: fixed;
       bottom: 24px;
-      right: 24px;
+      right: 0;
       width: 76px;
       height: 76px;
       z-index: 999999;
@@ -60,11 +60,12 @@
     .banner-circle {
       width: 100%;
       height: 100%;
-      border-radius: 50%;
+      border-radius: 38px 0 0 38px;
       background: #ffffff;
       color: #000000;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+      box-shadow: -4px 8px 24px rgba(0,0,0,0.16);
       border: 1px solid #e2e8f0;
+      border-right: none;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -78,12 +79,13 @@
       line-height: 1.4;
       color: #000000;
       letter-spacing: -0.01em;
+      padding-left: 6px;
     }
 
     #btn-close-widget {
       position: absolute;
       top: -2px;
-      right: -2px;
+      left: -4px;
       width: 20px;
       height: 20px;
       border-radius: 50%;
@@ -100,6 +102,30 @@
     #btn-close-widget:hover {
       background: #e2e8f0;
       color: #0f172a;
+    }
+
+    #btn-close-live {
+      display: none;
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 999999;
+      transition: background 0.2s, transform 0.2s;
+    }
+    #btn-close-live:hover {
+      background: rgba(0, 0, 0, 0.8);
+      transform: scale(1.05);
     }
   </style>
   <script defer src="/_vercel/insights/script.js"></script>
@@ -144,6 +170,13 @@
       <span class="banner-label-text">라이브<br>보기</span>
     </div>
   </div>
+  <!-- ── Live Close Button (Back to Widget) ── -->
+  <button id="btn-close-live" aria-label="Close live view">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
   <!-- ── Splash Screen Audio ── -->
   <audio id="splash-audio" src="splash_sound.mp3" preload="auto"></audio>
   
