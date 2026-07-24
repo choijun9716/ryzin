@@ -728,19 +728,13 @@ function renderLiveEditView(container, liveId, showView) {
         iframe.style.width = e.data.width;
         iframe.style.height = e.data.height;
         iframe.style.bottom = e.data.bottom;
-        if (e.data.expand) {
+        iframe.style.top = 'auto';
+        if (e.data.position === 'left') {
           iframe.style.left = '0';
-          iframe.style.right = '0';
-          iframe.style.top = '0';
+          iframe.style.right = 'auto';
         } else {
-          iframe.style.top = 'auto';
-          if (e.data.position === 'left') {
-            iframe.style.left = '0';
-            iframe.style.right = 'auto';
-          } else {
-            iframe.style.right = '0';
-            iframe.style.left = 'auto';
-          }
+          iframe.style.right = '0';
+          iframe.style.left = 'auto';
         }
       }
     }

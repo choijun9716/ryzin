@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
   window.resizeParentIframe = function(expand) {
-    const width = expand ? '100%' : '92px';
-    const height = expand ? '100%' : '112px';
-    const bottom = expand ? '0' : '74px';
+    const width = expand ? '360px' : '92px';
+    const height = expand ? '600px' : '112px';
+    const bottom = '74px';
     const position = window.currentWidgetPosition || 'right';
 
     if (window.parent) {
@@ -40,18 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
         myIframe.style.width = width;
         myIframe.style.height = height;
         myIframe.style.bottom = bottom;
-        myIframe.style.top = expand ? '0' : 'auto';
-        if (expand) {
+        myIframe.style.top = 'auto';
+        if (position === 'left') {
           myIframe.style.left = '0';
-          myIframe.style.right = '0';
+          myIframe.style.right = 'auto';
         } else {
-          if (position === 'left') {
-            myIframe.style.left = '0';
-            myIframe.style.right = 'auto';
-          } else {
-            myIframe.style.right = '0';
-            myIframe.style.left = 'auto';
-          }
+          myIframe.style.right = '0';
+          myIframe.style.left = 'auto';
         }
       }
     } catch(e) {}
@@ -88,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (circle) {
             circle.style.borderRadius = '50%';
             circle.style.border = '1px solid #e2e8f0';
-            circle.style.boxShadow = isLeft ? '4px 8px 24px rgba(0,0,0,0.16)' : '-4px 8px 24px rgba(0,0,0,0.16)';
+            circle.style.boxShadow = 'none';
             if (c.widgetImageUrl) {
               circle.style.backgroundImage = `url('${c.widgetImageUrl}')`;
               circle.style.backgroundSize = 'cover';
@@ -574,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (circle) {
             circle.style.borderRadius = '50%';
             circle.style.border = '1px solid #e2e8f0';
-            circle.style.boxShadow = isLeft ? '4px 8px 24px rgba(0,0,0,0.16)' : '-4px 8px 24px rgba(0,0,0,0.16)';
+            circle.style.boxShadow = 'none';
 
             // 3. 이미지 적용
             if (c.widgetImageUrl) {
