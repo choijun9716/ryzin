@@ -714,8 +714,8 @@ function renderLiveEditView(container, liveId, showView) {
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
   const embedUrlWithParam = `${viewerUrl}?embed=1`;
-  const embedCodeMobile = `<iframe src="${embedUrlWithParam}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden;"></iframe>`;
-  const embedCodeWide = `<iframe src="${embedUrlWithParam}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none;"></iframe>`;
+  const embedCodeMobile = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999; pointer-events:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+  const embedCodeWide = `<iframe src="${embedUrlWithParam}" style="position:fixed; bottom:0; right:0; width:100%; height:100%; border:none; z-index:999999; pointer-events:none;" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
 
   const shareGatewayUrl = `https://ryzincorp.com/live/${liveId}`;
 
@@ -733,21 +733,21 @@ function renderLiveEditView(container, liveId, showView) {
       <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em; margin-bottom:12px;">공유 및 임베드 설정</div>
 
       <div style="margin-bottom:10px;">
-        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">모바일 세로형 임베드 코드 (390×693)</div>
+        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">화면 우측 하단 플로팅 위젯 코드 (전체화면형)</div>
         <div style="position:relative;">
           <input type="text" id="embed-url-mobile" readonly style="width:100%; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 64px 8px 8px; color:#334155; line-height:1.5; box-sizing:border-box; outline:none;" value="${embedCodeMobile.replace(/"/g, '&quot;')}">
           <button id="btn-copy-embed-mobile" style="position:absolute; top:6px; right:6px; background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">복사</button>
         </div>
-        <div style="font-size:10px; color:#94a3b8; margin-top:4px;">위 HTML 코드를 원하는 웹사이트에 붙여넣으세요</div>
+        <div style="font-size:10px; color:#94a3b8; margin-top:4px;">위 HTML 코드를 원하는 웹사이트의 body 하단에 붙여넣으세요</div>
       </div>
 
       <div>
-        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">와이드형 임베드 코드 (전체너비×600)</div>
+        <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em;">화면 좌측 하단 플로팅 위젯 코드 (전체화면형)</div>
         <div style="position:relative;">
-          <input type="text" id="embed-url-wide" readonly style="width:100%; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 64px 8px 8px; color:#334155; line-height:1.5; box-sizing:border-box; outline:none;" value="${embedCodeWide.replace(/"/g, '&quot;')}">
+          <input type="text" id="embed-url-wide" readonly style="width:100%; font-size:10px; font-family:monospace; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:8px; padding:8px 64px 8px 8px; color:#334155; line-height:1.5; box-sizing:border-box; outline:none;" value="${embedCodeWide.replace(/"/g, '&quot;').replace('right:0', 'left:0')}">
           <button id="btn-copy-embed-wide" style="position:absolute; top:6px; right:6px; background:#3b82f6; color:#fff; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">복사</button>
         </div>
-        <div style="font-size:10px; color:#94a3b8; margin-top:4px;">위 HTML 코드를 원하는 웹사이트에 붙여넣으세요</div>
+        <div style="font-size:10px; color:#94a3b8; margin-top:4px;">위 HTML 코드를 원하는 웹사이트의 body 하단에 붙여넣으세요</div>
       </div>
 
       <div style="width:100%; border-top:1.5px solid #e2e8f0; padding-top:16px; margin-top:16px;">

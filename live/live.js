@@ -36,9 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
           banner.style.left = isLeft ? '0' : 'auto';
           const circle = banner.querySelector('.banner-circle');
           if (circle) {
-            circle.style.borderRadius = isLeft ? '0 38px 38px 0' : '38px 0 0 38px';
-            circle.style.borderLeft = isLeft ? 'none' : '1px solid #e2e8f0';
-            circle.style.borderRight = isLeft ? '1px solid #e2e8f0' : 'none';
+            circle.style.borderRadius = '50%';
+            circle.style.border = '1px solid #e2e8f0';
             circle.style.boxShadow = isLeft ? '4px 8px 24px rgba(0,0,0,0.16)' : '-4px 8px 24px rgba(0,0,0,0.16)';
             if (c.widgetImageUrl) {
               circle.style.backgroundImage = `url('${c.widgetImageUrl}')`;
@@ -511,9 +510,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
           const circle = banner.querySelector('.banner-circle');
           if (circle) {
-            circle.style.borderRadius = isLeft ? '0 38px 38px 0' : '38px 0 0 38px';
-            circle.style.borderLeft = isLeft ? 'none' : '1px solid #e2e8f0';
-            circle.style.borderRight = isLeft ? '1px solid #e2e8f0' : 'none';
+            circle.style.borderRadius = '50%';
+            circle.style.border = '1px solid #e2e8f0';
             circle.style.boxShadow = isLeft ? '4px 8px 24px rgba(0,0,0,0.16)' : '-4px 8px 24px rgba(0,0,0,0.16)';
 
             // 3. 이미지 적용
