@@ -571,7 +571,8 @@ document.addEventListener('DOMContentLoaded', () => {
           window.currentWidgetPosition = c.widgetPosition;
           
           const container = document.querySelector('.live-container');
-          if (container && (container.style.display === 'none' || document.body.classList.contains('embed-mode'))) {
+          const isClosed = container && (container.style.display === 'none' || window.getComputedStyle(container).display === 'none');
+          if (isClosed && !document.body.classList.contains('embed-active-full')) {
             resizeParentIframe(false);
           }
           
