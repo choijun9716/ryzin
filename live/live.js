@@ -17,8 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // [NEW] Embed/Iframe 모드에 따른 플로팅 배너 초기 활성화
   const isEmbedParam = urlParams.get('embed') === '1';
-  const isIframe = window.self !== window.top;
-  if (isEmbedParam || isIframe) {
+  if (isEmbedParam) {
     document.body.classList.add('embed-mode');
     const banner = document.getElementById('live-floating-banner');
     if (banner) {

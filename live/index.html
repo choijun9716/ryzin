@@ -133,9 +133,8 @@
       const urlParams = new URLSearchParams(window.location.search);
       const isAdminPreview = urlParams.get('admin') === '1';
       const isEmbedParam = urlParams.get('embed') === '1';
-      const isIframe = window.self !== window.top;
       
-      if (isEmbedParam || isIframe) {
+      if (isEmbedParam) {
         document.write('<style>body { background: transparent !important; } .live-container { display: none !important; } #splash-screen { display: none !important; }</style>');
         document.documentElement.classList.add('embed-mode-active');
       }
@@ -144,7 +143,7 @@
       const cached = JSON.parse(localStorage.getItem(`ryzin_live_config_${liveId}`) || '{}');
       
       // 어드민 미리보기이거나 스플래시 비활성화 상태면 즉시 가림
-      if (isAdminPreview || cached.showSplash === false || isEmbedParam || isIframe) {
+      if (isAdminPreview || cached.showSplash === false || isEmbedParam) {
         document.write('<style>#splash-screen { display: none !important; }</style>');
       } else {
         document.addEventListener("DOMContentLoaded", () => {
