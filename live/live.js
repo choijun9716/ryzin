@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const circle = banner.querySelector('.banner-circle');
           if (circle) {
             circle.style.borderRadius = '50%';
-            circle.style.border = '1px solid #e2e8f0';
+            circle.style.border = 'none';
             circle.style.boxShadow = 'none';
             if (c.widgetImageUrl) {
               circle.style.backgroundImage = `url('${c.widgetImageUrl}')`;
@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const circle = banner.querySelector('.banner-circle');
           if (circle) {
             circle.style.borderRadius = '50%';
-            circle.style.border = '1px solid #e2e8f0';
+            circle.style.border = 'none';
             circle.style.boxShadow = 'none';
 
             // 3. 이미지 적용
