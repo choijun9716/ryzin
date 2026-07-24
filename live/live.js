@@ -15,6 +15,53 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   LIVE_ID = window.INJECTED_LIVE_ID || urlParams.get('id') || 'live01';
 
+  // [NEW] Embed/Iframe 모드에 따른 플로팅 배너 초기 활성화
+  const isEmbedParam = urlParams.get('embed') === '1';
+  const isIframe = window.self !== window.top;
+  if (isEmbedParam || isIframe) {
+    document.body.classList.add('embed-mode');
+    const banner = document.getElementById('live-floating-banner');
+    if (banner) {
+      banner.style.display = 'flex';
+      banner.addEventListener('click', () => {
+        // 임베드 스타일 강제 제거
+        document.body.classList.remove('embed-mode');
+        document.documentElement.classList.remove('embed-mode-active');
+        
+        // head에 쓰인 display: none 스타일 해제
+        const styleTags = document.querySelectorAll('style');
+        styleTags.forEach(tag => {
+          if (tag.innerHTML.includes('.live-container { display: none !important; }')) {
+            tag.remove();
+          }
+        });
+
+        // 배너 애니메이션 후 제거
+        banner.style.opacity = '0';
+        banner.style.transform = 'scale(0.8)';
+        setTimeout(() => banner.remove(), 300);
+
+        // 컨테이너 노출 및 페이드인
+        const container = document.querySelector('.live-container');
+        if (container) {
+          container.style.display = 'flex';
+          container.style.opacity = '0';
+          container.style.transition = 'opacity 0.5s ease';
+          setTimeout(() => {
+            container.style.opacity = '1';
+          }, 50);
+        }
+
+        // 비디오 자동 재생 시작
+        const video = document.getElementById('live-video');
+        if (video) {
+          video.muted = true;
+          video.play().catch(e => console.warn('Autoplay failed:', e));
+        }
+      });
+    }
+  }
+
   let lastChatTime = 0; // 0으로 설정하면 최초 로드 시 전체 채팅 이력 로드
   let chatHistoryLoaded = false; // 최초 전체 이력 로드 여부 추적
   const mySentTexts = []; // 내가 방금 보낸 채팅 텍스트 보관용
@@ -335,6 +382,25 @@ document.addEventListener('DOMContentLoaded', () => {
           thumbImg.style.display = 'block';
         } else if (thumbImg) {
           thumbImg.style.display = 'none';
+        }
+
+        // [NEW] 플로팅 배너 이미지 및 텍스트 동기화
+        const bannerThumbImg = document.getElementById('banner-thumb-img');
+        const bannerFallbackIcon = document.getElementById('banner-fallback-icon');
+        const bannerTextEl = document.querySelector('#live-floating-banner .banner-text');
+
+        if (bannerTextEl && c.brandName) {
+          bannerTextEl.textContent = c.brandName;
+        }
+
+        const targetThumb = c.thumbnailUrl || c.logoUrl;
+        if (targetThumb && bannerThumbImg) {
+          bannerThumbImg.src = targetThumb;
+          bannerThumbImg.style.display = 'block';
+          if (bannerFallbackIcon) bannerFallbackIcon.style.display = 'none';
+        } else if (bannerThumbImg) {
+          bannerThumbImg.style.display = 'none';
+          if (bannerFallbackIcon) bannerFallbackIcon.style.display = 'flex';
         }
 
 
