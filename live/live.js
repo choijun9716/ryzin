@@ -59,7 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // [NEW] Embed/Iframe 모드에 따른 플로팅 배너 초기 활성화
   const isEmbedParam = urlParams.get('embed') === '1';
+  const isWidgetParam = urlParams.get('widget') === '1';
+
   if (isEmbedParam) {
+    document.body.classList.add('embed-active-full');
+  }
+
+  if (isWidgetParam) {
     document.body.classList.add('embed-mode');
     resizeParentIframe(false); // 위젯 모드 크기로 초기화
 
@@ -126,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // 2. 라이브 컨테이너 숨김 스타일 동적 적용 및 클래스 복원
           document.body.classList.add('embed-mode');
-          document.documentElement.classList.add('embed-mode-active');
+          document.body.classList.remove('embed-active-full');
           
           let hasHideStyle = false;
           const styleTags = document.querySelectorAll('style');
@@ -156,9 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         e.stopPropagation();
         resizeParentIframe(true); // [NEW] 전체화면 크기로 확장
-        // 임베드 스타일 강제 제거
-        document.body.classList.remove('embed-mode');
-        document.documentElement.classList.remove('embed-mode-active');
+        // 임베드 액티브 풀 클래스 적용 (기기 프레임 없는 전체 화면 플레이어)
+        document.body.classList.add('embed-active-full');
         
         // head에 쓰인 display: none 스타일 해제
         const styleTags = document.querySelectorAll('style');
