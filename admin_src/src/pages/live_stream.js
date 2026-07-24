@@ -891,9 +891,27 @@ function renderLiveEditView(container, liveId, showView) {
 
   const checkboxShowOnMain = layout.querySelector('#cfg-showOnMain');
   if (checkboxShowOnMain) {
-    checkboxShowOnMain.addEventListener('change', (e) => {
+    checkboxShowOnMain.addEventListener('change', async (e) => {
       config.showOnMain = e.target.checked;
       saveLiveConfig(liveId, config);
+      
+      const profileImageVal = (config.logoUrl || '') + 
+                             (config.showSplash === false ? '#nosplash' : '') +
+                             `#widgetText=${encodeURIComponent(config.widgetText || '라이브 보기')}` +
+                             `#widgetPosition=${config.widgetPosition || 'right'}` +
+                             `#widgetImageUrl=${config.widgetImageUrl || ''}` +
+                             `#showOnMain=${config.showOnMain === true}`;
+      
+      if (db) {
+        try {
+          await db.from('live_control')
+            .update({ profile_image: profileImageVal, updated_at: new Date().toISOString() })
+            .eq('live_id', liveId);
+        } catch(err) {
+          console.warn("Direct showOnMain update failed:", err);
+        }
+      }
+      
       syncToSheetDB(liveId, config, stats, products, true);
     });
   }
