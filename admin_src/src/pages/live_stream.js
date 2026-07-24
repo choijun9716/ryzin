@@ -729,6 +729,19 @@ function renderLiveEditView(container, liveId, showView) {
         iframe.style.height = e.data.height;
         iframe.style.bottom = e.data.bottom;
         iframe.style.top = 'auto';
+        
+        if (e.data.expand) {
+          iframe.style.borderRadius = '20px';
+          iframe.style.overflow = 'hidden';
+          iframe.style.border = '1px solid #e2e8f0';
+          iframe.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+        } else {
+          iframe.style.borderRadius = '50%';
+          iframe.style.overflow = 'visible';
+          iframe.style.border = 'none';
+          iframe.style.boxShadow = 'none';
+        }
+
         if (e.data.position === 'left') {
           iframe.style.left = '0';
           iframe.style.right = 'auto';

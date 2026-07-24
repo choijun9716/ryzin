@@ -41,6 +41,19 @@ document.addEventListener('DOMContentLoaded', () => {
         myIframe.style.height = height;
         myIframe.style.bottom = bottom;
         myIframe.style.top = 'auto';
+        
+        if (expand) {
+          myIframe.style.borderRadius = '20px';
+          myIframe.style.overflow = 'hidden';
+          myIframe.style.border = '1px solid #e2e8f0';
+          myIframe.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+        } else {
+          myIframe.style.borderRadius = '50%';
+          myIframe.style.overflow = 'visible';
+          myIframe.style.border = 'none';
+          myIframe.style.boxShadow = 'none';
+        }
+
         if (position === 'left') {
           myIframe.style.left = '0';
           myIframe.style.right = 'auto';
