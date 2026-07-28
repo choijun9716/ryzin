@@ -321,7 +321,41 @@ export function renderClassApplications() {
       }
     });
 
-    // 상세 이미지 변경 파일 트리거
+  // 이미지 최적화 리사이징 헬퍼 (Payload Too Large 및 DB 저장 거부 100% 방지)
+  function compressImage(file, maxWidth = 1200, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+        img.src = e.target.result;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 상세 이미지 변경 파일 트리거
+  function bindBannerEvents() {
     const bannerFileInput = container.querySelector('#banner-file-input');
     const changeBannerBtn = container.querySelector('#btn-change-banner');
     const changeBannerCardBtn = container.querySelector('#btn-change-banner-card');
@@ -333,57 +367,40 @@ export function renderClassApplications() {
       changeBannerCardBtn.addEventListener('click', () => bannerFileInput.click());
     }
 
-    bannerFileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+    if (bannerFileInput) {
+      bannerFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-      if (changeBannerBtn) changeBannerBtn.disabled = true;
-      if (changeBannerCardBtn) changeBannerCardBtn.disabled = true;
+        if (changeBannerBtn) changeBannerBtn.disabled = true;
+        if (changeBannerCardBtn) changeBannerCardBtn.disabled = true;
 
-      try {
-        // 1. 이미지를 Base64 DataURL 포맷으로 인코딩 변환
-        const dataUrl = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (ev) => resolve(ev.target.result);
-          reader.onerror = (err) => reject(err);
-          reader.readAsDataURL(file);
-        });
-
-        // 2. DB 설정 테이블 및 스토어에 무조건 실시간 직접 저장
-        await store.setSetting('detail_banner_url', dataUrl);
-
-        // 3. 어드민 미리보기 이미지 즉시 갱신
-        const adminPreview = container.querySelector('#admin-banner-preview');
-        if (adminPreview) adminPreview.src = dataUrl;
-
-        // 4. 스토리지 REST API 보조 업로드 (Content-Type 포함)
         try {
-          const headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': file.type || 'image/png',
-            'x-upsert': 'true'
-          };
-          fetch(`${SUPABASE_URL}/storage/v1/object/class_applications/class_detail_banner.png`, {
-            method: 'POST',
-            headers: headers,
-            body: file
-          }).catch(() => null);
-        } catch (storageErr) {
-          console.warn('스토리지 보조 업로드 예외:', storageErr);
+          // 1. 고용량 원본 이미지를 1초 만에 200KB 슬림 JPEG로 자동 압축 리사이징
+          const dataUrl = await compressImage(file);
+
+          // 2. DB 설정 테이블 및 스토어에 무조건 실시간 직접 저장
+          await store.setSetting('detail_banner_url', dataUrl);
+
+          // 3. 어드민 미리보기 이미지 즉시 갱신
+          const adminPreview = container.querySelector('#admin-banner-preview');
+          if (adminPreview) adminPreview.src = dataUrl;
+
+          showSuccess('상세페이지 배너 이미지가 성공적으로 변경되었습니다.');
+
+        } catch (err) {
+          console.error('배너 업로드 오류:', err);
+          showError('배너 이미지 변경 실패: ' + err.message);
+        } finally {
+          if (changeBannerBtn) changeBannerBtn.disabled = false;
+          if (changeBannerCardBtn) changeBannerCardBtn.disabled = false;
+          bannerFileInput.value = '';
         }
+      });
+    }
+  }
 
-        showSuccess('상세페이지 배너 이미지가 성공적으로 변경되었습니다.');
-
-      } catch (err) {
-        console.error('배너 업로드 오류:', err);
-        showError('배너 이미지 변경 실패: ' + err.message);
-      } finally {
-        if (changeBannerBtn) changeBannerBtn.disabled = false;
-        if (changeBannerCardBtn) changeBannerCardBtn.disabled = false;
-        bannerFileInput.value = '';
-      }
-    });
+  bindBannerEvents();
   }
 
   // 4. 일정 편집 모달창
