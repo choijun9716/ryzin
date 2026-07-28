@@ -497,13 +497,13 @@ export function renderClassApplications() {
 
       try {
         if (isEdit) {
-          store.update('surveyQuestions', {
-            id, type, label, placeholder, options, required, sort_order
+          store.update('surveyQuestions', id, {
+            type, label, placeholder, options, required, sort_order
           });
           showSuccess('문항이 수정되었습니다.');
         } else {
-          // Add new question
-          store.add('surveyQuestions', {
+          store.create('surveyQuestions', {
+            id: Date.now(),
             type, label, placeholder, options, required, sort_order
           });
           showSuccess('새 문항이 추가되었습니다.');
@@ -511,7 +511,8 @@ export function renderClassApplications() {
         closeModal();
         render();
       } catch (err) {
-        showError('저장 실패');
+        console.error(err);
+        showError('저장 실패: ' + err.message);
       }
     });
 
