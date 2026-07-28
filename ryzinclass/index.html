@@ -540,27 +540,36 @@
     // Supabase Configuration
     const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let supabaseClient = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (e) {
+      console.warn('Supabase SDK 로드 지연 예외:', e);
+    }
 
     let surveyQuestions = [];
     let currentStep = 1;
     let selectedDateValue = '';
 
-    // 1. 배너 이미지 로드 (어드민 변경 이미지 -> 지정 지정 슈퍼베이스 기본 배너 렌더링)
+    // 1. 배너 이미지 로드 (어드민 변경 이미지 -> 지정 슈퍼베이스 기본 배너 렌더링)
     async function loadBannerImage() {
       const bannerImg = document.getElementById('class-detail-banner-img');
       const defaultBanner = 'https://vybrnhyaeugfwezbygdt.supabase.co/storage/v1/object/public/class_applications/detail_banner_1785226535425.png';
       
       try {
-        const { data } = await supabaseClient
-          .from('ryzin_class_settings')
-          .select('value')
-          .eq('key', 'detail_banner_url')
-          .single();
+        if (supabaseClient) {
+          const { data } = await supabaseClient
+            .from('ryzin_class_settings')
+            .select('value')
+            .eq('key', 'detail_banner_url')
+            .single();
 
-        if (data && data.value) {
-          bannerImg.src = data.value;
-          return;
+          if (data && data.value) {
+            bannerImg.src = data.value;
+            return;
+          }
         }
       } catch (e) {
         console.warn('어드민 등록 이미지 조회 실패, 기본 슈퍼베이스 배너 유지:', e);
@@ -583,14 +592,16 @@
         let rawDates = '1기 - 2026년 8월 10일 (월) 19:00, 2기 - 2026년 8월 17일 (월) 19:00, 3기 - 2026년 8월 24일 (월) 19:00, 4기 - 2026년 8월 31일 (월) 19:00';
         
         try {
-          const { data: settingsData } = await supabaseClient
-            .from('ryzin_class_settings')
-            .select('value')
-            .eq('key', 'class_dates')
-            .single();
+          if (supabaseClient) {
+            const { data: settingsData } = await supabaseClient
+              .from('ryzin_class_settings')
+              .select('value')
+              .eq('key', 'class_dates')
+              .single();
 
-          if (settingsData && settingsData.value) {
-            rawDates = settingsData.value;
+            if (settingsData && settingsData.value) {
+              rawDates = settingsData.value;
+            }
           }
         } catch (e) {
           console.warn('일정 DB 로드 실패, 기본 일정 노출:', e);
@@ -833,10 +844,18 @@
     const btnNextStep = document.getElementById('btnNextStep');
 
     if (btnOpenApplyModal) {
-      btnOpenApplyModal.addEventListener('click', () => {
-        if (applyModalOverlay) applyModalOverlay.style.display = 'flex';
+      btnOpenApplyModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (applyModalOverlay) {
+          applyModalOverlay.style.display = 'flex';
+        }
         document.body.style.overflow = 'hidden';
-        loadSurveyQuestions();
+        try {
+          loadSurveyQuestions();
+        } catch (err) {
+          console.warn('설문 질문 로딩 안전 예외:', err);
+        }
       });
     }
 
