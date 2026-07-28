@@ -3842,7 +3842,7 @@ Minimum version required to store current data is: `+c+`.
           <button class="btn btn-primary btn-sm" id="btn-change-banner-card">배너 이미지 변경</button>
         </div>
         <div style="text-align: center; background-color: #f8fafc; padding: 16px; border-radius: var(--radius-sm); border: 1px dashed var(--border);">
-          <img id="admin-banner-preview" src="${U.getSetting(`detail_banner_url`,`../assets/ryzinclass_detail_banner.png`)}" alt="현재 배너 이미지" style="max-width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--radius-sm);" />
+          <img id="admin-banner-preview" src="${U.getSetting(`detail_banner_url`,`https://vybrnhyaeugfwezbygdt.supabase.co/storage/v1/object/public/class_applications/detail_banner_1785226535425.png`)}" alt="현재 배너 이미지" style="max-width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--radius-sm);" />
         </div>
       </div>
 

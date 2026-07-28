@@ -439,7 +439,7 @@
 
     <!-- Detail Image Area -->
     <div class="detail-image-container">
-      <img id="class-detail-banner-img" src="../assets/ryzinclass_detail_banner.png" alt="크리에이터 원데이 클래스 상세 정보" class="detail-image">
+      <img id="class-detail-banner-img" src="https://vybrnhyaeugfwezbygdt.supabase.co/storage/v1/object/public/class_applications/detail_banner_1785226535425.png" alt="크리에이터 원데이 클래스 상세 정보" class="detail-image">
     </div>
 
     <!-- Sticky Floating Bar -->
@@ -546,10 +546,10 @@
     let currentStep = 1;
     let selectedDateValue = '';
 
-    // 1. 배너 이미지 로드 (어드민 변경 이미지 -> 기본 로컬 HD 배너 렌더링)
+    // 1. 배너 이미지 로드 (어드민 변경 이미지 -> 지정 지정 슈퍼베이스 기본 배너 렌더링)
     async function loadBannerImage() {
       const bannerImg = document.getElementById('class-detail-banner-img');
-      const defaultLocalBanner = '../assets/ryzinclass_detail_banner.png';
+      const defaultBanner = 'https://vybrnhyaeugfwezbygdt.supabase.co/storage/v1/object/public/class_applications/detail_banner_1785226535425.png';
       
       try {
         const { data } = await supabaseClient
@@ -563,10 +563,10 @@
           return;
         }
       } catch (e) {
-        console.warn('어드민 등록 이미지 조회 실패, 기본 로컬 HD 배너 유지:', e);
+        console.warn('어드민 등록 이미지 조회 실패, 기본 슈퍼베이스 배너 유지:', e);
       }
 
-      bannerImg.src = defaultLocalBanner;
+      bannerImg.src = defaultBanner;
     }
 
     // 2. 일정 설정 및 추가 질문 데이터 로딩
