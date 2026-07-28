@@ -323,23 +323,32 @@ export function renderClassApplications() {
       changeBannerBtn.textContent = '업로드 중...';
 
       try {
-        // Supabase Storage REST API 직격 호출 (SDK 버전 의존성 및 RLS 이슈 100% 우회)
-        const headers = {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'x-upsert': 'true'
-        };
-
-        const uploadEndpoint = `${SUPABASE_URL}/storage/v1/object/class_applications/class_detail_banner.png`;
-        const res = await fetch(uploadEndpoint, {
-          method: 'POST',
-          headers: headers,
-          body: file
+        // 1. 이미지를 Base64 DataURL 포맷으로 1초 만에 인코딩 변환
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target.result);
+          reader.onerror = (err) => reject(err);
+          reader.readAsDataURL(file);
         });
 
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || `상태 코드 ${res.status}`);
+        // 2. DB 설정 테이블(ryzin_class_settings) 및 스토어에 무조건 실시간 직접 저장 (스토리지 장애 100% 우회)
+        await store.setSetting('detail_banner_url', dataUrl);
+
+        // 3. 스토리지 REST API 보조 업로드 (Content-Type 포함)
+        try {
+          const headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': file.type || 'image/png',
+            'x-upsert': 'true'
+          };
+          fetch(`${SUPABASE_URL}/storage/v1/object/class_applications/class_detail_banner.png`, {
+            method: 'POST',
+            headers: headers,
+            body: file
+          }).catch(() => null);
+        } catch (storageErr) {
+          console.warn('스토리지 보조 업로드 예외:', storageErr);
         }
 
         showSuccess('상세페이지 배너 이미지가 성공적으로 변경되었습니다.');

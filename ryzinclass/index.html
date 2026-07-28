@@ -546,11 +546,29 @@
     let currentStep = 1;
     let selectedDateValue = '';
 
-    // 1. 배너 이미지 로드 (스토리지 다이렉트 갱신 방식)
-    function loadBannerImage() {
+    // 1. 배너 이미지 로드 (DB Base64 & 스토리지 다이렉트 2중 렌더링)
+    async function loadBannerImage() {
       const bannerImg = document.getElementById('class-detail-banner-img');
-      const storageUrl = `${SUPABASE_URL}/storage/v1/object/public/class_applications/class_detail_banner.png?t=${Date.now()}`;
       
+      // 1순위: DB 설정 테이블(ryzin_class_settings)에서 Base64 DataURL 읽기
+      try {
+        const { data } = await supabaseClient
+          .from('ryzin_class_settings')
+          .select('value')
+          .eq('key', 'detail_banner_url')
+          .single();
+
+        if (data && data.value) {
+          bannerImg.src = data.value;
+          bannerImg.style.display = 'block';
+          return;
+        }
+      } catch (e) {
+        console.warn('DB 배너 이미지 설정 로드 예외:', e);
+      }
+
+      // 2순위: 스토리지 다이렉트 URL 읽기 Fallback
+      const storageUrl = `${SUPABASE_URL}/storage/v1/object/public/class_applications/class_detail_banner.png?t=${Date.now()}`;
       bannerImg.src = storageUrl;
       bannerImg.onload = () => {
         bannerImg.style.display = 'block';
