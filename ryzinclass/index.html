@@ -219,6 +219,31 @@
       overflow-y: auto;
     }
 
+    /* 1단계 날짜 리스트 스타일 */
+    .date-select-btn {
+      width: 100%;
+      padding: 14px 16px;
+      text-align: left;
+      background-color: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .date-select-btn:hover {
+      border-color: var(--primary);
+      background-color: #f0f5ff;
+      color: var(--primary);
+    }
+
     .form-group {
       margin-bottom: 16px;
     }
@@ -411,22 +436,42 @@
     </div>
   </div>
 
-  <!-- Application Modal Sheet (Bottom Sheet style for mobile) -->
+  <!-- Application Modal Sheet -->
   <div class="modal-overlay" id="applyModalOverlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">원데이 클래스 수강 신청</h2>
+        <h2 class="modal-title" id="applyModalTitle">수강 일정 선택</h2>
         <button class="modal-close-btn" id="btnCloseApplyModal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <form id="applyForm">
-        <!-- 동적 폼 필드가 생성될 곳 -->
-        <div class="modal-body" id="dynamic-form-fields">
-          <p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px;">설문 문항을 불러오는 중...</p>
+        <div class="modal-body">
+          <!-- 1단계: 날짜 기수 리스트 선택 영역 -->
+          <div id="step1-area">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">수강하실 기수 및 일정을 선택해 주세요.</p>
+            <div id="date-list-container">
+              <p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px;">일정을 불러오는 중...</p>
+            </div>
+          </div>
+
+          <!-- 2단계: 나머지 정보 입력 영역 -->
+          <div id="step2-area" style="display: none;">
+            <!-- 선택한 기수 요약 바 -->
+            <div style="background-color:#f1f5f9; padding:12px; border-radius:var(--radius-sm); margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:10px; color:var(--primary); font-weight:800; display:block;">선택한 수강 일정</span>
+                <span id="selected-date-badge" style="font-size:13px; font-weight:700;">기수 정보</span>
+              </div>
+              <button type="button" id="btn-back-to-step1" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; text-decoration:underline; cursor:pointer; padding: 4px;">변경</button>
+            </div>
+            
+            <!-- 동적 설문 항목 렌더링 영역 -->
+            <div id="dynamic-form-fields"></div>
+          </div>
         </div>
 
-        <div class="modal-footer">
+        <div class="modal-footer" id="modal-footer" style="display: none;">
           <button type="button" class="btn btn-secondary" id="btnCancelApply">취소</button>
           <button type="submit" class="btn btn-primary" id="btnSubmit">
             <span class="spinner" id="btnSpinner"></span>
@@ -452,25 +497,39 @@
     const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Global Survey Questions state
+    // Global survey states
     let surveyQuestions = [];
+    let selectedDateValue = '';
+    let dateQuestionLabel = '';
 
-    // 1. 배너 이미지 로드 (Storage 우선, 없을 시 로컬 Fallback)
+    // 1. 배너 이미지 로드 (Storage 우선, 로컬 Fallback)
     function loadBannerImage() {
       const bannerImg = document.getElementById('class-detail-banner-img');
       const storageUrl = `${SUPABASE_URL}/storage/v1/object/public/class_applications/class_detail_banner.png?t=${Date.now()}`;
       
       bannerImg.src = storageUrl;
       bannerImg.onerror = () => {
-        bannerImg.onerror = null; // Infinite loop 방지
+        bannerImg.onerror = null;
         bannerImg.src = '../assets/ryzinclass_banner.png';
       };
     }
 
-    // 2. 동적 설문 질문 리스트 조회 및 렌더링
+    // 2. 동적 설문 리스트 로드 및 단계별 구조 분기
     async function loadSurveyQuestions() {
-      const formFieldsContainer = document.getElementById('dynamic-form-fields');
-      
+      const dateListContainer = document.getElementById('date-list-container');
+      const step1Area = document.getElementById('step1-area');
+      const step2Area = document.getElementById('step2-area');
+      const modalFooter = document.getElementById('modal-footer');
+      const modalTitle = document.getElementById('applyModalTitle');
+
+      // Reset Step
+      step1Area.style.display = 'block';
+      step2Area.style.display = 'none';
+      modalFooter.style.display = 'none';
+      modalTitle.innerText = '수강 일정 선택';
+      selectedDateValue = '';
+      dateQuestionLabel = '';
+
       try {
         const { data, error } = await supabaseClient
           .from('ryzin_class_survey_questions')
@@ -480,27 +539,84 @@
         if (error) throw error;
         
         surveyQuestions = data || [];
-        renderDynamicForm(formFieldsContainer, surveyQuestions);
+
+        // 2-1. 기수 선택 문항 찾기 (type === 'select')
+        const dateQuestion = surveyQuestions.find(q => q.type === 'select');
+
+        if (dateQuestion) {
+          dateQuestionLabel = dateQuestion.label;
+          const optionsList = dateQuestion.options ? dateQuestion.options.split(',') : [];
+          
+          if (optionsList.length > 0) {
+            // 1단계 날짜 리스트 카드 렌더링
+            dateListContainer.innerHTML = optionsList.map(opt => `
+              <button type="button" class="date-select-btn" data-value="${opt.trim()}">
+                <span>${opt.trim()}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            `).join('');
+
+            // 기수 선택 클릭 이벤트 바인딩
+            dateListContainer.querySelectorAll('.date-select-btn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                selectedDateValue = btn.getAttribute('data-value');
+                goToStep2(selectedDateValue);
+              });
+            });
+            return;
+          }
+        }
+
+        // 만약 기수 선택박스 질문이 없다면 바로 2단계 형태로 모든 설문 렌더링
+        goToStep2('');
 
       } catch (err) {
-        console.error('설문 문항 로드 실패:', err);
-        formFieldsContainer.innerHTML = `
+        console.error('설문 로드 에러:', err);
+        dateListContainer.innerHTML = `
           <p style="text-align:center; color:var(--accent); font-size:13px; padding: 20px;">
-            설문 정보를 불러오지 못했습니다. 다시 새로고침 해주세요.
+            일정을 불러오지 못했습니다. 다시 시도해 주세요.
           </p>
         `;
       }
     }
 
-    // 3. 동적 폼 마크업 생성
-    function renderDynamicForm(container, questions) {
-      if (questions.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px;">등록된 설문 문항이 없습니다.</p>';
-        return;
-      }
+    // 3. 2단계(정보 입력) 화면으로 전환
+    function goToStep2(dateVal) {
+      const step1Area = document.getElementById('step1-area');
+      const step2Area = document.getElementById('step2-area');
+      const modalFooter = document.getElementById('modal-footer');
+      const modalTitle = document.getElementById('applyModalTitle');
+      const selectedDateBadge = document.getElementById('selected-date-badge');
+      const dynamicFieldsContainer = document.getElementById('dynamic-form-fields');
 
+      modalTitle.innerText = '수강 신청 정보 입력';
+
+      if (dateVal) {
+        selectedDateBadge.innerText = dateVal;
+        step1Area.style.display = 'none';
+        step2Area.style.display = 'block';
+        modalFooter.style.display = 'flex';
+
+        // 1단계 기수 선택 문항을 제외한 나머지 문항들만 2단계에 렌더링
+        const otherQuestions = surveyQuestions.filter(q => q.type !== 'select');
+        renderFields(dynamicFieldsContainer, otherQuestions);
+      } else {
+        // 기수 문항이 아예 없을 때: 1단계를 건너뛰고 전체 렌더링
+        step1Area.style.display = 'none';
+        step2Area.style.display = 'block';
+        modalFooter.style.display = 'flex';
+        // 요약 바 숨김 처리
+        selectedDateBadge.parentElement.parentElement.style.display = 'none';
+        renderFields(dynamicFieldsContainer, surveyQuestions);
+      }
+    }
+
+    // 4. 나머지 폼 필드 동적 렌더링
+    function renderFields(container, questions) {
       container.innerHTML = '';
-      questions.forEach((q) => {
+      if (questions.length === 0) return;
+
+      questions.forEach(q => {
         const group = document.createElement('div');
         group.className = 'form-group';
 
@@ -519,41 +635,18 @@
           textarea.required = q.required;
           group.appendChild(textarea);
         }
-        else if (q.type === 'select') {
-          const select = document.createElement('select');
-          select.className = 'form-select';
-          select.id = inputId;
-          select.required = q.required;
-
-          const defaultOpt = document.createElement('option');
-          defaultOpt.value = '';
-          defaultOpt.disabled = true;
-          defaultOpt.selected = true;
-          defaultOpt.innerText = q.placeholder || '선택해 주세요';
-          select.appendChild(defaultOpt);
-
-          const optionsList = q.options ? q.options.split(',') : [];
-          optionsList.forEach((optText) => {
-            const opt = document.createElement('option');
-            opt.value = optText.trim();
-            opt.innerText = optText.trim();
-            select.appendChild(opt);
-          });
-          group.appendChild(select);
-        }
         else if (q.type === 'file') {
           const wrapper = document.createElement('div');
           wrapper.className = 'file-input-wrapper';
           wrapper.innerHTML = `
             <label class="file-input-btn" for="${inputId}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <span id="${inputId}_btn_text">사진 선택하기</span>
+              <span id="${inputId}_btn_text">사진 선택하기 (선택 사항)</span>
             </label>
             <input type="file" id="${inputId}" accept="image/*" style="display: none;" ${q.required ? 'required' : ''}>
             <img id="${inputId}_preview" class="file-preview" alt="미리보기">
           `;
           
-          // 파일 인풋 이벤트 리스너 바인딩
           setTimeout(() => {
             const fileInput = document.getElementById(inputId);
             const previewImg = document.getElementById(`${inputId}_preview`);
@@ -570,7 +663,7 @@
                 };
                 reader.readAsDataURL(file);
               } else {
-                btnText.innerText = '사진 선택하기';
+                btnText.innerText = '사진 선택하기 (선택 사항)';
                 previewImg.src = '';
                 previewImg.style.display = 'none';
               }
@@ -588,7 +681,6 @@
           input.required = q.required;
           input.maxLength = 13;
 
-          // 연락처 하이픈 자동 연동
           input.addEventListener('input', (e) => {
             let val = e.target.value.replace(/[^0-9]/g, '');
             if (val.length > 3 && val.length <= 7) {
@@ -602,7 +694,6 @@
           group.appendChild(input);
         }
         else {
-          // General text input
           const input = document.createElement('input');
           input.type = 'text';
           input.className = 'form-input';
@@ -621,11 +712,11 @@
     const btnOpenApplyModal = document.getElementById('btnOpenApplyModal');
     const btnCloseApplyModal = document.getElementById('btnCloseApplyModal');
     const btnCancelApply = document.getElementById('btnCancelApply');
+    const btnBackToStep1 = document.getElementById('btn-back-to-step1');
 
     const openModalFunc = () => {
       applyModalOverlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
-      // 모달 열릴 때 최신 설문 문항 로드
       loadSurveyQuestions();
     };
 
@@ -638,11 +729,19 @@
     btnCloseApplyModal.addEventListener('click', closeModalFunc);
     btnCancelApply.addEventListener('click', closeModalFunc);
 
+    // 2단계에서 1단계로 돌아가기 (기수 재선택)
+    btnBackToStep1.addEventListener('click', () => {
+      document.getElementById('step1-area').style.display = 'block';
+      document.getElementById('step2-area').style.display = 'none';
+      document.getElementById('modal-footer').style.display = 'none';
+      document.getElementById('applyModalTitle').innerText = '수강 일정 선택';
+    });
+
     applyModalOverlay.addEventListener('click', (e) => {
       if (e.target === applyModalOverlay) closeModalFunc();
     });
 
-    // Form Submit (JSONB 답변 구성)
+    // Form Submit (동적 답변 + 1단계 기수 선택 병합 제출)
     const form = document.getElementById('applyForm');
     const btnSubmit = document.getElementById('btnSubmit');
     const btnSpinner = document.getElementById('btnSpinner');
@@ -664,8 +763,14 @@
         let photoUrl = '';
         let photoFile = null;
 
-        // 1. 값 수집 및 매핑
-        for (const q of surveyQuestions) {
+        // 1단계 날짜 선택 값 대입
+        if (dateQuestionLabel && selectedDateValue) {
+          answers[dateQuestionLabel] = selectedDateValue;
+        }
+
+        // 2단계 수집 데이터 병합
+        const otherQuestions = surveyQuestions.filter(q => q.type !== 'select');
+        for (const q of otherQuestions) {
           const inputId = `field_${q.id}`;
           const el = document.getElementById(inputId);
           if (!el) continue;
@@ -676,13 +781,12 @@
             const val = el.value.trim();
             answers[q.label] = val;
 
-            // 대표 이름 및 전화번호 추출
             if (q.label === '이름') name = val;
             if (q.label === '전화번호') phone = val;
           }
         }
 
-        // 백업 Fallback: 만약 '이름'이나 '전화번호'라는 정확한 라벨이 없을 경우 첫 번째 텍스트와 연락처 필드를 대입
+        // Fallback 매핑
         if (!name) {
           const firstTxt = surveyQuestions.find(q => q.type === 'text');
           if (firstTxt) name = document.getElementById(`field_${firstTxt.id}`).value.trim();
@@ -692,11 +796,10 @@
           if (firstTel) phone = document.getElementById(`field_${firstTel.id}`).value.trim();
         }
 
-        // 필수 정보 미비 누락 방지
         if (!name) name = '익명 신청자';
         if (!phone) phone = '010-0000-0000';
 
-        // 2. 사진 스토리지 업로드
+        // 스토리지 사진 업로드
         if (photoFile) {
           const fileExt = photoFile.name.split('.').pop();
           const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
@@ -718,7 +821,7 @@
           answers['사진 첨부'] = photoUrl;
         }
 
-        // 3. Database Insert
+        // 데이터 삽입
         const { data, error } = await supabaseClient
           .from('ryzin_class_applications')
           .insert([
@@ -737,7 +840,7 @@
         form.reset();
 
       } catch (err) {
-        console.error('신청 에러:', err);
+        console.error('제출 에러:', err);
         alert('신청 접수 중 문제가 발생했습니다: ' + err.message);
       } finally {
         btnSubmit.disabled = false;
@@ -750,7 +853,7 @@
       successPopup.style.display = 'none';
     });
 
-    // 초기화 실행
+    // 초기화
     loadBannerImage();
   </script>
 </body>
