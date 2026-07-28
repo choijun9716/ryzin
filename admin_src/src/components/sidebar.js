@@ -31,6 +31,7 @@ const menuConfig = [
   { key: 'marketing', label: '마케팅 메시지', path: '/marketing', icon: 'marketing' },
   { key: 'crm', label: '영업 CRM', path: '/crm', icon: 'crm' },
   { key: 'shop_manage', label: '쇼핑몰 관리', path: '/shop_manage', icon: 'shop_manage' },
+  { key: 'class_applications', label: '클래스 신청 관리', path: '/class_applications', icon: 'crm' },
   { key: 'settings', label: '설정', path: '/settings', icon: 'settings' },
 ];
 

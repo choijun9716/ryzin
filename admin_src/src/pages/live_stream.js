@@ -715,44 +715,58 @@ function renderLiveEditView(container, liveId, showView) {
 
   const isLocal = window.location.origin.includes('localhost:5173');
   const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
-  const previewUrl = `${previewBase}?id=${liveId}`;
+  const previewUrl = `${previewBase}?id=${liveId}&v=202607251156`;
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
-  const embedUrlWithParam = `${viewerUrl}?embed=1`;
-  const widgetUrlWithParam = `${viewerUrl}?widget=1`;
+  const embedUrlWithParam = `${viewerUrl}?embed=1&v=202607251156`;
+  const widgetUrlWithParam = `${viewerUrl}?widget=1&v=202607251156`;
 
-  const embedCodeMobile = `<iframe src="${embedUrlWithParam}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden; border:1.5px solid #e2e8f0;"></iframe>`;
+  const embedCodeMobile = `<iframe src="${embedUrlWithParam}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden; border:none;"></iframe>`;
   const embedCodeWide = `<iframe src="${embedUrlWithParam}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none; border-radius:12px; overflow:hidden;"></iframe>`;
 
   const widgetCode = `<iframe id="ryzin-live-iframe" src="${widgetUrlWithParam}" style="position:fixed; bottom:74px; right:12px; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
 <script>
   window.addEventListener('message', function(e) {
-    if (e.data && e.data.type === 'ryzin-widget-resize') {
-      var iframe = document.getElementById('ryzin-live-iframe');
+    var data = e.data;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch(err) {}
+    }
+    if (data && data.type === 'ryzin-widget-resize') {
+      var iframes = document.querySelectorAll('iframe');
+      var iframe = null;
+      for (var i = 0; i < iframes.length; i++) {
+        if (iframes[i].contentWindow === e.source) {
+          iframe = iframes[i];
+          break;
+        }
+      }
+      if (!iframe) {
+        iframe = document.getElementById('ryzin-live-iframe');
+      }
       if (iframe) {
-        iframe.style.width = e.data.width;
-        iframe.style.height = e.data.height;
-        iframe.style.bottom = e.data.bottom;
-        iframe.style.top = 'auto';
+        iframe.style.setProperty('width', data.width, 'important');
+        iframe.style.setProperty('height', data.height, 'important');
+        iframe.style.setProperty('bottom', data.bottom, 'important');
+        iframe.style.setProperty('top', 'auto', 'important');
         
-        if (e.data.expand) {
-          iframe.style.borderRadius = '20px';
-          iframe.style.overflow = 'hidden';
-          iframe.style.border = '1px solid #e2e8f0';
-          iframe.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+        if (data.expand) {
+          iframe.style.setProperty('border-radius', '20px', 'important');
+          iframe.style.setProperty('overflow', 'hidden', 'important');
+          iframe.style.setProperty('border', 'none', 'important');
+          iframe.style.setProperty('box-shadow', '0 12px 40px rgba(0,0,0,0.15)', 'important');
         } else {
-          iframe.style.borderRadius = '50%';
-          iframe.style.overflow = 'visible';
-          iframe.style.border = 'none';
-          iframe.style.boxShadow = 'none';
+          iframe.style.setProperty('border-radius', '50%', 'important');
+          iframe.style.setProperty('overflow', 'visible', 'important');
+          iframe.style.setProperty('border', 'none', 'important');
+          iframe.style.setProperty('box-shadow', 'none', 'important');
         }
 
-        if (e.data.position === 'left') {
-          iframe.style.left = '12px';
-          iframe.style.right = 'auto';
+        if (data.position === 'left') {
+          iframe.style.setProperty('left', '12px', 'important');
+          iframe.style.setProperty('right', 'auto', 'important');
         } else {
-          iframe.style.right = '12px';
-          iframe.style.left = 'auto';
+          iframe.style.setProperty('right', '12px', 'important');
+          iframe.style.setProperty('left', 'auto', 'important');
         }
       }
     }
