@@ -55,7 +55,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Mobile Outer Wrapper: 모바일 전용 뷰 고정 */
     .mobile-wrapper {
       max-width: 480px;
       min-height: 100vh;
@@ -65,10 +64,9 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      padding-bottom: 84px; /* Sticky Footer Bar Space */
+      padding-bottom: 84px;
     }
 
-    /* Navigation Header */
     .header-nav {
       position: sticky;
       top: 0;
@@ -91,11 +89,10 @@
       letter-spacing: -0.5px;
     }
 
-    /* Detail Image Area (본문 전체를 대체하는 통 상세 이미지) */
     .detail-image-container {
       width: 100%;
       flex-grow: 1;
-      background-color: #0c152b; /* 배너 이미지 백그라운드 */
+      background-color: #0c152b;
     }
 
     .detail-image {
@@ -104,7 +101,6 @@
       display: block;
     }
 
-    /* Sticky Floating Bar */
     .floating-bar {
       position: absolute;
       bottom: 0;
@@ -167,7 +163,7 @@
       height: 100%;
       background-color: rgba(15, 23, 42, 0.7);
       backdrop-filter: blur(4px);
-      align-items: flex-end; /* 모바일형 바텀 시트 연출 */
+      align-items: flex-end;
       justify-content: center;
       z-index: 1000;
     }
@@ -261,7 +257,6 @@
       min-height: 80px;
     }
 
-    /* File Input Styling */
     .file-input-wrapper {
       position: relative;
       display: flex;
@@ -338,7 +333,6 @@
       cursor: not-allowed;
     }
 
-    /* Success Popup */
     .success-popup {
       display: none;
       position: fixed;
@@ -400,7 +394,7 @@
 
     <!-- Detail Image Area (통 상세 이미지) -->
     <div class="detail-image-container">
-      <img src="../assets/ryzinclass_banner.png" alt="크리에이터 원데이 클래스 상세 정보" class="detail-image">
+      <img id="class-detail-banner-img" src="../assets/ryzinclass_banner.png" alt="크리에이터 원데이 클래스 상세 정보" class="detail-image">
     </div>
 
     <!-- Sticky Floating Bar -->
@@ -425,49 +419,9 @@
         </button>
       </div>
       <form id="applyForm">
-        <div class="modal-body">
-          <!-- Class Date -->
-          <div class="form-group">
-            <label class="form-label" for="classDate">수강 기수 선택</label>
-            <select class="form-select" id="classDate" required>
-              <option value="" disabled selected>기수 및 일정을 선택해 주세요</option>
-              <option value="1기 - 2026년 8월 10일 (월) 19:00">1기 - 2026년 8월 10일 (월) 19:00</option>
-              <option value="2기 - 2026년 8월 17일 (월) 19:00">2기 - 2026년 8월 17일 (월) 19:00</option>
-              <option value="3기 - 2026년 8월 24일 (월) 19:00">3기 - 2026년 8월 24일 (월) 19:00</option>
-              <option value="4기 - 2026년 8월 31일 (월) 19:00">4기 - 2026년 8월 31일 (월) 19:00</option>
-            </select>
-          </div>
-
-          <!-- Name -->
-          <div class="form-group">
-            <label class="form-label" for="applicantName">이름</label>
-            <input type="text" class="form-input" id="applicantName" placeholder="실명을 입력해 주세요" required>
-          </div>
-
-          <!-- Phone -->
-          <div class="form-group">
-            <label class="form-label" for="applicantPhone">전화번호</label>
-            <input type="tel" class="form-input" id="applicantPhone" placeholder="010-0000-0000" maxlength="13" required>
-          </div>
-
-          <!-- Reason -->
-          <div class="form-group">
-            <label class="form-label" for="applyReason">크리에이터가 되고 싶은 이유</label>
-            <textarea class="form-textarea" id="applyReason" placeholder="구체적인 이유와 목표를 상세히 적어주세요." required></textarea>
-          </div>
-
-          <!-- Photo Attachment -->
-          <div class="form-group">
-            <label class="form-label">사진 첨부</label>
-            <div class="file-input-wrapper">
-              <label class="file-input-btn" for="applicantPhotoFile">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <span>사진 선택하기 (선택 사항)</span>
-              </label>
-              <input type="file" id="applicantPhotoFile" accept="image/*" style="display: none;">
-              <img id="photoPreview" class="file-preview" alt="선택된 사진 미리보기">
-            </div>
-          </div>
+        <!-- 동적 폼 필드가 생성될 곳 -->
+        <div class="modal-body" id="dynamic-form-fields">
+          <p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px;">설문 문항을 불러오는 중...</p>
         </div>
 
         <div class="modal-footer">
@@ -496,18 +450,181 @@
     const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Global Survey Questions state
+    let surveyQuestions = [];
+
+    // 1. 배너 이미지 로드 (Storage 우선, 없을 시 로컬 Fallback)
+    function loadBannerImage() {
+      const bannerImg = document.getElementById('class-detail-banner-img');
+      const storageUrl = `${SUPABASE_URL}/storage/v1/object/public/class_applications/class_detail_banner.png?t=${Date.now()}`;
+      
+      bannerImg.src = storageUrl;
+      bannerImg.onerror = () => {
+        bannerImg.onerror = null; // Infinite loop 방지
+        bannerImg.src = '../assets/ryzinclass_banner.png';
+      };
+    }
+
+    // 2. 동적 설문 질문 리스트 조회 및 렌더링
+    async function loadSurveyQuestions() {
+      const formFieldsContainer = document.getElementById('dynamic-form-fields');
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('ryzin_class_survey_questions')
+          .select('*')
+          .order('sort_order', { ascending: true });
+
+        if (error) throw error;
+        
+        surveyQuestions = data || [];
+        renderDynamicForm(formFieldsContainer, surveyQuestions);
+
+      } catch (err) {
+        console.error('설문 문항 로드 실패:', err);
+        formFieldsContainer.innerHTML = `
+          <p style="text-align:center; color:var(--accent); font-size:13px; padding: 20px;">
+            설문 정보를 불러오지 못했습니다. 다시 새로고침 해주세요.
+          </p>
+        `;
+      }
+    }
+
+    // 3. 동적 폼 마크업 생성
+    function renderDynamicForm(container, questions) {
+      if (questions.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px;">등록된 설문 문항이 없습니다.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      questions.forEach((q) => {
+        const group = document.createElement('div');
+        group.className = 'form-group';
+
+        const label = document.createElement('label');
+        label.className = 'form-label';
+        label.innerText = q.label + (q.required ? ' *' : '');
+        group.appendChild(label);
+
+        const inputId = `field_${q.id}`;
+
+        if (q.type === 'textarea') {
+          const textarea = document.createElement('textarea');
+          textarea.className = 'form-textarea';
+          textarea.id = inputId;
+          textarea.placeholder = q.placeholder || '';
+          textarea.required = q.required;
+          group.appendChild(textarea);
+        }
+        else if (q.type === 'select') {
+          const select = document.createElement('select');
+          select.className = 'form-select';
+          select.id = inputId;
+          select.required = q.required;
+
+          const defaultOpt = document.createElement('option');
+          defaultOpt.value = '';
+          defaultOpt.disabled = true;
+          defaultOpt.selected = true;
+          defaultOpt.innerText = q.placeholder || '선택해 주세요';
+          select.appendChild(defaultOpt);
+
+          const optionsList = q.options ? q.options.split(',') : [];
+          optionsList.forEach((optText) => {
+            const opt = document.createElement('option');
+            opt.value = optText.trim();
+            opt.innerText = optText.trim();
+            select.appendChild(opt);
+          });
+          group.appendChild(select);
+        }
+        else if (q.type === 'file') {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'file-input-wrapper';
+          wrapper.innerHTML = `
+            <label class="file-input-btn" for="${inputId}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span id="${inputId}_btn_text">사진 선택하기</span>
+            </label>
+            <input type="file" id="${inputId}" accept="image/*" style="display: none;" ${q.required ? 'required' : ''}>
+            <img id="${inputId}_preview" class="file-preview" alt="미리보기">
+          `;
+          
+          // 파일 인풋 이벤트 리스너 바인딩
+          setTimeout(() => {
+            const fileInput = document.getElementById(inputId);
+            const previewImg = document.getElementById(`${inputId}_preview`);
+            const btnText = document.getElementById(`${inputId}_btn_text`);
+            
+            fileInput.addEventListener('change', (e) => {
+              const file = e.target.files[0];
+              if (file) {
+                btnText.innerText = '사진 선택 완료';
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  previewImg.src = ev.target.result;
+                  previewImg.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+              } else {
+                btnText.innerText = '사진 선택하기';
+                previewImg.src = '';
+                previewImg.style.display = 'none';
+              }
+            });
+          }, 0);
+
+          group.appendChild(wrapper);
+        }
+        else if (q.type === 'tel') {
+          const input = document.createElement('input');
+          input.type = 'tel';
+          input.className = 'form-input';
+          input.id = inputId;
+          input.placeholder = q.placeholder || '010-0000-0000';
+          input.required = q.required;
+          input.maxLength = 13;
+
+          // 연락처 하이픈 자동 연동
+          input.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^0-9]/g, '');
+            if (val.length > 3 && val.length <= 7) {
+              val = val.slice(0, 3) + '-' + val.slice(3);
+            } else if (val.length > 7) {
+              val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+            }
+            e.target.value = val;
+          });
+
+          group.appendChild(input);
+        }
+        else {
+          // General text input
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'form-input';
+          input.id = inputId;
+          input.placeholder = q.placeholder || '';
+          input.required = q.required;
+          group.appendChild(input);
+        }
+
+        container.appendChild(group);
+      });
+    }
+
     // Modal Control
     const applyModalOverlay = document.getElementById('applyModalOverlay');
     const btnOpenApplyModal = document.getElementById('btnOpenApplyModal');
     const btnCloseApplyModal = document.getElementById('btnCloseApplyModal');
     const btnCancelApply = document.getElementById('btnCancelApply');
-    const phoneInput = document.getElementById('applicantPhone');
-    const photoFileInput = document.getElementById('applicantPhotoFile');
-    const photoPreview = document.getElementById('photoPreview');
 
     const openModalFunc = () => {
       applyModalOverlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
+      // 모달 열릴 때 최신 설문 문항 로드
+      loadSurveyQuestions();
     };
 
     const closeModalFunc = () => {
@@ -523,34 +640,7 @@
       if (e.target === applyModalOverlay) closeModalFunc();
     });
 
-    // File Preview Handler
-    photoFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          photoPreview.src = event.target.result;
-          photoPreview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      } else {
-        photoPreview.src = '';
-        photoPreview.style.display = 'none';
-      }
-    });
-
-    // Phone Auto-hyphen
-    phoneInput.addEventListener('input', (e) => {
-      let val = e.target.value.replace(/[^0-9]/g, '');
-      if (val.length > 3 && val.length <= 7) {
-        val = val.slice(0, 3) + '-' + val.slice(3);
-      } else if (val.length > 7) {
-        val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
-      }
-      e.target.value = val;
-    });
-
-    // Form Submit
+    // Form Submit (JSONB 답변 구성)
     const form = document.getElementById('applyForm');
     const btnSubmit = document.getElementById('btnSubmit');
     const btnSpinner = document.getElementById('btnSpinner');
@@ -561,28 +651,52 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const classDate = document.getElementById('classDate').value;
-      const name = document.getElementById('applicantName').value.trim();
-      const phone = phoneInput.value.trim();
-      const reason = document.getElementById('applyReason').value.trim();
-      const photoFile = photoFileInput.files[0];
-
-      if (!classDate || !name || !phone || !reason) {
-        alert('모든 필수 항목을 입력해 주세요.');
-        return;
-      }
-
       btnSubmit.disabled = true;
       btnSpinner.style.display = 'inline-block';
       btnText.textContent = '제출 중...';
 
       try {
+        const answers = {};
+        let name = '';
+        let phone = '';
         let photoUrl = '';
+        let photoFile = null;
 
-        // 1. Upload Photo File to Supabase Storage if attached
+        // 1. 값 수집 및 매핑
+        for (const q of surveyQuestions) {
+          const inputId = `field_${q.id}`;
+          const el = document.getElementById(inputId);
+          if (!el) continue;
+
+          if (q.type === 'file') {
+            photoFile = el.files[0];
+          } else {
+            const val = el.value.trim();
+            answers[q.label] = val;
+
+            // 대표 이름 및 전화번호 추출
+            if (q.label === '이름') name = val;
+            if (q.label === '전화번호') phone = val;
+          }
+        }
+
+        // 백업 Fallback: 만약 '이름'이나 '전화번호'라는 정확한 라벨이 없을 경우 첫 번째 텍스트와 연락처 필드를 대입
+        if (!name) {
+          const firstTxt = surveyQuestions.find(q => q.type === 'text');
+          if (firstTxt) name = document.getElementById(`field_${firstTxt.id}`).value.trim();
+        }
+        if (!phone) {
+          const firstTel = surveyQuestions.find(q => q.type === 'tel');
+          if (firstTel) phone = document.getElementById(`field_${firstTel.id}`).value.trim();
+        }
+
+        // 필수 정보 미비 누락 방지
+        if (!name) name = '익명 신청자';
+        if (!phone) phone = '010-0000-0000';
+
+        // 2. 사진 스토리지 업로드
         if (photoFile) {
           const fileExt = photoFile.name.split('.').pop();
-          // Clean file name
           const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
           const filePath = `${cleanFileName}`;
 
@@ -591,28 +705,25 @@
             .from('class_applications')
             .upload(filePath, photoFile);
 
-          if (uploadError) {
-            throw new Error('사진 업로드 실패: ' + uploadError.message);
-          }
+          if (uploadError) throw new Error('사진 업로드 실패: ' + uploadError.message);
 
-          // Get Public URL
           const { data: urlData } = supabaseClient
             .storage
             .from('class_applications')
             .getPublicUrl(filePath);
 
           photoUrl = urlData.publicUrl;
+          answers['사진 첨부'] = photoUrl;
         }
 
-        // 2. Insert Application Record into Database
+        // 3. Database Insert
         const { data, error } = await supabaseClient
           .from('ryzin_class_applications')
           .insert([
             { 
               name: name, 
               phone: phone, 
-              class_date: classDate, 
-              reason: reason,
+              answers: answers,
               photo_url: photoUrl
             }
           ]);
@@ -622,7 +733,6 @@
         closeModalFunc();
         successPopup.style.display = 'flex';
         form.reset();
-        photoPreview.style.display = 'none';
 
       } catch (err) {
         console.error('신청 에러:', err);
@@ -637,6 +747,9 @@
     btnCloseSuccessPopup.addEventListener('click', () => {
       successPopup.style.display = 'none';
     });
+
+    // 초기화 실행
+    loadBannerImage();
   </script>
 </body>
 </html>
