@@ -280,6 +280,17 @@ export function renderClassApplications() {
         // Initialize Supabase Storage
         const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
+        // 자동 버킷 생성 시도 (없을 시 자동복구 시도)
+        try {
+          const { data: buckets } = await supabase.storage.listBuckets();
+          const exists = buckets && buckets.some(b => b.id === 'class_applications');
+          if (!exists) {
+            await supabase.storage.createBucket('class_applications', { public: true });
+          }
+        } catch (bucketErr) {
+          console.warn('자동 버킷 생성 시도 실패:', bucketErr);
+        }
+
         // Upload / Upsert detail banner
         const { data, error } = await supabase
           .storage
@@ -288,7 +299,12 @@ export function renderClassApplications() {
             upsert: true
           });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message && error.message.includes('Bucket not found')) {
+            throw new Error('Supabase Storage에 class_applications Public 버킷을 생성해 주세요.');
+          }
+          throw error;
+        }
         showSuccess('상세페이지 배너 이미지가 변경되었습니다.');
 
       } catch (err) {
