@@ -69,12 +69,11 @@ function createDemoInitialData() {
       { id: 2, name: '이순신', phone: '010-9876-5432', answers: { "이름": "이순신", "전화번호": "010-9876-5432", "수강 기수 선택": "2기 - 2026년 8월 17일 (월) 19:00", "크리에이터가 되고 싶은 이유": "실전 라이브커머스 판매 노하우를 배우고 싶습니다." }, photo_url: '', created_at: '2026-07-28T11:30:00Z' }
     ],
     surveyQuestions: [
-      { id: 1, type: 'select', label: '수강 기수 선택', placeholder: '기수를 선택해 주세요', options: '1기 - 2026년 8월 10일 (월) 19:00,2기 - 2026년 8월 17일 (월) 19:00,3기 - 2026년 8월 24일 (월) 19:00,4기 - 2026년 8월 31일 (월) 19:00', required: true, sort_order: 1 },
-      { id: 2, type: 'text', label: '이름', placeholder: '실명을 입력해 주세요', options: '', required: true, sort_order: 2 },
-      { id: 3, type: 'tel', label: '전화번호', placeholder: '010-0000-0000', options: '', required: true, sort_order: 3 },
-      { id: 4, type: 'text', label: '이메일 주소', placeholder: 'example@email.com', options: '', required: true, sort_order: 4 },
-      { id: 5, type: 'textarea', label: '크리에이터가 되고 싶은 이유', placeholder: '이유와 목표를 상세히 적어주세요.', options: '', required: true, sort_order: 5 },
-      { id: 6, type: 'file', label: '사진 첨부', placeholder: '', options: '', required: false, sort_order: 6 }
+      { id: 1, type: 'textarea', label: '크리에이터가 되고 싶은 이유', placeholder: '이유와 목표를 상세히 적어주세요.', options: '', required: true, sort_order: 1 },
+      { id: 2, type: 'file', label: '사진 첨부', placeholder: '', options: '', required: false, sort_order: 2 }
+    ],
+    classSettings: [
+      { key: 'class_dates', value: '1기 - 2026년 8월 10일 (월) 19:00,2기 - 2026년 8월 17일 (월) 19:00,3기 - 2026년 8월 24일 (월) 19:00,4기 - 2026년 8월 31일 (월) 19:00' }
     ],
     currentRole: 'admin'
   };
@@ -93,6 +92,7 @@ class DataStore {
       crmActivities: [], 
       classApplications: [],
       surveyQuestions: [],
+      classSettings: [],
       currentRole: 'admin',
     };
     this._listeners = {};
@@ -136,7 +136,7 @@ class DataStore {
         'Authorization': `Bearer ${SUPABASE_KEY}`
       };
       
-      let [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes] = await Promise.all([
+      let [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes, classSettingsRes] = await Promise.all([
         fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers }).catch(() => null),
         fetch(`${SUPABASE_URL}/rest/v1/hosts?select=*`, { headers }).catch(() => null),
         fetch(`${SUPABASE_URL}/rest/v1/brands?select=*`, { headers }).catch(() => null),
@@ -144,7 +144,8 @@ class DataStore {
         fetch(`${SUPABASE_URL}/rest/v1/crm_clients?select=*`, { headers }).catch(() => null),
         fetch(`${SUPABASE_URL}/rest/v1/crm_activities?select=*`, { headers }).catch(() => null),
         fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_applications?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_survey_questions?select=*`, { headers }).catch(() => null)
+        fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_survey_questions?select=*`, { headers }).catch(() => null),
+        fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_settings?select=*`, { headers }).catch(() => null)
       ]);
       
       let userData = userRes && userRes.ok ? await userRes.json() : [];
@@ -155,6 +156,7 @@ class DataStore {
       let crmActData = crmActRes && crmActRes.ok ? await crmActRes.json() : [];
       let classAppData = classAppRes && classAppRes.ok ? await classAppRes.json() : [];
       let surveyQuesData = surveyQuesRes && surveyQuesRes.ok ? await surveyQuesRes.json() : [];
+      let classSettingsData = classSettingsRes && classSettingsRes.ok ? await classSettingsRes.json() : [];
 
       // Supabase 데이터가 비어있고, 기존 로컬 캐시 데이터가 존재하면 자동 1회성 마이그레이션 실행
       const isSupabaseEmpty = userData.length === 0 && shData.length === 0 && brData.length === 0 && liveData.length === 0;
@@ -167,7 +169,7 @@ class DataStore {
         await this._migrateLocalToSupabase();
         
         // 마이그레이션 후 다시 조회
-        [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes] = await Promise.all([
+        [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes, classSettingsRes] = await Promise.all([
           fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers }).catch(() => null),
           fetch(`${SUPABASE_URL}/rest/v1/hosts?select=*`, { headers }).catch(() => null),
           fetch(`${SUPABASE_URL}/rest/v1/brands?select=*`, { headers }).catch(() => null),
@@ -175,7 +177,8 @@ class DataStore {
           fetch(`${SUPABASE_URL}/rest/v1/crm_clients?select=*`, { headers }).catch(() => null),
           fetch(`${SUPABASE_URL}/rest/v1/crm_activities?select=*`, { headers }).catch(() => null),
           fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_applications?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_survey_questions?select=*`, { headers }).catch(() => null)
+          fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_survey_questions?select=*`, { headers }).catch(() => null),
+          fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_settings?select=*`, { headers }).catch(() => null)
         ]);
         
         userData = userRes && userRes.ok ? await userRes.json() : [];
@@ -186,9 +189,10 @@ class DataStore {
         crmActData = crmActRes && crmActRes.ok ? await crmActRes.json() : [];
         classAppData = classAppRes && classAppRes.ok ? await classAppRes.json() : [];
         surveyQuesData = surveyQuesRes && surveyQuesRes.ok ? await surveyQuesRes.json() : [];
+        classSettingsData = classSettingsRes && classSettingsRes.ok ? await classSettingsRes.json() : [];
       }
 
-      this._parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData, classAppData, surveyQuesData);
+      this._parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData, classAppData, surveyQuesData, classSettingsData);
       this._sheetDBReady = true;
       return true;
     } catch (e) {
@@ -294,7 +298,7 @@ class DataStore {
     return parseInt(str.toString().replace(/,/g, ''), 10) || 0;
   }
 
-  _parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData, classAppData, surveyQuesData) {
+  _parseSheetData(userData, shData, brData, liveData, crmClientData, crmActData, classAppData, surveyQuesData, classSettingsData) {
     const users = [];
     const hosts = [];
     const brands = [];
@@ -306,6 +310,7 @@ class DataStore {
     const crmActivities = [];
     const classApplications = [];
     const surveyQuestions = [];
+    const classSettings = [];
     let lhCounter = 1;
 
     const validUserData = Array.isArray(userData) ? userData : [];
@@ -316,6 +321,7 @@ class DataStore {
     const validCrmActData = Array.isArray(crmActData) ? crmActData : [];
     const validClassAppData = Array.isArray(classAppData) ? classAppData : [];
     const validSurveyQuesData = Array.isArray(surveyQuesData) ? surveyQuesData : [];
+    const validClassSettingsData = Array.isArray(classSettingsData) ? classSettingsData : [];
 
     // 사용자 파싱
     validUserData.forEach(row => {
@@ -425,6 +431,15 @@ class DataStore {
       });
     });
 
+    // 클래스 설정 파싱
+    validClassSettingsData.forEach(row => {
+      if (!row.key) return;
+      classSettings.push({
+        key: row.key,
+        value: row.value || ''
+      });
+    });
+
     // 라이브방송 파싱
     validLiveData.forEach(row => {
       if (!row.id) return;
@@ -493,6 +508,7 @@ class DataStore {
     this._data.crmActivities = crmActivities;
     this._data.classApplications = classApplications;
     this._data.surveyQuestions = surveyQuestions;
+    this._data.classSettings = classSettings;
     this._save();
   }
 
@@ -545,6 +561,11 @@ class DataStore {
         if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/ryzin_class_survey_questions?id=eq.${item.id}`; }
         if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/ryzin_class_survey_questions?id=eq.${item.id}`; }
         payload = { id: item.id, type: item.type, label: item.label, placeholder: item.placeholder, options: item.options, required: item.required === true, sort_order: item.sort_order };
+      }
+      else if (collection === 'classSettings') {
+        endpoint = '/rest/v1/ryzin_class_settings';
+        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/ryzin_class_settings?key=eq.${item.key}`; }
+        payload = { key: item.key, value: item.value };
       }
       else if (['projects', 'results', 'finances', 'liveHosts'].includes(collection)) {
         const liveId = item.liveId || item.id;

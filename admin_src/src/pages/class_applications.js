@@ -34,7 +34,7 @@ export function renderClassApplications() {
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title">원데이 클래스 관리</h1>
-          <p class="page-description">클래스 수강 신청 현황을 확인하고 설문 문항 및 배너 이미지를 실시간으로 편집합니다.</p>
+          <p class="page-description">클래스 수강 신청 현황을 확인하고 수강 일정 및 추가 질문 문항들을 편리하게 편집합니다.</p>
         </div>
         <div class="page-header-right" style="display: flex; gap: var(--space-2);">
           <button class="btn btn-secondary" id="btn-change-banner">상세 이미지 변경</button>
@@ -148,18 +148,69 @@ export function renderClassApplications() {
     });
   }
 
-  // 2. 설문 문항 설정 탭 렌더링
+  // 2. 설문 문항 및 설정 관리 탭 렌더링
   function renderSurveyTab(targetEl) {
+    // 2-1. 수강 일정 로드
+    const classDatesSetting = store.getAll('classSettings').find(s => s.key === 'class_dates');
+    const datesList = classDatesSetting && classDatesSetting.value 
+      ? classDatesSetting.value.split(',').map(d => d.trim()).filter(Boolean) 
+      : [];
+
+    // 2-2. 커스텀 질문 로드 (이름, 전화번호, 이메일, 기수 등 기본 필터링 제외 후 순수 커스텀만 노출)
     const questions = store.getAll('surveyQuestions') || [];
-    // sort_order 기준으로 오름차순 정렬
     const sortedQuestions = [...questions].sort((a, b) => a.sort_order - b.sort_order);
 
     targetEl.innerHTML = `
-      <div style="display: flex; justify-content: flex-end; margin-bottom: var(--space-3);">
-        <button class="btn btn-primary btn-sm" id="btn-add-question">설문 문항 추가</button>
+      <!-- 영역 1: 수강 기수/일정 설정 -->
+      <div class="card" style="margin-bottom: var(--space-4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: var(--space-3); margin-bottom: var(--space-3);">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 800;">1단계: 수강 일정(기수) 관리</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">수강신청 1단계 화면에 나타날 일정 목록입니다.</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btn-edit-dates">일정 편집</button>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          ${datesList.length === 0 ? `
+            <span style="color: var(--text-tertiary); font-size: 13px;">등록된 일정이 없습니다. 우측 상단의 일정 편집을 눌러 일정을 추가해 주세요.</span>
+          ` : datesList.map(dateText => `
+            <span class="badge badge-indigo" style="font-size: 13px; padding: 6px 12px; border-radius: 20px;">${dateText}</span>
+          `).join('')}
+        </div>
       </div>
 
+      <!-- 영역 2: 기본 고정 인적사항 필드 안내 -->
+      <div class="card" style="margin-bottom: var(--space-4); background-color: #f8fafc;">
+        <div style="border-bottom: 1px solid var(--border); padding-bottom: var(--space-3); margin-bottom: var(--space-3);">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--text-dark);">2단계: 기본 필수 인적사항 (시스템 고정)</h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">수강신청 2단계에 자동으로 필수 제공되는 공통 입력 문항입니다.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+          <div style="border: 1px dashed var(--border); background-color: #ffffff; padding: 12px; border-radius: var(--radius-sm); text-align: center;">
+            <span style="font-size: 11px; color: var(--primary); font-weight: 800; display: block; margin-bottom: 4px;">문항 1</span>
+            <span style="font-size: 13px; font-weight: 700;">이름</span>
+          </div>
+          <div style="border: 1px dashed var(--border); background-color: #ffffff; padding: 12px; border-radius: var(--radius-sm); text-align: center;">
+            <span style="font-size: 11px; color: var(--primary); font-weight: 800; display: block; margin-bottom: 4px;">문항 2</span>
+            <span style="font-size: 13px; font-weight: 700;">전화번호</span>
+          </div>
+          <div style="border: 1px dashed var(--border); background-color: #ffffff; padding: 12px; border-radius: var(--radius-sm); text-align: center;">
+            <span style="font-size: 11px; color: var(--primary); font-weight: 800; display: block; margin-bottom: 4px;">문항 3</span>
+            <span style="font-size: 13px; font-weight: 700;">이메일 주소</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 영역 3: 추가 질문 문항 관리 -->
       <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: var(--space-3); margin-bottom: var(--space-3);">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 800;">3단계: 추가 설문 질문 관리</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">수강신청 3단계 화면에 나타날 커스텀 동적 질문 문항들입니다.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-add-question">질문 추가</button>
+        </div>
+
         <div class="table-responsive">
           <table class="table">
             <thead>
@@ -168,7 +219,6 @@ export function renderClassApplications() {
                 <th style="width: 140px;">입력 타입</th>
                 <th>질문 문구 (Label)</th>
                 <th>입력 힌트 (Placeholder)</th>
-                <th>선택 옵션 (options)</th>
                 <th style="width: 100px; text-align: center;">필수여부</th>
                 <th style="width: 130px; text-align: center;">관리</th>
               </tr>
@@ -176,15 +226,13 @@ export function renderClassApplications() {
             <tbody>
               ${sortedQuestions.length === 0 ? `
                 <tr>
-                  <td colspan="7" style="text-align: center; color: var(--text-tertiary); padding: var(--space-8) 0;">
-                    등록된 설문 문항이 없습니다.
+                  <td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: var(--space-8) 0;">
+                    등록된 추가 커스텀 질문 문항이 없습니다.
                   </td>
                 </tr>
               ` : sortedQuestions.map((q) => {
                 let typeLabel = '한줄 입력';
                 if (q.type === 'textarea') typeLabel = '여러줄 입력';
-                else if (q.type === 'select') typeLabel = '선택박스';
-                else if (q.type === 'tel') typeLabel = '연락처';
                 else if (q.type === 'file') typeLabel = '사진 첨부';
 
                 return `
@@ -193,7 +241,6 @@ export function renderClassApplications() {
                     <td><span class="badge badge-indigo">${typeLabel}</span></td>
                     <td style="font-weight: 600;">${q.label || ''}</td>
                     <td style="color: var(--text-muted);">${q.placeholder || '-'}</td>
-                    <td style="max-width: 200px;" class="text-ellipsis">${q.options || '-'}</td>
                     <td style="text-align: center;">
                       ${q.required ? `<span class="badge badge-rose">필수</span>` : `<span class="badge badge-gray">선택</span>`}
                     </td>
@@ -211,6 +258,11 @@ export function renderClassApplications() {
         </div>
       </div>
     `;
+
+    // 일정 편집 모달 바인딩
+    targetEl.querySelector('#btn-edit-dates').addEventListener('click', () => {
+      openEditDatesModal(classDatesSetting);
+    });
 
     // 질문 추가 이벤트
     targetEl.querySelector('#btn-add-question').addEventListener('click', () => {
@@ -236,7 +288,6 @@ export function renderClassApplications() {
 
   // 3. 글로벌 이벤트 바인딩
   function bindGlobalEvents() {
-    // 탭 전환
     container.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         activeTab = btn.getAttribute('data-tab');
@@ -279,7 +330,6 @@ export function renderClassApplications() {
       try {
         const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // 고유 파일명 생성하여 캐시 및 충돌 차단
         const fileExt = file.name.split('.').pop();
         const uniqueFileName = `detail_banner_${Date.now()}.${fileExt}`;
 
@@ -319,7 +369,61 @@ export function renderClassApplications() {
     });
   }
 
-  // 4. 수강신청 상세 모달창 오픈
+  // 4. 일정 편집 모달창
+  function openEditDatesModal(settingItem) {
+    const currentValue = settingItem ? settingItem.value : '';
+
+    const content = document.createElement('div');
+    content.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">기수 일정 리스트 (쉼표로 구분)</label>
+        <textarea class="form-textarea" id="dates-textarea" style="min-height: 120px;" placeholder="예: 1기 - 8월 10일 (월) 19:00, 2기 - 8월 17일 (월) 19:00">${currentValue}</textarea>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.5;">
+          각 수강 신청 기수 일정을 쉼표(,)로 구분하여 정확히 작성해 주세요. 쉼표 한 개가 한 개의 선택 카드로 생성됩니다.
+        </p>
+      </div>
+    `;
+
+    const footer = document.createElement('div');
+    footer.style.display = 'flex';
+    footer.style.justifyContent = 'flex-end';
+    footer.style.gap = 'var(--space-2)';
+    footer.style.width = '100%';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-secondary';
+    cancelBtn.textContent = '취소';
+    cancelBtn.addEventListener('click', closeModal);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-primary';
+    saveBtn.textContent = '일정 저장';
+    saveBtn.addEventListener('click', async () => {
+      const value = content.querySelector('#dates-textarea').value.trim();
+
+      try {
+        store.update('classSettings', 'class_dates', { value });
+        showSuccess('수강 일정이 성공적으로 저장되었습니다.');
+        closeModal();
+        render();
+      } catch (err) {
+        showError('저장 실패: ' + err.message);
+      }
+    });
+
+    footer.appendChild(cancelBtn);
+    footer.appendChild(saveBtn);
+
+    openModal({
+      title: '수강 일정(기수) 리스트 편집',
+      size: 'sm',
+      content,
+      footer,
+      onClose: null
+    });
+  }
+
+  // 5. 수강신청 상세 모달창 오픈
   function openDetailModal(id) {
     const item = store.getById('classApplications', id);
     if (!item) return;
@@ -391,7 +495,7 @@ export function renderClassApplications() {
     });
   }
 
-  // 5. 신청서 내역 삭제 처리
+  // 6. 신청서 내역 삭제 처리
   function handleDeleteApplication(id) {
     const item = store.getById('classApplications', id);
     if (!item) return;
@@ -414,7 +518,7 @@ export function renderClassApplications() {
     });
   }
 
-  // 6. 설문 문항 추가/수정 모달창 오픈
+  // 7. 설문 문항 추가/수정 모달창 오픈 (기수 설정 및 인적사항은 시스템 고정이므로 제외하고 단순화)
   function openQuestionModal(id = null) {
     const isEdit = !!id;
     const q = isEdit ? store.getById('surveyQuestions', id) : null;
@@ -426,8 +530,6 @@ export function renderClassApplications() {
         <select class="form-select" id="q-type" required>
           <option value="text" ${q && q.type === 'text' ? 'selected' : ''}>한줄 입력 (text)</option>
           <option value="textarea" ${q && q.type === 'textarea' ? 'selected' : ''}>여러줄 입력 (textarea)</option>
-          <option value="select" ${q && q.type === 'select' ? 'selected' : ''}>선택박스 (select)</option>
-          <option value="tel" ${q && q.type === 'tel' ? 'selected' : ''}>연락처 입력 (tel)</option>
           <option value="file" ${q && q.type === 'file' ? 'selected' : ''}>사진 파일 첨부 (file)</option>
         </select>
       </div>
@@ -439,11 +541,6 @@ export function renderClassApplications() {
         <label class="form-label">입력 힌트 (Placeholder)</label>
         <input type="text" class="form-input" id="q-placeholder" placeholder="예: 상세하게 작성해 주세요" value="${q ? q.placeholder : ''}">
       </div>
-      <div class="form-group" id="options-group" style="display: ${q && q.type === 'select' ? 'block' : 'none'};">
-        <label class="form-label">선택 옵션 목록 (콤마로 구분)</label>
-        <input type="text" class="form-input" id="q-options" placeholder="예: 1기,2기,3기" value="${q ? q.options : ''}">
-        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">옵션들을 쉼표(,)로 구분하여 입력하세요.</p>
-      </div>
       <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: var(--space-4);">
         <input type="checkbox" id="q-required" ${!q || q.required ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
         <label for="q-required" style="font-size: 13px; font-weight: 700; cursor: pointer;">필수 입력 문항으로 설정</label>
@@ -453,16 +550,6 @@ export function renderClassApplications() {
         <input type="number" class="form-input" id="q-sort" value="${q ? q.sort_order : '1'}" min="1" required>
       </div>
     `;
-
-    // select 타입일 때만 옵션 입력란 노출
-    content.querySelector('#q-type').addEventListener('change', (e) => {
-      const optGroup = content.querySelector('#options-group');
-      if (e.target.value === 'select') {
-        optGroup.style.display = 'block';
-      } else {
-        optGroup.style.display = 'none';
-      }
-    });
 
     const footer = document.createElement('div');
     footer.style.display = 'flex';
@@ -482,7 +569,6 @@ export function renderClassApplications() {
       const type = content.querySelector('#q-type').value;
       const label = content.querySelector('#q-label').value.trim();
       const placeholder = content.querySelector('#q-placeholder').value.trim();
-      const options = content.querySelector('#q-options').value.trim();
       const required = content.querySelector('#q-required').checked;
       const sort_order = parseInt(content.querySelector('#q-sort').value, 10) || 1;
 
@@ -491,28 +577,22 @@ export function renderClassApplications() {
         return;
       }
 
-      if (type === 'select' && !options) {
-        showError('선택박스 옵션을 1개 이상 콤마로 구분해 입력해 주세요.');
-        return;
-      }
-
       try {
         if (isEdit) {
           store.update('surveyQuestions', id, {
-            type, label, placeholder, options, required, sort_order
+            type, label, placeholder, options: '', required, sort_order
           });
           showSuccess('문항이 수정되었습니다.');
         } else {
           store.create('surveyQuestions', {
             id: Date.now(),
-            type, label, placeholder, options, required, sort_order
+            type, label, placeholder, options: '', required, sort_order
           });
           showSuccess('새 문항이 추가되었습니다.');
         }
         closeModal();
         render();
       } catch (err) {
-        console.error(err);
         showError('저장 실패: ' + err.message);
       }
     });
@@ -521,7 +601,7 @@ export function renderClassApplications() {
     footer.appendChild(saveBtn);
 
     openModal({
-      title: isEdit ? '설문 문항 수정' : '새 설문 문항 추가',
+      title: isEdit ? '추가 질문 수정' : '새 추가 질문 생성',
       size: 'sm',
       content,
       footer,
@@ -529,14 +609,14 @@ export function renderClassApplications() {
     });
   }
 
-  // 7. 설문 문항 삭제 처리
+  // 8. 설문 문항 삭제 처리
   function handleDeleteQuestion(id) {
     const q = store.getById('surveyQuestions', id);
     if (!q) return;
 
     confirmDialog({
       title: '문항 삭제',
-      message: `"${q.label}" 문항을 정말 삭제하시겠습니까? 신청 폼에서 즉시 제외됩니다.`,
+      message: `"${q.label}" 추가 문항을 정말 삭제하시겠습니까? 수강신청 폼에서 즉시 제외됩니다.`,
       danger: true,
       confirmText: '삭제',
       cancelText: '취소',

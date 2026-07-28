@@ -481,15 +481,28 @@
             </div>
           </div>
 
-          <!-- 2단계: 인적사항 입력 (이름, 전화번호, 이메일 등) -->
+          <!-- 2단계: 고정 인적사항 입력 (이름, 전화번호, 이메일 주소) -->
           <div id="step2-area" style="display: none;">
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">기본 인적사항을 입력해 주세요.</p>
-            <div id="personal-fields-container"></div>
+            
+            <div class="form-group">
+              <label class="form-label" for="user-name">이름 *</label>
+              <input type="text" class="form-input" id="user-name" placeholder="실명을 입력해 주세요" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="user-phone">전화번호 *</label>
+              <input type="tel" class="form-input" id="user-phone" placeholder="010-0000-0000" maxlength="13" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="user-email">이메일 주소 *</label>
+              <input type="email" class="form-input" id="user-email" placeholder="example@email.com" required>
+            </div>
           </div>
 
-          <!-- 3단계: 추가 질문 답변 (이유, 사진 첨부 등) -->
+          <!-- 3단계: 커스텀 추가 질문 답변 -->
           <div id="step3-area" style="display: none;">
-            <!-- 선택한 기수 요약 바 -->
             <div style="background-color:#f1f5f9; padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <span style="font-size:10px; color:var(--primary); font-weight:800; display:block;">선택 일정</span>
@@ -532,7 +545,6 @@
     let surveyQuestions = [];
     let currentStep = 1;
     let selectedDateValue = '';
-    let dateQuestionLabel = '';
 
     // 1. 배너 이미지 로드 (설정 테이블 조회 방식)
     async function loadBannerImage() {
@@ -555,101 +567,78 @@
       }
     }
 
-    // 2. 질문 데이터 로드 및 파싱
+    // 2. 일정 설정 및 추가 질문 데이터 로딩
     async function loadSurveyQuestions() {
       const dateListContainer = document.getElementById('date-list-container');
       
       // 상태 초기화
       currentStep = 1;
       selectedDateValue = '';
-      dateQuestionLabel = '';
       updateStepUI();
 
       try {
-        const { data, error } = await supabaseClient
+        // 2-1. 일정 로드 (ryzin_class_settings)
+        const { data: settingsData, error: settingsErr } = await supabaseClient
+          .from('ryzin_class_settings')
+          .select('value')
+          .eq('key', 'class_dates')
+          .single();
+
+        if (settingsErr) throw settingsErr;
+
+        const rawDates = settingsData ? settingsData.value : '';
+        const optionsList = rawDates ? rawDates.split(',').map(d => d.trim()).filter(Boolean) : [];
+
+        if (optionsList.length > 0) {
+          dateListContainer.innerHTML = optionsList.map(opt => `
+            <button type="button" class="date-select-btn" data-value="${opt}">
+              <span>${opt}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          `).join('');
+
+          // 기수 선택 이벤트 바인딩
+          dateListContainer.querySelectorAll('.date-select-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              selectedDateValue = btn.getAttribute('data-value');
+              document.getElementById('selected-date-badge').innerText = selectedDateValue;
+              goToStep(2);
+            });
+          });
+        } else {
+          dateListContainer.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 20px;">접수 가능한 일정이 현재 없습니다.</p>`;
+        }
+
+        // 2-2. 추가 질문 로드 (ryzin_class_survey_questions)
+        const { data: questionData, error: questionErr } = await supabaseClient
           .from('ryzin_class_survey_questions')
           .select('*')
           .order('sort_order', { ascending: true });
 
-        if (error) throw error;
-        
-        surveyQuestions = data || [];
-
-        // 1단계: 날짜 기수 문항 감지 (type === 'select' 이거나 라벨에 기수/날짜 포함)
-        const dateQ = surveyQuestions.find(q => q.type === 'select' || q.label.includes('기수') || q.label.includes('날짜'));
-
-        if (dateQ) {
-          dateQuestionLabel = dateQ.label;
-          const optionsList = dateQ.options ? dateQ.options.split(',') : [];
-          
-          if (optionsList.length > 0) {
-            dateListContainer.innerHTML = optionsList.map(opt => `
-              <button type="button" class="date-select-btn" data-value="${opt.trim()}">
-                <span>${opt.trim()}</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-            `).join('');
-
-            // 기수 선택 이벤트 바인딩
-            dateListContainer.querySelectorAll('.date-select-btn').forEach(btn => {
-              btn.addEventListener('click', () => {
-                selectedDateValue = btn.getAttribute('data-value');
-                document.getElementById('selected-date-badge').innerText = selectedDateValue;
-                goToStep(2);
-              });
-            });
-            return;
-          }
-        }
-
-        // 일정 문항이 없을 시 스텝 2로 즉시 점프
-        goToStep(2);
+        if (questionErr) throw questionErr;
+        surveyQuestions = questionData || [];
 
       } catch (err) {
-        console.error('설문 로딩 실패:', err);
+        console.error('데이터 조회 오류:', err);
         dateListContainer.innerHTML = `
           <p style="text-align:center; color:var(--accent); font-size:13px; padding: 20px;">
-            일정을 불러오지 못했습니다. 다시 시도해 주세요.
+            정보를 불러오지 못했습니다. 다시 시도해 주세요.
           </p>
         `;
       }
     }
 
-    // 3. 필드 분류 및 동적 생성
-    // - 인적사항 (Step 2): 이름, 전화번호, 이메일, 연락처 단어가 라벨에 들어가거나 tel 타입인 것
-    // - 추가 질문 (Step 3): 1단계와 2단계에 걸러지지 않은 나머지 질문들
-    function renderFieldsBySteps() {
-      const personalContainer = document.getElementById('personal-fields-container');
-      const additionalContainer = document.getElementById('additional-fields-container');
-
-      // 스텝 2 인적사항 문항 필터링
-      const personalQuestions = surveyQuestions.filter(q => {
-        if (q.label === dateQuestionLabel) return false; // 일정 제외
-        const label = q.label.toLowerCase();
-        return q.type === 'tel' || label.includes('이름') || label.includes('전화') || label.includes('연락') || label.includes('이메일') || label.includes('메일');
-      });
-
-      // 스텝 3 추가 질문 문항 필터링
-      const additionalQuestions = surveyQuestions.filter(q => {
-        if (q.label === dateQuestionLabel) return false; // 일정 제외
-        const label = q.label.toLowerCase();
-        const isPersonal = q.type === 'tel' || label.includes('이름') || label.includes('전화') || label.includes('연락') || label.includes('이메일') || label.includes('메일');
-        return !isPersonal;
-      });
-
-      renderFields(personalContainer, personalQuestions);
-      renderFields(additionalContainer, additionalQuestions);
-    }
-
-    // 4. 단일 컨테이너 필드 렌더링
-    function renderFields(container, questions) {
+    // 3. 3단계 추가 커스텀 필드 동적 렌더링
+    function renderStep3Fields() {
+      const container = document.getElementById('additional-fields-container');
       container.innerHTML = '';
-      if (questions.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 10px 0;">해당 단계의 입력 항목이 없습니다. 다음 단계를 진행해 주세요.</p>';
+
+      if (surveyQuestions.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 10px 0;">추가 설문 항목이 없습니다. 바로 완료 버튼을 눌러 신청을 끝마쳐 주세요.</p>';
         return;
       }
 
-      questions.forEach(q => {
+      surveyQuestions.forEach(q => {
         const group = document.createElement('div');
         group.className = 'form-group';
 
@@ -705,53 +694,10 @@
 
           group.appendChild(wrapper);
         }
-        else if (q.type === 'tel') {
-          const input = document.createElement('input');
-          input.type = 'tel';
-          input.className = 'form-input';
-          input.id = inputId;
-          input.placeholder = q.placeholder || '010-0000-0000';
-          input.required = q.required;
-          input.maxLength = 13;
-
-          input.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/[^0-9]/g, '');
-            if (val.length > 3 && val.length <= 7) {
-              val = val.slice(0, 3) + '-' + val.slice(3);
-            } else if (val.length > 7) {
-              val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
-            }
-            e.target.value = val;
-          });
-
-          group.appendChild(input);
-        }
-        else if (q.type === 'select') {
-          // 혹시 인적사항/추가항목에 일반 select가 있을 경우 처리
-          const select = document.createElement('select');
-          select.className = 'form-select';
-          select.id = inputId;
-          select.required = q.required;
-
-          const defaultOpt = document.createElement('option');
-          defaultOpt.value = '';
-          defaultOpt.disabled = true;
-          defaultOpt.selected = true;
-          defaultOpt.innerText = q.placeholder || '선택해 주세요';
-          select.appendChild(defaultOpt);
-
-          const optionsList = q.options ? q.options.split(',') : [];
-          optionsList.forEach((optText) => {
-            const opt = document.createElement('option');
-            opt.value = optText.trim();
-            opt.innerText = optText.trim();
-            select.appendChild(opt);
-          });
-          group.appendChild(select);
-        }
         else {
+          // General text input
           const input = document.createElement('input');
-          input.type = q.label.includes('이메일') || q.label.includes('메일') ? 'email' : 'text';
+          input.type = 'text';
           input.className = 'form-input';
           input.id = inputId;
           input.placeholder = q.placeholder || '';
@@ -763,7 +709,19 @@
       });
     }
 
-    // 5. 단계 제어 및 유효성 검사
+    // 4. 연락처 하이픈 포맷 적용
+    const phoneInput = document.getElementById('user-phone');
+    phoneInput.addEventListener('input', (e) => {
+      let val = e.target.value.replace(/[^0-9]/g, '');
+      if (val.length > 3 && val.length <= 7) {
+        val = val.slice(0, 3) + '-' + val.slice(3);
+      } else if (val.length > 7) {
+        val = val.slice(0, 3) + '-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+      }
+      e.target.value = val;
+    });
+
+    // 5. 단계 제어 및 UI 갱신
     function goToStep(step) {
       currentStep = step;
       updateStepUI();
@@ -779,17 +737,15 @@
       const btnSubmit = document.getElementById('btnSubmit');
       const modalTitle = document.getElementById('applyModalTitle');
 
-      // Step indicator dots
+      // Indicator dots
       document.getElementById('dot-step1').className = `step-dot ${currentStep >= 1 ? 'active' : ''}`;
       document.getElementById('dot-step2').className = `step-dot ${currentStep >= 2 ? 'active' : ''}`;
       document.getElementById('dot-step3').className = `step-dot ${currentStep >= 3 ? 'active' : ''}`;
 
-      // Areas display
       step1Area.style.display = currentStep === 1 ? 'block' : 'none';
       step2Area.style.display = currentStep === 2 ? 'block' : 'none';
       step3Area.style.display = currentStep === 3 ? 'block' : 'none';
 
-      // Footer buttons display
       if (currentStep === 1) {
         modalFooter.style.display = 'none';
         modalTitle.innerText = '수강 일정 선택 (1/3)';
@@ -799,42 +755,45 @@
         btnNextStep.style.display = 'inline-block';
         btnSubmit.style.display = 'none';
         modalTitle.innerText = '인적사항 입력 (2/3)';
-        
-        // 스텝 2 폼 렌더링
-        renderFieldsBySteps();
       } else if (currentStep === 3) {
         modalFooter.style.display = 'flex';
         btnPrevStep.style.display = 'inline-block';
         btnNextStep.style.display = 'none';
         btnSubmit.style.display = 'inline-block';
         modalTitle.innerText = '추가 질문 답변 (3/3)';
+        
+        // 3단계 필드 렌더링
+        renderStep3Fields();
       }
     }
 
-    // 2단계 필수 입력값 검증 (HTML5 유효성 검사 가로채기)
-    function validateStep2Fields() {
-      const personalQuestions = surveyQuestions.filter(q => {
-        if (q.label === dateQuestionLabel) return false;
-        const label = q.label.toLowerCase();
-        return q.type === 'tel' || label.includes('이름') || label.includes('전화') || label.includes('연락') || label.includes('이메일') || label.includes('메일');
-      });
+    // 2단계 인적사항 유효성 검사
+    function validateStep2() {
+      const name = document.getElementById('user-name').value.trim();
+      const phone = document.getElementById('user-phone').value.trim();
+      const email = document.getElementById('user-email').value.trim();
 
-      for (const q of personalQuestions) {
-        const el = document.getElementById(`field_${q.id}`);
-        if (!el) continue;
-        if (q.required && !el.value.trim()) {
-          alert(`'${q.label}' 항목은 필수 입력 사항입니다.`);
-          el.focus();
-          return false;
-        }
-        if (el.type === 'email' && el.value.trim()) {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(el.value.trim())) {
-            alert('올바른 이메일 형식을 입력해 주세요.');
-            el.focus();
-            return false;
-          }
-        }
+      if (!name) {
+        alert('이름을 입력해 주세요.');
+        document.getElementById('user-name').focus();
+        return false;
+      }
+      if (!phone || phone.length < 10) {
+        alert('올바른 연락처 전화번호를 입력해 주세요.');
+        document.getElementById('user-phone').focus();
+        return false;
+      }
+      if (!email) {
+        alert('이메일 주소를 입력해 주세요.');
+        document.getElementById('user-email').focus();
+        return false;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('올바른 이메일 형식을 입력해 주세요.');
+        document.getElementById('user-email').focus();
+        return false;
       }
       return true;
     }
@@ -865,15 +824,10 @@
       if (e.target === applyModalOverlay) closeModalFunc();
     });
 
-    // 스텝 이동 이벤트
+    // 스텝 제어 바인딩
     btnPrevStep.addEventListener('click', () => {
       if (currentStep === 2) {
-        // 만약 기수 날짜 선택 문항이 있는 상태이면 1단계로, 없으면 닫기
-        if (dateQuestionLabel) {
-          goToStep(1);
-        } else {
-          closeModalFunc();
-        }
+        goToStep(1);
       } else if (currentStep === 3) {
         goToStep(2);
       }
@@ -881,13 +835,13 @@
 
     btnNextStep.addEventListener('click', () => {
       if (currentStep === 2) {
-        if (validateStep2Fields()) {
+        if (validateStep2()) {
           goToStep(3);
         }
       }
     });
 
-    // Form Submit (1단계 선택 날짜 + 2단계 인적사항 + 3단계 추가질문)
+    // Form Submit (JSONB answers)
     const form = document.getElementById('applyForm');
     const btnSubmit = document.getElementById('btnSubmit');
     const btnSpinner = document.getElementById('btnSpinner');
@@ -904,20 +858,20 @@
 
       try {
         const answers = {};
-        let name = '';
-        let phone = '';
+        const name = document.getElementById('user-name').value.trim();
+        const phone = document.getElementById('user-phone').value.trim();
+        const email = document.getElementById('user-email').value.trim();
         let photoUrl = '';
         let photoFile = null;
 
-        // 1단계 일정 매핑
-        if (dateQuestionLabel && selectedDateValue) {
-          answers[dateQuestionLabel] = selectedDateValue;
-        }
+        // 고정 데이터 취합
+        answers['수강 일정 선택'] = selectedDateValue;
+        answers['이름'] = name;
+        answers['전화번호'] = phone;
+        answers['이메일 주소'] = email;
 
-        // 전체 필드에서 데이터 수집
+        // 3단계 추가 질문 데이터 취합
         for (const q of surveyQuestions) {
-          if (q.label === dateQuestionLabel) continue;
-          
           const inputId = `field_${q.id}`;
           const el = document.getElementById(inputId);
           if (!el) continue;
@@ -927,26 +881,10 @@
           } else {
             const val = el.value.trim();
             answers[q.label] = val;
-
-            if (q.label.includes('이름')) name = val;
-            if (q.label.includes('전화') || q.label.includes('연락처')) phone = val;
           }
         }
 
-        // 대표 이름 및 전화번호 매핑 보장
-        if (!name) {
-          const firstTxt = surveyQuestions.find(q => q.label.includes('이름') || q.type === 'text');
-          if (firstTxt) name = document.getElementById(`field_${firstTxt.id}`).value.trim();
-        }
-        if (!phone) {
-          const firstTel = surveyQuestions.find(q => q.type === 'tel' || q.label.includes('전화'));
-          if (firstTel) phone = document.getElementById(`field_${firstTel.id}`).value.trim();
-        }
-
-        if (!name) name = '익명 신청자';
-        if (!phone) phone = '010-0000-0000';
-
-        // 사진 파일 업로드
+        // 사진 파일 스토리지 업로드
         if (photoFile) {
           const fileExt = photoFile.name.split('.').pop();
           const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
@@ -968,7 +906,7 @@
           answers['사진 첨부'] = photoUrl;
         }
 
-        // Supabase DB 제출
+        // 데이터 최종 Insert
         const { data, error } = await supabaseClient
           .from('ryzin_class_applications')
           .insert([
@@ -987,7 +925,7 @@
         form.reset();
 
       } catch (err) {
-        console.error('제출 에러:', err);
+        console.error('제출 오류:', err);
         alert('신청 접수 중 문제가 발생했습니다: ' + err.message);
       } finally {
         btnSubmit.disabled = false;
