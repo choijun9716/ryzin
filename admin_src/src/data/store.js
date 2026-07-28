@@ -508,7 +508,9 @@ class DataStore {
     this._data.crmActivities = crmActivities;
     this._data.classApplications = classApplications;
     this._data.surveyQuestions = surveyQuestions;
-    this._data.classSettings = classSettings;
+    if (classSettings && classSettings.length > 0) {
+      this._data.classSettings = classSettings;
+    }
     this._save();
   }
 
