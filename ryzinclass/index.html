@@ -443,7 +443,7 @@
     <div class="floating-bar">
       <div class="floating-container">
         <div class="floating-info">
-          <span class="floating-dday">마감까지 D-3</span>
+          <span class="floating-dday" id="floating-countdown">계산 중...</span>
           <span class="floating-title">크리에이터 원데이 클래스</span>
         </div>
         <button type="button" class="floating-action-btn" id="btnOpenApplyModal" onclick="openApplyModal(event)">수강신청</button>
@@ -988,6 +988,34 @@
 
     // 초기화
     loadBannerImage();
+
+    // 실시간 카운트다운 타이머 (1기 시작일: 2026-08-10 19:00 KST)
+    (function startCountdown() {
+      const targetDate = new Date('2026-08-10T19:00:00+09:00').getTime();
+      const el = document.getElementById('floating-countdown');
+      if (!el) return;
+
+      function update() {
+        const now = Date.now();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+          el.textContent = '수강신청 마감';
+          return;
+        }
+
+        const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const pad = (n) => String(n).padStart(2, '0');
+        el.textContent = `마감까지 ${days}일 ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      }
+
+      update();
+      setInterval(update, 1000);
+    })();
   </script>
 </body>
 </html>
