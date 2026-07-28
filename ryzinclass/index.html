@@ -214,12 +214,30 @@
       justify-content: center;
     }
 
+    /* Step Progress Indicator */
+    .step-indicator {
+      display: flex;
+      padding: 12px 20px 0 20px;
+      gap: 8px;
+    }
+
+    .step-dot {
+      flex: 1;
+      height: 4px;
+      background-color: var(--border);
+      border-radius: 2px;
+      transition: background-color 0.3s ease;
+    }
+
+    .step-dot.active {
+      background-color: var(--primary);
+    }
+
     .modal-body {
       padding: 20px;
       overflow-y: auto;
     }
 
-    /* 1단계 날짜 리스트 스타일 */
     .date-select-btn {
       width: 100%;
       padding: 14px 16px;
@@ -327,7 +345,7 @@
       background-color: #f8fafc;
       border-top: 1px solid var(--border);
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       gap: 10px;
     }
 
@@ -419,7 +437,7 @@
       <a href="#" class="nav-logo">RYZIN CLASS</a>
     </header>
 
-    <!-- Detail Image Area (통 상세 이미지) -->
+    <!-- Detail Image Area -->
     <div class="detail-image-container">
       <img id="class-detail-banner-img" src="../assets/ryzinclass_banner.png" alt="크리에이터 원데이 클래스 상세 정보" class="detail-image">
     </div>
@@ -440,14 +458,22 @@
   <div class="modal-overlay" id="applyModalOverlay">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title" id="applyModalTitle">수강 일정 선택</h2>
+        <h2 class="modal-title" id="applyModalTitle">수강 일정 선택 (1/3)</h2>
         <button class="modal-close-btn" id="btnCloseApplyModal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
+
+      <!-- 진행 단계 바 -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="dot-step1"></div>
+        <div class="step-dot" id="dot-step2"></div>
+        <div class="step-dot" id="dot-step3"></div>
+      </div>
+
       <form id="applyForm">
         <div class="modal-body">
-          <!-- 1단계: 날짜 기수 리스트 선택 영역 -->
+          <!-- 1단계: 일정(기수) 선택 -->
           <div id="step1-area">
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">수강하실 기수 및 일정을 선택해 주세요.</p>
             <div id="date-list-container">
@@ -455,25 +481,31 @@
             </div>
           </div>
 
-          <!-- 2단계: 나머지 정보 입력 영역 -->
+          <!-- 2단계: 인적사항 입력 (이름, 전화번호, 이메일 등) -->
           <div id="step2-area" style="display: none;">
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">기본 인적사항을 입력해 주세요.</p>
+            <div id="personal-fields-container"></div>
+          </div>
+
+          <!-- 3단계: 추가 질문 답변 (이유, 사진 첨부 등) -->
+          <div id="step3-area" style="display: none;">
             <!-- 선택한 기수 요약 바 -->
-            <div style="background-color:#f1f5f9; padding:12px; border-radius:var(--radius-sm); margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="background-color:#f1f5f9; padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:16px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
               <div>
-                <span style="font-size:10px; color:var(--primary); font-weight:800; display:block;">선택한 수강 일정</span>
-                <span id="selected-date-badge" style="font-size:13px; font-weight:700;">기수 정보</span>
+                <span style="font-size:10px; color:var(--primary); font-weight:800; display:block;">선택 일정</span>
+                <span id="selected-date-badge" style="font-weight:700;">기수 정보</span>
               </div>
-              <button type="button" id="btn-back-to-step1" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; text-decoration:underline; cursor:pointer; padding: 4px;">변경</button>
             </div>
-            
-            <!-- 동적 설문 항목 렌더링 영역 -->
-            <div id="dynamic-form-fields"></div>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">마지막 추가 설문에 답변해 주세요.</p>
+            <div id="additional-fields-container"></div>
           </div>
         </div>
 
+        <!-- 하단 푸터 (2단계부터 노출) -->
         <div class="modal-footer" id="modal-footer" style="display: none;">
-          <button type="button" class="btn btn-secondary" id="btnCancelApply">취소</button>
-          <button type="submit" class="btn btn-primary" id="btnSubmit">
+          <button type="button" class="btn btn-secondary" id="btnPrevStep">이전</button>
+          <button type="button" class="btn btn-primary" id="btnNextStep">다음 단계</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmit" style="display: none;">
             <span class="spinner" id="btnSpinner"></span>
             <span id="btnText">수강 신청 완료</span>
           </button>
@@ -497,12 +529,12 @@
     const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Global survey states
     let surveyQuestions = [];
+    let currentStep = 1;
     let selectedDateValue = '';
     let dateQuestionLabel = '';
 
-    // 1. 배너 이미지 로드 (Storage 우선, 로컬 Fallback)
+    // 1. 배너 이미지 로드 (캐시방지)
     function loadBannerImage() {
       const bannerImg = document.getElementById('class-detail-banner-img');
       const storageUrl = `${SUPABASE_URL}/storage/v1/object/public/class_applications/class_detail_banner.png?t=${Date.now()}`;
@@ -514,21 +546,15 @@
       };
     }
 
-    // 2. 동적 설문 리스트 로드 및 단계별 구조 분기
+    // 2. 질문 데이터 로드 및 파싱
     async function loadSurveyQuestions() {
       const dateListContainer = document.getElementById('date-list-container');
-      const step1Area = document.getElementById('step1-area');
-      const step2Area = document.getElementById('step2-area');
-      const modalFooter = document.getElementById('modal-footer');
-      const modalTitle = document.getElementById('applyModalTitle');
-
-      // Reset Step
-      step1Area.style.display = 'block';
-      step2Area.style.display = 'none';
-      modalFooter.style.display = 'none';
-      modalTitle.innerText = '수강 일정 선택';
+      
+      // 상태 초기화
+      currentStep = 1;
       selectedDateValue = '';
       dateQuestionLabel = '';
+      updateStepUI();
 
       try {
         const { data, error } = await supabaseClient
@@ -540,15 +566,14 @@
         
         surveyQuestions = data || [];
 
-        // 2-1. 기수 선택 문항 찾기 (type === 'select')
-        const dateQuestion = surveyQuestions.find(q => q.type === 'select');
+        // 1단계: 날짜 기수 문항 감지 (type === 'select' 이거나 라벨에 기수/날짜 포함)
+        const dateQ = surveyQuestions.find(q => q.type === 'select' || q.label.includes('기수') || q.label.includes('날짜'));
 
-        if (dateQuestion) {
-          dateQuestionLabel = dateQuestion.label;
-          const optionsList = dateQuestion.options ? dateQuestion.options.split(',') : [];
+        if (dateQ) {
+          dateQuestionLabel = dateQ.label;
+          const optionsList = dateQ.options ? dateQ.options.split(',') : [];
           
           if (optionsList.length > 0) {
-            // 1단계 날짜 리스트 카드 렌더링
             dateListContainer.innerHTML = optionsList.map(opt => `
               <button type="button" class="date-select-btn" data-value="${opt.trim()}">
                 <span>${opt.trim()}</span>
@@ -556,22 +581,23 @@
               </button>
             `).join('');
 
-            // 기수 선택 클릭 이벤트 바인딩
+            // 기수 선택 이벤트 바인딩
             dateListContainer.querySelectorAll('.date-select-btn').forEach(btn => {
               btn.addEventListener('click', () => {
                 selectedDateValue = btn.getAttribute('data-value');
-                goToStep2(selectedDateValue);
+                document.getElementById('selected-date-badge').innerText = selectedDateValue;
+                goToStep(2);
               });
             });
             return;
           }
         }
 
-        // 만약 기수 선택박스 질문이 없다면 바로 2단계 형태로 모든 설문 렌더링
-        goToStep2('');
+        // 일정 문항이 없을 시 스텝 2로 즉시 점프
+        goToStep(2);
 
       } catch (err) {
-        console.error('설문 로드 에러:', err);
+        console.error('설문 로딩 실패:', err);
         dateListContainer.innerHTML = `
           <p style="text-align:center; color:var(--accent); font-size:13px; padding: 20px;">
             일정을 불러오지 못했습니다. 다시 시도해 주세요.
@@ -580,41 +606,39 @@
       }
     }
 
-    // 3. 2단계(정보 입력) 화면으로 전환
-    function goToStep2(dateVal) {
-      const step1Area = document.getElementById('step1-area');
-      const step2Area = document.getElementById('step2-area');
-      const modalFooter = document.getElementById('modal-footer');
-      const modalTitle = document.getElementById('applyModalTitle');
-      const selectedDateBadge = document.getElementById('selected-date-badge');
-      const dynamicFieldsContainer = document.getElementById('dynamic-form-fields');
+    // 3. 필드 분류 및 동적 생성
+    // - 인적사항 (Step 2): 이름, 전화번호, 이메일, 연락처 단어가 라벨에 들어가거나 tel 타입인 것
+    // - 추가 질문 (Step 3): 1단계와 2단계에 걸러지지 않은 나머지 질문들
+    function renderFieldsBySteps() {
+      const personalContainer = document.getElementById('personal-fields-container');
+      const additionalContainer = document.getElementById('additional-fields-container');
 
-      modalTitle.innerText = '수강 신청 정보 입력';
+      // 스텝 2 인적사항 문항 필터링
+      const personalQuestions = surveyQuestions.filter(q => {
+        if (q.label === dateQuestionLabel) return false; // 일정 제외
+        const label = q.label.toLowerCase();
+        return q.type === 'tel' || label.includes('이름') || label.includes('전화') || label.includes('연락') || label.includes('이메일') || label.includes('메일');
+      });
 
-      if (dateVal) {
-        selectedDateBadge.innerText = dateVal;
-        step1Area.style.display = 'none';
-        step2Area.style.display = 'block';
-        modalFooter.style.display = 'flex';
+      // 스텝 3 추가 질문 문항 필터링
+      const additionalQuestions = surveyQuestions.filter(q => {
+        if (q.label === dateQuestionLabel) return false; // 일정 제외
+        const label = q.label.toLowerCase();
+        const isPersonal = q.type === 'tel' || label.includes('이름') || label.includes('전화') || label.includes('연락') || label.includes('이메일') || label.includes('메일');
+        return !isPersonal;
+      });
 
-        // 1단계 기수 선택 문항을 제외한 나머지 문항들만 2단계에 렌더링
-        const otherQuestions = surveyQuestions.filter(q => q.type !== 'select');
-        renderFields(dynamicFieldsContainer, otherQuestions);
-      } else {
-        // 기수 문항이 아예 없을 때: 1단계를 건너뛰고 전체 렌더링
-        step1Area.style.display = 'none';
-        step2Area.style.display = 'block';
-        modalFooter.style.display = 'flex';
-        // 요약 바 숨김 처리
-        selectedDateBadge.parentElement.parentElement.style.display = 'none';
-        renderFields(dynamicFieldsContainer, surveyQuestions);
-      }
+      renderFields(personalContainer, personalQuestions);
+      renderFields(additionalContainer, additionalQuestions);
     }
 
-    // 4. 나머지 폼 필드 동적 렌더링
+    // 4. 단일 컨테이너 필드 렌더링
     function renderFields(container, questions) {
       container.innerHTML = '';
-      if (questions.length === 0) return;
+      if (questions.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:13px; padding: 10px 0;">해당 단계의 입력 항목이 없습니다. 다음 단계를 진행해 주세요.</p>';
+        return;
+      }
 
       questions.forEach(q => {
         const group = document.createElement('div');
@@ -693,9 +717,32 @@
 
           group.appendChild(input);
         }
+        else if (q.type === 'select') {
+          // 혹시 인적사항/추가항목에 일반 select가 있을 경우 처리
+          const select = document.createElement('select');
+          select.className = 'form-select';
+          select.id = inputId;
+          select.required = q.required;
+
+          const defaultOpt = document.createElement('option');
+          defaultOpt.value = '';
+          defaultOpt.disabled = true;
+          defaultOpt.selected = true;
+          defaultOpt.innerText = q.placeholder || '선택해 주세요';
+          select.appendChild(defaultOpt);
+
+          const optionsList = q.options ? q.options.split(',') : [];
+          optionsList.forEach((optText) => {
+            const opt = document.createElement('option');
+            opt.value = optText.trim();
+            opt.innerText = optText.trim();
+            select.appendChild(opt);
+          });
+          group.appendChild(select);
+        }
         else {
           const input = document.createElement('input');
-          input.type = 'text';
+          input.type = q.label.includes('이메일') || q.label.includes('메일') ? 'email' : 'text';
           input.className = 'form-input';
           input.id = inputId;
           input.placeholder = q.placeholder || '';
@@ -707,41 +754,131 @@
       });
     }
 
+    // 5. 단계 제어 및 유효성 검사
+    function goToStep(step) {
+      currentStep = step;
+      updateStepUI();
+    }
+
+    function updateStepUI() {
+      const step1Area = document.getElementById('step1-area');
+      const step2Area = document.getElementById('step2-area');
+      const step3Area = document.getElementById('step3-area');
+      const modalFooter = document.getElementById('modal-footer');
+      const btnPrevStep = document.getElementById('btnPrevStep');
+      const btnNextStep = document.getElementById('btnNextStep');
+      const btnSubmit = document.getElementById('btnSubmit');
+      const modalTitle = document.getElementById('applyModalTitle');
+
+      // Step indicator dots
+      document.getElementById('dot-step1').className = `step-dot ${currentStep >= 1 ? 'active' : ''}`;
+      document.getElementById('dot-step2').className = `step-dot ${currentStep >= 2 ? 'active' : ''}`;
+      document.getElementById('dot-step3').className = `step-dot ${currentStep >= 3 ? 'active' : ''}`;
+
+      // Areas display
+      step1Area.style.display = currentStep === 1 ? 'block' : 'none';
+      step2Area.style.display = currentStep === 2 ? 'block' : 'none';
+      step3Area.style.display = currentStep === 3 ? 'block' : 'none';
+
+      // Footer buttons display
+      if (currentStep === 1) {
+        modalFooter.style.display = 'none';
+        modalTitle.innerText = '수강 일정 선택 (1/3)';
+      } else if (currentStep === 2) {
+        modalFooter.style.display = 'flex';
+        btnPrevStep.style.display = 'inline-block';
+        btnNextStep.style.display = 'inline-block';
+        btnSubmit.style.display = 'none';
+        modalTitle.innerText = '인적사항 입력 (2/3)';
+        
+        // 스텝 2 폼 렌더링
+        renderFieldsBySteps();
+      } else if (currentStep === 3) {
+        modalFooter.style.display = 'flex';
+        btnPrevStep.style.display = 'inline-block';
+        btnNextStep.style.display = 'none';
+        btnSubmit.style.display = 'inline-block';
+        modalTitle.innerText = '추가 질문 답변 (3/3)';
+      }
+    }
+
+    // 2단계 필수 입력값 검증 (HTML5 유효성 검사 가로채기)
+    function validateStep2Fields() {
+      const personalQuestions = surveyQuestions.filter(q => {
+        if (q.label === dateQuestionLabel) return false;
+        const label = q.label.toLowerCase();
+        return q.type === 'tel' || label.includes('이름') || label.includes('전화') || label.includes('연락') || label.includes('이메일') || label.includes('메일');
+      });
+
+      for (const q of personalQuestions) {
+        const el = document.getElementById(`field_${q.id}`);
+        if (!el) continue;
+        if (q.required && !el.value.trim()) {
+          alert(`'${q.label}' 항목은 필수 입력 사항입니다.`);
+          el.focus();
+          return false;
+        }
+        if (el.type === 'email' && el.value.trim()) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(el.value.trim())) {
+            alert('올바른 이메일 형식을 입력해 주세요.');
+            el.focus();
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
     // Modal Control
     const applyModalOverlay = document.getElementById('applyModalOverlay');
     const btnOpenApplyModal = document.getElementById('btnOpenApplyModal');
     const btnCloseApplyModal = document.getElementById('btnCloseApplyModal');
     const btnCancelApply = document.getElementById('btnCancelApply');
-    const btnBackToStep1 = document.getElementById('btn-back-to-step1');
+    const btnPrevStep = document.getElementById('btnPrevStep');
+    const btnNextStep = document.getElementById('btnNextStep');
 
-    const openModalFunc = () => {
+    btnOpenApplyModal.addEventListener('click', () => {
       applyModalOverlay.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       loadSurveyQuestions();
-    };
+    });
 
     const closeModalFunc = () => {
       applyModalOverlay.style.display = 'none';
       document.body.style.overflow = '';
     };
 
-    btnOpenApplyModal.addEventListener('click', openModalFunc);
     btnCloseApplyModal.addEventListener('click', closeModalFunc);
     btnCancelApply.addEventListener('click', closeModalFunc);
-
-    // 2단계에서 1단계로 돌아가기 (기수 재선택)
-    btnBackToStep1.addEventListener('click', () => {
-      document.getElementById('step1-area').style.display = 'block';
-      document.getElementById('step2-area').style.display = 'none';
-      document.getElementById('modal-footer').style.display = 'none';
-      document.getElementById('applyModalTitle').innerText = '수강 일정 선택';
-    });
 
     applyModalOverlay.addEventListener('click', (e) => {
       if (e.target === applyModalOverlay) closeModalFunc();
     });
 
-    // Form Submit (동적 답변 + 1단계 기수 선택 병합 제출)
+    // 스텝 이동 이벤트
+    btnPrevStep.addEventListener('click', () => {
+      if (currentStep === 2) {
+        // 만약 기수 날짜 선택 문항이 있는 상태이면 1단계로, 없으면 닫기
+        if (dateQuestionLabel) {
+          goToStep(1);
+        } else {
+          closeModalFunc();
+        }
+      } else if (currentStep === 3) {
+        goToStep(2);
+      }
+    });
+
+    btnNextStep.addEventListener('click', () => {
+      if (currentStep === 2) {
+        if (validateStep2Fields()) {
+          goToStep(3);
+        }
+      }
+    });
+
+    // Form Submit (1단계 선택 날짜 + 2단계 인적사항 + 3단계 추가질문)
     const form = document.getElementById('applyForm');
     const btnSubmit = document.getElementById('btnSubmit');
     const btnSpinner = document.getElementById('btnSpinner');
@@ -763,14 +900,15 @@
         let photoUrl = '';
         let photoFile = null;
 
-        // 1단계 날짜 선택 값 대입
+        // 1단계 일정 매핑
         if (dateQuestionLabel && selectedDateValue) {
           answers[dateQuestionLabel] = selectedDateValue;
         }
 
-        // 2단계 수집 데이터 병합
-        const otherQuestions = surveyQuestions.filter(q => q.type !== 'select');
-        for (const q of otherQuestions) {
+        // 전체 필드에서 데이터 수집
+        for (const q of surveyQuestions) {
+          if (q.label === dateQuestionLabel) continue;
+          
           const inputId = `field_${q.id}`;
           const el = document.getElementById(inputId);
           if (!el) continue;
@@ -781,25 +919,25 @@
             const val = el.value.trim();
             answers[q.label] = val;
 
-            if (q.label === '이름') name = val;
-            if (q.label === '전화번호') phone = val;
+            if (q.label.includes('이름')) name = val;
+            if (q.label.includes('전화') || q.label.includes('연락처')) phone = val;
           }
         }
 
-        // Fallback 매핑
+        // 대표 이름 및 전화번호 매핑 보장
         if (!name) {
-          const firstTxt = surveyQuestions.find(q => q.type === 'text');
+          const firstTxt = surveyQuestions.find(q => q.label.includes('이름') || q.type === 'text');
           if (firstTxt) name = document.getElementById(`field_${firstTxt.id}`).value.trim();
         }
         if (!phone) {
-          const firstTel = surveyQuestions.find(q => q.type === 'tel');
+          const firstTel = surveyQuestions.find(q => q.type === 'tel' || q.label.includes('전화'));
           if (firstTel) phone = document.getElementById(`field_${firstTel.id}`).value.trim();
         }
 
         if (!name) name = '익명 신청자';
         if (!phone) phone = '010-0000-0000';
 
-        // 스토리지 사진 업로드
+        // 사진 파일 업로드
         if (photoFile) {
           const fileExt = photoFile.name.split('.').pop();
           const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
@@ -821,7 +959,7 @@
           answers['사진 첨부'] = photoUrl;
         }
 
-        // 데이터 삽입
+        // Supabase DB 제출
         const { data, error } = await supabaseClient
           .from('ryzin_class_applications')
           .insert([

@@ -72,8 +72,9 @@ function createDemoInitialData() {
       { id: 1, type: 'select', label: '수강 기수 선택', placeholder: '기수를 선택해 주세요', options: '1기 - 2026년 8월 10일 (월) 19:00,2기 - 2026년 8월 17일 (월) 19:00,3기 - 2026년 8월 24일 (월) 19:00,4기 - 2026년 8월 31일 (월) 19:00', required: true, sort_order: 1 },
       { id: 2, type: 'text', label: '이름', placeholder: '실명을 입력해 주세요', options: '', required: true, sort_order: 2 },
       { id: 3, type: 'tel', label: '전화번호', placeholder: '010-0000-0000', options: '', required: true, sort_order: 3 },
-      { id: 4, type: 'textarea', label: '크리에이터가 되고 싶은 이유', placeholder: '이유와 목표를 상세히 적어주세요.', options: '', required: true, sort_order: 4 },
-      { id: 5, type: 'file', label: '사진 첨부', placeholder: '', options: '', required: false, sort_order: 5 }
+      { id: 4, type: 'text', label: '이메일 주소', placeholder: 'example@email.com', options: '', required: true, sort_order: 4 },
+      { id: 5, type: 'textarea', label: '크리에이터가 되고 싶은 이유', placeholder: '이유와 목표를 상세히 적어주세요.', options: '', required: true, sort_order: 5 },
+      { id: 6, type: 'file', label: '사진 첨부', placeholder: '', options: '', required: false, sort_order: 6 }
     ],
     currentRole: 'admin'
   };
