@@ -534,16 +534,25 @@
     let selectedDateValue = '';
     let dateQuestionLabel = '';
 
-    // 1. 배너 이미지 로드 (캐시방지)
-    function loadBannerImage() {
+    // 1. 배너 이미지 로드 (설정 테이블 조회 방식)
+    async function loadBannerImage() {
       const bannerImg = document.getElementById('class-detail-banner-img');
-      const storageUrl = `${SUPABASE_URL}/storage/v1/object/public/class_applications/class_detail_banner.png?t=${Date.now()}`;
-      
-      bannerImg.src = storageUrl;
-      bannerImg.onerror = () => {
-        bannerImg.onerror = null;
+      try {
+        const { data, error } = await supabaseClient
+          .from('ryzin_class_settings')
+          .select('value')
+          .eq('key', 'detail_banner_url')
+          .single();
+
+        if (error || !data || !data.value) {
+          throw new Error('설정 없음');
+        }
+
+        bannerImg.src = data.value;
+      } catch (err) {
+        console.warn('설정 이미지 로드 실패, 로컬 기본 배너 사용:', err);
         bannerImg.src = '../assets/ryzinclass_banner.png';
-      };
+      }
     }
 
     // 2. 질문 데이터 로드 및 파싱

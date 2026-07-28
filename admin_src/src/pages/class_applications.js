@@ -277,35 +277,36 @@ export function renderClassApplications() {
       changeBannerBtn.textContent = '업로드 중...';
 
       try {
-        // Initialize Supabase Storage
         const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // 자동 버킷 생성 시도 (없을 시 자동복구 시도)
-        try {
-          const { data: buckets } = await supabase.storage.listBuckets();
-          const exists = buckets && buckets.some(b => b.id === 'class_applications');
-          if (!exists) {
-            await supabase.storage.createBucket('class_applications', { public: true });
-          }
-        } catch (bucketErr) {
-          console.warn('자동 버킷 생성 시도 실패:', bucketErr);
-        }
+        // 고유 파일명 생성하여 캐시 및 충돌 차단
+        const fileExt = file.name.split('.').pop();
+        const uniqueFileName = `detail_banner_${Date.now()}.${fileExt}`;
 
-        // Upload / Upsert detail banner
-        const { data, error } = await supabase
+        // 1. Storage 업로드
+        const { data, error: uploadError } = await supabase
           .storage
           .from('class_applications')
-          .upload('class_detail_banner.png', file, {
-            upsert: true
-          });
+          .upload(uniqueFileName, file);
 
-        if (error) {
-          if (error.message && error.message.includes('Bucket not found')) {
-            throw new Error('Supabase Storage에 class_applications Public 버킷을 생성해 주세요.');
-          }
-          throw error;
-        }
-        showSuccess('상세페이지 배너 이미지가 변경되었습니다.');
+        if (uploadError) throw uploadError;
+
+        // 2. Public URL 획득
+        const { data: urlData } = supabase
+          .storage
+          .from('class_applications')
+          .getPublicUrl(uniqueFileName);
+
+        const publicUrl = urlData.publicUrl;
+
+        // 3. 설정 테이블(ryzin_class_settings)에 URL upsert 갱신
+        const { error: dbError } = await supabase
+          .from('ryzin_class_settings')
+          .upsert({ key: 'detail_banner_url', value: publicUrl });
+
+        if (dbError) throw dbError;
+
+        showSuccess('상세페이지 배너 이미지가 성공적으로 변경되었습니다.');
 
       } catch (err) {
         console.error(err);
