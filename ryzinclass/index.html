@@ -832,23 +832,27 @@
     const btnPrevStep = document.getElementById('btnPrevStep');
     const btnNextStep = document.getElementById('btnNextStep');
 
-    btnOpenApplyModal.addEventListener('click', () => {
-      applyModalOverlay.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-      loadSurveyQuestions();
-    });
+    if (btnOpenApplyModal) {
+      btnOpenApplyModal.addEventListener('click', () => {
+        if (applyModalOverlay) applyModalOverlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        loadSurveyQuestions();
+      });
+    }
 
     const closeModalFunc = () => {
-      applyModalOverlay.style.display = 'none';
+      if (applyModalOverlay) applyModalOverlay.style.display = 'none';
       document.body.style.overflow = '';
     };
 
-    btnCloseApplyModal.addEventListener('click', closeModalFunc);
-    btnCancelApply.addEventListener('click', closeModalFunc);
+    if (btnCloseApplyModal) btnCloseApplyModal.addEventListener('click', closeModalFunc);
+    if (btnCancelApply) btnCancelApply.addEventListener('click', closeModalFunc);
 
-    applyModalOverlay.addEventListener('click', (e) => {
-      if (e.target === applyModalOverlay) closeModalFunc();
-    });
+    if (applyModalOverlay) {
+      applyModalOverlay.addEventListener('click', (e) => {
+        if (e.target === applyModalOverlay) closeModalFunc();
+      });
+    }
 
     // 스텝 제어 바인딩
     btnPrevStep.addEventListener('click', (e) => {
