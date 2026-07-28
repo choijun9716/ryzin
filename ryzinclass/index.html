@@ -102,9 +102,11 @@
     }
 
     .floating-bar {
-      position: absolute;
+      position: fixed;
       bottom: 0;
-      left: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 480px;
       width: 100%;
       background-color: #1e293b;
       color: #ffffff;
