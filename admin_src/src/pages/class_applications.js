@@ -339,24 +339,9 @@ export function renderClassApplications() {
         const { data, error: uploadError } = await supabase
           .storage
           .from('class_applications')
-          .upload(uniqueFileName, file);
+          .upload('class_detail_banner.png', file);
 
         if (uploadError) throw uploadError;
-
-        // 2. Public URL 획득
-        const { data: urlData } = supabase
-          .storage
-          .from('class_applications')
-          .getPublicUrl(uniqueFileName);
-
-        const publicUrl = urlData.publicUrl;
-
-        // 3. 설정 테이블(ryzin_class_settings)에 URL upsert 갱신
-        const { error: dbError } = await supabase
-          .from('ryzin_class_settings')
-          .upsert({ key: 'detail_banner_url', value: publicUrl });
-
-        if (dbError) throw dbError;
 
         showSuccess('상세페이지 배너 이미지가 성공적으로 변경되었습니다.');
 
