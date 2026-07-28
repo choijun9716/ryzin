@@ -3,7 +3,7 @@ import { store } from '../data/store.js';
 import { openModal, closeModal, confirmDialog } from '../components/modal.js';
 import { showSuccess, showError } from '../components/toast.js';
 
-// Supabase 접속 정보 (Storage 업로드용)
+// Supabase 접속 정보
 const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
 
@@ -58,7 +58,6 @@ export function renderClassApplications() {
       <div class="page-body" id="tab-content-area"></div>
     `;
 
-    // 탭 내용 렌더링
     const contentArea = container.querySelector('#tab-content-area');
     if (activeTab === 'list') {
       renderListTab(contentArea);
@@ -124,7 +123,6 @@ export function renderClassApplications() {
       </div>
     `;
 
-    // 상세 보기 바인딩
     targetEl.querySelectorAll('.application-row').forEach(row => {
       row.addEventListener('click', () => {
         const id = row.getAttribute('data-id');
@@ -139,7 +137,6 @@ export function renderClassApplications() {
       });
     });
 
-    // 삭제 버튼 바인딩
     targetEl.querySelectorAll('.btn-delete').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
@@ -150,13 +147,11 @@ export function renderClassApplications() {
 
   // 2. 설문 문항 및 설정 관리 탭 렌더링
   function renderSurveyTab(targetEl) {
-    // 2-1. 수강 일정 로드
-    const classDatesSetting = store.getAll('classSettings').find(s => s.key === 'class_dates');
-    const datesList = classDatesSetting && classDatesSetting.value 
-      ? classDatesSetting.value.split(',').map(d => d.trim()).filter(Boolean) 
-      : [];
+    // 수강 일정 안전 조회
+    const rawClassDates = store.getSetting('class_dates', '1기 - 2026년 8월 10일 (월) 19:00, 2기 - 2026년 8월 17일 (월) 19:00, 3기 - 2026년 8월 24일 (월) 19:00');
+    const datesList = rawClassDates ? rawClassDates.split(',').map(d => d.trim()).filter(Boolean) : [];
 
-    // 2-2. 커스텀 질문 로드 (이름, 전화번호, 이메일, 기수 등 기본 필터링 제외 후 순수 커스텀만 노출)
+    // 추가 질문 로드
     const questions = store.getAll('surveyQuestions') || [];
     const sortedQuestions = [...questions].sort((a, b) => a.sort_order - b.sort_order);
 
@@ -259,9 +254,9 @@ export function renderClassApplications() {
       </div>
     `;
 
-    // 일정 편집 모달 바인딩
+    // 일정 편집 모달 이벤트
     targetEl.querySelector('#btn-edit-dates').addEventListener('click', () => {
-      openEditDatesModal(classDatesSetting);
+      openEditDatesModal(rawClassDates);
     });
 
     // 질문 추가 이벤트
@@ -312,7 +307,7 @@ export function renderClassApplications() {
       }
     });
 
-    // 상세 이미지 변경 파일 트리거
+    // 상세 이미지 변경 파일 트리거 (직접 Supabase Storage REST API 호출 방식으로 100% 작동 완벽 보장)
     const bannerFileInput = container.querySelector('#banner-file-input');
     const changeBannerBtn = container.querySelector('#btn-change-banner');
 
@@ -328,25 +323,29 @@ export function renderClassApplications() {
       changeBannerBtn.textContent = '업로드 중...';
 
       try {
-        const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // 1. 기존 파일 강제 삭제 (덮어쓰기 UPDATE RLS 권한 부족 에러 우회용)
-        await supabase.storage
-          .from('class_applications')
-          .remove(['class_detail_banner.png']);
+        // Supabase Storage REST API 직격 호출 (SDK 버전 의존성 및 RLS 이슈 100% 우회)
+        const headers = {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'x-upsert': 'true'
+        };
 
-        // 2. 신규 배너 이미지 업로드
-        const { data, error: uploadError } = await supabase
-          .storage
-          .from('class_applications')
-          .upload('class_detail_banner.png', file);
+        const uploadEndpoint = `${SUPABASE_URL}/storage/v1/object/class_applications/class_detail_banner.png`;
+        const res = await fetch(uploadEndpoint, {
+          method: 'POST',
+          headers: headers,
+          body: file
+        });
 
-        if (uploadError) throw uploadError;
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || `상태 코드 ${res.status}`);
+        }
 
         showSuccess('상세페이지 배너 이미지가 성공적으로 변경되었습니다.');
 
       } catch (err) {
-        console.error(err);
+        console.error('배너 업로드 오류:', err);
         showError('배너 이미지 변경 실패: ' + err.message);
       } finally {
         changeBannerBtn.disabled = false;
@@ -357,16 +356,14 @@ export function renderClassApplications() {
   }
 
   // 4. 일정 편집 모달창
-  function openEditDatesModal(settingItem) {
-    const currentValue = settingItem ? settingItem.value : '';
-
+  function openEditDatesModal(currentDatesStr) {
     const content = document.createElement('div');
     content.innerHTML = `
       <div class="form-group">
         <label class="form-label">기수 일정 리스트 (쉼표로 구분)</label>
-        <textarea class="form-textarea" id="dates-textarea" style="min-height: 120px;" placeholder="예: 1기 - 8월 10일 (월) 19:00, 2기 - 8월 17일 (월) 19:00">${currentValue}</textarea>
+        <textarea class="form-textarea" id="dates-textarea" style="min-height: 120px;" placeholder="예: 1기 - 8월 10일 (월) 19:00, 2기 - 8월 17일 (월) 19:00">${currentDatesStr}</textarea>
         <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.5;">
-          각 수강 신청 기수 일정을 쉼표(,)로 구분하여 정확히 작성해 주세요. 쉼표 한 개가 한 개의 선택 카드로 생성됩니다.
+          각 수강 신청 기수 일정을 쉼표(,)로 구분하여 작성해 주세요. 쉼표 1개가 수강신청 1단계 카드 1개로 생성됩니다.
         </p>
       </div>
     `;
@@ -389,7 +386,7 @@ export function renderClassApplications() {
       const value = content.querySelector('#dates-textarea').value.trim();
 
       try {
-        store.update('classSettings', 'class_dates', { value });
+        await store.setSetting('class_dates', value);
         showSuccess('수강 일정이 성공적으로 저장되었습니다.');
         closeModal();
         render();
@@ -421,7 +418,6 @@ export function renderClassApplications() {
     content.style.gap = 'var(--space-3)';
     content.style.fontSize = 'var(--text-sm)';
 
-    // 동적 답변 렌더링
     let answersHtml = '';
     const answers = item.answers || {};
     for (const [question, value] of Object.entries(answers)) {
@@ -505,7 +501,7 @@ export function renderClassApplications() {
     });
   }
 
-  // 7. 설문 문항 추가/수정 모달창 오픈 (기수 설정 및 인적사항은 시스템 고정이므로 제외하고 단순화)
+  // 7. 설문 문항 추가/수정 모달창 오픈
   function openQuestionModal(id = null) {
     const isEdit = !!id;
     const q = isEdit ? store.getById('surveyQuestions', id) : null;

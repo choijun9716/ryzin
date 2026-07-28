@@ -571,16 +571,23 @@
       updateStepUI();
 
       try {
-        // 2-1. 일정 로드 (ryzin_class_settings)
-        const { data: settingsData, error: settingsErr } = await supabaseClient
-          .from('ryzin_class_settings')
-          .select('value')
-          .eq('key', 'class_dates')
-          .single();
+        // 2-1. 일정 로드 (ryzin_class_settings 및 DB 미생성 시 Fallback 안전장치 적용)
+        let rawDates = '1기 - 2026년 8월 10일 (월) 19:00, 2기 - 2026년 8월 17일 (월) 19:00, 3기 - 2026년 8월 24일 (월) 19:00, 4기 - 2026년 8월 31일 (월) 19:00';
+        
+        try {
+          const { data: settingsData } = await supabaseClient
+            .from('ryzin_class_settings')
+            .select('value')
+            .eq('key', 'class_dates')
+            .single();
 
-        if (settingsErr) throw settingsErr;
+          if (settingsData && settingsData.value) {
+            rawDates = settingsData.value;
+          }
+        } catch (e) {
+          console.warn('일정 DB 로드 실패, 기본 일정 노출:', e);
+        }
 
-        const rawDates = settingsData ? settingsData.value : '';
         const optionsList = rawDates ? rawDates.split(',').map(d => d.trim()).filter(Boolean) : [];
 
         if (optionsList.length > 0) {

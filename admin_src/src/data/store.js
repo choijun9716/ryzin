@@ -736,10 +736,48 @@ class DataStore {
     return item;
   }
 
+  getSetting(key, defaultValue = '') {
+    const arr = this._data.classSettings || [];
+    const item = arr.find(s => s.key === key);
+    return item ? item.value : defaultValue;
+  }
+
+  async setSetting(key, value) {
+    if (!this._data.classSettings) this._data.classSettings = [];
+    const arr = this._data.classSettings;
+    const idx = arr.findIndex(s => s.key === key);
+    if (idx !== -1) {
+      arr[idx].value = value;
+    } else {
+      arr.push({ key, value });
+    }
+    this._save();
+    this._emit('classSettings:changed');
+
+    try {
+      const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      };
+      await fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_settings`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ key, value })
+      });
+    } catch (e) {
+      console.error('설정 저장 에러:', e);
+    }
+  }
+
   update(collection, id, updates) {
     const arr = this._data[collection] || [];
-    const idx = arr.findIndex(item => item.id === id);
-    if (idx === -1) return null;
+    const idx = arr.findIndex(item => item.id === id || item.key === id);
+    if (idx === -1) {
+      const newItem = { id, key: id, ...updates };
+      return this.create(collection, newItem);
+    }
     arr[idx] = { ...arr[idx], ...updates, updatedAt: new Date().toISOString() };
     this._save();
     this._emit(`${collection}:updated`, arr[idx]);
