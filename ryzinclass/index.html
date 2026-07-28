@@ -439,7 +439,7 @@
 
     <!-- Detail Image Area -->
     <div class="detail-image-container">
-      <img id="class-detail-banner-img" src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80" alt="크리에이터 원데이 클래스 상세 정보" class="detail-image">
+      <img id="class-detail-banner-img" src="../assets/ryzinclass_detail_banner.png" alt="크리에이터 원데이 클래스 상세 정보" class="detail-image">
     </div>
 
     <!-- Sticky Floating Bar -->
@@ -546,12 +546,11 @@
     let currentStep = 1;
     let selectedDateValue = '';
 
-    // 1. 배너 이미지 로드 (DB Base64 -> 스토리지 -> 고화질 스튜디오 기본 배너 3단계 무적 렌더링)
+    // 1. 배너 이미지 로드 (어드민 변경 이미지 -> 기본 로컬 HD 배너 렌더링)
     async function loadBannerImage() {
       const bannerImg = document.getElementById('class-detail-banner-img');
-      const defaultStudioBanner = 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80';
+      const defaultLocalBanner = '../assets/ryzinclass_detail_banner.png';
       
-      // 1순위: DB 설정 테이블(ryzin_class_settings)에서 관리자가 변경한 이미지 읽기
       try {
         const { data } = await supabaseClient
           .from('ryzin_class_settings')
@@ -561,23 +560,13 @@
 
         if (data && data.value) {
           bannerImg.src = data.value;
-          bannerImg.style.display = 'block';
           return;
         }
       } catch (e) {
-        console.warn('DB 배너 이미지 설정 로드 예외:', e);
+        console.warn('어드민 등록 이미지 조회 실패, 기본 로컬 HD 배너 유지:', e);
       }
 
-      // 2순위: 스토리지 파일 다이렉트 URL 읽기 시도
-      const storageUrl = `${SUPABASE_URL}/storage/v1/object/public/class_applications/class_detail_banner.png?t=${Date.now()}`;
-      bannerImg.src = storageUrl;
-      bannerImg.style.display = 'block';
-
-      bannerImg.onerror = () => {
-        // 3순위: 어드민 등록 전에도 휑하지 않도록 세련된 크리에이터 스튜디오 고화질 배너로 100% 렌더링 보장
-        bannerImg.onerror = null;
-        bannerImg.src = defaultStudioBanner;
-      };
+      bannerImg.src = defaultLocalBanner;
     }
 
     // 2. 일정 설정 및 추가 질문 데이터 로딩

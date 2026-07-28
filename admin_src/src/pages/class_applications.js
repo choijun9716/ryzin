@@ -156,6 +156,20 @@ export function renderClassApplications() {
     const sortedQuestions = [...questions].sort((a, b) => a.sort_order - b.sort_order);
 
     targetEl.innerHTML = `
+      <!-- 영역 0: 수강신청 대표 상세페이지 배너 이미지 관리 -->
+      <div class="card" style="margin-bottom: var(--space-4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: var(--space-3); margin-bottom: var(--space-3);">
+          <div>
+            <h3 style="font-size: 15px; font-weight: 800;">상세페이지 메인 배너 이미지</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">수강신청 화면 최상단에 노출되는 대표 배너 이미지입니다.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-change-banner-card">배너 이미지 변경</button>
+        </div>
+        <div style="text-align: center; background-color: #f8fafc; padding: 16px; border-radius: var(--radius-sm); border: 1px dashed var(--border);">
+          <img id="admin-banner-preview" src="${store.getSetting('detail_banner_url', '../assets/ryzinclass_detail_banner.png')}" alt="현재 배너 이미지" style="max-width: 100%; max-height: 220px; object-fit: contain; border-radius: var(--radius-sm);" />
+        </div>
+      </div>
+
       <!-- 영역 1: 수강 기수/일정 설정 -->
       <div class="card" style="margin-bottom: var(--space-4);">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: var(--space-3); margin-bottom: var(--space-3);">
@@ -307,23 +321,27 @@ export function renderClassApplications() {
       }
     });
 
-    // 상세 이미지 변경 파일 트리거 (직접 Supabase Storage REST API 호출 방식으로 100% 작동 완벽 보장)
+    // 상세 이미지 변경 파일 트리거
     const bannerFileInput = container.querySelector('#banner-file-input');
     const changeBannerBtn = container.querySelector('#btn-change-banner');
+    const changeBannerCardBtn = container.querySelector('#btn-change-banner-card');
 
-    changeBannerBtn.addEventListener('click', () => {
-      bannerFileInput.click();
-    });
+    if (changeBannerBtn) {
+      changeBannerBtn.addEventListener('click', () => bannerFileInput.click());
+    }
+    if (changeBannerCardBtn) {
+      changeBannerCardBtn.addEventListener('click', () => bannerFileInput.click());
+    }
 
     bannerFileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      changeBannerBtn.disabled = true;
-      changeBannerBtn.textContent = '업로드 중...';
+      if (changeBannerBtn) changeBannerBtn.disabled = true;
+      if (changeBannerCardBtn) changeBannerCardBtn.disabled = true;
 
       try {
-        // 1. 이미지를 Base64 DataURL 포맷으로 1초 만에 인코딩 변환
+        // 1. 이미지를 Base64 DataURL 포맷으로 인코딩 변환
         const dataUrl = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = (ev) => resolve(ev.target.result);
@@ -331,10 +349,14 @@ export function renderClassApplications() {
           reader.readAsDataURL(file);
         });
 
-        // 2. DB 설정 테이블(ryzin_class_settings) 및 스토어에 무조건 실시간 직접 저장 (스토리지 장애 100% 우회)
+        // 2. DB 설정 테이블 및 스토어에 무조건 실시간 직접 저장
         await store.setSetting('detail_banner_url', dataUrl);
 
-        // 3. 스토리지 REST API 보조 업로드 (Content-Type 포함)
+        // 3. 어드민 미리보기 이미지 즉시 갱신
+        const adminPreview = container.querySelector('#admin-banner-preview');
+        if (adminPreview) adminPreview.src = dataUrl;
+
+        // 4. 스토리지 REST API 보조 업로드 (Content-Type 포함)
         try {
           const headers = {
             'apikey': SUPABASE_KEY,
@@ -357,8 +379,8 @@ export function renderClassApplications() {
         console.error('배너 업로드 오류:', err);
         showError('배너 이미지 변경 실패: ' + err.message);
       } finally {
-        changeBannerBtn.disabled = false;
-        changeBannerBtn.textContent = '상세 이미지 변경';
+        if (changeBannerBtn) changeBannerBtn.disabled = false;
+        if (changeBannerCardBtn) changeBannerCardBtn.disabled = false;
         bannerFileInput.value = '';
       }
     });
