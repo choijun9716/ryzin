@@ -330,10 +330,12 @@ export function renderClassApplications() {
       try {
         const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        const fileExt = file.name.split('.').pop();
-        const uniqueFileName = `detail_banner_${Date.now()}.${fileExt}`;
+        // 1. 기존 파일 강제 삭제 (덮어쓰기 UPDATE RLS 권한 부족 에러 우회용)
+        await supabase.storage
+          .from('class_applications')
+          .remove(['class_detail_banner.png']);
 
-        // 1. Storage 업로드
+        // 2. 신규 배너 이미지 업로드
         const { data, error: uploadError } = await supabase
           .storage
           .from('class_applications')
