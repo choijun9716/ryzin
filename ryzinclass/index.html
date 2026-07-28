@@ -517,9 +517,6 @@
               </div>
               <span style="font-size: 18px; font-weight: 900; color: var(--primary);">99,000원</span>
             </div>
-            <p style="font-size: 11px; color: #60a5fa; margin-top: 6px; line-height: 1.4;">
-              신청 완료 시 문자로 입금 계좌 및 수강 확정 안내가 발송됩니다.
-            </p>
           </div>
         </div>
       </div>
@@ -530,7 +527,7 @@
         <button type="button" class="btn btn-primary" id="btnNextStep" onclick="handleNextStep(event)">다음 단계</button>
         <button type="button" class="btn btn-primary" id="btnSubmit" onclick="handleSubmit(event)" style="display: none;">
           <span class="spinner" id="btnSpinner"></span>
-          <span id="btnText">결제하기 (수강 신청 완료)</span>
+          <span id="btnText">수강 신청 완료</span>
         </button>
       </div>
     </div>
@@ -968,19 +965,25 @@
         window.closeModalFunc();
         if (successPopup) successPopup.style.display = 'flex';
 
+        // 신청 완료 시 페이앱 결제 페이지로 자동 이동
+        setTimeout(() => {
+          window.location.href = 'https://www.payapp.kr/L/z4hUXF';
+        }, 1200);
+
       } catch (err) {
         console.error('제출 오류:', err);
         alert('신청 접수 중 문제가 발생했습니다: ' + err.message);
       } finally {
         if (btnSubmit) btnSubmit.disabled = false;
         if (btnSpinner) btnSpinner.style.display = 'none';
-        if (btnText) btnText.textContent = '결제하기 (수강 신청 완료)';
+        if (btnText) btnText.textContent = '수강 신청 완료';
       }
     };
 
     window.closeSuccessPopup = function() {
       const successPopup = document.getElementById('successPopup');
       if (successPopup) successPopup.style.display = 'none';
+      window.location.href = 'https://www.payapp.kr/L/z4hUXF';
     };
 
     // 초기화
