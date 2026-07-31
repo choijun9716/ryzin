@@ -1222,6 +1222,24 @@ function renderFinanceTab(project) {
   const matchings = store.query('liveHosts', m => m.liveId === project.id);
   const hostCost = matchings.reduce((sum, m) => sum + (m.fee || 0), 0);
 
+  const productionCost = finance.productionCost || 0;
+  const adCost = finance.adCost || 0;
+  const otherCost = finance.otherCost || 0;
+
+  // 1. 영업매출액 = 제작비 + 쇼호스트비 + 광고비 (+대행 마진)
+  const salesRevenue = (finance.salesRevenue !== undefined && finance.salesRevenue !== null && finance.salesRevenue > 0)
+    ? finance.salesRevenue
+    : (productionCost + hostCost + adCost);
+
+  // 2. 영업이익 = 영업매출액 - (쇼호스트비 + 광고비 + 기타비용)
+  const operatingProfit = salesRevenue - (hostCost + adCost + otherCost);
+
+  // 3. 부가가치세 = 영업매출액 × 10%
+  const vat = Math.round(salesRevenue * 0.1);
+
+  // 4. 순마진 = 영업이익 - 부가가치세
+  const netMargin = operatingProfit - vat;
+
   el.innerHTML = `
     <div class="card">
       <div class="card-header">
@@ -1230,31 +1248,31 @@ function renderFinanceTab(project) {
       </div>
       <div class="card-body">
         <div class="stats-grid" style="margin-bottom: var(--space-6);">
-          <div class="stat-card"><div class="stat-label">제작비</div><div class="stat-value">${formatCurrency(finance.productionCost)}</div></div>
+          <div class="stat-card"><div class="stat-label">제작비</div><div class="stat-value">${formatCurrency(productionCost)}</div></div>
           <div class="stat-card"><div class="stat-label">쇼호스트비</div><div class="stat-value">${formatCurrency(hostCost)}</div></div>
-          <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${formatCurrency(finance.adCost)}</div></div>
-          <div class="stat-card"><div class="stat-label">기타비용</div><div class="stat-value">${formatCurrency(finance.otherCost)}</div></div>
+          <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${formatCurrency(adCost)}</div></div>
+          <div class="stat-card"><div class="stat-label">기타비용</div><div class="stat-value">${formatCurrency(otherCost)}</div></div>
         </div>
         <div style="border-top: 1px solid var(--border-light); padding-top: var(--space-5);">
           <div class="stats-grid">
             <div class="stat-card" style="border-color: var(--border-strong);">
               <div class="stat-label">영업매출액</div>
-              <div class="stat-value">${formatCurrency(finance.salesRevenue)}</div>
+              <div class="stat-value">${formatCurrency(salesRevenue)}</div>
             </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
               <div class="stat-label">영업이익</div>
-              <div class="stat-value" style="color: ${(finance.operatingProfit || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(finance.operatingProfit)}</div>
+              <div class="stat-value" style="color: ${operatingProfit >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(operatingProfit)}</div>
             </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
               <div class="stat-label">순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 차감 후)</span></div>
-              <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">
-                ${formatCurrency(finance.netMargin)}
-                <span style="font-size: 13px; font-weight: 600; margin-left: 4px;">(${finance.salesRevenue ? ((finance.netMargin || 0) / finance.salesRevenue * 100).toFixed(1) : 0}%)</span>
+              <div class="stat-value" style="color: ${netMargin >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">
+                ${formatCurrency(netMargin)}
+                <span style="font-size: 13px; font-weight: 600; margin-left: 4px;">(${salesRevenue ? (netMargin / salesRevenue * 100).toFixed(1) : 0}%)</span>
               </div>
             </div>
             <div class="stat-card">
               <div class="stat-label">부가가치세 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 10%)</span></div>
-              <div class="stat-value">${formatCurrency(finance.vat !== undefined ? finance.vat : Math.round((finance.salesRevenue || 0) * 0.1))}</div>
+              <div class="stat-value">${formatCurrency(vat)}</div>
             </div>
           </div>
         </div>
@@ -1283,7 +1301,8 @@ function renderFinanceTab(project) {
         const adCost = parseInt(document.getElementById('fin-ad').value) || 0;
         const productionCost = parseInt(document.getElementById('fin-prod').value) || 0;
         const otherCost = parseInt(document.getElementById('fin-other').value) || 0;
-        const salesRevenue = parseInt(document.getElementById('fin-sales').value) || 0;
+        const inputSales = parseInt(document.getElementById('fin-sales').value);
+        const salesRevenue = (!isNaN(inputSales) && inputSales > 0) ? inputSales : (productionCost + hostCost + adCost);
         const operatingProfit = salesRevenue - hostCost - adCost - otherCost;
         const vat = Math.round(salesRevenue * 0.1);
         const netMargin = operatingProfit - vat;
