@@ -157,9 +157,11 @@ export function parsePayslipRawText(rawText, options = {}) {
  */
 export function encodePayslipData(data) {
   try {
-    // 단축 스키마: n(이름), p(지급일), i([[방송일, 브랜드, 금액], ...])
+    // 단축 스키마: n(이름), b(생년월일), ph(전화번호), p(지급일), i([[방송일, 브랜드, 금액], ...])
     const compact = {
       n: data.recipientName || '',
+      b: data.birthDate || '',
+      ph: data.phone || '',
       p: data.paymentDate || '',
       i: (data.items || []).map(item => [
         item.date || '',
@@ -179,7 +181,7 @@ export function encodePayslipData(data) {
 }
 
 /**
- * URL 파라미터의 Base64 문자열을 명세서 데이터 객체로 디코딩 (구버전/신버전 모두 지원)
+ * URL 파라미ter의 Base64 문자열을 명세서 데이터 객체로 디코딩 (구버전/신버전 모두 지원)
  */
 export function decodePayslipData(encodedStr) {
   if (!encodedStr) return null;
@@ -198,6 +200,8 @@ export function decodePayslipData(encodedStr) {
     // 단축 스키마(n, p, i)인 경우 표준 객체 구조로 복원
     if (parsed && (parsed.n !== undefined || parsed.i !== undefined)) {
       const recipientName = parsed.n || '쇼호스트';
+      const birthDate = parsed.b || '';
+      const phone = parsed.ph || '';
       const paymentDate = parsed.p || '';
       const items = (parsed.i || []).map(row => {
         const date = row[0] || '';
@@ -214,6 +218,8 @@ export function decodePayslipData(encodedStr) {
       return {
         paymentDate,
         recipientName,
+        birthDate,
+        phone,
         company: { name: '라이진', bizNo: '821-29-01197', ceo: '채이준', email: 'choijun@ryzincorp.com' },
         items,
         totals: { amount: totalAmount, tax: totalTax, netAmount: totalNet }

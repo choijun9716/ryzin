@@ -54,10 +54,16 @@ export function renderSettlement() {
       const netFee = fee - tax;
       const settleStatus = lh.settleStatus || 'pending';
 
+      const hostObj = store.getById('hosts', lh.hostId) || store.getAll('hosts').find(h => h.name === host.name) || {};
+      const birthDate = hostObj.ssn ? hostObj.ssn.split('-')[0] : (hostObj.birthDate || '');
+      const phone = hostObj.phone || '';
+
       settlementItems.push({
         id: lh.id,
         hostId: lh.hostId,
         hostName: host.name,
+        birthDate,
+        phone,
         date,
         month: date.slice(0, 7),
         brandName,
@@ -79,10 +85,15 @@ export function renderSettlement() {
         // 날짜: 라이브 config > project.broadcastDate > 오늘
         const date = getLiveDateFromConfig(p.id) || p.broadcastDate || p.date || today;
         const brandName = p.brandName || p.title || '라이진';
+        const hostObj = store.getById('hosts', p.hostId) || store.getAll('hosts').find(h => h.name === p.hostName) || {};
+        const birthDate = hostObj.ssn ? hostObj.ssn.split('-')[0] : (hostObj.birthDate || '');
+        const phone = hostObj.phone || '';
         settlementItems.push({
           id: `proj-host-${p.id}`,
           hostId: p.hostId || p.hostName,
           hostName: p.hostName,
+          birthDate,
+          phone,
           date,
           month: date.slice(0, 7),
           brandName,
@@ -339,11 +350,14 @@ export function renderSettlement() {
         const totalTax       = grp.items.reduce((s, i) => s + i.tax, 0);
         const totalNetAmount = totalAmount - totalTax;
 
+        const firstHost = grp.items[0] || {};
         const stmtData = {
           id: `STMT-${Date.now()}`,
           paymentDate: new Date().toISOString().slice(0, 10),
           month: grp.month,
           recipientName: grp.hostName,
+          birthDate: firstHost.birthDate || '',
+          phone: firstHost.phone || '',
           company: { name:'라이진', bizNo:'821-29-01197', ceo:'채이준', email:'choijun@ryzincorp.com' },
           items,
           totals: { amount: totalAmount, tax: totalTax, netAmount: totalNetAmount }

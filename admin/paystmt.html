@@ -483,19 +483,19 @@
       </div>
     </div>
 
-    <!-- 발급 정보 -->
+    <!-- 발급 정보 (명세자 정보) -->
     <div class="meta-band">
       <div class="meta-item">
-        <span class="meta-label">회사명</span>
-        <span class="meta-val" id="comp-name">라이진</span>
+        <span class="meta-label">성명</span>
+        <span class="meta-val" id="recipient-name">—</span>
       </div>
       <div class="meta-item">
-        <span class="meta-label">대표자명</span>
-        <span class="meta-val" id="comp-ceo">채이준</span>
+        <span class="meta-label">생년월일</span>
+        <span class="meta-val" id="birth-date">—</span>
       </div>
       <div class="meta-item">
-        <span class="meta-label">사업자번호</span>
-        <span class="meta-val" id="comp-bizno">821-29-01197</span>
+        <span class="meta-label">전화번호</span>
+        <span class="meta-val" id="phone-no">—</span>
       </div>
     </div>
 
@@ -564,9 +564,11 @@
           ).join('')
         ));
 
-        // 단축 스키마 (n: recipientName, p: paymentDate, i: [[date, detail, amount], ...])
+        // 단축 스키마 (n: recipientName, b: birthDate, ph: phone, p: paymentDate, i: [[date, detail, amount], ...])
         if (parsed && (parsed.n !== undefined || parsed.i !== undefined)) {
           const recipientName = parsed.n || '쇼호스트';
+          const birthDate = parsed.b || '';
+          const phone = parsed.ph || '';
           const paymentDate = parsed.p || '';
           const items = (parsed.i || []).map(row => {
             const date = row[0] || '';
@@ -583,6 +585,8 @@
           return {
             paymentDate,
             recipientName,
+            birthDate,
+            phone,
             company: { name: '라이진', bizNo: '821-29-01197', ceo: '채이준', email: 'choijun@ryzincorp.com' },
             items,
             totals: { amount: totalAmount, tax: totalTax, netAmount: totalNet }
@@ -606,11 +610,10 @@
     const fmt = n => (n||0).toLocaleString('ko-KR');
 
     /* meta */
-    document.getElementById('comp-name').textContent    = d.company?.name  || '라이진';
-    document.getElementById('comp-ceo').textContent     = d.company?.ceo   || '채이준';
-    document.getElementById('comp-bizno').textContent   = d.company?.bizNo || '821-29-01197';
-    document.getElementById('comp-email').textContent   = d.company?.email || 'choijun@ryzincorp.com';
-    document.getElementById('payment-date').textContent = d.paymentDate    || '—';
+    document.getElementById('recipient-name').textContent = d.recipientName || d.items[0]?.name || '—';
+    document.getElementById('birth-date').textContent     = d.birthDate     || '—';
+    document.getElementById('phone-no').textContent        = d.phone         || '—';
+    document.getElementById('payment-date').textContent    = d.paymentDate   || '—';
 
     /* table */
     const tbody = document.getElementById('table-body');
