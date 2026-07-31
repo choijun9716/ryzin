@@ -638,9 +638,9 @@
     const tg = document.getElementById('total-gross');
     const tt = document.getElementById('total-tax');
     const tn = document.getElementById('total-net');
-    tg.textContent = fmt(d.totals?.amount);
-    tt.textContent = fmt(d.totals?.tax);
-    tn.textContent = fmt(d.totals?.netAmount);
+    tg.textContent = d.totals?.amount != null ? fmt(d.totals.amount) + '원' : '—';
+    tt.textContent = d.totals?.tax != null ? fmt(d.totals.tax) + '원' : '—';
+    tn.textContent = d.totals?.netAmount != null ? fmt(d.totals.netAmount) + '원' : '—';
 
     /* toast */
     function toast(msg) {
