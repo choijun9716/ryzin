@@ -421,6 +421,7 @@ export function renderSettlement() {
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-weight: 700; font-size: 15px; color: #0f172a;">${stmt.recipientName} 님</span>
+              ${stmt.month ? `<span class="badge badge-secondary" style="font-size: 11px; background:#f1f5f9; color:#334155;">${stmt.month.replace('-', '년 ')}월</span>` : ''}
               <span class="badge badge-secondary" style="font-size: 11px;">방송 ${stmt.items.length}건</span>
             </div>
             <div style="font-size: 13px; font-weight: 700; color: #1e293b;">

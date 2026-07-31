@@ -71,8 +71,7 @@ export function parsePayslipRawText(rawText, options = {}) {
       id: `item-${i}-${Math.random().toString(36).substr(2, 5)}`,
       name,
       date,
-      startTime,
-      endTime,
+      month: date.slice(0, 7) || defaultPaymentDate.slice(0, 7), // YYYY-MM
       detail,
       amount,
       tax,
@@ -108,25 +107,30 @@ export function parsePayslipRawText(rawText, options = {}) {
     }];
   }
 
-  // 성명별 그룹화
+  // 성명 + 월(YYYY-MM) 조합으로 그룹화
+  // → 장서연이 6월에 3건 → 명세서 1장, 7월에 2건 → 명세서 1장 (별도)
   const grouped = {};
   parsedRows.forEach(row => {
-    const key = row.name;
+    const key = `${row.name}__${row.month}`; // 이름+월 복합키
     if (!grouped[key]) {
-      grouped[key] = [];
+      grouped[key] = { name: row.name, month: row.month, items: [] };
     }
-    grouped[key].push(row);
+    grouped[key].items.push(row);
   });
 
-  const statements = Object.keys(grouped).map((recipientName, idx) => {
-    const items = grouped[recipientName];
+  const statements = Object.values(grouped).map((group, idx) => {
+    const { name: recipientName, month, items } = group;
     const totalAmount = items.reduce((sum, r) => sum + r.amount, 0);
-    const totalTax = items.reduce((sum, r) => sum + r.tax, 0);
-    const totalNet = totalAmount - totalTax;
+    const totalTax    = items.reduce((sum, r) => sum + r.tax, 0);
+    const totalNet    = totalAmount - totalTax;
+
+    // 지급일 우선순위: 옵션 paymentDate > 해당 월 말일
+    const paymentDate = defaultPaymentDate;
 
     return {
       id: `STMT-${Date.now().toString(36)}-${idx}`,
-      paymentDate: defaultPaymentDate,
+      paymentDate,
+      month,           // YYYY-MM (표시용)
       recipientName,
       company: {
         name: '라이진',
@@ -135,12 +139,14 @@ export function parsePayslipRawText(rawText, options = {}) {
         email: 'choijun@ryzincorp.com'
       },
       items,
-      totals: {
-        amount: totalAmount,
-        tax: totalTax,
-        netAmount: totalNet
-      }
+      totals: { amount: totalAmount, tax: totalTax, netAmount: totalNet }
     };
+  });
+
+  // 월 오름차순 → 같은 월 내 이름 가나다순
+  statements.sort((a, b) => {
+    if (a.month !== b.month) return a.month.localeCompare(b.month);
+    return a.recipientName.localeCompare(b.recipientName, 'ko');
   });
 
   return statements;
