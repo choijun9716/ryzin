@@ -465,16 +465,13 @@
 
   <!-- 상단 고정 바 -->
   <header class="topbar">
-    <span class="topbar-logo">RYZIN</span>
+    <div class="topbar-logo" style="display: flex; align-items: center;">
+      <svg width="82" height="30" viewBox="0 0 160 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="25" font-family="'DM Sans', 'Arial Black', sans-serif" font-weight="900" font-size="31" fill="#0a0a0a" letter-spacing="-0.02em">RYZIN</text>
+        <text x="0" y="54" font-family="'DM Sans', 'Arial Black', sans-serif" font-weight="900" font-size="31" fill="#0a0a0a" letter-spacing="-0.02em">STUDIO</text>
+      </svg>
+    </div>
     <div class="topbar-actions">
-      <button class="tbtn" id="btn-copy-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        <span>링크 복사</span>
-      </button>
-      <button class="tbtn" id="btn-copy-msg">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span>문구 복사</span>
-      </button>
       <button class="tbtn fill" id="btn-print">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         <span>인쇄 / PDF</span>
@@ -658,19 +655,6 @@
     }
 
     document.getElementById('btn-print').onclick = () => window.print();
-
-    document.getElementById('btn-copy-link').onclick = () =>
-      navigator.clipboard.writeText(location.href)
-        .then(() => toast('링크를 복사했습니다.'))
-        .catch(() => toast('복사 실패'));
-
-    document.getElementById('btn-copy-msg').onclick = () => {
-      const name = d.recipientName || d.items[0]?.name || '쇼호스트';
-      const net  = fmt(d.totals?.netAmount);
-      navigator.clipboard.writeText(
-        `[라이진] ${name} 님, 지급명세서가 도착했습니다.\n\n지급일: ${d.paymentDate||''}\n실지급액: ${net}원\n\n${location.href}`
-      ).then(() => toast('전송 문구를 복사했습니다.')).catch(() => toast('복사 실패'));
-    };
   </script>
 </body>
 </html>
