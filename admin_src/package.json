@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp ../admin/index.html ../admin/404.html",
+    "build": "vite build && cp ../admin/index.html ../admin/404.html && cp ../paystmt.html ../admin/paystmt.html",
     "preview": "vite preview"
   },
   "devDependencies": {

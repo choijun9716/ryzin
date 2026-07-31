@@ -169,43 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
       banner.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        resizeParentIframe(true); // [NEW] 전체화면 크기로 확장
-        // 임베드 액티브 풀 클래스 적용 (기기 프레임 없는 전체 화면 플레이어)
-        document.body.classList.add('embed-active-full');
-        
-        // head에 쓰인 display: none 스타일 해제
-        const styleTags = document.querySelectorAll('style');
-        styleTags.forEach(tag => {
-          if (tag.innerHTML.includes('.live-container { display: none !important; }')) {
-            tag.remove();
-          }
-        });
-
-        // 배너 숨김 (완전히 remove하지 않고 숨김)
-        banner.style.display = 'none';
-
-        // 컨테이너 노출 및 페이드인
-        const container = document.querySelector('.live-container');
-        if (container) {
-          container.style.display = 'flex';
-          container.style.opacity = '0';
-          container.style.transition = 'opacity 0.5s ease';
-          setTimeout(() => {
-            container.style.opacity = '1';
-          }, 50);
-        }
-
-        // 라이브 닫기 버튼 노출
-        if (closeLiveBtn) {
-          closeLiveBtn.style.display = 'flex';
-        }
-
-        // 비디오 자동 재생 시작
-        const video = document.getElementById('live-video');
-        if (video) {
-          video.muted = true;
-          video.play().catch(e => console.warn('Autoplay failed:', e));
-        }
+        // 새 창으로 라이브 페이지 열기
+        const liveUrl = `${window.location.origin}/live?id=${LIVE_ID}`;
+        window.open(liveUrl, '_blank', 'width=400,height=700,resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
       });
     }
   }
@@ -780,18 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (currentPriceStr) {
             const current = Number(currentPriceStr);
-            let rateHtml = '';
-            let rate = parseInt(item.discountRate) || 0;
-            if (!rate && normalPriceStr) {
-              const normal = Number(normalPriceStr);
-              if (normal > current) {
-                rate = Math.round(((normal - current) / normal) * 100);
-              }
-            }
-            if (rate > 0) {
-              rateHtml = `<span class="discount-rate" style="color:#ef4444; font-weight:800; font-size:15px; margin-right:6px;">${rate}%</span>`;
-            }
-            priceHtml = `${rateHtml}<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:15px;">${current.toLocaleString()}원</span><span class="live-benefit-tag" style="background:#fff1f2; border:1.5px solid #ffe4e6; color:#f43f5e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
+            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:15px;">${current.toLocaleString()}원</span><span class="live-benefit-tag" style="background:#fff1f2; border:1.5px solid #ffe4e6; color:#f43f5e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
           }
           el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
           el.addEventListener('click', async (e) => {
@@ -870,18 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const normalPriceStr = item.normalPrice ? item.normalPrice.toString().replace(/[^0-9]/g, '') : '';
               const current = Number(currentPriceStr) || 0;
               
-              let rate = parseInt(item.discountRate) || 0;
-              if (!rate && normalPriceStr) {
-                const normal = Number(normalPriceStr);
-                if (normal > current) {
-                  rate = Math.round(((normal - current) / normal) * 100);
-                }
-              }
 
-              let rateHtml = '';
-              if (rate > 0) {
-                rateHtml = `<span class="banner-discount">${rate}%</span>`;
-              }
 
               card.innerHTML = `
                 <div class="banner-img-box">
@@ -891,7 +835,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="banner-info-box">
                   <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
                   <div class="banner-price-row">
-                    ${rateHtml}
                     <span class="banner-price">${current.toLocaleString()}원</span>
                   </div>
                 </div>

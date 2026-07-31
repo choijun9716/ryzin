@@ -540,8 +540,24 @@ function renderLiveEditView(container, liveId, showView) {
           if (data.products) {
             let pData = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
             if (Array.isArray(pData)) {
-              products.length = 0;
-              products.push(...pData);
+              if (!products || products.length === 0) {
+                // 로컬에 데이터 없으면 DB 데이터를 그대로 사용
+                products.length = 0;
+                products.push(...pData);
+              } else {
+                // 로컬에 데이터 있으면 DB에서 price, normalPrice, discountRate, clicks, image 동기화
+                products.forEach(localProd => {
+                  const dbProd = pData.find(d => d.id === localProd.id || d.name === localProd.name);
+                  if (dbProd) {
+                    // price/normalPrice는 DB 값이 최신이므로 동기화
+                    if (dbProd.price !== undefined) localProd.price = dbProd.price;
+                    if (dbProd.normalPrice !== undefined) localProd.normalPrice = dbProd.normalPrice;
+                    if (dbProd.discountRate !== undefined) localProd.discountRate = dbProd.discountRate;
+                    localProd.clicks = parseInt(dbProd.clicks) || 0;
+                    if (!localProd.image && dbProd.image) localProd.image = dbProd.image;
+                  }
+                });
+              }
             }
           }
           saveLiveConfig(liveId, config);
@@ -2296,12 +2312,18 @@ function renderLiveEditView(container, liveId, showView) {
               if (!Array.isArray(remoteProducts)) remoteProducts = [];
               if (Array.isArray(remoteProducts)) {
                 if (!products || products.length === 0) {
-                  products = remoteProducts;
+                  // 변수 재할당 대신 배열 mutation (이벤트 핸들러 참조 유지)
+                  products.length = 0;
+                  products.push(...remoteProducts);
                 } else {
-                  // 원격 데이터에서 클릭수 및 누락 이미지 정보를 현재 products 리스트에 매핑
+                  // DB에서 price, normalPrice, discountRate, clicks, image 동기화
                   products.forEach(p => {
-                    const match = remoteProducts.find(rp => rp.name === p.name);
+                    const match = remoteProducts.find(rp => rp.id === p.id || rp.name === p.name);
                     if (match) {
+                      // 가격 정보는 DB가 최신 기준
+                      if (match.price !== undefined) p.price = match.price;
+                      if (match.normalPrice !== undefined) p.normalPrice = match.normalPrice;
+                      if (match.discountRate !== undefined) p.discountRate = match.discountRate;
                       p.clicks = parseInt(match.clicks) || 0;
                       if (!p.image && match.image) p.image = match.image;
                     }
@@ -2323,11 +2345,32 @@ function renderLiveEditView(container, liveId, showView) {
     const bindProductEvents = () => {
       const plc = document.getElementById('product-list-container');
 
-      // 실시간 숫자 콤마 포맷팅
+      // 실시간 숫자 콤마 포맷팅 + blur 시 즉시 저장
       plc.querySelectorAll('.price-input').forEach(input => {
         input.addEventListener('input', (e) => {
           let val = e.target.value.replace(/[^0-9]/g, '');
           e.target.value = val ? Number(val).toLocaleString() : '';
+        });
+        // blur 이벤트: 포커스 이탈 시 change와 동일하게 저장 처리
+        input.addEventListener('blur', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const field = e.target.dataset.field;
+          if (field === 'price' || field === 'normalPrice') {
+            const cleaned = e.target.value.replace(/[^0-9]/g, '');
+            products[idx][field] = cleaned;
+            const n = Number((products[idx].normalPrice || '').toString().replace(/[^0-9]/g, ''));
+            const p = Number((products[idx].price || '').toString().replace(/[^0-9]/g, ''));
+            if (n > 0 && n >= p) {
+              products[idx].discountRate = Math.floor(((n - p) / n) * 100);
+              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
+              if (ri) ri.value = products[idx].discountRate;
+            } else {
+              products[idx].discountRate = 0;
+              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
+              if (ri) ri.value = 0;
+            }
+            saveProducts();
+          }
         });
       });
 
