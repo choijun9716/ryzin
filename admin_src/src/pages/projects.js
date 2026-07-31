@@ -1290,7 +1290,7 @@ function renderFinanceTab(project) {
         </div>
         <div style="margin-top: var(--space-4); padding: var(--space-4); background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-light);">
           <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-primary); display: flex; justify-content: space-between;">
-            <span>⚡ 실시간 계산 미리보기</span>
+            <span>실시간 계산 미리보기</span>
             <span style="font-weight: normal; color: var(--text-tertiary); font-size: 12px;">쇼호스트비: ${formatCurrency(hostCost)}</span>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
