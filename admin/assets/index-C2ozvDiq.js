@@ -2019,45 +2019,17 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <thead>
                 <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                   <th style="padding: 12px; text-align: left;">쇼호스트</th>
-                  <th style="padding: 12px; text-align: center;">방송일</th>
+                  <th style="padding: 12px; text-align: center;">정산 월</th>
+                  <th style="padding: 12px; text-align: center;">방송</th>
                   <th style="padding: 12px; text-align: left;">브랜드</th>
-                  <th style="padding: 12px; text-align: right;">지급액 (원)</th>
-                  <th style="padding: 12px; text-align: right; color: #dc2626;">3.3% 공제 (원)</th>
-                  <th style="padding: 12px; text-align: right; color: #2563eb;">실제 지급액 (원)</th>
+                  <th style="padding: 12px; text-align: right;">지급액 합계</th>
+                  <th style="padding: 12px; text-align: right; color: #dc2626;">3.3% 공제</th>
+                  <th style="padding: 12px; text-align: right; color: #2563eb;">실지급액</th>
                   <th style="padding: 12px; text-align: center;">상태</th>
-                  <th style="padding: 12px; text-align: center;">명세서 관리</th>
+                  <th style="padding: 12px; text-align: center;">명세서</th>
                 </tr>
               </thead>
-              <tbody>
-                ${c.length>0?c.map(e=>`
-                  <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 12px; font-weight: 600; color: #0f172a;">${e.hostName}</td>
-                    <td style="padding: 12px; text-align: center; color: #475569; font-size: 13px;">${e.date}</td>
-                    <td style="padding: 12px; font-weight: 500; color: #334155;">${e.brandName}</td>
-                    <td style="padding: 12px; text-align: right; font-weight: 500; color: #0f172a;">${e.fee.toLocaleString(`ko-KR`)}</td>
-                    <td style="padding: 12px; text-align: right; color: #dc2626; font-weight: 500;">${e.tax.toLocaleString(`ko-KR`)}</td>
-                    <td style="padding: 12px; text-align: right; color: #2563eb; font-weight: 700;">${e.netFee.toLocaleString(`ko-KR`)}</td>
-                    <td style="padding: 12px; text-align: center;">
-                      ${e.settleStatus===`done`?`<span class="badge badge-success" style="background: #dcfce7; color: #166534; font-size: 11px; padding: 4px 8px; border-radius: 12px;">지급완료</span>`:`<span class="badge badge-warning" style="background: #fef3c7; color: #92400e; font-size: 11px; padding: 4px 8px; border-radius: 12px;">지급대기</span>`}
-                    </td>
-                    <td style="padding: 12px; text-align: center;">
-                      <div style="display: flex; gap: 6px; justify-content: center;">
-                        ${e.settleStatus===`done`?``:`
-                          <button class="btn btn-xs btn-secondary btn-single-settle" data-id="${e.id}" style="padding: 4px 8px; font-size: 11px;">지급완료</button>
-                        `}
-                        <button class="btn btn-xs btn-primary btn-generate-single-link" 
-                          data-name="${e.hostName}" 
-                          data-date="${e.date}" 
-                          data-brand="${e.brandName}" 
-                          data-amount="${e.fee}"
-                          style="padding: 4px 8px; font-size: 11px;">
-                          명세서 링크
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                `).join(``):`<tr><td colspan="8" class="text-center" style="padding: 40px; color: #94a3b8;">선택한 조건의 쇼호스트 정산 내역이 없습니다.</td></tr>`}
-              </tbody>
+              <tbody id="settle-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -2107,10 +2079,38 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           </div>
         </div>
       </div>
-    `;let p=e.querySelector(`#month-filter-select`);p&&p.addEventListener(`change`,e=>{t=e.target.value,n()}),e.querySelectorAll(`.btn-single-settle`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.target.dataset.id;i.find(e=>e.id===t)&&U.update(`liveHosts`,t,{settleStatus:`done`}),J(`지급 완료 처리되었습니다.`)})});let m=e.querySelector(`#btn-settle-all-pending`);m&&m.addEventListener(`click`,()=>{confirm(`현재 목록의 지급대기 건을 모두 지급 완료 처리하시겠습니까?`)&&(c.filter(e=>e.settleStatus!==`done`).forEach(e=>{e.rawMatching&&U.update(`liveHosts`,e.rawMatching.id,{settleStatus:`done`})}),J(`전체 지급 완료 처리되었습니다.`))}),e.querySelectorAll(`.btn-generate-single-link`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.target.dataset.name,n=e.target.dataset.date,r=e.target.dataset.brand,i=parseInt(e.target.dataset.amount,10)||0,a=Math.floor(i*.033),o=i-a,s=on({id:`STMT-${Date.now()}`,paymentDate:n,recipientName:t,company:{name:`라이진`,bizNo:`821-29-01197`,ceo:`채이준`,email:`choijun@ryzincorp.com`},items:[{name:t,date:n,startTime:`10:00`,endTime:`11:00`,detail:r,amount:i,tax:a,netAmount:o}],totals:{amount:i,tax:a,netAmount:o}}),c=`${window.location.origin}/paystmt.html?d=${s}`;navigator.clipboard.writeText(c).then(()=>{J(`${t} 님의 지급명세서 공유 링크가 클립보드에 복사되었습니다.\n\n${c}`)})})});let h=e.querySelector(`#payslip-modal`),g=e.querySelector(`#payslip-date-input`);g.value=new Date().toISOString().split(`T`)[0],e.querySelector(`#btn-open-payslip-modal`).addEventListener(`click`,()=>{h.style.display=`flex`}),e.querySelector(`#btn-close-payslip-modal`).addEventListener(`click`,()=>{h.style.display=`none`}),h.addEventListener(`click`,e=>{e.target===h&&(h.style.display=`none`)}),e.querySelector(`#btn-load-sample`).addEventListener(`click`,()=>{e.querySelector(`#payslip-raw-text`).value=`성명	방송일	시작시간	종료시간	업무상세	총 지급액(원)
+    `;let p=e.querySelector(`#month-filter-select`);p&&p.addEventListener(`change`,e=>{t=e.target.value,n()});let m={};c.forEach(e=>{let t=`${e.hostName}__${e.month}`;m[t]||(m[t]={hostName:e.hostName,month:e.month,items:[]}),m[t].items.push(e)});let h=Object.values(m).sort((e,t)=>e.month===t.month?e.hostName.localeCompare(t.hostName,`ko`):e.month.localeCompare(t.month)),g=e.querySelector(`#settle-tbody`);g&&(h.length===0?g.innerHTML=`<tr><td colspan="9" class="text-center" style="padding:40px;color:#94a3b8;">선택한 조건의 정산 내역이 없습니다.</td></tr>`:(g.innerHTML=``,h.forEach(e=>{let t=e.items.reduce((e,t)=>e+t.fee,0),n=e.items.reduce((e,t)=>e+t.tax,0),r=e.items.reduce((e,t)=>e+t.netFee,0),i=e.items.every(e=>e.settleStatus===`done`),a=[...new Set(e.items.map(e=>e.brandName))].join(`, `),o=e.month?e.month.replace(`-`,`년 `)+`월`:``,s=`${e.hostName}__${e.month}`,c=document.createElement(`tr`);c.style.cssText=`border-bottom: 1px solid #e2e8f0; cursor:pointer;`,c.dataset.grpKey=s,c.innerHTML=`
+            <td style="padding:12px; font-weight:700; color:#0f172a;">${e.hostName}</td>
+            <td style="padding:12px; text-align:center; font-size:13px; color:#475569;">${o}</td>
+            <td style="padding:12px; text-align:center;">
+              <span class="badge badge-secondary" style="font-size:11px;">${e.items.length}건</span>
+            </td>
+            <td style="padding:12px; color:#334155; font-size:13px;">${a}</td>
+            <td style="padding:12px; text-align:right; font-weight:600;">${t.toLocaleString(`ko-KR`)}</td>
+            <td style="padding:12px; text-align:right; color:#dc2626; font-weight:500;">${n.toLocaleString(`ko-KR`)}</td>
+            <td style="padding:12px; text-align:right; color:#2563eb; font-weight:700;">${r.toLocaleString(`ko-KR`)}</td>
+            <td style="padding:12px; text-align:center;">
+              ${i?`<span class="badge badge-success" style="background:#dcfce7;color:#166534;font-size:11px;padding:4px 8px;border-radius:12px;">지급완료</span>`:`<span class="badge badge-warning" style="background:#fef3c7;color:#92400e;font-size:11px;padding:4px 8px;border-radius:12px;">지급대기</span>`}
+            </td>
+            <td style="padding:12px; text-align:center;">
+              <div style="display:flex; gap:6px; justify-content:center;">
+                ${i?``:`<button class="btn btn-xs btn-secondary btn-settle-group" data-grp-key="${s}" style="padding:4px 8px;font-size:11px;">지급완료</button>`}
+                <button class="btn btn-xs btn-primary btn-generate-group-link" data-grp-key="${s}" style="padding:4px 8px;font-size:11px;">명세서 링크</button>
+              </div>
+            </td>
+          `,g.appendChild(c),e.items.forEach(e=>{let t=document.createElement(`tr`);t.style.cssText=`background:#fafafa; border-bottom:1px solid #f1f5f9; font-size:12.5px;`,t.innerHTML=`
+              <td style="padding:8px 12px 8px 28px; color:#64748b;"></td>
+              <td style="padding:8px 12px; text-align:center; color:#64748b;">${e.date}</td>
+              <td style="padding:8px 12px; text-align:center;"></td>
+              <td style="padding:8px 12px; color:#64748b;">${e.brandName}</td>
+              <td style="padding:8px 12px; text-align:right; color:#475569;">${e.fee.toLocaleString(`ko-KR`)}</td>
+              <td style="padding:8px 12px; text-align:right; color:#dc2626;">${e.tax.toLocaleString(`ko-KR`)}</td>
+              <td style="padding:8px 12px; text-align:right; color:#2563eb;">${e.netFee.toLocaleString(`ko-KR`)}</td>
+              <td colspan="2"></td>
+            `,g.appendChild(t)})}))),e.querySelectorAll(`.btn-settle-group`).forEach(e=>{e.addEventListener(`click`,e=>{e.stopPropagation();let t=m[e.target.dataset.grpKey];t&&confirm(`${t.hostName} 님 ${t.month} 전체 ${t.items.length}건을 지급완료 처리하시겠습니까?`)&&(t.items.forEach(e=>{e.rawMatching&&U.update(`liveHosts`,e.rawMatching.id,{settleStatus:`done`})}),J(`${t.hostName} 님 ${t.month} 지급완료 처리되었습니다.`))})}),e.querySelectorAll(`.btn-generate-group-link`).forEach(e=>{e.addEventListener(`click`,e=>{e.stopPropagation();let t=m[e.target.dataset.grpKey];if(!t)return;let n=t.items.map(e=>({name:e.hostName,date:e.date,detail:e.brandName,amount:e.fee,tax:e.tax,netAmount:e.netFee})),r=t.items.reduce((e,t)=>e+t.fee,0),i=t.items.reduce((e,t)=>e+t.tax,0),a=r-i,o=new Date().toISOString().slice(0,10),s=on({id:`STMT-${Date.now()}`,paymentDate:o,month:t.month,recipientName:t.hostName,company:{name:`라이진`,bizNo:`821-29-01197`,ceo:`채이준`,email:`choijun@ryzincorp.com`},items:n,totals:{amount:r,tax:i,netAmount:a}}),c=`${window.location.origin}/paystmt.html?d=${s}`;navigator.clipboard.writeText(c).then(()=>{J(`${t.hostName} 님 ${t.month} 명세서 링크 복사 완료!\n\n${c}`)})})});let _=e.querySelector(`#btn-settle-all-pending`);_&&_.addEventListener(`click`,()=>{confirm(`현재 목록의 지급대기 건을 모두 지급 완료 처리하시겠습니까?`)&&(c.filter(e=>e.settleStatus!==`done`).forEach(e=>{e.rawMatching&&U.update(`liveHosts`,e.rawMatching.id,{settleStatus:`done`})}),J(`전체 지급 완료 처리되었습니다.`))}),e.querySelectorAll(`.btn-generate-single-link`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.target.dataset.name,n=e.target.dataset.date,r=e.target.dataset.brand,i=parseInt(e.target.dataset.amount,10)||0,a=Math.floor(i*.033),o=i-a,s=on({id:`STMT-${Date.now()}`,paymentDate:n,recipientName:t,company:{name:`라이진`,bizNo:`821-29-01197`,ceo:`채이준`,email:`choijun@ryzincorp.com`},items:[{name:t,date:n,startTime:`10:00`,endTime:`11:00`,detail:r,amount:i,tax:a,netAmount:o}],totals:{amount:i,tax:a,netAmount:o}}),c=`${window.location.origin}/paystmt.html?d=${s}`;navigator.clipboard.writeText(c).then(()=>{J(`${t} 님의 지급명세서 공유 링크가 클립보드에 복사되었습니다.\n\n${c}`)})})});let v=e.querySelector(`#payslip-modal`),y=e.querySelector(`#payslip-date-input`);y.value=new Date().toISOString().split(`T`)[0],e.querySelector(`#btn-open-payslip-modal`).addEventListener(`click`,()=>{v.style.display=`flex`}),e.querySelector(`#btn-close-payslip-modal`).addEventListener(`click`,()=>{v.style.display=`none`}),v.addEventListener(`click`,e=>{e.target===v&&(v.style.display=`none`)}),e.querySelector(`#btn-load-sample`).addEventListener(`click`,()=>{e.querySelector(`#payslip-raw-text`).value=`성명	방송일	시작시간	종료시간	업무상세	총 지급액(원)
 정해원	2026-04-02	19:00	20:00	부이	96,700
 장서연	2026-04-07	10:00	11:00	트루쿡	96,700
-장서연	2026-04-09	10:00	11:00	트루쿡	96,700`,J(`예시 데이터가 입력되었습니다.`)});let _=e.querySelector(`#payslip-file-input`);e.querySelector(`#btn-trigger-file`).addEventListener(`click`,()=>_.click()),_.addEventListener(`change`,t=>{let n=t.target.files[0];if(!n)return;let r=new FileReader;r.onload=t=>{e.querySelector(`#payslip-raw-text`).value=t.target.result,J(`${n.name} 파일을 읽었습니다.`)},r.readAsText(n)}),e.querySelector(`#btn-generate-payslip`).addEventListener(`click`,()=>{let t=e.querySelector(`#payslip-raw-text`).value,n=g.value||new Date().toISOString().split(`T`)[0];if(!t.trim()){Y(`CSV 또는 텍스트 데이터를 입력해주세요.`);return}let r=an(t,{paymentDate:n,groupByRecipient:!0});if(!r||r.length===0){Y(`파싱 가능한 지급 데이터가 없습니다. 형식(성명, 방송일, 시작시간, 종료시간, 업무상세, 총지급액)을 확인해주세요.`);return}let i=e.querySelector(`#payslip-result-area`),a=e.querySelector(`#payslip-cards-list`);a.innerHTML=``,i.style.display=`block`;let o=window.location.origin;r.forEach(e=>{let t=`${o}/paystmt.html?d=${on(e)}`,n=e.totals.netAmount.toLocaleString(`ko-KR`),r=e.totals.amount.toLocaleString(`ko-KR`),i=e.totals.tax.toLocaleString(`ko-KR`),s=document.createElement(`div`);s.style.cssText=`background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;`,s.innerHTML=`
+장서연	2026-04-09	10:00	11:00	트루쿡	96,700`,J(`예시 데이터가 입력되었습니다.`)});let b=e.querySelector(`#payslip-file-input`);e.querySelector(`#btn-trigger-file`).addEventListener(`click`,()=>b.click()),b.addEventListener(`change`,t=>{let n=t.target.files[0];if(!n)return;let r=new FileReader;r.onload=t=>{e.querySelector(`#payslip-raw-text`).value=t.target.result,J(`${n.name} 파일을 읽었습니다.`)},r.readAsText(n)}),e.querySelector(`#btn-generate-payslip`).addEventListener(`click`,()=>{let t=e.querySelector(`#payslip-raw-text`).value,n=y.value||new Date().toISOString().split(`T`)[0];if(!t.trim()){Y(`CSV 또는 텍스트 데이터를 입력해주세요.`);return}let r=an(t,{paymentDate:n,groupByRecipient:!0});if(!r||r.length===0){Y(`파싱 가능한 지급 데이터가 없습니다. 형식(성명, 방송일, 시작시간, 종료시간, 업무상세, 총지급액)을 확인해주세요.`);return}let i=e.querySelector(`#payslip-result-area`),a=e.querySelector(`#payslip-cards-list`);a.innerHTML=``,i.style.display=`block`;let o=window.location.origin;r.forEach(e=>{let t=`${o}/paystmt.html?d=${on(e)}`,n=e.totals.netAmount.toLocaleString(`ko-KR`),r=e.totals.amount.toLocaleString(`ko-KR`),i=e.totals.tax.toLocaleString(`ko-KR`),s=document.createElement(`div`);s.style.cssText=`background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;`,s.innerHTML=`
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-weight: 700; font-size: 15px; color: #0f172a;">${e.recipientName} 님</span>
