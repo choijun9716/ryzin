@@ -59,7 +59,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         ${mt(`이번주 방송`,et(t.thisWeekBroadcasts)+`건`,`/projects`)}
         ${mt(`이번달 방송`,et(t.monthBroadcasts)+`건`,`/projects`)}
         ${mt(`이번달 매출`,$e(t.monthRevenue),`/finance`)}
-        ${mt(`정산 대기`,$e(t.settleWaitAmount),`/settlement`)}
+        ${mt(`미수금`,$e(t.settleWaitAmount),`/settlement`)}
       </div>
 
       
