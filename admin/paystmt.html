@@ -7,16 +7,20 @@
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <style>
     :root {
       --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-      --text-main: #111111;
-      --border-dark: #000000;
-      --header-bg: #000000;
-      --header-text: #ffffff;
-      --stamp-color: #d93025;
+      --font-display: 'Plus Jakarta Sans', var(--font-family);
+      --primary-black: #0f172a;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent-blue: #2563eb;
+      --accent-red: #dc2626;
+      --card-bg: #ffffff;
+      --bg-page: #f1f5f9;
     }
 
     * {
@@ -27,38 +31,57 @@
 
     body {
       font-family: var(--font-family);
-      background-color: #f4f5f7;
+      background-color: var(--bg-page);
       color: var(--text-main);
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 30px 20px;
+      -webkit-font-smoothing: antialiased;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
 
-    /* 상단 액션 툴바 (인쇄 시 숨김) */
+    /* 프리미엄 상단 툴바 */
     .toolbar {
       width: 100%;
       max-width: 900px;
-      background: #ffffff;
-      padding: 14px 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 16px 28px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
+      margin-bottom: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .toolbar-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #111;
+    .toolbar-brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+    }
+
+    .toolbar-logo {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 1.5px;
+    }
+
+    .toolbar-tag {
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
     }
 
     .toolbar-actions {
@@ -70,183 +93,242 @@
       font-family: var(--font-family);
       font-size: 13px;
       font-weight: 600;
-      padding: 9px 16px;
-      border-radius: 8px;
-      border: 1px solid #d0d5dd;
-      background: #ffffff;
-      color: #344054;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       transition: all 0.2s ease;
     }
 
     .btn:hover {
-      background: #f9fafb;
-      border-color: #b8c1cc;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
     }
 
     .btn-primary {
-      background: #000000;
-      color: #ffffff;
-      border-color: #000000;
+      background: #ffffff;
+      color: #0f172a;
+      border-color: #ffffff;
+      font-weight: 700;
     }
 
     .btn-primary:hover {
-      background: #222222;
-      border-color: #222222;
+      background: #f8fafc;
+      color: #0f172a;
+      box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
     }
 
-    /* 지급명세서 A4 용지 컨테이너 */
-    .statement-container {
+    /* A4 세련된 명세서 컨테이너 */
+    .statement-card {
       width: 100%;
       max-width: 900px;
       background: #ffffff;
-      padding: 50px 55px;
-      border-radius: 4px;
-      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.07);
+      padding: 55px 60px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.07), 0 1px 3px rgba(0,0,0,0.05);
       position: relative;
-      min-height: 600px;
+      border: 1px solid #e2e8f0;
     }
 
-    /* 명세서 헤더 */
+    /* 헤더 디자인 */
     .statement-header {
-      position: relative;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 40px;
-      padding-top: 10px;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 28px;
+      border-bottom: 2px solid #0f172a;
+      margin-bottom: 32px;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .statement-title {
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: 4px;
-      color: #000000;
-      text-align: center;
-    }
-
-    .brand-logo {
-      position: absolute;
-      right: 0;
-      top: 0;
-      font-size: 28px;
+      font-size: 34px;
       font-weight: 900;
-      letter-spacing: -0.5px;
-      color: #000000;
+      letter-spacing: 2px;
+      color: #0f172a;
     }
 
-    /* 회사 및 지급 정보 */
-    .company-info {
-      margin-bottom: 25px;
-      font-size: 14px;
-      line-height: 1.75;
-      color: #000000;
+    .statement-subtitle {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #64748b;
+      text-transform: uppercase;
     }
 
-    .info-row {
+    .brand-logo-large {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #0f172a;
+      line-height: 1;
+    }
+
+    /* 회사 및 지급 정보 2열 카드 */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 22px 26px;
+      margin-bottom: 32px;
+    }
+
+    .info-item {
       display: flex;
-      gap: 8px;
+      font-size: 13.5px;
+      line-height: 1.6;
     }
 
     .info-label {
       font-weight: 700;
-      min-width: 110px;
+      color: #475569;
+      width: 120px;
+      flex-shrink: 0;
     }
 
     .info-value {
-      font-weight: 500;
+      font-weight: 600;
+      color: #0f172a;
     }
 
-    /* 테이블 스타일 */
+    /* 테이블 세련된 디자인 */
+    .table-wrapper {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #0f172a;
+      margin-bottom: 30px;
+    }
+
     .statement-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 25px;
       font-size: 13px;
-    }
-
-    .statement-table th,
-    .statement-table td {
-      border: 1.5px solid #000000;
-      padding: 10px 8px;
-      vertical-align: middle;
     }
 
     .statement-table th {
-      background-color: #000000;
+      background: #0f172a;
       color: #ffffff;
       font-weight: 700;
+      padding: 14px 10px;
       text-align: center;
-      font-size: 13px;
+      letter-spacing: 0.3px;
+      border-right: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .statement-table th:last-child {
+      border-right: none;
     }
 
     .statement-table td {
-      background-color: #ffffff;
-      color: #000000;
+      padding: 13px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+      color: #334155;
       font-weight: 500;
+    }
+
+    .statement-table td:last-child {
+      border-right: none;
+    }
+
+    .statement-table tbody tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    .statement-table tbody tr:last-child td {
+      border-bottom: none;
     }
 
     .text-center { text-align: center; }
     .text-right { text-align: right; }
     .text-bold { font-weight: 700 !important; }
 
+    /* 합계 행 스타일 */
     .totals-row td {
-      font-weight: 700;
-      background-color: #ffffff;
+      background: #f1f5f9 !important;
+      border-top: 2px solid #0f172a !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
+      font-size: 14px;
+      padding: 15px 10px !important;
     }
 
-    /* 하단 연관 안내 및 직인 */
+    .totals-net {
+      color: #2563eb !important;
+      font-size: 15px;
+    }
+
+    /* 하단 직인 및 문구 디자인 */
     .statement-footer {
-      margin-top: 30px;
+      margin-top: 36px;
+      padding-top: 20px;
     }
 
-    .notice-text {
+    .notice-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 18px;
       font-size: 12.5px;
       font-weight: 500;
-      color: #111111;
-      margin-bottom: 45px;
+      color: #475569;
+      margin-bottom: 40px;
+      display: inline-block;
     }
 
-    .sign-section {
+    .notice-box strong {
+      color: #0f172a;
+    }
+
+    .sign-container {
       display: flex;
-      flex-direction: row;
       align-items: center;
       justify-content: flex-end;
-      gap: 16px;
-      margin-top: 20px;
+      gap: 20px;
     }
 
-    .sign-text {
-      font-size: 14.5px;
-      font-weight: 600;
-      color: #000000;
+    .sign-statement-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
       letter-spacing: 0.5px;
     }
 
-    /* 직인 도장 SVG */
-    .official-stamp {
-      width: 58px;
-      height: 58px;
-      display: inline-block;
-      user-select: none;
+    /* 라이진 고급 실물형 인장 도장 SVG */
+    .seal-stamp {
+      width: 64px;
+      height: 64px;
+      filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.25));
     }
 
-    /* 토스트 메시지 */
+    /* 토스트 팝업 */
     .toast-msg {
       position: fixed;
-      bottom: 30px;
+      bottom: 32px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
-      background: #111111;
+      background: #0f172a;
       color: #ffffff;
-      padding: 12px 24px;
+      padding: 14px 28px;
       border-radius: 30px;
       font-size: 14px;
       font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       z-index: 9999;
@@ -266,26 +348,28 @@
       .toolbar, .toast-msg {
         display: none !important;
       }
-      .statement-container {
+      .statement-card {
         box-shadow: none;
         border-radius: 0;
-        padding: 40px 30px;
+        border: none;
+        padding: 20px 10px;
         max-width: 100%;
         width: 100%;
       }
       @page {
         size: A4 portrait;
-        margin: 15mm 10mm;
+        margin: 12mm 10mm;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- 인쇄 및 공유 액션 툴바 -->
+  <!-- 액션 툴바 -->
   <div class="toolbar">
-    <div class="toolbar-title">
-      <span>라이진 쇼호스트 지급명세서</span>
+    <div class="toolbar-brand">
+      <span class="toolbar-logo">RYZIN</span>
+      <span class="toolbar-tag">지급명세서 뷰어</span>
     </div>
     <div class="toolbar-actions">
       <button class="btn" id="btn-copy-link">
@@ -303,66 +387,72 @@
     </div>
   </div>
 
-  <!-- A4 지급명세서 본문 컨테이너 -->
-  <div class="statement-container" id="statement-card">
+  <!-- A4 지급명세서 본문 카드 -->
+  <div class="statement-card">
     <div class="statement-header">
-      <h1 class="statement-title">지급명세서</h1>
-      <div class="brand-logo">RYZIN</div>
+      <div class="header-left">
+        <h1 class="statement-title">지급명세서</h1>
+        <span class="statement-subtitle">Payment Statement</span>
+      </div>
+      <div class="brand-logo-large">RYZIN</div>
     </div>
 
-    <div class="company-info">
-      <div class="info-row"><span class="info-label">회사명:</span><span class="info-value" id="comp-name">라이진</span></div>
-      <div class="info-row"><span class="info-label">사업자등록번호:</span><span class="info-value" id="comp-bizno">821-29-01197</span></div>
-      <div class="info-row"><span class="info-label">대표자명:</span><span class="info-value" id="comp-ceo">채이준</span></div>
-      <div class="info-row"><span class="info-label">지급일:</span><span class="info-value" id="payment-date">2026-05-29</span></div>
+    <!-- 2열 카드 서식 -->
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">회사명:</span><span class="info-value" id="comp-name">라이진</span></div>
+      <div class="info-item"><span class="info-label">대표자명:</span><span class="info-value" id="comp-ceo">채이준</span></div>
+      <div class="info-item"><span class="info-label">사업자등록번호:</span><span class="info-value" id="comp-bizno">821-29-01197</span></div>
+      <div class="info-item"><span class="info-label">지급일자:</span><span class="info-value" id="payment-date">2026-05-29</span></div>
     </div>
 
-    <table class="statement-table">
-      <thead>
-        <tr>
-          <th style="width: 11%;">성명</th>
-          <th style="width: 15%;">방송일</th>
-          <th style="width: 11%;">시작시간</th>
-          <th style="width: 11%;">종료시간</th>
-          <th style="width: 14%;">업무상세</th>
-          <th style="width: 13%;">총 지급액(원)</th>
-          <th style="width: 12.5%;">3.3% 공제(원)</th>
-          <th style="width: 12.5%;">실지급액(원)</th>
-        </tr>
-      </thead>
-      <tbody id="table-body">
-        <!-- 동적 파싱 행 출력 -->
-      </tbody>
-      <tfoot>
-        <tr class="totals-row">
-          <td colspan="5" class="text-center text-bold">합계</td>
-          <td class="text-right text-bold" id="total-amount">0</td>
-          <td class="text-right text-bold" id="total-tax">0</td>
-          <td class="text-right text-bold" id="total-net">0</td>
-        </tr>
-      </tfoot>
-    </table>
+    <!-- 데이터 테이블 -->
+    <div class="table-wrapper">
+      <table class="statement-table">
+        <thead>
+          <tr>
+            <th style="width: 11%;">성명</th>
+            <th style="width: 15%;">방송일</th>
+            <th style="width: 11%;">시작시간</th>
+            <th style="width: 11%;">종료시간</th>
+            <th style="width: 15%;">업무상세</th>
+            <th style="width: 13%;">총 지급액 (원)</th>
+            <th style="width: 12%;">3.3% 공제 (원)</th>
+            <th style="width: 12%;">실지급액 (원)</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- 동적 렌더링 -->
+        </tbody>
+        <tfoot>
+          <tr class="totals-row">
+            <td colspan="5" class="text-center text-bold">합계</td>
+            <td class="text-right text-bold" id="total-amount">0</td>
+            <td class="text-right text-bold" id="total-tax" style="color: #dc2626 !important;">0</td>
+            <td class="text-right text-bold totals-net" id="total-net">0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
 
     <div class="statement-footer">
-      <div class="notice-text">
-        ※ 지급에 문제가 있을 경우 <span id="comp-email">choijun@ryzincorp.com</span> 으로 연락해 주세요.
+      <div class="notice-box">
+        ※ 지급 내역 및 3.3% 공제액 문의: <strong id="comp-email">choijun@ryzincorp.com</strong>
       </div>
-      <div class="sign-section">
-        <span class="sign-text">위 금액을 이상과 같이 지급함.</span>
+      <div class="sign-container">
+        <span class="sign-statement-text">위 금액을 이상과 같이 지급함.</span>
         <!-- 라이진 채이준 직인 도장 SVG -->
-        <svg class="official-stamp" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="5" y="5" width="90" height="90" rx="16" stroke="#D93025" stroke-width="4.5"/>
-          <rect x="9" y="9" width="82" height="82" rx="12" stroke="#D93025" stroke-width="1.8"/>
-          <!-- 직인 한자/한글 도장 형태 "라이진 채이준 인" -->
-          <text x="50" y="38" font-family="'Pretendard', sans-serif" font-size="20" font-weight="900" fill="#D93025" text-anchor="middle" letter-spacing="1">라이진</text>
-          <text x="50" y="62" font-family="'Pretendard', sans-serif" font-size="18" font-weight="900" fill="#D93025" text-anchor="middle" letter-spacing="1">채이준</text>
-          <text x="50" y="80" font-family="'Pretendard', sans-serif" font-size="13" font-weight="800" fill="#D93025" text-anchor="middle" letter-spacing="2">(인)</text>
+        <svg class="seal-stamp" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="92" height="92" rx="18" stroke="#DC2626" stroke-width="5"/>
+          <rect x="8" y="8" width="84" height="84" rx="14" stroke="#DC2626" stroke-width="2"/>
+          <text x="50" y="37" font-family="'Pretendard', sans-serif" font-size="20" font-weight="900" fill="#DC2626" text-anchor="middle" letter-spacing="1">라이진</text>
+          <text x="50" y="61" font-family="'Pretendard', sans-serif" font-size="18" font-weight="900" fill="#DC2626" text-anchor="middle" letter-spacing="1">채이준</text>
+          <text x="50" y="79" font-family="'Pretendard', sans-serif" font-size="13" font-weight="800" fill="#DC2626" text-anchor="middle" letter-spacing="2">(인)</text>
         </svg>
       </div>
     </div>
   </div>
 
-  <div class="toast-msg" id="toast">메시지가 복사되었습니다.</div>
+  <div class="toast-msg" id="toast">복사되었습니다.</div>
 
   <script>
     // URL 파라미터 디코더 (독립 인라인 실행)
@@ -383,7 +473,7 @@
       }
     }
 
-    // 기본 예시 데이터 (URL 파라미터가 없을 때 표출)
+    // 샘플 데이터
     const SAMPLE_PAYSLIP = {
       paymentDate: '2026-05-29',
       recipientName: '임란희',
@@ -423,7 +513,7 @@
       return (num || 0).toLocaleString('ko-KR');
     }
 
-    // URL 파라미터 디코딩
+    // URL 파라미터 추출
     const urlParams = new URLSearchParams(window.location.search);
     const dataParam = urlParams.get('d');
     
@@ -436,7 +526,7 @@
       }
     }
 
-    // 데이터 DOM 바인딩
+    // 데이터 DOM 결합
     document.getElementById('comp-name').innerText = payslipData.company?.name || '라이진';
     document.getElementById('comp-bizno').innerText = payslipData.company?.bizNo || '821-29-01197';
     document.getElementById('comp-ceo').innerText = payslipData.company?.ceo || '채이준';
@@ -449,31 +539,31 @@
     payslipData.items.forEach(item => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="text-center">${item.name || ''}</td>
+        <td class="text-center text-bold">${item.name || ''}</td>
         <td class="text-center">${item.date || ''}</td>
         <td class="text-center">${item.startTime || ''}</td>
         <td class="text-center">${item.endTime || ''}</td>
         <td class="text-center">${item.detail || ''}</td>
         <td class="text-right">${formatNumber(item.amount)}</td>
-        <td class="text-right">${formatNumber(item.tax)}</td>
-        <td class="text-right">${formatNumber(item.netAmount)}</td>
+        <td class="text-right" style="color: #dc2626;">${formatNumber(item.tax)}</td>
+        <td class="text-right text-bold" style="color: #2563eb;">${formatNumber(item.netAmount)}</td>
       `;
       tbody.appendChild(tr);
     });
 
-    // 합계 바인딩
+    // 합계 결합
     document.getElementById('total-amount').innerText = formatNumber(payslipData.totals?.amount || 0);
     document.getElementById('total-tax').innerText = formatNumber(payslipData.totals?.tax || 0);
     document.getElementById('total-net').innerText = formatNumber(payslipData.totals?.netAmount || 0);
 
-    // 이벤트 리스너 설정
+    // 이벤트 제어
     document.getElementById('btn-print').addEventListener('click', () => {
       window.print();
     });
 
     document.getElementById('btn-copy-link').addEventListener('click', () => {
       navigator.clipboard.writeText(window.location.href).then(() => {
-        showToast('명세서 링크가 클립보드에 복사되었습니다.');
+        showToast('명세서 공유 링크가 복사되었습니다.');
       }).catch(() => {
         showToast('복사에 실패했습니다.');
       });
@@ -485,13 +575,13 @@
       const totalNet = formatNumber(payslipData.totals?.netAmount || 0);
       const link = window.location.href;
 
-      const messageText = `[라이진] ${recipient} 님, 방송 지급명세서가 도착했습니다.\n\n` +
-        `· 지급일: ${paymentDate}\n` +
+      const messageText = `[라이진] ${recipient} 님, 방송 지급명세서가 발송되었습니다.\n\n` +
+        `· 지급일자: ${paymentDate}\n` +
         `· 실지급액: ${totalNet}원\n\n` +
-        `아래 링크를 클릭하여 상세 지급명세서를 확인하실 수 있습니다:\n${link}`;
+        `아래 링크에서 상세 방송 내역 및 3.3% 공제액을 확인하실 수 있습니다:\n${link}`;
 
       navigator.clipboard.writeText(messageText).then(() => {
-        showToast('안내 문구가 클립보드에 복사되었습니다.');
+        showToast('전송용 안내 문구가 복사되었습니다.');
       }).catch(() => {
         showToast('복사에 실패했습니다.');
       });
