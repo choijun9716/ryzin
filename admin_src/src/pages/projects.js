@@ -1225,10 +1225,11 @@ function renderFinanceTab(project) {
   const productionCost = finance.productionCost || 0;
   const adCost = finance.adCost || 0;
   const otherCost = finance.otherCost || 0;
+  const includeHostCost = !!finance.includeHostCost;
 
-  // 1. 영업매출액 = 제작비 + 쇼호스트비 + 광고비 (+대행 마진)
-  const salesRevenue = (finance.salesRevenue !== undefined && finance.salesRevenue !== null && finance.salesRevenue > 0)
-    ? finance.salesRevenue
+  // 1. 영업매출액 = 제작비에 쇼호스트비 포함 시 (제작비 + 광고비), 별도 시 (제작비 + 쇼호스트비 + 광고비)
+  const salesRevenue = includeHostCost
+    ? (productionCost + adCost)
     : (productionCost + hostCost + adCost);
 
   // 2. 영업이익 = 영업매출액 - (쇼호스트비 + 광고비 + 기타비용)
@@ -1248,7 +1249,12 @@ function renderFinanceTab(project) {
       </div>
       <div class="card-body">
         <div class="stats-grid" style="margin-bottom: var(--space-6);">
-          <div class="stat-card"><div class="stat-label">제작비</div><div class="stat-value">${formatCurrency(productionCost)}</div></div>
+          <div class="stat-card">
+            <div class="stat-label">
+              제작비 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">${includeHostCost ? '(쇼호스트비 포함)' : '(쇼호스트비 별도)'}</span>
+            </div>
+            <div class="stat-value">${formatCurrency(productionCost)}</div>
+          </div>
           <div class="stat-card"><div class="stat-label">쇼호스트비</div><div class="stat-value">${formatCurrency(hostCost)}</div></div>
           <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${formatCurrency(adCost)}</div></div>
           <div class="stat-card"><div class="stat-label">기타비용</div><div class="stat-value">${formatCurrency(otherCost)}</div></div>
@@ -1288,6 +1294,12 @@ function renderFinanceTab(project) {
           <div class="input-group"><label>광고비</label><input class="input" type="number" id="fin-ad" value="${finance.adCost || ''}" placeholder="0"></div>
           <div class="input-group"><label>기타비용</label><input class="input" type="number" id="fin-other" value="${finance.otherCost || ''}" placeholder="0"></div>
         </div>
+        <div style="margin-top: var(--space-3); margin-bottom: var(--space-3);">
+          <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="fin-include-host" ${includeHostCost ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
+            총제작비에 쇼호스트비 포함
+          </label>
+        </div>
         <div style="margin-top: var(--space-4); padding: var(--space-4); background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-light);">
           <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-primary); display: flex; justify-content: space-between;">
             <span>실시간 계산 미리보기</span>
@@ -1309,12 +1321,14 @@ function renderFinanceTab(project) {
         const adCost = parseInt(document.getElementById('fin-ad').value) || 0;
         const productionCost = parseInt(document.getElementById('fin-prod').value) || 0;
         const otherCost = parseInt(document.getElementById('fin-other').value) || 0;
-        const salesRevenue = productionCost + hostCost + adCost;
+        const includeHostCost = document.getElementById('fin-include-host').checked;
+
+        const salesRevenue = includeHostCost ? (productionCost + adCost) : (productionCost + hostCost + adCost);
         const operatingProfit = salesRevenue - hostCost - adCost - otherCost;
         const vat = Math.round(salesRevenue * 0.1);
         const netMargin = operatingProfit - vat;
 
-        const data = { liveId: project.id, adCost, productionCost, hostCost, otherCost, salesRevenue, operatingProfit, vat, netMargin };
+        const data = { liveId: project.id, adCost, productionCost, otherCost, includeHostCost, salesRevenue, operatingProfit, vat, netMargin };
         const existing = store.getAll('finances').find(f => f.liveId === project.id);
         if (existing) { store.update('finances', existing.id, data); }
         else { data.id = project.id; store.create('finances', data); }
@@ -1330,13 +1344,15 @@ function renderFinanceTab(project) {
         const prodInp = document.getElementById('fin-prod');
         const adInp = document.getElementById('fin-ad');
         const otherInp = document.getElementById('fin-other');
+        const includeHostChk = document.getElementById('fin-include-host');
 
         const updateCalc = () => {
           const prod = parseInt(prodInp?.value) || 0;
           const ad = parseInt(adInp?.value) || 0;
           const oth = parseInt(otherInp?.value) || 0;
+          const incHost = includeHostChk ? includeHostChk.checked : false;
 
-          const sRev = prod + hostCost + ad;
+          const sRev = incHost ? (prod + ad) : (prod + hostCost + ad);
           const oProf = sRev - hostCost - ad - oth;
           const v = Math.round(sRev * 0.1);
           const nMarg = oProf - v;
@@ -1362,6 +1378,7 @@ function renderFinanceTab(project) {
         prodInp?.addEventListener('input', updateCalc);
         adInp?.addEventListener('input', updateCalc);
         otherInp?.addEventListener('input', updateCalc);
+        includeHostChk?.addEventListener('change', updateCalc);
         updateCalc();
       }, 0);
     });

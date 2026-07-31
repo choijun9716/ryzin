@@ -49,10 +49,11 @@ export function renderFinance() {
       const productionCost = parseInt(f.productionCost) || 0;
       const adCost = parseInt(f.adCost) || 0;
       const otherCost = parseInt(f.otherCost) || 0;
+      const includeHostCost = !!f.includeHostCost;
 
-      // 1. 영업매출액 = 제작비 + 쇼호스트비 + 광고비 (+대행 마진)
-      const salesRevenue = (f.salesRevenue !== undefined && f.salesRevenue !== null && parseInt(f.salesRevenue) > 0)
-        ? parseInt(f.salesRevenue)
+      // 1. 영업매출액 = 제작비에 쇼호스트비 포함 시 (제작비 + 광고비), 별도 시 (제작비 + 쇼호스트비 + 광고비)
+      const salesRevenue = includeHostCost
+        ? (productionCost + adCost)
         : (productionCost + hostCost + adCost);
 
       // 2. 영업이익 = 영업매출액 - (쇼호스트비 + 광고비 + 기타비용)
