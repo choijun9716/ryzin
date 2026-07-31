@@ -2054,13 +2054,13 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             <table class="data-table">
               <thead>
                 <tr>
+                  <th class="text-center">상태</th>
                   <th>쇼호스트</th>
                   <th class="text-center">방송일</th>
                   <th>브랜드</th>
                   <th class="text-right">지급액 (원)</th>
                   <th class="text-right" style="color: var(--status-error);">3.3% 공제 (원)</th>
                   <th class="text-right" style="color: var(--status-info);">실제 지급액 (원)</th>
-                  <th class="text-center">상태</th>
                   <th class="text-center">명세서 관리</th>
                 </tr>
               </thead>
@@ -2115,18 +2115,18 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
       </div>
     `;let m=e.querySelector(`#status-filter-select`);m&&m.addEventListener(`change`,e=>{r=e.target.value,i()});let h=e.querySelector(`#month-filter-select`);h&&h.addEventListener(`change`,e=>{n=e.target.value,i()});let g={};l.forEach(e=>{let t=`${e.hostName}__${e.month}`;g[t]||(g[t]={hostName:e.hostName,month:e.month,items:[]}),g[t].items.push(e)});let _=e.querySelector(`#settle-tbody`);_&&(l.length===0?_.innerHTML=`<tr><td colspan="8" class="text-center" style="padding:40px;color:#94a3b8;">선택한 조건의 정산 내역이 없습니다.</td></tr>`:(_.innerHTML=``,l.forEach(e=>{let t=document.createElement(`tr`);t.style.cssText=`border-bottom: 1px solid #f1f5f9;`;let n=`${e.hostName}__${e.month}`;t.innerHTML=`
-            <td style="padding:12px; font-weight:600; color:#0f172a;">${e.hostName}</td>
-            <td style="padding:12px; text-align:center; color:#475569; font-size:13px;">${e.date}</td>
-            <td style="padding:12px; font-weight:500; color:#334155;">${e.brandName}</td>
-            <td style="padding:12px; text-align:right; font-weight:500; color:#0f172a;">${e.fee.toLocaleString(`ko-KR`)}</td>
-            <td style="padding:12px; text-align:right; color:#dc2626; font-weight:500;">${e.tax.toLocaleString(`ko-KR`)}</td>
-            <td style="padding:12px; text-align:right; color:#2563eb; font-weight:700;">${e.netFee.toLocaleString(`ko-KR`)}</td>
             <td class="text-center">
               <select class="btn-change-settle-status" data-id="${e.id}" style="padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; outline: none; background: ${e.settleStatus===`done`?`#dcfce7`:`#fef3c7`}; color: ${e.settleStatus===`done`?`#166534`:`#92400e`};">
                 <option value="pending" ${e.settleStatus===`done`?``:`selected`} style="background:#fff; color:#0f172a;">지급대기</option>
                 <option value="done" ${e.settleStatus===`done`?`selected`:``} style="background:#fff; color:#0f172a;">지급완료</option>
               </select>
             </td>
+            <td style="padding:12px; font-weight:600; color:#0f172a;">${e.hostName}</td>
+            <td style="padding:12px; text-align:center; color:#475569; font-size:13px;">${e.date}</td>
+            <td style="padding:12px; font-weight:500; color:#334155;">${e.brandName}</td>
+            <td style="padding:12px; text-align:right; font-weight:500; color:#0f172a;">${e.fee.toLocaleString(`ko-KR`)}</td>
+            <td style="padding:12px; text-align:right; color:#dc2626; font-weight:500;">${e.tax.toLocaleString(`ko-KR`)}</td>
+            <td style="padding:12px; text-align:right; color:#2563eb; font-weight:700;">${e.netFee.toLocaleString(`ko-KR`)}</td>
             <td class="text-center">
               <div style="display:flex; gap:6px; justify-content:center;">
                 <button class="btn btn-xs btn-primary btn-generate-month-link"

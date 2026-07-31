@@ -215,13 +215,13 @@ export function renderSettlement() {
             <table class="data-table">
               <thead>
                 <tr>
+                  <th class="text-center">상태</th>
                   <th>쇼호스트</th>
                   <th class="text-center">방송일</th>
                   <th>브랜드</th>
                   <th class="text-right">지급액 (원)</th>
                   <th class="text-right" style="color: var(--status-error);">3.3% 공제 (원)</th>
                   <th class="text-right" style="color: var(--status-info);">실제 지급액 (원)</th>
-                  <th class="text-center">상태</th>
                   <th class="text-center">명세서 관리</th>
                 </tr>
               </thead>
@@ -316,18 +316,18 @@ export function renderSettlement() {
           tr.style.cssText = 'border-bottom: 1px solid #f1f5f9;';
           const grpKey = `${item.hostName}__${item.month}`;
           tr.innerHTML = `
-            <td style="padding:12px; font-weight:600; color:#0f172a;">${item.hostName}</td>
-            <td style="padding:12px; text-align:center; color:#475569; font-size:13px;">${item.date}</td>
-            <td style="padding:12px; font-weight:500; color:#334155;">${item.brandName}</td>
-            <td style="padding:12px; text-align:right; font-weight:500; color:#0f172a;">${item.fee.toLocaleString('ko-KR')}</td>
-            <td style="padding:12px; text-align:right; color:#dc2626; font-weight:500;">${item.tax.toLocaleString('ko-KR')}</td>
-            <td style="padding:12px; text-align:right; color:#2563eb; font-weight:700;">${item.netFee.toLocaleString('ko-KR')}</td>
             <td class="text-center">
               <select class="btn-change-settle-status" data-id="${item.id}" style="padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; outline: none; background: ${item.settleStatus === 'done' ? '#dcfce7' : '#fef3c7'}; color: ${item.settleStatus === 'done' ? '#166534' : '#92400e'};">
                 <option value="pending" ${item.settleStatus !== 'done' ? 'selected' : ''} style="background:#fff; color:#0f172a;">지급대기</option>
                 <option value="done" ${item.settleStatus === 'done' ? 'selected' : ''} style="background:#fff; color:#0f172a;">지급완료</option>
               </select>
             </td>
+            <td style="padding:12px; font-weight:600; color:#0f172a;">${item.hostName}</td>
+            <td style="padding:12px; text-align:center; color:#475569; font-size:13px;">${item.date}</td>
+            <td style="padding:12px; font-weight:500; color:#334155;">${item.brandName}</td>
+            <td style="padding:12px; text-align:right; font-weight:500; color:#0f172a;">${item.fee.toLocaleString('ko-KR')}</td>
+            <td style="padding:12px; text-align:right; color:#dc2626; font-weight:500;">${item.tax.toLocaleString('ko-KR')}</td>
+            <td style="padding:12px; text-align:right; color:#2563eb; font-weight:700;">${item.netFee.toLocaleString('ko-KR')}</td>
             <td class="text-center">
               <div style="display:flex; gap:6px; justify-content:center;">
                 <button class="btn btn-xs btn-primary btn-generate-month-link"
