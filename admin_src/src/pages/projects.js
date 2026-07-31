@@ -1284,13 +1284,13 @@ function renderFinanceTab(project) {
     el.querySelector('#btn-edit-finance')?.addEventListener('click', () => {
       const content = `
         <div class="form-grid">
-          <div class="input-group"><label>광고비</label><input class="input" type="number" id="fin-ad" value="${finance.adCost || ''}"></div>
           <div class="input-group"><label>제작비</label><input class="input" type="number" id="fin-prod" value="${finance.productionCost || ''}"></div>
+          <div class="input-group"><label>광고비</label><input class="input" type="number" id="fin-ad" value="${finance.adCost || ''}"></div>
           <div class="input-group"><label>기타비용</label><input class="input" type="number" id="fin-other" value="${finance.otherCost || ''}"></div>
-          <div class="input-group"><label>영업매출액</label><input class="input" type="number" id="fin-sales" value="${finance.salesRevenue || ''}"></div>
         </div>
         <div style="margin-top: var(--space-4); padding: var(--space-3); background: var(--bg-secondary); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-tertiary);">
-          쇼호스트비는 쇼호스트 매칭 탭에서 설정한 금액의 합계로 자동 계산됩니다. (현재: ${formatCurrency(hostCost)})
+          • 쇼호스트비(현재: ${formatCurrency(hostCost)})는 매칭 탭의 금액 합계로 자동 반영됩니다.<br>
+          • 영업매출액은 (제작비 + 쇼호스트비 + 광고비)로 자동 산출됩니다.
         </div>
       `;
       const footer = document.createElement('div');
@@ -1301,8 +1301,7 @@ function renderFinanceTab(project) {
         const adCost = parseInt(document.getElementById('fin-ad').value) || 0;
         const productionCost = parseInt(document.getElementById('fin-prod').value) || 0;
         const otherCost = parseInt(document.getElementById('fin-other').value) || 0;
-        const inputSales = parseInt(document.getElementById('fin-sales').value);
-        const salesRevenue = (!isNaN(inputSales) && inputSales > 0) ? inputSales : (productionCost + hostCost + adCost);
+        const salesRevenue = productionCost + hostCost + adCost;
         const operatingProfit = salesRevenue - hostCost - adCost - otherCost;
         const vat = Math.round(salesRevenue * 0.1);
         const netMargin = operatingProfit - vat;
