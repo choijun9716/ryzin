@@ -6,7 +6,9 @@ import { parsePayslipRawText, encodePayslipData } from '../utils/payslip_parser.
 
 export function renderSettlement() {
   const container = document.createElement('div');
+  const urlParams = new URLSearchParams(window.location.search);
   let selectedMonth = 'all'; // 월 필터 기본값 ('all' 또는 YYYY-MM)
+  let selectedStatus = urlParams.get('filter') === 'unpaid' ? 'unpaid' : 'all'; // 상태 필터 ('all', 'unpaid', 'done')
 
   function render() {
     const projects = store.getAll('projects');
@@ -116,10 +118,16 @@ export function renderSettlement() {
       // 선택된 월 유지
     }
 
-    // 필터링 적용
-    const filteredItems = selectedMonth === 'all' 
+    // 필터링 적용 (월 & 미수금 상태)
+    let filteredItems = selectedMonth === 'all' 
       ? settlementItems 
       : settlementItems.filter(item => item.month === selectedMonth);
+
+    if (selectedStatus === 'unpaid') {
+      filteredItems = filteredItems.filter(item => item.settleStatus !== 'done');
+    } else if (selectedStatus === 'done') {
+      filteredItems = filteredItems.filter(item => item.settleStatus === 'done');
+    }
 
     // 날짜 내림차순 정렬
     filteredItems.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -139,6 +147,11 @@ export function renderSettlement() {
           </div>
         </div>
         <div class="page-header-right" style="display: flex; gap: 10px; align-items: center;">
+          <select id="status-filter-select" class="form-control" style="padding: 8px 14px; font-size: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid #d0d7de; background-color: ${selectedStatus === 'unpaid' ? '#fef2f2' : '#fff'}; color: ${selectedStatus === 'unpaid' ? '#dc2626' : '#0f172a'};">
+            <option value="all" ${selectedStatus === 'all' ? 'selected' : ''}>전체 정산 상태</option>
+            <option value="unpaid" ${selectedStatus === 'unpaid' ? 'selected' : ''}>미수금만 보기 (정산 대기)</option>
+            <option value="done" ${selectedStatus === 'done' ? 'selected' : ''}>정산 완료 항목</option>
+          </select>
           <select id="month-filter-select" class="form-control" style="padding: 8px 14px; font-size: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid #d0d7de;">
             <option value="all" ${selectedMonth === 'all' ? 'selected' : ''}>전체 기간 보기</option>
             ${availableMonths.map(m => `
@@ -264,14 +277,22 @@ export function renderSettlement() {
       </div>
     `;
 
-    // 월선택 이벤트 바인딩
-    const monthSelect = container.querySelector('#month-filter-select');
-    if (monthSelect) {
-      monthSelect.addEventListener('change', (e) => {
-        selectedMonth = e.target.value;
-        render();
-      });
-    }
+      // 이벤트 처리
+      const statusFilterSelect = container.querySelector('#status-filter-select');
+      if (statusFilterSelect) {
+        statusFilterSelect.addEventListener('change', (e) => {
+          selectedStatus = e.target.value;
+          render();
+        });
+      }
+
+      const monthFilterSelect = container.querySelector('#month-filter-select');
+      if (monthFilterSelect) {
+        monthFilterSelect.addEventListener('change', (e) => {
+          selectedMonth = e.target.value;
+          render();
+        });
+      }
 
     // ── 이름+월 그룹 생성 (명세서 링크에 사용)
     const grouped = {};
