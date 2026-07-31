@@ -1247,11 +1247,14 @@ function renderFinanceTab(project) {
             </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
               <div class="stat-label">순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 제외)</span></div>
-              <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(finance.netMargin)}</div>
+              <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">
+                ${formatCurrency(finance.netMargin)}
+                <span style="font-size: 13px; font-weight: 600; margin-left: 4px;">(${finance.productionCost ? ((finance.netMargin || 0) / finance.productionCost * 100).toFixed(1) : 0}%)</span>
+              </div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">마진율</div>
-              <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${finance.productionCost ? ((finance.netMargin || 0) / finance.productionCost * 100).toFixed(1) : 0}%</div>
+              <div class="stat-label">부가가치세 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 10%)</span></div>
+              <div class="stat-value">${formatCurrency(finance.vat !== undefined ? finance.vat : Math.round((finance.salesRevenue || 0) * 0.1))}</div>
             </div>
           </div>
         </div>
