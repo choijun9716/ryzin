@@ -260,7 +260,7 @@ export function renderSettlement() {
       });
     }
 
-    // ── 이름+월 그룹 생성 (명세서 링크에 사용)
+    // ── 이름+월 그룹 생성
     const grouped = {};
     filteredItems.forEach(item => {
       const key = `${item.hostName}__${item.month}`;
@@ -270,55 +270,139 @@ export function renderSettlement() {
       grouped[key].items.push(item);
     });
 
-    // ── 평면 테이블 렌더링 (개별 행)
+    // 월 내림차순 → 이름 가나다순 정렬
+    const groups = Object.values(grouped).sort((a, b) => {
+      if (a.month !== b.month) return b.month.localeCompare(a.month);
+      return a.hostName.localeCompare(b.hostName, 'ko');
+    });
+
+    // ── 아코디언식 펼침 테이블 렌더링
     const tbody = container.querySelector('#settle-tbody');
     if (tbody) {
-      if (filteredItems.length === 0) {
+      if (groups.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding:40px;color:#94a3b8;">선택한 조건의 정산 내역이 없습니다.</td></tr>';
       } else {
         tbody.innerHTML = '';
-        filteredItems.forEach(item => {
-          const tr = document.createElement('tr');
-          tr.style.cssText = 'border-bottom: 1px solid #f1f5f9;';
-          const grpKey = `${item.hostName}__${item.month}`;
-          tr.innerHTML = `
-            <td style="padding:12px; font-weight:600; color:#0f172a;">${item.hostName}</td>
-            <td style="padding:12px; text-align:center; color:#475569; font-size:13px;">${item.date}</td>
-            <td style="padding:12px; font-weight:500; color:#334155;">${item.brandName}</td>
-            <td style="padding:12px; text-align:right; font-weight:500; color:#0f172a;">${item.fee.toLocaleString('ko-KR')}</td>
-            <td style="padding:12px; text-align:right; color:#dc2626; font-weight:500;">${item.tax.toLocaleString('ko-KR')}</td>
-            <td style="padding:12px; text-align:right; color:#2563eb; font-weight:700;">${item.netFee.toLocaleString('ko-KR')}</td>
-            <td style="padding:12px; text-align:center;">
-              ${item.settleStatus === 'done'
+        groups.forEach((grp, index) => {
+          const totalFeeG   = grp.items.reduce((s, i) => s + i.fee, 0);
+          const totalTaxG   = grp.items.reduce((s, i) => s + i.tax, 0);
+          const totalNetG   = grp.items.reduce((s, i) => s + i.netFee, 0);
+          const allDone     = grp.items.every(i => i.settleStatus === 'done');
+          const grpKey      = `${grp.hostName}__${grp.month}`;
+          const isMulti     = grp.items.length > 1;
+
+          // 브랜드 표시 (1건이면 그대로, 여러 건이면 "브랜드A 외 N건")
+          const uniqueBrands = [...new Set(grp.items.map(i => i.brandName))];
+          const brandText    = uniqueBrands.length > 1 ? `${uniqueBrands[0]} 외 ${uniqueBrands.length - 1}건` : uniqueBrands[0];
+
+          // 방송일 표시
+          const latestDate = grp.items[0].date;
+          const dateText   = isMulti ? `${latestDate} (${grp.items.length}건)` : latestDate;
+
+          // 메인 그룹 행 (동일한 열높이 padding: 12px)
+          const mainTr = document.createElement('tr');
+          mainTr.className = 'group-main-row';
+          mainTr.style.cssText = 'border-bottom: 1px solid #e2e8f0; cursor: pointer; background: #ffffff; transition: background 0.15s;';
+          mainTr.dataset.grpKey = grpKey;
+
+          mainTr.innerHTML = `
+            <td style="padding: 12px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              ${isMulti ? `<span class="expand-icon" style="font-size: 10px; color: #64748b; transition: transform 0.2s; display: inline-block;">▶</span>` : `<span style="font-size: 10px; opacity: 0;">▶</span>`}
+              <span>${grp.hostName}</span>
+            </td>
+            <td style="padding: 12px; text-align: center; color: #475569; font-size: 13px;">${dateText}</td>
+            <td style="padding: 12px; font-weight: 500; color: #334155;">${brandText}</td>
+            <td style="padding: 12px; text-align: right; font-weight: 600; color: #0f172a;">${totalFeeG.toLocaleString('ko-KR')}</td>
+            <td style="padding: 12px; text-align: right; color: #dc2626; font-weight: 500;">${totalTaxG.toLocaleString('ko-KR')}</td>
+            <td style="padding: 12px; text-align: right; color: #2563eb; font-weight: 700;">${totalNetG.toLocaleString('ko-KR')}</td>
+            <td style="padding: 12px; text-align: center;">
+              ${allDone
                 ? '<span class="badge badge-success" style="background:#dcfce7;color:#166534;font-size:11px;padding:4px 8px;border-radius:12px;">지급완료</span>'
                 : '<span class="badge badge-warning" style="background:#fef3c7;color:#92400e;font-size:11px;padding:4px 8px;border-radius:12px;">지급대기</span>'}
             </td>
-            <td style="padding:12px; text-align:center;">
-              <div style="display:flex; gap:6px; justify-content:center;">
-                ${item.settleStatus !== 'done'
-                  ? `<button class="btn btn-xs btn-secondary btn-single-settle" data-id="${item.id}" style="padding:4px 8px;font-size:11px;">지급완료</button>`
-                  : ''}
-                <button class="btn btn-xs btn-primary btn-generate-month-link"
-                  data-grp-key="${grpKey}"
-                  style="padding:4px 8px;font-size:11px;">명세서 링크</button>
+            <td style="padding: 12px; text-align: center;">
+              <div style="display: flex; gap: 6px; justify-content: center;" onclick="event.stopPropagation();">
+                ${!allDone ? `<button class="btn btn-xs btn-secondary btn-settle-group" data-grp-key="${grpKey}" style="padding:4px 8px;font-size:11px;">전체 지급완료</button>` : ''}
+                <button class="btn btn-xs btn-primary btn-generate-month-link" data-grp-key="${grpKey}" style="padding:4px 8px;font-size:11px;">명세서 링크</button>
               </div>
             </td>
           `;
-          tbody.appendChild(tr);
+          tbody.appendChild(mainTr);
+
+          // 세부 내역 행들 (동일한 열 높이, 펼쳐질 때 나타남)
+          grp.items.forEach(item => {
+            const subTr = document.createElement('tr');
+            subTr.className = `sub-row-${grpKey}`;
+            subTr.style.cssText = 'display: none; background: #f8fafc; border-bottom: 1px solid #edf2f7; font-size: 13px;';
+            subTr.innerHTML = `
+              <td style="padding: 12px 12px 12px 32px; color: #64748b; font-size: 12px;">
+                <span style="color: #cbd5e1; margin-right: 4px;">└</span> 방송 건별
+              </td>
+              <td style="padding: 12px; text-align: center; color: #475569;">${item.date}</td>
+              <td style="padding: 12px; color: #334155;">${item.brandName}</td>
+              <td style="padding: 12px; text-align: right; color: #475569;">${item.fee.toLocaleString('ko-KR')}</td>
+              <td style="padding: 12px; text-align: right; color: #dc2626;">${item.tax.toLocaleString('ko-KR')}</td>
+              <td style="padding: 12px; text-align: right; color: #2563eb; font-weight: 600;">${item.netFee.toLocaleString('ko-KR')}</td>
+              <td style="padding: 12px; text-align: center;">
+                ${item.settleStatus === 'done'
+                  ? '<span style="color:#166534; font-size:11px;">완료</span>'
+                  : '<span style="color:#92400e; font-size:11px;">대기</span>'}
+              </td>
+              <td style="padding: 12px; text-align: center;">
+                ${item.settleStatus !== 'done'
+                  ? `<button class="btn btn-xs btn-secondary btn-single-settle" data-id="${item.id}" style="padding:2px 6px;font-size:10px;" onclick="event.stopPropagation();">지급완료</button>`
+                  : ''}
+              </td>
+            `;
+            tbody.appendChild(subTr);
+          });
+
+          // 대표 행 클릭 시 토글 이벤트
+          mainTr.addEventListener('click', () => {
+            const subRows = tbody.querySelectorAll(`.sub-row-${grpKey}`);
+            const icon = mainTr.querySelector('.expand-icon');
+            const isExpanded = subRows[0] && subRows[0].style.display !== 'none';
+
+            subRows.forEach(row => {
+              row.style.display = isExpanded ? 'none' : 'table-row';
+            });
+
+            if (icon) {
+              icon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(90deg)';
+            }
+            mainTr.style.background = isExpanded ? '#ffffff' : '#f1f5f9';
+          });
         });
       }
     }
 
+    // 그룹 지급완료 처리
+    container.querySelectorAll('.btn-settle-group').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const key = e.target.dataset.grpKey;
+        const grp = grouped[key];
+        if (!grp) return;
+        if (confirm(`${grp.hostName} 님 ${grp.month} 전체 ${grp.items.length}건을 지급완료 처리하시겠습니까?`)) {
+          grp.items.forEach(i => {
+            if (i.rawMatching) store.update('liveHosts', i.rawMatching.id, { settleStatus: 'done' });
+          });
+          showSuccess(`${grp.hostName} 님 ${grp.month} 지급완료 처리되었습니다.`);
+        }
+      });
+    });
+
     // 개별 지급 완료 처리
     container.querySelectorAll('.btn-single-settle').forEach(btn => {
       btn.addEventListener('click', e => {
+        e.stopPropagation();
         const id = e.target.dataset.id;
         store.update('liveHosts', id, { settleStatus: 'done' });
         showSuccess('지급 완료 처리되었습니다.');
       });
     });
 
-    // 명세서 링크 단쳐: 해당 호스트의 같은 달 전체 방송 포함
+    // 명세서 링크 생성: 해당 호스트의 같은 달 전체 방송 포함
     container.querySelectorAll('.btn-generate-month-link').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
