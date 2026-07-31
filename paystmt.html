@@ -178,12 +178,11 @@
       line-height: 1.3;
     }
 
-    /* ─── TABLE / CARD SECTION ─── */
+    /* ─── TABLE SECTION ─── */
     .table-band {
       background: var(--white);
       border-left: 1px solid var(--line);
       border-right: 1px solid var(--line);
-      padding-bottom: 8px;
     }
 
     .section-label {
@@ -192,55 +191,42 @@
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--ink-4);
-      padding: 18px 20px 14px;
-      margin-bottom: 14px;
+      padding: 20px 36px 10px;
       border-bottom: 1px solid var(--line);
     }
 
-    /* 카드 스타일 레이아웃 (PC & 모바일 동일) */
-    table, thead, tbody, tfoot, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
-    thead { display: none; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
 
-    tbody tr {
-      margin: 0 16px 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--r8);
-      overflow: hidden;
-      background: #ffffff;
-      transition: background .1s;
-    }
-    tbody tr:first-child { margin-top: 4px; }
-    tbody tr:last-child { margin-bottom: 16px; }
-
-    tbody td {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 11px 16px !important;
-      text-align: right !important;
-      border-bottom: 1px solid var(--line) !important;
-      font-size: 13px;
-      color: var(--ink-2);
-    }
-    tbody td:last-child { border-bottom: none !important; }
-    tbody tr td:first-child {
-      background: #f9f9f9;
-      font-size: 14.5px;
-      font-weight: 700 !important;
-      color: var(--ink) !important;
-      justify-content: flex-start;
-      text-align: left !important;
-    }
-    tbody td::before {
-      content: attr(data-label);
+    thead th {
+      padding: 11px 12px;
       font-size: 10.5px;
       font-weight: 600;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--ink-4);
-      flex-shrink: 0;
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
     }
-    tbody td:first-child::before { display: none; }
+    thead th:first-child { text-align: left; padding-left: 36px; }
+    thead th:last-child  { padding-right: 36px; }
+
+    tbody td {
+      padding: 13px 12px;
+      color: var(--ink-2);
+      font-weight: 400;
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+    }
+    tbody td:first-child { text-align: left; padding-left: 36px; font-weight: 600; color: var(--ink); }
+    tbody td:last-child  { padding-right: 36px; font-weight: 700; color: var(--ink); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .1s; }
+    tbody tr:hover td { background: #fafafa; }
 
     .tc { text-align: center !important; }
     .tr { text-align: right  !important; }
@@ -252,24 +238,21 @@
       background: #f0f0f0;
       border-left: 1px solid var(--line);
       border-right: 1px solid var(--line);
-      padding: 18px 20px;
+      padding: 18px 36px;
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
     }
 
     .total-item {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      align-items: flex-end;
-      text-align: right;
-      padding-left: 0;
-      border-left: none;
-      border-top: 1px solid var(--line);
-      padding-top: 12px;
+      align-items: flex-start;
+      padding-left: 20px;
+      border-left: 1px solid var(--line);
     }
-    .total-item:first-child { border-top: none; padding-top: 0; }
+    .total-item:first-child { padding-left: 0; border-left: none; }
 
     .total-label {
       font-size: 10px;
@@ -284,18 +267,17 @@
       color: var(--ink);
       letter-spacing: -0.02em;
     }
-    .total-val.highlight { font-size: 24px; }
+    .total-val.highlight { font-size: 20px; }
 
     /* ─── FOOTER BAND ─── */
     .footer-band {
       background: var(--white);
       border: 1px solid var(--line);
       border-radius: 0 0 var(--r16) var(--r16);
-      padding: 20px;
+      padding: 24px 36px;
       display: flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: flex-start;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .footer-notice {
@@ -310,7 +292,6 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 6px;
-      align-self: flex-end;
     }
     .stamp-caption {
       font-size: 10px;
