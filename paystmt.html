@@ -3,589 +3,489 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>지급명세서 - RYZIN</title>
+  <title>지급명세서 — RYZIN</title>
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-      --font-display: 'Plus Jakarta Sans', var(--font-family);
-      --primary-black: #0f172a;
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --accent-blue: #2563eb;
-      --accent-red: #dc2626;
-      --card-bg: #ffffff;
-      --bg-page: #f1f5f9;
-    }
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    * {
+  <style>
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    :root {
+      --black: #000000;
+      --white: #ffffff;
+      --gray-50: #fafafa;
+      --gray-100: #f5f5f5;
+      --gray-200: #e5e5e5;
+      --gray-300: #d4d4d4;
+      --gray-400: #a3a3a3;
+      --gray-500: #737373;
+      --gray-600: #525252;
+      --gray-700: #404040;
+      --gray-800: #262626;
+      --gray-900: #171717;
+      --sans: 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+    }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
     body {
-      font-family: var(--font-family);
-      background-color: var(--bg-page);
-      color: var(--text-main);
+      font-family: var(--sans);
+      background: var(--gray-100);
+      color: var(--black);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
-      padding: 30px 20px;
-      -webkit-font-smoothing: antialiased;
+      padding: 40px 24px;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
 
-    /* 프리미엄 상단 툴바 */
+    /* ── 툴바 ── */
     .toolbar {
       width: 100%;
-      max-width: 900px;
-      background: rgba(15, 23, 42, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 16px 28px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+      max-width: 800px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 24px;
     }
 
     .toolbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .toolbar-logo {
-      font-family: var(--font-display);
-      font-size: 20px;
-      font-weight: 900;
-      color: #ffffff;
-      letter-spacing: 1.5px;
-    }
-
-    .toolbar-tag {
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.15);
-      color: #e2e8f0;
-      padding: 4px 10px;
-      border-radius: 20px;
-      letter-spacing: 0.3px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--gray-500);
+      text-transform: uppercase;
     }
 
     .toolbar-actions {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .btn {
-      font-family: var(--font-family);
-      font-size: 13px;
-      font-weight: 600;
-      padding: 10px 18px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
+    .action-btn {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      color: var(--gray-700);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
+      gap: 6px;
+      transition: all 0.15s ease;
+      letter-spacing: 0.2px;
     }
 
-    .btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
+    .action-btn:hover {
+      border-color: var(--black);
+      color: var(--black);
     }
 
-    .btn-primary {
-      background: #ffffff;
-      color: #0f172a;
-      border-color: #ffffff;
-      font-weight: 700;
+    .action-btn.primary {
+      background: var(--black);
+      border-color: var(--black);
+      color: var(--white);
     }
 
-    .btn-primary:hover {
-      background: #f8fafc;
-      color: #0f172a;
-      box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+    .action-btn.primary:hover {
+      background: var(--gray-800);
+      border-color: var(--gray-800);
     }
 
-    /* A4 세련된 명세서 컨테이너 */
-    .statement-card {
+    /* ── 명세서 카드 ── */
+    .statement {
       width: 100%;
-      max-width: 900px;
-      background: #ffffff;
-      padding: 55px 60px;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.07), 0 1px 3px rgba(0,0,0,0.05);
-      position: relative;
-      border: 1px solid #e2e8f0;
+      max-width: 800px;
+      background: var(--white);
+      padding: 56px 60px 64px;
     }
 
-    /* 헤더 디자인 */
-    .statement-header {
+    /* ── 헤더 ── */
+    .stmt-head {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      padding-bottom: 28px;
-      border-bottom: 2px solid #0f172a;
-      margin-bottom: 32px;
+      align-items: flex-end;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--black);
+      margin-bottom: 36px;
     }
 
-    .header-left {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .statement-title {
-      font-size: 34px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      color: #0f172a;
-    }
-
-    .statement-subtitle {
-      font-family: var(--font-display);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-
-    .brand-logo-large {
-      font-family: var(--font-display);
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 1px;
-      color: #0f172a;
+    .stmt-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--black);
       line-height: 1;
     }
 
-    /* 회사 및 지급 정보 2열 카드 */
-    .info-grid {
+    .stmt-brand {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    /* ── 발행 정보 영역 ── */
+    .stmt-meta {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 22px 26px;
-      margin-bottom: 32px;
+      gap: 6px 0;
+      margin-bottom: 40px;
     }
 
-    .info-item {
+    .meta-row {
       display: flex;
-      font-size: 13.5px;
-      line-height: 1.6;
+      gap: 12px;
+      font-size: 13px;
+      padding: 5px 0;
     }
 
-    .info-label {
-      font-weight: 700;
-      color: #475569;
-      width: 120px;
+    .meta-label {
+      color: var(--gray-400);
+      font-weight: 500;
+      width: 100px;
       flex-shrink: 0;
     }
 
-    .info-value {
+    .meta-value {
+      color: var(--black);
       font-weight: 600;
-      color: #0f172a;
     }
 
-    /* 테이블 세련된 디자인 */
-    .table-wrapper {
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid #0f172a;
-      margin-bottom: 30px;
+    /* ── 테이블 ── */
+    .stmt-table-wrap {
+      margin-bottom: 0;
     }
 
-    .statement-table {
+    table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
-    .statement-table th {
-      background: #0f172a;
-      color: #ffffff;
-      font-weight: 700;
-      padding: 14px 10px;
+    thead tr {
+      border-top: 1.5px solid var(--black);
+      border-bottom: 1.5px solid var(--black);
+    }
+
+    th {
+      padding: 11px 12px;
+      font-weight: 600;
+      color: var(--black);
       text-align: center;
-      letter-spacing: 0.3px;
-      border-right: 1px solid rgba(255, 255, 255, 0.12);
+      letter-spacing: 0.2px;
+      background: var(--white);
     }
 
-    .statement-table th:last-child {
-      border-right: none;
+    td {
+      padding: 10px 12px;
+      color: var(--gray-700);
+      font-weight: 400;
+      border-bottom: 1px solid var(--gray-200);
     }
 
-    .statement-table td {
-      padding: 13px 10px;
-      border-bottom: 1px solid #e2e8f0;
-      border-right: 1px solid #e2e8f0;
-      color: #334155;
-      font-weight: 500;
+    tbody tr:hover td {
+      background: var(--gray-50);
     }
 
-    .statement-table td:last-child {
-      border-right: none;
+    .tc { text-align: center; }
+    .tr { text-align: right; }
+    .tl { text-align: left; }
+
+    /* ── 합계행 ── */
+    tfoot tr {
+      border-top: 1.5px solid var(--black);
     }
 
-    .statement-table tbody tr:nth-child(even) {
-      background-color: #f8fafc;
-    }
-
-    .statement-table tbody tr:last-child td {
+    tfoot td {
+      padding: 12px 12px;
+      font-weight: 700;
+      color: var(--black);
+      font-size: 13px;
       border-bottom: none;
     }
 
-    .text-center { text-align: center; }
-    .text-right { text-align: right; }
-    .text-bold { font-weight: 700 !important; }
-
-    /* 합계 행 스타일 */
-    .totals-row td {
-      background: #f1f5f9 !important;
-      border-top: 2px solid #0f172a !important;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      font-size: 14px;
-      padding: 15px 10px !important;
-    }
-
-    .totals-net {
-      color: #2563eb !important;
-      font-size: 15px;
-    }
-
-    /* 하단 직인 및 문구 디자인 */
-    .statement-footer {
-      margin-top: 36px;
-      padding-top: 20px;
-    }
-
-    .notice-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 12px 18px;
-      font-size: 12.5px;
-      font-weight: 500;
-      color: #475569;
-      margin-bottom: 40px;
-      display: inline-block;
-    }
-
-    .notice-box strong {
-      color: #0f172a;
-    }
-
-    .sign-container {
+    /* ── 하단 영역 ── */
+    .stmt-footer {
+      margin-top: 48px;
       display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 20px;
+      justify-content: space-between;
+      align-items: flex-end;
     }
 
-    .sign-statement-text {
-      font-size: 15px;
-      font-weight: 700;
-      color: #0f172a;
+    .stmt-notice {
+      font-size: 11.5px;
+      color: var(--gray-400);
+      line-height: 1.7;
+    }
+
+    .stmt-notice strong {
+      color: var(--gray-700);
+      font-weight: 600;
+    }
+
+    /* ── 직인 ── */
+    .stmt-sign {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .sign-text {
+      font-size: 12px;
+      color: var(--gray-500);
       letter-spacing: 0.5px;
     }
 
-    /* 라이진 고급 실물형 인장 도장 SVG */
-    .seal-stamp {
-      width: 64px;
-      height: 64px;
-      filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.25));
+    .seal {
+      width: 56px;
+      height: 56px;
     }
 
-    /* 토스트 팝업 */
-    .toast-msg {
+    /* ── 토스트 ── */
+    .toast {
       position: fixed;
-      bottom: 32px;
+      bottom: 28px;
       left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #0f172a;
-      color: #ffffff;
-      padding: 14px 28px;
-      border-radius: 30px;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      transform: translateX(-50%) translateY(60px);
       opacity: 0;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: var(--black);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 12px 22px;
+      border-radius: 6px;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
       z-index: 9999;
+      white-space: nowrap;
     }
 
-    .toast-msg.show {
-      transform: translateX(-50%) translateY(0);
+    .toast.visible {
       opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
-    /* 인쇄 전용 스타일 (@media print) */
+    /* ── 인쇄 ── */
     @media print {
       body {
-        background-color: #ffffff;
+        background: var(--white);
         padding: 0;
       }
-      .toolbar, .toast-msg {
+      .toolbar, .toast {
         display: none !important;
       }
-      .statement-card {
-        box-shadow: none;
-        border-radius: 0;
-        border: none;
-        padding: 20px 10px;
+      .statement {
+        padding: 36px 40px;
         max-width: 100%;
-        width: 100%;
+        box-shadow: none;
       }
       @page {
         size: A4 portrait;
-        margin: 12mm 10mm;
+        margin: 14mm 10mm;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- 액션 툴바 -->
-  <div class="toolbar">
-    <div class="toolbar-brand">
-      <span class="toolbar-logo">RYZIN</span>
-      <span class="toolbar-tag">지급명세서 뷰어</span>
-    </div>
+  <!-- 툴바 -->
+  <header class="toolbar">
+    <span class="toolbar-brand">RYZIN</span>
     <div class="toolbar-actions">
-      <button class="btn" id="btn-copy-link">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+      <button class="action-btn" id="btn-copy-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         링크 복사
       </button>
-      <button class="btn" id="btn-copy-text">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-        전송 문구 복사
+      <button class="action-btn" id="btn-copy-msg">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        문구 복사
       </button>
-      <button class="btn btn-primary" id="btn-print">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-        PDF 저장 / 인쇄
+      <button class="action-btn primary" id="btn-print">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        PDF / 인쇄
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- A4 지급명세서 본문 카드 -->
-  <div class="statement-card">
-    <div class="statement-header">
-      <div class="header-left">
-        <h1 class="statement-title">지급명세서</h1>
-        <span class="statement-subtitle">Payment Statement</span>
+  <!-- 명세서 본문 -->
+  <main class="statement" id="statement-card">
+
+    <!-- 헤더 -->
+    <div class="stmt-head">
+      <h1 class="stmt-title">지급명세서</h1>
+      <span class="stmt-brand">RYZIN CORP.</span>
+    </div>
+
+    <!-- 메타 정보 -->
+    <div class="stmt-meta">
+      <div class="meta-row">
+        <span class="meta-label">회사명</span>
+        <span class="meta-value" id="comp-name">라이진</span>
       </div>
-      <div class="brand-logo-large">RYZIN</div>
+      <div class="meta-row">
+        <span class="meta-label">지급일자</span>
+        <span class="meta-value" id="payment-date">—</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">대표자명</span>
+        <span class="meta-value" id="comp-ceo">채이준</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">사업자번호</span>
+        <span class="meta-value" id="comp-bizno">821-29-01197</span>
+      </div>
     </div>
 
-    <!-- 2열 카드 서식 -->
-    <div class="info-grid">
-      <div class="info-item"><span class="info-label">회사명:</span><span class="info-value" id="comp-name">라이진</span></div>
-      <div class="info-item"><span class="info-label">대표자명:</span><span class="info-value" id="comp-ceo">채이준</span></div>
-      <div class="info-item"><span class="info-label">사업자등록번호:</span><span class="info-value" id="comp-bizno">821-29-01197</span></div>
-      <div class="info-item"><span class="info-label">지급일자:</span><span class="info-value" id="payment-date">2026-05-29</span></div>
-    </div>
-
-    <!-- 데이터 테이블 -->
-    <div class="table-wrapper">
-      <table class="statement-table">
+    <!-- 테이블 -->
+    <div class="stmt-table-wrap">
+      <table>
         <thead>
           <tr>
-            <th style="width: 11%;">성명</th>
-            <th style="width: 15%;">방송일</th>
-            <th style="width: 11%;">시작시간</th>
-            <th style="width: 11%;">종료시간</th>
-            <th style="width: 15%;">업무상세</th>
-            <th style="width: 13%;">총 지급액 (원)</th>
-            <th style="width: 12%;">3.3% 공제 (원)</th>
-            <th style="width: 12%;">실지급액 (원)</th>
+            <th class="tl" style="width:11%;">성명</th>
+            <th class="tc" style="width:14%;">방송일</th>
+            <th class="tc" style="width:10%;">시작</th>
+            <th class="tc" style="width:10%;">종료</th>
+            <th class="tl" style="width:15%;">업무</th>
+            <th class="tr" style="width:15%;">지급액</th>
+            <th class="tr" style="width:14%;">3.3% 공제</th>
+            <th class="tr" style="width:14%;">실지급액</th>
           </tr>
         </thead>
         <tbody id="table-body">
-          <!-- 동적 렌더링 -->
         </tbody>
         <tfoot>
-          <tr class="totals-row">
-            <td colspan="5" class="text-center text-bold">합계</td>
-            <td class="text-right text-bold" id="total-amount">0</td>
-            <td class="text-right text-bold" id="total-tax" style="color: #dc2626 !important;">0</td>
-            <td class="text-right text-bold totals-net" id="total-net">0</td>
+          <tr>
+            <td colspan="5" class="tc" style="color: var(--gray-500); font-weight:500; font-size:11.5px;">합계</td>
+            <td class="tr" id="total-gross">—</td>
+            <td class="tr" id="total-tax">—</td>
+            <td class="tr" id="total-net" style="font-weight:800;">—</td>
           </tr>
         </tfoot>
       </table>
     </div>
 
-    <div class="statement-footer">
-      <div class="notice-box">
-        ※ 지급 내역 및 3.3% 공제액 문의: <strong id="comp-email">choijun@ryzincorp.com</strong>
+    <!-- 푸터 -->
+    <footer class="stmt-footer">
+      <div class="stmt-notice">
+        위 금액을 이상과 같이 지급합니다.<br>
+        문의: <strong id="comp-email">choijun@ryzincorp.com</strong>
       </div>
-      <div class="sign-container">
-        <span class="sign-statement-text">위 금액을 이상과 같이 지급함.</span>
-        <!-- 라이진 채이준 직인 도장 SVG -->
-        <svg class="seal-stamp" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="4" y="4" width="92" height="92" rx="18" stroke="#DC2626" stroke-width="5"/>
-          <rect x="8" y="8" width="84" height="84" rx="14" stroke="#DC2626" stroke-width="2"/>
-          <text x="50" y="37" font-family="'Pretendard', sans-serif" font-size="20" font-weight="900" fill="#DC2626" text-anchor="middle" letter-spacing="1">라이진</text>
-          <text x="50" y="61" font-family="'Pretendard', sans-serif" font-size="18" font-weight="900" fill="#DC2626" text-anchor="middle" letter-spacing="1">채이준</text>
-          <text x="50" y="79" font-family="'Pretendard', sans-serif" font-size="13" font-weight="800" fill="#DC2626" text-anchor="middle" letter-spacing="2">(인)</text>
+      <div class="stmt-sign">
+        <span class="sign-text">(주) 라이진</span>
+        <svg class="seal" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="74" height="74" rx="12" stroke="#000" stroke-width="3.5"/>
+          <rect x="7" y="7" width="66" height="66" rx="9" stroke="#000" stroke-width="1.5"/>
+          <text x="40" y="30" font-family="'Noto Sans KR', sans-serif" font-size="15" font-weight="900" fill="#000" text-anchor="middle" letter-spacing="1">라이진</text>
+          <text x="40" y="50" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" fill="#000" text-anchor="middle" letter-spacing="1">채이준</text>
+          <text x="40" y="66" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="600" fill="#000" text-anchor="middle" letter-spacing="1">(인)</text>
         </svg>
       </div>
-    </div>
-  </div>
+    </footer>
 
-  <div class="toast-msg" id="toast">복사되었습니다.</div>
+  </main>
+
+  <div class="toast" id="toast"></div>
 
   <script>
-    // URL 파라미터 디코더 (독립 인라인 실행)
-    function decodePayslipData(encodedStr) {
-      if (!encodedStr) return null;
+    function decode(s) {
+      if (!s) return null;
       try {
-        let base64 = encodedStr.replace(/-/g, '+').replace(/_/g, '/');
-        while (base64.length % 4) {
-          base64 += '=';
-        }
-        const jsonStr = decodeURIComponent(Array.prototype.map.call(atob(base64), c => {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonStr);
-      } catch (e) {
-        console.error('Payslip decode error:', e);
-        return null;
-      }
+        let b = s.replace(/-/g, '+').replace(/_/g, '/');
+        while (b.length % 4) b += '=';
+        return JSON.parse(decodeURIComponent(
+          Array.prototype.map.call(atob(b), c =>
+            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+          ).join('')
+        ));
+      } catch { return null; }
     }
 
-    // 샘플 데이터
-    const SAMPLE_PAYSLIP = {
+    const SAMPLE = {
       paymentDate: '2026-05-29',
       recipientName: '임란희',
-      company: {
-        name: '라이진',
-        bizNo: '821-29-01197',
-        ceo: '채이준',
-        email: 'choijun@ryzincorp.com'
-      },
-      items: [
-        {
-          name: '임란희',
-          date: '2026-04-09',
-          startTime: '20:00',
-          endTime: '21:00',
-          detail: '쏘랩',
-          amount: 200000,
-          tax: 6600,
-          netAmount: 193400
-        }
-      ],
-      totals: {
-        amount: 200000,
-        tax: 6600,
-        netAmount: 193400
-      }
+      company: { name: '라이진', bizNo: '821-29-01197', ceo: '채이준', email: 'choijun@ryzincorp.com' },
+      items: [{ name: '임란희', date: '2026-04-09', startTime: '20:00', endTime: '21:00', detail: '쏘랩', amount: 200000, tax: 6600, netAmount: 193400 }],
+      totals: { amount: 200000, tax: 6600, netAmount: 193400 }
     };
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.innerText = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2200);
-    }
+    const params = new URLSearchParams(location.search);
+    const raw = decode(params.get('d'));
+    const d = (raw && raw.items && raw.items.length) ? raw : SAMPLE;
 
-    function formatNumber(num) {
-      return (num || 0).toLocaleString('ko-KR');
-    }
+    const fmt = n => (n || 0).toLocaleString('ko-KR');
 
-    // URL 파라미터 추출
-    const urlParams = new URLSearchParams(window.location.search);
-    const dataParam = urlParams.get('d');
-    
-    let payslipData = SAMPLE_PAYSLIP;
+    // 메타 바인딩
+    document.getElementById('comp-name').textContent      = d.company?.name    || '라이진';
+    document.getElementById('comp-ceo').textContent       = d.company?.ceo     || '채이준';
+    document.getElementById('comp-bizno').textContent     = d.company?.bizNo   || '821-29-01197';
+    document.getElementById('comp-email').textContent     = d.company?.email   || 'choijun@ryzincorp.com';
+    document.getElementById('payment-date').textContent   = d.paymentDate      || '—';
 
-    if (dataParam) {
-      const decoded = decodePayslipData(dataParam);
-      if (decoded && decoded.items && decoded.items.length > 0) {
-        payslipData = decoded;
-      }
-    }
-
-    // 데이터 DOM 결합
-    document.getElementById('comp-name').innerText = payslipData.company?.name || '라이진';
-    document.getElementById('comp-bizno').innerText = payslipData.company?.bizNo || '821-29-01197';
-    document.getElementById('comp-ceo').innerText = payslipData.company?.ceo || '채이준';
-    document.getElementById('comp-email').innerText = payslipData.company?.email || 'choijun@ryzincorp.com';
-    document.getElementById('payment-date').innerText = payslipData.paymentDate || new Date().toISOString().split('T')[0];
-
+    // 테이블 행
     const tbody = document.getElementById('table-body');
-    tbody.innerHTML = '';
-
-    payslipData.items.forEach(item => {
+    d.items.forEach(item => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="text-center text-bold">${item.name || ''}</td>
-        <td class="text-center">${item.date || ''}</td>
-        <td class="text-center">${item.startTime || ''}</td>
-        <td class="text-center">${item.endTime || ''}</td>
-        <td class="text-center">${item.detail || ''}</td>
-        <td class="text-right">${formatNumber(item.amount)}</td>
-        <td class="text-right" style="color: #dc2626;">${formatNumber(item.tax)}</td>
-        <td class="text-right text-bold" style="color: #2563eb;">${formatNumber(item.netAmount)}</td>
+        <td class="tl" style="font-weight:600;color:var(--black);">${item.name || ''}</td>
+        <td class="tc">${item.date || ''}</td>
+        <td class="tc">${item.startTime || ''}</td>
+        <td class="tc">${item.endTime || ''}</td>
+        <td class="tl">${item.detail || ''}</td>
+        <td class="tr">${fmt(item.amount)}</td>
+        <td class="tr" style="color:var(--gray-400);">${fmt(item.tax)}</td>
+        <td class="tr" style="font-weight:700;color:var(--black);">${fmt(item.netAmount)}</td>
       `;
       tbody.appendChild(tr);
     });
 
-    // 합계 결합
-    document.getElementById('total-amount').innerText = formatNumber(payslipData.totals?.amount || 0);
-    document.getElementById('total-tax').innerText = formatNumber(payslipData.totals?.tax || 0);
-    document.getElementById('total-net').innerText = formatNumber(payslipData.totals?.netAmount || 0);
+    // 합계
+    document.getElementById('total-gross').textContent = fmt(d.totals?.amount);
+    document.getElementById('total-tax').textContent   = fmt(d.totals?.tax);
+    document.getElementById('total-net').textContent   = fmt(d.totals?.netAmount);
 
-    // 이벤트 제어
-    document.getElementById('btn-print').addEventListener('click', () => {
-      window.print();
-    });
+    // 토스트
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('visible');
+      setTimeout(() => el.classList.remove('visible'), 2000);
+    }
 
-    document.getElementById('btn-copy-link').addEventListener('click', () => {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        showToast('명세서 공유 링크가 복사되었습니다.');
-      }).catch(() => {
-        showToast('복사에 실패했습니다.');
-      });
-    });
+    document.getElementById('btn-print').onclick = () => window.print();
 
-    document.getElementById('btn-copy-text').addEventListener('click', () => {
-      const recipient = payslipData.recipientName || payslipData.items[0]?.name || '쇼호스트';
-      const paymentDate = payslipData.paymentDate || '';
-      const totalNet = formatNumber(payslipData.totals?.netAmount || 0);
-      const link = window.location.href;
+    document.getElementById('btn-copy-link').onclick = () => {
+      navigator.clipboard.writeText(location.href)
+        .then(() => toast('링크를 복사했습니다.'))
+        .catch(() => toast('복사에 실패했습니다.'));
+    };
 
-      const messageText = `[라이진] ${recipient} 님, 방송 지급명세서가 발송되었습니다.\n\n` +
-        `· 지급일자: ${paymentDate}\n` +
-        `· 실지급액: ${totalNet}원\n\n` +
-        `아래 링크에서 상세 방송 내역 및 3.3% 공제액을 확인하실 수 있습니다:\n${link}`;
-
-      navigator.clipboard.writeText(messageText).then(() => {
-        showToast('전송용 안내 문구가 복사되었습니다.');
-      }).catch(() => {
-        showToast('복사에 실패했습니다.');
-      });
-    });
+    document.getElementById('btn-copy-msg').onclick = () => {
+      const name = d.recipientName || d.items[0]?.name || '쇼호스트';
+      const net  = fmt(d.totals?.netAmount);
+      const text = `[라이진] ${name} 님, 방송 지급명세서가 발송되었습니다.\n\n· 지급일자: ${d.paymentDate || ''}\n· 실지급액: ${net}원\n\n아래 링크에서 상세 내역을 확인하세요:\n${location.href}`;
+      navigator.clipboard.writeText(text)
+        .then(() => toast('전송 문구를 복사했습니다.'))
+        .catch(() => toast('복사에 실패했습니다.'));
+    };
   </script>
 </body>
 </html>
