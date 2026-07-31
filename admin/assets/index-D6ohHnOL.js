@@ -1978,90 +1978,90 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
       </div>
     `;let w=e.querySelector(`#finance-month-filter`);w&&w.addEventListener(`change`,e=>{t=e.target.value,n()})}return n(),e}function an(e,t={}){if(!e||typeof e!=`string`)return[];let n=t.paymentDate||new Date().toISOString().split(`T`)[0],r=t.groupByRecipient!==!1,i=e.split(/\r?\n/).map(e=>e.trim()).filter(e=>e.length>0);if(i.length===0)return[];let a=i[0],o=`	`;o=a.includes(`	`)?`	`:a.includes(`,`)?`,`:a.includes(`;`)?`;`:/\s+/;let s=[];for(let e=0;e<i.length;e++){let t=i[e],r=[];if(r=o instanceof RegExp?t.split(o):t.split(o).map(e=>e.trim().replace(/^["']|["']$/g,``)),r.length<2||r.some(e=>[`성명`,`이름`,`방송일`,`시작시간`,`종료시간`,`업무상세`,`총 지급액`,`지급액`,`금액`].includes(e.replace(/\s+/g,``))))continue;let a=r[0]||`미지정`,c=r[1]||``;r[2],r[3];let l=r[4]||``,u=r[5]||`0`;if(isNaN(parseInt(u.replace(/[^0-9]/g,``),10))&&r.length>2){let e=r.find((e,t)=>t>0&&/[\d,]+/.test(e)&&!e.includes(`-`)&&!e.includes(`:`));e&&(u=e)}let d=parseInt(u.replace(/[^0-9]/g,``),10)||0,f=Math.floor(d*.033),p=d-f;s.push({id:`item-${e}-${Math.random().toString(36).substr(2,5)}`,name:a,date:c,month:c.slice(0,7)||n.slice(0,7),detail:l,amount:d,tax:f,netAmount:p})}if(s.length===0)return[];if(!r){let e=s.reduce((e,t)=>e+t.amount,0),t=s.reduce((e,t)=>e+t.tax,0),r=e-t;return[{id:`STMT-${Date.now().toString(36)}`,paymentDate:n,recipientName:s[0]?.name||`쇼호스트`,company:{name:`라이진`,bizNo:`821-29-01197`,ceo:`채이준`,email:`choijun@ryzincorp.com`},items:s,totals:{amount:e,tax:t,netAmount:r}}]}let c={};s.forEach(e=>{let t=`${e.name}__${e.month}`;c[t]||(c[t]={name:e.name,month:e.month,items:[]}),c[t].items.push(e)});let l=Object.values(c).map((e,t)=>{let{name:r,month:i,items:a}=e,o=a.reduce((e,t)=>e+t.amount,0),s=a.reduce((e,t)=>e+t.tax,0),c=o-s,l=n;return{id:`STMT-${Date.now().toString(36)}-${t}`,paymentDate:l,month:i,recipientName:r,company:{name:`라이진`,bizNo:`821-29-01197`,ceo:`채이준`,email:`choijun@ryzincorp.com`},items:a,totals:{amount:o,tax:s,netAmount:c}}});return l.sort((e,t)=>e.month===t.month?e.recipientName.localeCompare(t.recipientName,`ko`):e.month.localeCompare(t.month)),l}function on(e){try{let t={n:e.recipientName||``,b:e.birthDate||``,ph:e.phone||``,p:e.paymentDate||``,i:(e.items||[]).map(e=>[e.date||``,e.detail||``,e.amount||0])},n=JSON.stringify(t);return btoa(encodeURIComponent(n).replace(/%([0-9A-F]{2})/g,(e,t)=>String.fromCharCode(`0x`+t))).replace(/\+/g,`-`).replace(/\//g,`_`).replace(/=+$/,``)}catch(e){return console.error(`Payslip encode error:`,e),``}}function sn(){let e=document.createElement(`div`),t=new URLSearchParams(window.location.search),n=`all`,r=t.get(`filter`)===`unpaid`?`unpaid`:`all`;function i(){let t=U.getAll(`projects`),a=U.getAll(`liveHosts`);U.getAll(`hosts`),U.getAll(`brands`);function o(e){if(!e)return null;try{let t=JSON.parse(localStorage.getItem(`ryzin_config_${e}`)||`null`);if(!t)return null;let n=t.liveStartTime||t.broadcastDate||``;return n?n.slice(0,10):null}catch{return null}}let s=[];a.forEach(e=>{let t=U.getById(`hosts`,e.hostId)||{name:e.hostName||`미지정 쇼호스트`},n=U.getById(`projects`,e.liveId||e.projectId),r=e.liveId||e.projectId||``,i=new Date().toISOString().slice(0,10),a=e.date||e.broadcastDate||o(r)||n?.broadcastDate||i,c=e.brandName||n?.brandName||U.getById(`brands`,n?.brandId)?.name||n?.title||`라이진`,l=e.fee||n?.hostFee||0,u=Math.floor(l*.033),d=l-u,f=e.settleStatus||`pending`,p=U.getById(`hosts`,e.hostId)||U.getAll(`hosts`).find(e=>e.name===t.name)||{},m=(p.ssn||p.birthDate||``).replace(/[^0-9]/g,``).slice(0,6),h=p.phone||``;s.push({id:e.id,hostId:e.hostId,hostName:t.name,birthDate:m,phone:h,date:a,month:a.slice(0,7),brandName:c,fee:l,tax:u,netFee:d,settleStatus:f,rawMatching:e})}),t.forEach(e=>{if(e.hostName&&!s.some(t=>t.id===e.id||t.rawMatching?.liveId===e.id)){let t=e.hostFee||1e5,n=Math.floor(t*.033),r=t-n,i=new Date().toISOString().slice(0,10),a=o(e.id)||e.broadcastDate||e.date||i,c=e.brandName||e.title||`라이진`,l=U.getById(`hosts`,e.hostId)||U.getAll(`hosts`).find(t=>t.name===e.hostName)||{},u=(l.ssn||l.birthDate||``).replace(/[^0-9]/g,``).slice(0,6),d=l.phone||``;s.push({id:`proj-host-${e.id}`,hostId:e.hostId||e.hostName,hostName:e.hostName,birthDate:u,phone:d,date:a,month:a.slice(0,7),brandName:c,fee:t,tax:n,netFee:r,settleStatus:e.hostSettleStatus||`pending`,rawMatching:null})}});let c=Array.from(new Set(s.map(e=>e.month))).filter(Boolean).sort().reverse();n!==`all`&&!c.includes(n)&&c.length;let l=n===`all`?s:s.filter(e=>e.month===n);r===`unpaid`?l=l.filter(e=>e.settleStatus!==`done`):r===`done`&&(l=l.filter(e=>e.settleStatus===`done`)),l.sort((e,t)=>new Date(t.date)-new Date(e.date));let u=l.reduce((e,t)=>e+t.fee,0),d=l.reduce((e,t)=>e+t.tax,0),f=l.reduce((e,t)=>e+t.netFee,0),p=l.filter(e=>e.settleStatus!==`done`).length;e.innerHTML=`
-      <div class="page-header">
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
         <div class="page-header-left">
           <div>
             <h1 class="page-title">쇼호스트 정산 관리</h1>
             <p class="page-description">월별 쇼호스트 방송 출연료, 3.3% 사업소득세 공제액 및 실지급액 현황</p>
           </div>
         </div>
-        <div class="page-header-right" style="display: flex; gap: 10px; align-items: center;">
-          <select id="status-filter-select" class="form-control" style="padding: 8px 14px; font-size: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid #d0d7de; background-color: ${r===`unpaid`?`#fef2f2`:`#fff`}; color: ${r===`unpaid`?`#dc2626`:`#0f172a`};">
+        <div class="page-header-right" style="display: flex; gap: var(--space-3); align-items: center;">
+          <select id="status-filter-select" class="filter-select" style="padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: ${r===`unpaid`?`var(--bg-error-light, #fef2f2)`:`#fff`}; color: ${r===`unpaid`?`var(--status-error)`:`var(--text-primary)`}; font-weight: 600;">
             <option value="all" ${r===`all`?`selected`:``}>전체 정산 상태</option>
             <option value="unpaid" ${r===`unpaid`?`selected`:``}>미수금만 보기 (정산 대기)</option>
             <option value="done" ${r===`done`?`selected`:``}>정산 완료 항목</option>
           </select>
-          <select id="month-filter-select" class="form-control" style="padding: 8px 14px; font-size: 14px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid #d0d7de;">
+          <select id="month-filter-select" class="filter-select" style="padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-weight: 600;">
             <option value="all" ${n===`all`?`selected`:``}>전체 기간 보기</option>
             ${c.map(e=>`
               <option value="${e}" ${n===e?`selected`:``}>${e.replace(`-`,`년 `)}월</option>
             `).join(``)}
           </select>
-          <button class="btn btn-primary" id="btn-open-payslip-modal" style="display: inline-flex; align-items: center; gap: 6px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <button class="btn btn-primary btn-sm" id="btn-open-payslip-modal" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             지급명세서 생성 및 CSV 업로드
           </button>
         </div>
       </div>
 
       <div class="page-body">
-        <!-- 집계 요약 카드 -->
-        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-6);">
-          <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <div class="stat-label" style="font-size: 13px; color: #64748b; font-weight: 600;">정산 대상 방송</div>
-            <div class="stat-value" style="font-size: 24px; font-weight: 700; color: #0f172a; margin-top: 6px;">
-              ${l.length}건 <span style="font-size: 13px; font-weight: normal; color: #f59e0b;">(대기 ${p}건)</span>
+        <!-- 핵심 KPI 요약 카드 (finance.js 표준 디자인) -->
+        <div class="stats-grid" style="margin-bottom: var(--space-6);">
+          <div class="stat-card">
+            <div class="stat-label">정산 대상 방송</div>
+            <div class="stat-value">
+              ${l.length}건 <span style="font-size: var(--text-xs); font-weight: var(--weight-regular); color: var(--status-warning);">(대기 ${p}건)</span>
             </div>
           </div>
 
-          <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <div class="stat-label" style="font-size: 13px; color: #64748b; font-weight: 600;">총 지급액 (원)</div>
-            <div class="stat-value" style="font-size: 24px; font-weight: 700; color: #0f172a; margin-top: 6px;">
+          <div class="stat-card">
+            <div class="stat-label">총 지급액 (원)</div>
+            <div class="stat-value">
               ${W(u)}
             </div>
           </div>
 
-          <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <div class="stat-label" style="font-size: 13px; color: #dc2626; font-weight: 600;">총 3.3% 공제액 (원)</div>
-            <div class="stat-value" style="font-size: 24px; font-weight: 700; color: #dc2626; margin-top: 6px;">
+          <div class="stat-card">
+            <div class="stat-label">총 3.3% 공제액 (원)</div>
+            <div class="stat-value" style="color: var(--status-error);">
               ${W(d)}
             </div>
           </div>
 
-          <div class="stat-card" style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <div class="stat-label" style="font-size: 13px; color: #2563eb; font-weight: 600;">총 실제 지급액 (원)</div>
-            <div class="stat-value" style="font-size: 24px; font-weight: 700; color: #2563eb; margin-top: 6px;">
+          <div class="stat-card">
+            <div class="stat-label">총 실제 지급액 (원)</div>
+            <div class="stat-value" style="color: var(--status-info);">
               ${W(f)}
             </div>
           </div>
         </div>
 
-        <!-- 쇼호스트 정산 목록 테이블 -->
-        <div class="card" style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px;">
-          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <h3 style="font-size: 16px; font-weight: 700; margin: 0;">쇼호스트 정산 내역</h3>
-              <span class="badge badge-secondary" style="font-size: 12px;">${l.length}개 항목</span>
+        <!-- 쇼호스트 정산 목록 테이블 카드 -->
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <h3>쇼호스트 정산 내역</h3>
+              <span class="badge badge-secondary">${l.length}개 항목</span>
             </div>
             ${p>0?`
-              <button class="btn btn-sm btn-secondary" id="btn-settle-all-pending" style="font-size: 12px;">
+              <button class="btn btn-sm btn-secondary" id="btn-settle-all-pending">
                 선택된 월 전체 지급 완료 처리
               </button>
             `:``}
           </div>
 
           <div class="table-scroll">
-            <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <table class="data-table">
               <thead>
-                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                  <th style="padding: 12px; text-align: left;">쇼호스트</th>
-                  <th style="padding: 12px; text-align: center;">방송일</th>
-                  <th style="padding: 12px; text-align: left;">브랜드</th>
-                  <th style="padding: 12px; text-align: right;">지급액 (원)</th>
-                  <th style="padding: 12px; text-align: right; color: #dc2626;">3.3% 공제 (원)</th>
-                  <th style="padding: 12px; text-align: right; color: #2563eb;">실제 지급액 (원)</th>
-                  <th style="padding: 12px; text-align: center;">상태</th>
-                  <th style="padding: 12px; text-align: center;">명세서 관리</th>
+                <tr>
+                  <th>쇼호스트</th>
+                  <th class="text-center">방송일</th>
+                  <th>브랜드</th>
+                  <th class="text-right">지급액 (원)</th>
+                  <th class="text-right" style="color: var(--status-error);">3.3% 공제 (원)</th>
+                  <th class="text-right" style="color: var(--status-info);">실제 지급액 (원)</th>
+                  <th class="text-center">상태</th>
+                  <th class="text-center">명세서 관리</th>
                 </tr>
               </thead>
               <tbody id="settle-tbody"></tbody>
