@@ -1246,10 +1246,10 @@ function renderFinanceTab(project) {
               <div class="stat-value" style="color: ${(finance.operatingProfit || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(finance.operatingProfit)}</div>
             </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
-              <div class="stat-label">순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 제외)</span></div>
+              <div class="stat-label">순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 차감 후)</span></div>
               <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">
                 ${formatCurrency(finance.netMargin)}
-                <span style="font-size: 13px; font-weight: 600; margin-left: 4px;">(${finance.productionCost ? ((finance.netMargin || 0) / finance.productionCost * 100).toFixed(1) : 0}%)</span>
+                <span style="font-size: 13px; font-weight: 600; margin-left: 4px;">(${finance.salesRevenue ? ((finance.netMargin || 0) / finance.salesRevenue * 100).toFixed(1) : 0}%)</span>
               </div>
             </div>
             <div class="stat-card">
@@ -1284,9 +1284,9 @@ function renderFinanceTab(project) {
         const productionCost = parseInt(document.getElementById('fin-prod').value) || 0;
         const otherCost = parseInt(document.getElementById('fin-other').value) || 0;
         const salesRevenue = parseInt(document.getElementById('fin-sales').value) || 0;
-        const operatingProfit = salesRevenue - adCost - hostCost - otherCost;
+        const operatingProfit = salesRevenue - hostCost - adCost - otherCost;
         const vat = Math.round(salesRevenue * 0.1);
-        const netMargin = operatingProfit;
+        const netMargin = operatingProfit - vat;
 
         const data = { liveId: project.id, adCost, productionCost, hostCost, otherCost, salesRevenue, operatingProfit, vat, netMargin };
         const existing = store.getAll('finances').find(f => f.liveId === project.id);
