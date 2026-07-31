@@ -14,32 +14,57 @@ export function renderSettlement() {
     const hosts = store.getAll('hosts');
     const brands = store.getAll('brands');
 
-    // 쇼호스트 방송/정산 데이터 통합 리스트 구축
-    const settlementItems = [];
+  /**
+   * 라이브 config에서 방송일(YYYY-MM-DD) 추출
+   * liveStartTime 예시: "2026-07-15T20:00" 또는 ISO string
+   */
+  function getLiveDateFromConfig(liveId) {
+    if (!liveId) return null;
+    try {
+      const cfg = JSON.parse(localStorage.getItem(`ryzin_config_${liveId}`) || 'null');
+      if (!cfg) return null;
+      const t = cfg.liveStartTime || cfg.broadcastDate || '';
+      if (!t) return null;
+      // datetime-local: "YYYY-MM-DDTHH:mm" or ISO string
+      return t.slice(0, 10); // YYYY-MM-DD
+    } catch { return null; }
+  }
+
+  // 쇼호스트 방송/정산 데이터 통합 리스트 구축
+  const settlementItems = [];
 
     // liveHosts 데이터를 기반으로 프로젝트 및 쇼호스트 정보 조인
     liveHosts.forEach(lh => {
       const host = store.getById('hosts', lh.hostId) || { name: lh.hostName || '미지정 쇼호스트' };
       const project = store.getById('projects', lh.liveId || lh.projectId);
+      const liveId  = lh.liveId || lh.projectId || '';
 
-      const date = lh.date || project?.date || '2026-04-01';
+      // 날짜 우선순위: lh.date > 라이브 config liveStartTime > project.date
+      const date =
+        lh.date ||
+        getLiveDateFromConfig(liveId) ||
+        project?.date ||
+        null;
+
+      if (!date) return; // 날짜 없는 항목은 정산 목록에서 제외
+
       const brandName = lh.brandName || project?.brandName || (store.getById('brands', project?.brandId)?.name) || project?.title || '라이진';
       const fee = lh.fee || project?.hostFee || 0;
       const tax = Math.floor(fee * 0.033);
       const netFee = fee - tax;
-      const settleStatus = lh.settleStatus || 'pending'; // 'pending' or 'done'
+      const settleStatus = lh.settleStatus || 'pending';
 
       settlementItems.push({
         id: lh.id,
         hostId: lh.hostId,
         hostName: host.name,
-        date: date,
-        month: date.slice(0, 7), // YYYY-MM
-        brandName: brandName,
-        fee: fee,
-        tax: tax,
-        netFee: netFee,
-        settleStatus: settleStatus,
+        date,
+        month: date.slice(0, 7),
+        brandName,
+        fee,
+        tax,
+        netFee,
+        settleStatus,
         rawMatching: lh
       });
     });
@@ -50,17 +75,19 @@ export function renderSettlement() {
         const fee = p.hostFee || 100000;
         const tax = Math.floor(fee * 0.033);
         const netFee = fee - tax;
-        const date = p.date || '2026-04-01';
+        // 날짜: 라이브 config > project.date (하드코딩 폴백 제거)
+        const date = getLiveDateFromConfig(p.id) || p.date || null;
+        if (!date) return; // 날짜 없는 항목 제외
         settlementItems.push({
           id: `proj-host-${p.id}`,
           hostId: p.hostId || p.hostName,
           hostName: p.hostName,
-          date: date,
+          date,
           month: date.slice(0, 7),
           brandName: p.brandName || p.title || '라이진',
-          fee: fee,
-          tax: tax,
-          netFee: netFee,
+          fee,
+          tax,
+          netFee,
           settleStatus: p.hostSettleStatus || 'pending',
           rawMatching: null
         });
