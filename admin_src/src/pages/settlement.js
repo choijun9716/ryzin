@@ -55,7 +55,8 @@ export function renderSettlement() {
       const settleStatus = lh.settleStatus || 'pending';
 
       const hostObj = store.getById('hosts', lh.hostId) || store.getAll('hosts').find(h => h.name === host.name) || {};
-      const birthDate = hostObj.ssn ? hostObj.ssn.split('-')[0] : (hostObj.birthDate || '');
+      const rawSsn = hostObj.ssn || hostObj.birthDate || '';
+      const birthDate = rawSsn.replace(/[^0-9]/g, '').slice(0, 6);
       const phone = hostObj.phone || '';
 
       settlementItems.push({
@@ -86,7 +87,8 @@ export function renderSettlement() {
         const date = getLiveDateFromConfig(p.id) || p.broadcastDate || p.date || today;
         const brandName = p.brandName || p.title || '라이진';
         const hostObj = store.getById('hosts', p.hostId) || store.getAll('hosts').find(h => h.name === p.hostName) || {};
-        const birthDate = hostObj.ssn ? hostObj.ssn.split('-')[0] : (hostObj.birthDate || '');
+        const rawSsn = hostObj.ssn || hostObj.birthDate || '';
+        const birthDate = rawSsn.replace(/[^0-9]/g, '').slice(0, 6);
         const phone = hostObj.phone || '';
         settlementItems.push({
           id: `proj-host-${p.id}`,

@@ -613,8 +613,10 @@
     const fmt = n => (n||0).toLocaleString('ko-KR');
 
     /* meta */
+    const rawBirth = (d.birthDate || '').toString().replace(/[^0-9]/g, '');
+    const cleanBirth = rawBirth.length >= 6 ? rawBirth.slice(0, 6) : (d.birthDate || '—');
     document.getElementById('recipient-name').textContent = d.recipientName || d.items[0]?.name || '—';
-    document.getElementById('birth-date').textContent     = d.birthDate     || '—';
+    document.getElementById('birth-date').textContent     = cleanBirth       || '—';
     document.getElementById('phone-no').textContent        = d.phone         || '—';
     document.getElementById('payment-date').textContent    = d.paymentDate   || '—';
 
