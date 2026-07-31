@@ -40,11 +40,12 @@ export function renderSettlement() {
       const liveId  = lh.liveId || lh.projectId || '';
       const today   = new Date().toISOString().slice(0, 10);
 
-      // 날짜 우선순위: lh.date > 라이브 config liveStartTime > project.date > 오늘
+      // 날짜 우선순위: lh.date > lh.broadcastDate > 라이브 config liveStartTime > project.broadcastDate
       const date =
         lh.date ||
+        lh.broadcastDate ||
         getLiveDateFromConfig(liveId) ||
-        project?.date ||
+        project?.broadcastDate ||
         today;
 
       const brandName = lh.brandName || project?.brandName || (store.getById('brands', project?.brandId)?.name) || project?.title || '라이진';
@@ -75,15 +76,16 @@ export function renderSettlement() {
         const tax = Math.floor(fee * 0.033);
         const netFee = fee - tax;
         const today  = new Date().toISOString().slice(0, 10);
-        // 날짜: 라이브 config > project.date > 오늘
-        const date = getLiveDateFromConfig(p.id) || p.date || today;
+        // 날짜: 라이브 config > project.broadcastDate > 오늘
+        const date = getLiveDateFromConfig(p.id) || p.broadcastDate || p.date || today;
+        const brandName = p.brandName || p.title || '라이진';
         settlementItems.push({
           id: `proj-host-${p.id}`,
           hostId: p.hostId || p.hostName,
           hostName: p.hostName,
           date,
           month: date.slice(0, 7),
-          brandName: p.brandName || p.title || '라이진',
+          brandName,
           fee,
           tax,
           netFee,
