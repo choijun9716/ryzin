@@ -50,14 +50,17 @@ export function renderFinance() {
       const adCost = parseInt(f.adCost) || 0;
       const otherCost = parseInt(f.otherCost) || 0;
       const includeHostCost = !!f.includeHostCost;
+      const brandPaysHost = !!f.brandPaysHost;
 
-      // 1. 영업매출액 = 제작비에 쇼호스트비 포함 시 (제작비 + 광고비), 별도 시 (제작비 + 쇼호스트비 + 광고비)
-      const salesRevenue = includeHostCost
+      const effectiveHostCost = brandPaysHost ? 0 : hostCost;
+
+      // 1. 영업매출액 = 브랜드사 직접부담 or 제작비에 쇼호스트비 포함 시 (제작비 + 광고비), 별도 시 (제작비 + 쇼호스트비 + 광고비)
+      const salesRevenue = (brandPaysHost || includeHostCost)
         ? (productionCost + adCost)
         : (productionCost + hostCost + adCost);
 
-      // 2. 영업이익 = 영업매출액 - (쇼호스트비 + 광고비 + 기타비용)
-      const operatingProfit = salesRevenue - (hostCost + adCost + otherCost);
+      // 2. 영업이익 = 영업매출액 - (effectiveHostCost + 광고비 + 기타비용)
+      const operatingProfit = salesRevenue - (effectiveHostCost + adCost + otherCost);
 
       // 3. 부가가치세 = 영업매출액 × 10%
       const vat = Math.round(salesRevenue * 0.1);

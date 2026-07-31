@@ -1226,14 +1226,17 @@ function renderFinanceTab(project) {
   const adCost = finance.adCost || 0;
   const otherCost = finance.otherCost || 0;
   const includeHostCost = !!finance.includeHostCost;
+  const brandPaysHost = !!finance.brandPaysHost;
 
-  // 1. 영업매출액 = 제작비에 쇼호스트비 포함 시 (제작비 + 광고비), 별도 시 (제작비 + 쇼호스트비 + 광고비)
-  const salesRevenue = includeHostCost
+  const effectiveHostCost = brandPaysHost ? 0 : hostCost;
+
+  // 1. 영업매출액 = 브랜드사 직접부담 or 제작비에 쇼호스트비 포함 시 (제작비 + 광고비), 별도 시 (제작비 + 쇼호스트비 + 광고비)
+  const salesRevenue = (brandPaysHost || includeHostCost)
     ? (productionCost + adCost)
     : (productionCost + hostCost + adCost);
 
-  // 2. 영업이익 = 영업매출액 - (쇼호스트비 + 광고비 + 기타비용)
-  const operatingProfit = salesRevenue - (hostCost + adCost + otherCost);
+  // 2. 영업이익 = 영업매출액 - (effectiveHostCost + 광고비 + 기타비용)
+  const operatingProfit = salesRevenue - (effectiveHostCost + adCost + otherCost);
 
   // 3. 부가가치세 = 영업매출액 × 10%
   const vat = Math.round(salesRevenue * 0.1);
@@ -1255,7 +1258,12 @@ function renderFinanceTab(project) {
             </div>
             <div class="stat-value">${formatCurrency(productionCost)}</div>
           </div>
-          <div class="stat-card"><div class="stat-label">쇼호스트비</div><div class="stat-value">${formatCurrency(hostCost)}</div></div>
+          <div class="stat-card">
+            <div class="stat-label">
+              쇼호스트비 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">${brandPaysHost ? '(브랜드사 직접 부담)' : '(대행사 정산)'}</span>
+            </div>
+            <div class="stat-value">${formatCurrency(hostCost)}</div>
+          </div>
           <div class="stat-card"><div class="stat-label">광고비</div><div class="stat-value">${formatCurrency(adCost)}</div></div>
           <div class="stat-card"><div class="stat-label">기타비용</div><div class="stat-value">${formatCurrency(otherCost)}</div></div>
         </div>
@@ -1294,7 +1302,11 @@ function renderFinanceTab(project) {
           <div class="input-group"><label>광고비</label><input class="input" type="number" id="fin-ad" value="${finance.adCost || ''}" placeholder="0"></div>
           <div class="input-group"><label>기타비용</label><input class="input" type="number" id="fin-other" value="${finance.otherCost || ''}" placeholder="0"></div>
         </div>
-        <div style="margin-top: var(--space-3); margin-bottom: var(--space-3);">
+        <div style="margin-top: var(--space-3); margin-bottom: var(--space-3); display: flex; flex-direction: column; gap: 8px;">
+          <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="fin-brand-pays-host" ${brandPaysHost ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
+            브랜드사 쇼호스트비 직접 부담 (대행사 매출/지출 제외)
+          </label>
           <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; user-select: none;">
             <input type="checkbox" id="fin-include-host" ${includeHostCost ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
             총제작비에 쇼호스트비 포함
@@ -1322,13 +1334,15 @@ function renderFinanceTab(project) {
         const productionCost = parseInt(document.getElementById('fin-prod').value) || 0;
         const otherCost = parseInt(document.getElementById('fin-other').value) || 0;
         const includeHostCost = document.getElementById('fin-include-host').checked;
+        const brandPaysHost = document.getElementById('fin-brand-pays-host').checked;
 
-        const salesRevenue = includeHostCost ? (productionCost + adCost) : (productionCost + hostCost + adCost);
-        const operatingProfit = salesRevenue - hostCost - adCost - otherCost;
+        const effectiveHostCost = brandPaysHost ? 0 : hostCost;
+        const salesRevenue = (brandPaysHost || includeHostCost) ? (productionCost + adCost) : (productionCost + hostCost + adCost);
+        const operatingProfit = salesRevenue - effectiveHostCost - adCost - otherCost;
         const vat = Math.round(salesRevenue * 0.1);
         const netMargin = operatingProfit - vat;
 
-        const data = { liveId: project.id, adCost, productionCost, otherCost, includeHostCost, salesRevenue, operatingProfit, vat, netMargin };
+        const data = { liveId: project.id, adCost, productionCost, otherCost, includeHostCost, brandPaysHost, salesRevenue, operatingProfit, vat, netMargin };
         const existing = store.getAll('finances').find(f => f.liveId === project.id);
         if (existing) { store.update('finances', existing.id, data); }
         else { data.id = project.id; store.create('finances', data); }
@@ -1345,15 +1359,18 @@ function renderFinanceTab(project) {
         const adInp = document.getElementById('fin-ad');
         const otherInp = document.getElementById('fin-other');
         const includeHostChk = document.getElementById('fin-include-host');
+        const brandPaysHostChk = document.getElementById('fin-brand-pays-host');
 
         const updateCalc = () => {
           const prod = parseInt(prodInp?.value) || 0;
           const ad = parseInt(adInp?.value) || 0;
           const oth = parseInt(otherInp?.value) || 0;
           const incHost = includeHostChk ? includeHostChk.checked : false;
+          const brandHost = brandPaysHostChk ? brandPaysHostChk.checked : false;
 
-          const sRev = incHost ? (prod + ad) : (prod + hostCost + ad);
-          const oProf = sRev - hostCost - ad - oth;
+          const effHost = brandHost ? 0 : hostCost;
+          const sRev = (brandHost || incHost) ? (prod + ad) : (prod + hostCost + ad);
+          const oProf = sRev - effHost - ad - oth;
           const v = Math.round(sRev * 0.1);
           const nMarg = oProf - v;
           const mRate = sRev ? ((nMarg / sRev) * 100).toFixed(1) : '0.0';
@@ -1379,6 +1396,7 @@ function renderFinanceTab(project) {
         adInp?.addEventListener('input', updateCalc);
         otherInp?.addEventListener('input', updateCalc);
         includeHostChk?.addEventListener('change', updateCalc);
+        brandPaysHostChk?.addEventListener('change', updateCalc);
         updateCalc();
       }, 0);
     });
