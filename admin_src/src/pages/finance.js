@@ -126,7 +126,7 @@ export function renderFinance() {
         <div class="stats-grid" style="margin-bottom: var(--space-6);">
           <div class="stat-card"><div class="stat-label">총 영업매출</div><div class="stat-value">${formatCurrencyShort(totalRevenue)}</div></div>
           <div class="stat-card"><div class="stat-label">총 영업이익</div><div class="stat-value" style="color: ${totalProfit >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrencyShort(totalProfit)}</div></div>
-          <div class="stat-card"><div class="stat-label">총 순마진</div><div class="stat-value" style="color: ${totalMargin >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrencyShort(totalMargin)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 제외)</span></div><div class="stat-value" style="color: ${totalMargin >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrencyShort(totalMargin)}</div></div>
           <div class="stat-card"><div class="stat-label">총 광고비</div><div class="stat-value">${formatCurrencyShort(totalAdCost)}</div></div>
           <div class="stat-card"><div class="stat-label">총 제작비</div><div class="stat-value">${formatCurrencyShort(totalProdCost)}</div></div>
           <div class="stat-card"><div class="stat-label">총 쇼호스트비</div><div class="stat-value">${formatCurrencyShort(totalHostCost)}</div></div>

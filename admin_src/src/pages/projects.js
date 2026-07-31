@@ -1246,7 +1246,7 @@ function renderFinanceTab(project) {
               <div class="stat-value" style="color: ${(finance.operatingProfit || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(finance.operatingProfit)}</div>
             </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
-              <div class="stat-label">순마진</div>
+              <div class="stat-label">순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 제외)</span></div>
               <div class="stat-value" style="color: ${(finance.netMargin || 0) >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrency(finance.netMargin)}</div>
             </div>
             <div class="stat-card">

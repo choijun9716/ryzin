@@ -1834,7 +1834,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <div class="stat-value" style="color: ${(n.operatingProfit||0)>=0?`var(--status-success)`:`var(--status-error)`};">${W(n.operatingProfit)}</div>
             </div>
             <div class="stat-card" style="border-color: var(--border-strong);">
-              <div class="stat-label">순마진</div>
+              <div class="stat-label">순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 제외)</span></div>
               <div class="stat-value" style="color: ${(n.netMargin||0)>=0?`var(--status-success)`:`var(--status-error)`};">${W(n.netMargin)}</div>
             </div>
             <div class="stat-card">
@@ -1875,7 +1875,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <div class="stats-grid" style="margin-bottom: var(--space-6);">
           <div class="stat-card"><div class="stat-label">총 영업매출</div><div class="stat-value">${$e(f)}</div></div>
           <div class="stat-card"><div class="stat-label">총 영업이익</div><div class="stat-value" style="color: ${p>=0?`var(--status-success)`:`var(--status-error)`};">${$e(p)}</div></div>
-          <div class="stat-card"><div class="stat-label">총 순마진</div><div class="stat-value" style="color: ${m>=0?`var(--status-success)`:`var(--status-error)`};">${$e(m)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 제외)</span></div><div class="stat-value" style="color: ${m>=0?`var(--status-success)`:`var(--status-error)`};">${$e(m)}</div></div>
           <div class="stat-card"><div class="stat-label">총 광고비</div><div class="stat-value">${$e(h)}</div></div>
           <div class="stat-card"><div class="stat-label">총 제작비</div><div class="stat-value">${$e(g)}</div></div>
           <div class="stat-card"><div class="stat-label">총 쇼호스트비</div><div class="stat-value">${$e(_)}</div></div>
