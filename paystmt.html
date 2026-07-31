@@ -2,184 +2,197 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>지급명세서 — RYZIN</title>
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --black: #000000;
+      --ink:   #0a0a0a;
+      --ink-2: #3d3d3d;
+      --ink-3: #7a7a7a;
+      --ink-4: #b0b0b0;
+      --line:  #e8e8e8;
+      --bg:    #f7f7f7;
       --white: #ffffff;
-      --gray-50: #fafafa;
-      --gray-100: #f5f5f5;
-      --gray-200: #e5e5e5;
-      --gray-300: #d4d4d4;
-      --gray-400: #a3a3a3;
-      --gray-500: #737373;
-      --gray-600: #525252;
-      --gray-700: #404040;
-      --gray-800: #262626;
-      --gray-900: #171717;
-      --sans: 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+      --f: 'DM Sans', 'Noto Sans KR', system-ui, sans-serif;
+      --r4: 4px; --r8: 8px; --r12: 12px; --r16: 16px;
     }
 
-    html {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+    html { -webkit-font-smoothing: antialiased; }
 
     body {
-      font-family: var(--sans);
-      background: var(--gray-100);
-      color: var(--black);
+      font-family: var(--f);
+      background: var(--bg);
+      color: var(--ink);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 32px 16px;
-      padding-bottom: calc(32px + env(safe-area-inset-bottom));
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
 
-    /* ── 툴바 ── */
-    .toolbar {
+    /* ─── TOPBAR ─── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
       width: 100%;
-      max-width: 800px;
+      background: rgba(247,247,247,0.85);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
+      border-bottom: 1px solid var(--line);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      gap: 12px;
+      padding: 0 24px;
+      height: 56px;
     }
 
-    .toolbar-brand {
-      font-family: var(--sans);
-      font-size: 13px;
+    .topbar-logo {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--gray-500);
+      letter-spacing: 0.08em;
+      color: var(--ink);
       text-transform: uppercase;
-      flex-shrink: 0;
     }
 
-    .toolbar-actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
+    .topbar-actions { display: flex; gap: 6px; }
 
-    .action-btn {
-      font-family: var(--sans);
-      font-size: 12px;
+    .tbtn {
+      font-family: var(--f);
+      font-size: 12.5px;
       font-weight: 500;
-      padding: 9px 13px;
-      border-radius: 6px;
-      border: 1px solid var(--gray-300);
+      line-height: 1;
+      padding: 0 14px;
+      height: 34px;
+      border-radius: var(--r8);
+      border: 1px solid var(--line);
       background: var(--white);
-      color: var(--gray-700);
+      color: var(--ink-2);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.15s ease;
-      letter-spacing: 0.2px;
+      transition: border-color .15s, background .15s, color .15s;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
       white-space: nowrap;
+      text-decoration: none;
     }
+    .tbtn:hover { border-color: var(--ink-3); color: var(--ink); }
+    .tbtn.fill  { background: var(--ink); border-color: var(--ink); color: var(--white); }
+    .tbtn.fill:hover { background: var(--ink-2); border-color: var(--ink-2); }
 
-    .action-btn:hover {
-      border-color: var(--black);
-      color: var(--black);
-    }
-
-    .action-btn.primary {
-      background: var(--black);
-      border-color: var(--black);
-      color: var(--white);
-    }
-
-    .action-btn.primary:hover {
-      background: var(--gray-800);
-      border-color: var(--gray-800);
-    }
-
-    /* ── 명세서 카드 ── */
-    .statement {
+    /* ─── PAGE WRAPPER ─── */
+    .page {
       width: 100%;
-      max-width: 800px;
-      background: var(--white);
-      padding: 40px 36px 48px;
+      max-width: 760px;
+      padding: 40px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    /* ── 헤더 ── */
-    .stmt-head {
+    /* ─── HERO BAND ─── */
+    .hero {
+      background: var(--ink);
+      color: var(--white);
+      border-radius: var(--r16) var(--r16) 0 0;
+      padding: 36px 36px 32px;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding-bottom: 24px;
-      border-bottom: 2px solid var(--black);
-      margin-bottom: 36px;
     }
 
-    .stmt-title {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--black);
-      line-height: 1;
-    }
-
-    .stmt-brand {
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      color: var(--gray-400);
+    .hero-left {}
+    .hero-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 10px;
+    }
+    .hero-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
       line-height: 1;
+      color: var(--white);
     }
 
-    /* ── 발행 정보 영역 ── */
-    .stmt-meta {
+    .hero-right { text-align: right; }
+    .hero-brand {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 6px;
+    }
+    .hero-date {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* ─── META BAND ─── */
+    .meta-band {
+      background: var(--white);
+      padding: 22px 36px;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px 0;
-      margin-bottom: 40px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
     }
 
-    .meta-row {
+    .meta-item {
       display: flex;
-      gap: 12px;
-      font-size: 13px;
-      padding: 5px 0;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 0 0 20px;
+      border-left: 1px solid var(--line);
     }
+    .meta-item:first-child { padding-left: 0; border-left: none; }
 
     .meta-label {
-      color: var(--gray-400);
-      font-weight: 500;
-      width: 100px;
-      flex-shrink: 0;
-    }
-
-    .meta-value {
-      color: var(--black);
+      font-size: 10px;
       font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+    }
+    .meta-val {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
     }
 
-    /* ── 테이블 ── */
-    .stmt-table-wrap {
-      margin-bottom: 0;
+    /* ─── TABLE SECTION ─── */
+    .table-band {
+      background: var(--white);
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      padding: 20px 36px 10px;
+      border-bottom: 1px solid var(--line);
     }
 
     table {
@@ -188,404 +201,371 @@
       font-size: 12.5px;
     }
 
-    thead tr {
-      border-top: 1.5px solid var(--black);
-      border-bottom: 1.5px solid var(--black);
-    }
-
-    th {
+    thead th {
       padding: 11px 12px;
+      font-size: 10.5px;
       font-weight: 600;
-      color: var(--black);
-      text-align: center;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-4);
       background: var(--white);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
     }
+    thead th:first-child { text-align: left; padding-left: 36px; }
+    thead th:last-child  { padding-right: 36px; }
 
-    td {
-      padding: 10px 12px;
-      color: var(--gray-700);
+    tbody td {
+      padding: 13px 12px;
+      color: var(--ink-2);
       font-weight: 400;
-      border-bottom: 1px solid var(--gray-200);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+    }
+    tbody td:first-child { text-align: left; padding-left: 36px; font-weight: 600; color: var(--ink); }
+    tbody td:last-child  { padding-right: 36px; font-weight: 700; color: var(--ink); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .1s; }
+    tbody tr:hover td { background: #fafafa; }
+
+    .tc { text-align: center !important; }
+    .tr { text-align: right  !important; }
+    .tl { text-align: left   !important; }
+    .muted { color: var(--ink-4) !important; font-weight: 400 !important; }
+
+    /* ─── TOTALS BAND ─── */
+    .totals-band {
+      background: #f0f0f0;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 18px 36px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
     }
 
-    tbody tr:hover td {
-      background: var(--gray-50);
+    .total-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-start;
+      padding-left: 20px;
+      border-left: 1px solid var(--line);
     }
+    .total-item:first-child { padding-left: 0; border-left: none; }
 
-    .tc { text-align: center; }
-    .tr { text-align: right; }
-    .tl { text-align: left; }
-
-    /* ── 합계행 ── */
-    tfoot tr {
-      border-top: 1.5px solid var(--black);
+    .total-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-4);
     }
-
-    tfoot td {
-      padding: 12px 12px;
+    .total-val {
+      font-size: 16px;
       font-weight: 700;
-      color: var(--black);
-      font-size: 13px;
-      border-bottom: none;
+      color: var(--ink);
+      letter-spacing: -0.02em;
     }
+    .total-val.highlight { font-size: 20px; }
 
-    /* ── 하단 영역 ── */
-    .stmt-footer {
-      margin-top: 48px;
+    /* ─── FOOTER BAND ─── */
+    .footer-band {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 0 0 var(--r16) var(--r16);
+      padding: 24px 36px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: center;
     }
 
-    .stmt-notice {
+    .footer-notice {
       font-size: 11.5px;
-      color: var(--gray-400);
+      color: var(--ink-4);
       line-height: 1.7;
     }
+    .footer-notice strong { color: var(--ink-3); font-weight: 500; }
 
-    .stmt-notice strong {
-      color: var(--gray-700);
-      font-weight: 600;
-    }
-
-    /* ── 직인 ── */
-    .stmt-sign {
+    .stamp-wrap {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 12px;
+      gap: 6px;
     }
-
-    .sign-text {
-      font-size: 12px;
-      color: var(--gray-500);
-      letter-spacing: 0.5px;
+    .stamp-caption {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--ink-4);
+      text-transform: uppercase;
     }
-
     .seal {
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0px;
+      padding: 6px 4px;
+    }
+    .seal-line {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: 0.04em;
+      line-height: 1.35;
+      text-align: center;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    .seal-sub {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--ink-3);
+      letter-spacing: 0.06em;
     }
 
-    /* ── 토스트 ── */
+    /* ─── TOAST ─── */
     .toast {
       position: fixed;
-      bottom: 28px;
+      bottom: calc(28px + env(safe-area-inset-bottom));
       left: 50%;
-      transform: translateX(-50%) translateY(60px);
+      transform: translateX(-50%) translateY(20px);
       opacity: 0;
-      background: var(--black);
+      background: var(--ink);
       color: var(--white);
       font-size: 13px;
       font-weight: 500;
-      padding: 12px 22px;
-      border-radius: 6px;
+      padding: 12px 20px;
+      border-radius: 100px;
       pointer-events: none;
-      transition: opacity 0.2s ease, transform 0.2s ease;
+      transition: opacity .2s, transform .25s cubic-bezier(.34,1.56,.64,1);
       z-index: 9999;
       white-space: nowrap;
     }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .toast.visible {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* ── 모바일 반응형 ── */
+    /* ─── MOBILE ─── */
     @media (max-width: 600px) {
-      body {
-        padding: 20px 0 40px;
-        background: var(--white);
-      }
+      .topbar { padding: 0 16px; height: 52px; }
+      .tbtn span { display: none; } /* 텍스트 숨기고 아이콘만 */
+      .tbtn { padding: 0 12px; }
 
-      .toolbar {
-        padding: 0 16px;
-        margin-bottom: 0;
+      .page { padding: 16px 12px 60px; gap: 1px; }
+
+      .hero {
+        padding: 28px 20px 24px;
+        border-radius: var(--r12) var(--r12) 0 0;
         flex-direction: column;
+        gap: 20px;
         align-items: flex-start;
-        gap: 10px;
       }
+      .hero-title { font-size: 26px; }
+      .hero-right { text-align: left; }
 
-      .toolbar-actions {
-        width: 100%;
-        gap: 6px;
+      .meta-band {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        padding: 18px 20px;
       }
+      .meta-item { padding-left: 0; border-left: none; }
 
-      .action-btn {
-        flex: 1;
-        justify-content: center;
-        font-size: 12px;
-        padding: 10px 8px;
-      }
+      .section-label { padding: 16px 20px 10px; }
 
-      /* 명세서 카드: 모바일에서 여백 최소화 */
-      .statement {
-        padding: 28px 16px 40px;
-        margin-top: 16px;
-      }
-
-      .stmt-title {
-        font-size: 22px;
-      }
-
-      .stmt-brand {
-        font-size: 11px;
-        letter-spacing: 2px;
-      }
-
-      .stmt-head {
-        margin-bottom: 24px;
-        padding-bottom: 18px;
-      }
-
-      /* 메타 정보: 1열로 전환 */
-      .stmt-meta {
-        grid-template-columns: 1fr;
-        gap: 4px 0;
-        margin-bottom: 28px;
-      }
-
-      .meta-row {
-        font-size: 12.5px;
-        padding: 4px 0;
-      }
-
-      .meta-label {
-        width: 90px;
-      }
-
-      /* 테이블 → 카드형 리스트로 변환 */
-      .stmt-table-wrap {
-        overflow: hidden;
-      }
-
-      table, thead, tbody, tfoot, th, td, tr {
-        display: block;
-      }
-
-      thead {
-        display: none; /* 헤더 숨김 */
-      }
+      /* 테이블 → 카드 */
+      table, thead, tbody, tfoot, th, td, tr { display: block; }
+      thead { display: none; }
 
       tbody tr {
-        border: 1px solid var(--gray-200);
-        border-radius: 8px;
-        margin-bottom: 10px;
-        padding: 14px 14px 10px;
-        background: var(--gray-50);
+        margin: 0 12px 8px;
+        border: 1px solid var(--line);
+        border-radius: var(--r8);
+        overflow: hidden;
       }
-
-      tbody tr:hover td {
-        background: transparent;
-      }
+      tbody tr:last-child { margin-bottom: 12px; }
 
       tbody td {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 5px 0;
+        padding: 10px 14px !important;
+        text-align: right !important;
+        border-bottom: 1px solid var(--line) !important;
         font-size: 13px;
-        border-bottom: none;
-        color: var(--gray-700);
+        color: var(--ink-2);
       }
-
-      /* data-label 속성을 통한 모바일 레이블 */
+      tbody td:last-child { border-bottom: none !important; }
+      tbody tr td:first-child {
+        background: #f9f9f9;
+        font-size: 14px;
+        font-weight: 700 !important;
+        color: var(--ink) !important;
+        justify-content: flex-start;
+        text-align: left !important;
+      }
       tbody td::before {
         content: attr(data-label);
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 600;
-        color: var(--gray-400);
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        color: var(--ink-4);
         flex-shrink: 0;
-        margin-right: 10px;
       }
+      tbody td:first-child::before { display: none; }
 
-      /* 합계 행: 카드형 유지 */
-      tfoot {
-        display: block;
-        border: 1.5px solid var(--black);
-        border-radius: 8px;
-        padding: 14px;
-        margin-top: 4px;
+      .totals-band {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 18px 20px;
       }
+      .total-item { padding-left: 0; border-left: none; border-top: 1px solid var(--line); padding-top: 12px; }
+      .total-item:first-child { border-top: none; padding-top: 0; }
+      .total-val.highlight { font-size: 24px; }
 
-      tfoot tr {
-        display: flex;
+      .footer-band {
         flex-direction: column;
-        gap: 6px;
-        border-top: none;
-      }
-
-      tfoot td {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        padding: 4px 0;
-        border-bottom: none;
-      }
-
-      tfoot td::before {
-        content: attr(data-label);
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--gray-400);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-
-      tfoot td[colspan] {
-        display: none;
-      }
-
-      /* 푸터 */
-      .stmt-footer {
-        flex-direction: column;
+        gap: 20px;
         align-items: flex-start;
-        gap: 24px;
-        margin-top: 32px;
+        padding: 20px;
+        border-radius: 0 0 var(--r12) var(--r12);
       }
-
-      .stmt-sign {
-        align-self: flex-end;
-      }
-
-      .stmt-notice {
-        font-size: 11px;
-      }
+      .stamp-wrap { align-self: flex-end; }
     }
 
-    /* ── 인쇄 ── */
+    /* ─── PRINT ─── */
     @media print {
-      body {
-        background: var(--white);
-        padding: 0;
-      }
-      .toolbar, .toast {
-        display: none !important;
-      }
-      .statement {
-        padding: 36px 40px;
-        max-width: 100%;
-        box-shadow: none;
-      }
-      @page {
-        size: A4 portrait;
-        margin: 14mm 10mm;
-      }
+      body { background: white; }
+      .topbar, .toast { display: none !important; }
+      .page { padding: 0; max-width: 100%; }
+      .hero { border-radius: 0 !important; }
+      .footer-band { border-radius: 0 !important; }
+      @page { size: A4; margin: 12mm 14mm; }
     }
   </style>
 </head>
 <body>
 
-  <!-- 툴바 -->
-  <header class="toolbar">
-    <span class="toolbar-brand">RYZIN</span>
-    <div class="toolbar-actions">
-      <button class="action-btn" id="btn-copy-link">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        링크 복사
+  <!-- 상단 고정 바 -->
+  <header class="topbar">
+    <span class="topbar-logo">RYZIN</span>
+    <div class="topbar-actions">
+      <button class="tbtn" id="btn-copy-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span>링크 복사</span>
       </button>
-      <button class="action-btn" id="btn-copy-msg">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        문구 복사
+      <button class="tbtn" id="btn-copy-msg">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>문구 복사</span>
       </button>
-      <button class="action-btn primary" id="btn-print">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        PDF / 인쇄
+      <button class="tbtn fill" id="btn-print">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        <span>인쇄 / PDF</span>
       </button>
     </div>
   </header>
 
-  <!-- 명세서 본문 -->
-  <main class="statement" id="statement-card">
+  <div class="page">
 
-    <!-- 헤더 -->
-    <div class="stmt-head">
-      <h1 class="stmt-title">지급명세서</h1>
-      <span class="stmt-brand">RYZIN CORP.</span>
+    <!-- 히어로 밴드 -->
+    <div class="hero">
+      <div class="hero-left">
+        <p class="hero-eyebrow">Payment Statement</p>
+        <h1 class="hero-title">지급명세서</h1>
+      </div>
+      <div class="hero-right">
+        <p class="hero-brand">RYZIN CORP.</p>
+        <p class="hero-date">지급일 <span id="payment-date">—</span></p>
+      </div>
     </div>
 
-    <!-- 메타 정보 -->
-    <div class="stmt-meta">
-      <div class="meta-row">
+    <!-- 발급 정보 -->
+    <div class="meta-band">
+      <div class="meta-item">
         <span class="meta-label">회사명</span>
-        <span class="meta-value" id="comp-name">라이진</span>
+        <span class="meta-val" id="comp-name">라이진</span>
       </div>
-      <div class="meta-row">
-        <span class="meta-label">지급일자</span>
-        <span class="meta-value" id="payment-date">—</span>
-      </div>
-      <div class="meta-row">
+      <div class="meta-item">
         <span class="meta-label">대표자명</span>
-        <span class="meta-value" id="comp-ceo">채이준</span>
+        <span class="meta-val" id="comp-ceo">채이준</span>
       </div>
-      <div class="meta-row">
+      <div class="meta-item">
         <span class="meta-label">사업자번호</span>
-        <span class="meta-value" id="comp-bizno">821-29-01197</span>
+        <span class="meta-val" id="comp-bizno">821-29-01197</span>
       </div>
     </div>
 
-    <!-- 테이블 -->
-    <div class="stmt-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th class="tl" style="width:11%;">성명</th>
-            <th class="tc" style="width:14%;">방송일</th>
-            <th class="tc" style="width:10%;">시작</th>
-            <th class="tc" style="width:10%;">종료</th>
-            <th class="tl" style="width:15%;">업무</th>
-            <th class="tr" style="width:15%;">지급액</th>
-            <th class="tr" style="width:14%;">3.3% 공제</th>
-            <th class="tr" style="width:14%;">실지급액</th>
-          </tr>
-        </thead>
-        <tbody id="table-body">
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="5" class="tc" style="color: var(--gray-500); font-weight:500; font-size:11.5px;">합계</td>
-            <td class="tr" id="total-gross">—</td>
-            <td class="tr" id="total-tax">—</td>
-            <td class="tr" id="total-net" style="font-weight:800;">—</td>
-          </tr>
-        </tfoot>
-      </table>
+    <!-- 내역 테이블 -->
+    <div class="table-band">
+      <p class="section-label">지급 내역</p>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th class="tl">성명</th>
+              <th>방송일</th>
+              <th>시작</th>
+              <th>종료</th>
+              <th>업무</th>
+              <th class="tr">지급액</th>
+              <th class="tr">3.3% 공제</th>
+              <th class="tr">실지급액</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 합계 밴드 -->
+    <div class="totals-band">
+      <div class="total-item">
+        <span class="total-label">총 지급액</span>
+        <span class="total-val" id="total-gross">—</span>
+      </div>
+      <div class="total-item">
+        <span class="total-label">3.3% 공제</span>
+        <span class="total-val muted" id="total-tax">—</span>
+      </div>
+      <div class="total-item">
+        <span class="total-label">실지급액</span>
+        <span class="total-val highlight" id="total-net">—</span>
+      </div>
     </div>
 
     <!-- 푸터 -->
-    <footer class="stmt-footer">
-      <div class="stmt-notice">
+    <div class="footer-band">
+      <div class="footer-notice">
         위 금액을 이상과 같이 지급합니다.<br>
-        문의: <strong id="comp-email">choijun@ryzincorp.com</strong>
+        문의&nbsp;&nbsp;<strong id="comp-email">choijun@ryzincorp.com</strong>
       </div>
-      <div class="stmt-sign">
-        <span class="sign-text">(주) 라이진</span>
-        <svg class="seal" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="3" y="3" width="74" height="74" rx="12" stroke="#000" stroke-width="3.5"/>
-          <rect x="7" y="7" width="66" height="66" rx="9" stroke="#000" stroke-width="1.5"/>
-          <text x="40" y="30" font-family="'Noto Sans KR', sans-serif" font-size="15" font-weight="900" fill="#000" text-anchor="middle" letter-spacing="1">라이진</text>
-          <text x="40" y="50" font-family="'Noto Sans KR', sans-serif" font-size="14" font-weight="700" fill="#000" text-anchor="middle" letter-spacing="1">채이준</text>
-          <text x="40" y="66" font-family="'Noto Sans KR', sans-serif" font-size="11" font-weight="600" fill="#000" text-anchor="middle" letter-spacing="1">(인)</text>
-        </svg>
+      <div class="stamp-wrap">
+        <span class="stamp-caption">Official Seal</span>
+        <div class="seal">
+          <span class="seal-line">라이진</span>
+          <span class="seal-line">채이준</span>
+          <span class="seal-sub">(인)</span>
+        </div>
       </div>
-    </footer>
+    </div>
 
-  </main>
+  </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
+    /* decode URL-safe base64 → object */
     function decode(s) {
       if (!s) return null;
       try {
-        let b = s.replace(/-/g, '+').replace(/_/g, '/');
-        while (b.length % 4) b += '=';
+        let b = s.replace(/-/g,'+').replace(/_/g,'/');
+        while (b.length%4) b+='=';
         return JSON.parse(decodeURIComponent(
           Array.prototype.map.call(atob(b), c =>
-            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)
           ).join('')
         ));
       } catch { return null; }
@@ -594,72 +574,68 @@
     const SAMPLE = {
       paymentDate: '2026-05-29',
       recipientName: '임란희',
-      company: { name: '라이진', bizNo: '821-29-01197', ceo: '채이준', email: 'choijun@ryzincorp.com' },
-      items: [{ name: '임란희', date: '2026-04-09', startTime: '20:00', endTime: '21:00', detail: '쏘랩', amount: 200000, tax: 6600, netAmount: 193400 }],
-      totals: { amount: 200000, tax: 6600, netAmount: 193400 }
+      company: { name:'라이진', bizNo:'821-29-01197', ceo:'채이준', email:'choijun@ryzincorp.com' },
+      items: [{name:'임란희',date:'2026-04-09',startTime:'20:00',endTime:'21:00',detail:'쏘랩',amount:200000,tax:6600,netAmount:193400}],
+      totals: { amount:200000, tax:6600, netAmount:193400 }
     };
 
-    const params = new URLSearchParams(location.search);
-    const raw = decode(params.get('d'));
-    const d = (raw && raw.items && raw.items.length) ? raw : SAMPLE;
+    const raw = decode(new URLSearchParams(location.search).get('d'));
+    const d   = (raw?.items?.length) ? raw : SAMPLE;
+    const fmt = n => (n||0).toLocaleString('ko-KR');
 
-    const fmt = n => (n || 0).toLocaleString('ko-KR');
+    /* meta */
+    document.getElementById('comp-name').textContent    = d.company?.name  || '라이진';
+    document.getElementById('comp-ceo').textContent     = d.company?.ceo   || '채이준';
+    document.getElementById('comp-bizno').textContent   = d.company?.bizNo || '821-29-01197';
+    document.getElementById('comp-email').textContent   = d.company?.email || 'choijun@ryzincorp.com';
+    document.getElementById('payment-date').textContent = d.paymentDate    || '—';
 
-    // 메타 바인딩
-    document.getElementById('comp-name').textContent      = d.company?.name    || '라이진';
-    document.getElementById('comp-ceo').textContent       = d.company?.ceo     || '채이준';
-    document.getElementById('comp-bizno').textContent     = d.company?.bizNo   || '821-29-01197';
-    document.getElementById('comp-email').textContent     = d.company?.email   || 'choijun@ryzincorp.com';
-    document.getElementById('payment-date').textContent   = d.paymentDate      || '—';
-
-    // 테이블 행 (data-label 속성 포함 — 모바일 카드뷰 대응)
+    /* table */
     const tbody = document.getElementById('table-body');
     d.items.forEach(item => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="tl" data-label="성명" style="font-weight:600;color:var(--black);">${item.name || ''}</td>
-        <td class="tc" data-label="방송일">${item.date || ''}</td>
-        <td class="tc" data-label="시작">${item.startTime || ''}</td>
-        <td class="tc" data-label="종료">${item.endTime || ''}</td>
-        <td class="tl" data-label="업무">${item.detail || ''}</td>
+        <td class="tl" data-label="성명">${item.name||''}</td>
+        <td class="tc" data-label="방송일">${item.date||''}</td>
+        <td class="tc" data-label="시작">${item.startTime||''}</td>
+        <td class="tc" data-label="종료">${item.endTime||''}</td>
+        <td class="tc" data-label="업무">${item.detail||''}</td>
         <td class="tr" data-label="지급액">${fmt(item.amount)}</td>
-        <td class="tr" data-label="3.3% 공제" style="color:var(--gray-400);">${fmt(item.tax)}</td>
-        <td class="tr" data-label="실지급액" style="font-weight:700;color:var(--black);">${fmt(item.netAmount)}</td>
+        <td class="tr muted" data-label="3.3% 공제">${fmt(item.tax)}</td>
+        <td class="tr" data-label="실지급액">${fmt(item.netAmount)}</td>
       `;
       tbody.appendChild(tr);
     });
 
-    // 합계 (data-label 속성 추가)
+    /* totals */
     const tg = document.getElementById('total-gross');
     const tt = document.getElementById('total-tax');
     const tn = document.getElementById('total-net');
-    tg.textContent = fmt(d.totals?.amount);   tg.setAttribute('data-label', '총 지급액');
-    tt.textContent = fmt(d.totals?.tax);      tt.setAttribute('data-label', '3.3% 공제');
-    tn.textContent = fmt(d.totals?.netAmount);tn.setAttribute('data-label', '실지급액');
+    tg.textContent = fmt(d.totals?.amount);
+    tt.textContent = fmt(d.totals?.tax);
+    tn.textContent = fmt(d.totals?.netAmount);
 
-    // 토스트
+    /* toast */
     function toast(msg) {
       const el = document.getElementById('toast');
       el.textContent = msg;
-      el.classList.add('visible');
-      setTimeout(() => el.classList.remove('visible'), 2000);
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2000);
     }
 
     document.getElementById('btn-print').onclick = () => window.print();
 
-    document.getElementById('btn-copy-link').onclick = () => {
+    document.getElementById('btn-copy-link').onclick = () =>
       navigator.clipboard.writeText(location.href)
         .then(() => toast('링크를 복사했습니다.'))
-        .catch(() => toast('복사에 실패했습니다.'));
-    };
+        .catch(() => toast('복사 실패'));
 
     document.getElementById('btn-copy-msg').onclick = () => {
       const name = d.recipientName || d.items[0]?.name || '쇼호스트';
       const net  = fmt(d.totals?.netAmount);
-      const text = `[라이진] ${name} 님, 방송 지급명세서가 발송되었습니다.\n\n· 지급일자: ${d.paymentDate || ''}\n· 실지급액: ${net}원\n\n아래 링크에서 상세 내역을 확인하세요:\n${location.href}`;
-      navigator.clipboard.writeText(text)
-        .then(() => toast('전송 문구를 복사했습니다.'))
-        .catch(() => toast('복사에 실패했습니다.'));
+      navigator.clipboard.writeText(
+        `[라이진] ${name} 님, 지급명세서가 도착했습니다.\n\n지급일: ${d.paymentDate||''}\n실지급액: ${net}원\n\n${location.href}`
+      ).then(() => toast('전송 문구를 복사했습니다.')).catch(() => toast('복사 실패'));
     };
   </script>
 </body>
