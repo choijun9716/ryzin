@@ -473,11 +473,9 @@
     <!-- 히어로 밴드 -->
     <div class="hero">
       <div class="hero-left">
-        <p class="hero-eyebrow">Payment Statement</p>
         <h1 class="hero-title">지급명세서</h1>
       </div>
       <div class="hero-right">
-        <p class="hero-brand">RYZIN CORP.</p>
         <p class="hero-date">지급일 <span id="payment-date">—</span></p>
       </div>
     </div>
@@ -507,9 +505,7 @@
             <tr>
               <th class="tl">성명</th>
               <th>방송일</th>
-              <th>시작</th>
-              <th>종료</th>
-              <th>업무</th>
+              <th class="tl">브랜드</th>
               <th class="tr">지급액</th>
               <th class="tr">3.3% 공제</th>
               <th class="tr">실지급액</th>
@@ -543,7 +539,6 @@
         문의&nbsp;&nbsp;<strong id="comp-email">choijun@ryzincorp.com</strong>
       </div>
       <div class="stamp-wrap">
-        <span class="stamp-caption">Official Seal</span>
         <div class="seal">
           <span class="seal-line">라이진</span>
           <span class="seal-line">채이준</span>
@@ -597,9 +592,7 @@
       tr.innerHTML = `
         <td class="tl" data-label="성명">${item.name||''}</td>
         <td class="tc" data-label="방송일">${item.date||''}</td>
-        <td class="tc" data-label="시작">${item.startTime||''}</td>
-        <td class="tc" data-label="종료">${item.endTime||''}</td>
-        <td class="tc" data-label="업무">${item.detail||''}</td>
+        <td class="tl" data-label="브랜드">${item.detail||''}</td>
         <td class="tr" data-label="지급액">${fmt(item.amount)}</td>
         <td class="tr muted" data-label="3.3% 공제">${fmt(item.tax)}</td>
         <td class="tr" data-label="실지급액">${fmt(item.netAmount)}</td>
