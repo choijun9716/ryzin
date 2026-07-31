@@ -367,11 +367,17 @@
       .hero-right { text-align: left; }
 
       .meta-band {
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-        padding: 18px 20px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 16px 12px;
       }
-      .meta-item { padding-left: 0; border-left: none; }
+      .meta-item {
+        padding-left: 8px;
+        border-left: 1px solid var(--line);
+      }
+      .meta-item:first-child { padding-left: 0; border-left: none; }
+      .meta-label { font-size: 9.5px; letter-spacing: 0.05em; }
+      .meta-val { font-size: 11.5px; word-break: break-all; }
 
       .section-label { padding: 16px 20px 10px; }
 
@@ -417,12 +423,20 @@
       }
       tbody td:first-child::before { display: none; }
 
+      /* 총지급액, 3.3% 공제, 실지급액 오른쪽 정렬 */
       .totals-band {
         grid-template-columns: 1fr;
         gap: 12px;
         padding: 18px 20px;
       }
-      .total-item { padding-left: 0; border-left: none; border-top: 1px solid var(--line); padding-top: 12px; }
+      .total-item {
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+        align-items: flex-end;
+        text-align: right;
+      }
       .total-item:first-child { border-top: none; padding-top: 0; }
       .total-val.highlight { font-size: 24px; }
 
