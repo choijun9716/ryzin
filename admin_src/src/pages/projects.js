@@ -42,8 +42,10 @@ function getDeadlineText(broadcastDate, statusKey) {
 
 export function renderProjects() {
   const container = document.createElement('div');
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialSettleStatus = urlParams.get('settleStatus') || '';
   let searchTerm = '';
-  let filters = { status: '', brand: '', platform: '', month: '', category: '', settleStatus: '' };
+  let filters = { status: '', brand: '', platform: '', month: '', category: '', settleStatus: initialSettleStatus };
   let colGroups = { basic: true, host: true, result: false, finance: false };
   let currentView = 'list'; // 'list' or 'calendar'
   let calendarDate = new Date();
@@ -71,6 +73,13 @@ export function renderProjects() {
     }
 
     // 필터
+    if (filters.settleStatus) {
+      if (filters.settleStatus === 'pending') {
+        projects = projects.filter(p => p.settleStatus !== 'done' && p.settleStatus !== 'settle_done');
+      } else {
+        projects = projects.filter(p => p.settleStatus === filters.settleStatus);
+      }
+    }
     if (filters.status) projects = projects.filter(p => p.broadcastStatus === filters.status);
     if (filters.brand) projects = projects.filter(p => p.brandId === filters.brand);
     if (filters.platform) projects = projects.filter(p => p.platform === filters.platform);
