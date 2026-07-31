@@ -322,19 +322,16 @@ export function renderSettlement() {
             <td style="padding:12px; text-align:right; font-weight:500; color:#0f172a;">${item.fee.toLocaleString('ko-KR')}</td>
             <td style="padding:12px; text-align:right; color:#dc2626; font-weight:500;">${item.tax.toLocaleString('ko-KR')}</td>
             <td style="padding:12px; text-align:right; color:#2563eb; font-weight:700;">${item.netFee.toLocaleString('ko-KR')}</td>
-            <td style="padding:12px; text-align:center;">
-              ${item.settleStatus === 'done'
-                ? '<span class="badge badge-success" style="background:#dcfce7;color:#166534;font-size:11px;padding:4px 8px;border-radius:12px;">지급완료</span>'
-                : '<span class="badge badge-warning" style="background:#fef3c7;color:#92400e;font-size:11px;padding:4px 8px;border-radius:12px;">지급대기</span>'}
+            <td class="text-center">
+              <select class="btn-change-settle-status" data-id="${item.id}" style="padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; outline: none; background: ${item.settleStatus === 'done' ? '#dcfce7' : '#fef3c7'}; color: ${item.settleStatus === 'done' ? '#166534' : '#92400e'};">
+                <option value="pending" ${item.settleStatus !== 'done' ? 'selected' : ''} style="background:#fff; color:#0f172a;">지급대기</option>
+                <option value="done" ${item.settleStatus === 'done' ? 'selected' : ''} style="background:#fff; color:#0f172a;">지급완료</option>
+              </select>
             </td>
-            <td style="padding:12px; text-align:center;">
+            <td class="text-center">
               <div style="display:flex; gap:6px; justify-content:center;">
-                ${item.settleStatus !== 'done'
-                  ? `<button class="btn btn-xs btn-secondary btn-single-settle" data-id="${item.id}" style="padding:4px 8px;font-size:11px;">지급완료</button>`
-                  : ''}
                 <button class="btn btn-xs btn-primary btn-generate-month-link"
-                  data-grp-key="${grpKey}"
-                  style="padding:4px 8px;font-size:11px;">명세서 링크</button>
+                  data-grp-key="${grpKey}">명세서 링크</button>
               </div>
             </td>
           `;
@@ -343,12 +340,18 @@ export function renderSettlement() {
       }
     }
 
-    // 개별 지급 완료 처리
-    container.querySelectorAll('.btn-single-settle').forEach(btn => {
-      btn.addEventListener('click', e => {
+    // 개별 정산 상태 상호 변경 처리
+    container.querySelectorAll('.btn-change-settle-status').forEach(select => {
+      select.addEventListener('change', e => {
         const id = e.target.dataset.id;
-        store.update('liveHosts', id, { settleStatus: 'done' });
-        showSuccess('지급 완료 처리되었습니다.');
+        const newStatus = e.target.value;
+        if (id.startsWith('proj-host-')) {
+          const liveId = id.replace('proj-host-', '');
+          store.update('projects', liveId, { hostSettleStatus: newStatus, settleStatus: newStatus });
+        } else {
+          store.update('liveHosts', id, { settleStatus: newStatus });
+        }
+        showSuccess(`정산 상태가 '${newStatus === 'done' ? '지급완료' : '지급대기'}'(으)로 변경되었습니다.`);
       });
     });
 
