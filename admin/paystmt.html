@@ -45,7 +45,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px 24px;
+      padding: 32px 16px;
+      padding-bottom: calc(32px + env(safe-area-inset-bottom));
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -57,7 +58,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+      gap: 12px;
     }
 
     .toolbar-brand {
@@ -67,18 +69,21 @@
       letter-spacing: 2px;
       color: var(--gray-500);
       text-transform: uppercase;
+      flex-shrink: 0;
     }
 
     .toolbar-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .action-btn {
       font-family: var(--sans);
       font-size: 12px;
       font-weight: 500;
-      padding: 8px 14px;
+      padding: 9px 13px;
       border-radius: 6px;
       border: 1px solid var(--gray-300);
       background: var(--white);
@@ -89,6 +94,9 @@
       gap: 6px;
       transition: all 0.15s ease;
       letter-spacing: 0.2px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      white-space: nowrap;
     }
 
     .action-btn:hover {
@@ -112,7 +120,7 @@
       width: 100%;
       max-width: 800px;
       background: var(--white);
-      padding: 56px 60px 64px;
+      padding: 40px 36px 48px;
     }
 
     /* ── 헤더 ── */
@@ -284,6 +292,170 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    /* ── 모바일 반응형 ── */
+    @media (max-width: 600px) {
+      body {
+        padding: 20px 0 40px;
+        background: var(--white);
+      }
+
+      .toolbar {
+        padding: 0 16px;
+        margin-bottom: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .toolbar-actions {
+        width: 100%;
+        gap: 6px;
+      }
+
+      .action-btn {
+        flex: 1;
+        justify-content: center;
+        font-size: 12px;
+        padding: 10px 8px;
+      }
+
+      /* 명세서 카드: 모바일에서 여백 최소화 */
+      .statement {
+        padding: 28px 16px 40px;
+        margin-top: 16px;
+      }
+
+      .stmt-title {
+        font-size: 22px;
+      }
+
+      .stmt-brand {
+        font-size: 11px;
+        letter-spacing: 2px;
+      }
+
+      .stmt-head {
+        margin-bottom: 24px;
+        padding-bottom: 18px;
+      }
+
+      /* 메타 정보: 1열로 전환 */
+      .stmt-meta {
+        grid-template-columns: 1fr;
+        gap: 4px 0;
+        margin-bottom: 28px;
+      }
+
+      .meta-row {
+        font-size: 12.5px;
+        padding: 4px 0;
+      }
+
+      .meta-label {
+        width: 90px;
+      }
+
+      /* 테이블 → 카드형 리스트로 변환 */
+      .stmt-table-wrap {
+        overflow: hidden;
+      }
+
+      table, thead, tbody, tfoot, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none; /* 헤더 숨김 */
+      }
+
+      tbody tr {
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        padding: 14px 14px 10px;
+        background: var(--gray-50);
+      }
+
+      tbody tr:hover td {
+        background: transparent;
+      }
+
+      tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0;
+        font-size: 13px;
+        border-bottom: none;
+        color: var(--gray-700);
+      }
+
+      /* data-label 속성을 통한 모바일 레이블 */
+      tbody td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--gray-400);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+        margin-right: 10px;
+      }
+
+      /* 합계 행: 카드형 유지 */
+      tfoot {
+        display: block;
+        border: 1.5px solid var(--black);
+        border-radius: 8px;
+        padding: 14px;
+        margin-top: 4px;
+      }
+
+      tfoot tr {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-top: none;
+      }
+
+      tfoot td {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        padding: 4px 0;
+        border-bottom: none;
+      }
+
+      tfoot td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--gray-400);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      tfoot td[colspan] {
+        display: none;
+      }
+
+      /* 푸터 */
+      .stmt-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 24px;
+        margin-top: 32px;
+      }
+
+      .stmt-sign {
+        align-self: flex-end;
+      }
+
+      .stmt-notice {
+        font-size: 11px;
+      }
+    }
+
     /* ── 인쇄 ── */
     @media print {
       body {
@@ -440,27 +612,30 @@
     document.getElementById('comp-email').textContent     = d.company?.email   || 'choijun@ryzincorp.com';
     document.getElementById('payment-date').textContent   = d.paymentDate      || '—';
 
-    // 테이블 행
+    // 테이블 행 (data-label 속성 포함 — 모바일 카드뷰 대응)
     const tbody = document.getElementById('table-body');
     d.items.forEach(item => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="tl" style="font-weight:600;color:var(--black);">${item.name || ''}</td>
-        <td class="tc">${item.date || ''}</td>
-        <td class="tc">${item.startTime || ''}</td>
-        <td class="tc">${item.endTime || ''}</td>
-        <td class="tl">${item.detail || ''}</td>
-        <td class="tr">${fmt(item.amount)}</td>
-        <td class="tr" style="color:var(--gray-400);">${fmt(item.tax)}</td>
-        <td class="tr" style="font-weight:700;color:var(--black);">${fmt(item.netAmount)}</td>
+        <td class="tl" data-label="성명" style="font-weight:600;color:var(--black);">${item.name || ''}</td>
+        <td class="tc" data-label="방송일">${item.date || ''}</td>
+        <td class="tc" data-label="시작">${item.startTime || ''}</td>
+        <td class="tc" data-label="종료">${item.endTime || ''}</td>
+        <td class="tl" data-label="업무">${item.detail || ''}</td>
+        <td class="tr" data-label="지급액">${fmt(item.amount)}</td>
+        <td class="tr" data-label="3.3% 공제" style="color:var(--gray-400);">${fmt(item.tax)}</td>
+        <td class="tr" data-label="실지급액" style="font-weight:700;color:var(--black);">${fmt(item.netAmount)}</td>
       `;
       tbody.appendChild(tr);
     });
 
-    // 합계
-    document.getElementById('total-gross').textContent = fmt(d.totals?.amount);
-    document.getElementById('total-tax').textContent   = fmt(d.totals?.tax);
-    document.getElementById('total-net').textContent   = fmt(d.totals?.netAmount);
+    // 합계 (data-label 속성 추가)
+    const tg = document.getElementById('total-gross');
+    const tt = document.getElementById('total-tax');
+    const tn = document.getElementById('total-net');
+    tg.textContent = fmt(d.totals?.amount);   tg.setAttribute('data-label', '총 지급액');
+    tt.textContent = fmt(d.totals?.tax);      tt.setAttribute('data-label', '3.3% 공제');
+    tn.textContent = fmt(d.totals?.netAmount);tn.setAttribute('data-label', '실지급액');
 
     // 토스트
     function toast(msg) {
