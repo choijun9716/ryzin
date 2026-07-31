@@ -153,16 +153,24 @@ export function parsePayslipRawText(rawText, options = {}) {
 }
 
 /**
- * 명세서 데이터를 URL 파라미터용 안전한 Base64 문자열로 인코딩
+ * 명세서 데이터를 URL 파라미터용 압축된 Base64 문자열로 인코딩 (URL 길이 대폭 단축)
  */
 export function encodePayslipData(data) {
   try {
-    const jsonStr = JSON.stringify(data);
-    // UTF-8 인코딩 후 Base64 변환
+    // 단축 스키마: n(이름), p(지급일), i([[방송일, 브랜드, 금액], ...])
+    const compact = {
+      n: data.recipientName || '',
+      p: data.paymentDate || '',
+      i: (data.items || []).map(item => [
+        item.date || '',
+        item.detail || '',
+        item.amount || 0
+      ])
+    };
+    const jsonStr = JSON.stringify(compact);
     const base64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
       return String.fromCharCode('0x' + p1);
     }));
-    // URL Safe 인코딩 (+ -> -, / -> _, = 삭제)
     return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   } catch (e) {
     console.error('Payslip encode error:', e);
@@ -171,12 +179,11 @@ export function encodePayslipData(data) {
 }
 
 /**
- * URL 파라미터의 Base64 문자열을 명세서 데이터 객체로 디코딩
+ * URL 파라미터의 Base64 문자열을 명세서 데이터 객체로 디코딩 (구버전/신버전 모두 지원)
  */
 export function decodePayslipData(encodedStr) {
   if (!encodedStr) return null;
   try {
-    // URL Safe Base64 복원
     let base64 = encodedStr.replace(/-/g, '+').replace(/_/g, '/');
     while (base64.length % 4) {
       base64 += '=';
@@ -186,7 +193,34 @@ export function decodePayslipData(encodedStr) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
+
+    // 단축 스키마(n, p, i)인 경우 표준 객체 구조로 복원
+    if (parsed && (parsed.n !== undefined || parsed.i !== undefined)) {
+      const recipientName = parsed.n || '쇼호스트';
+      const paymentDate = parsed.p || '';
+      const items = (parsed.i || []).map(row => {
+        const date = row[0] || '';
+        const detail = row[1] || '';
+        const amount = typeof row[2] === 'number' ? row[2] : (parseInt(row[2], 10) || 0);
+        const tax = Math.floor(amount * 0.033);
+        const netAmount = amount - tax;
+        return { name: recipientName, date, detail, amount, tax, netAmount };
+      });
+      const totalAmount = items.reduce((s, it) => s + it.amount, 0);
+      const totalTax = items.reduce((s, it) => s + it.tax, 0);
+      const totalNet = totalAmount - totalTax;
+
+      return {
+        paymentDate,
+        recipientName,
+        company: { name: '라이진', bizNo: '821-29-01197', ceo: '채이준', email: 'choijun@ryzincorp.com' },
+        items,
+        totals: { amount: totalAmount, tax: totalTax, netAmount: totalNet }
+      };
+    }
+
+    return parsed;
   } catch (e) {
     console.error('Payslip decode error:', e);
     return null;

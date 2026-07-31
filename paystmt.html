@@ -558,11 +558,38 @@
       try {
         let b = s.replace(/-/g,'+').replace(/_/g,'/');
         while (b.length%4) b+='=';
-        return JSON.parse(decodeURIComponent(
+        const parsed = JSON.parse(decodeURIComponent(
           Array.prototype.map.call(atob(b), c =>
             '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)
           ).join('')
         ));
+
+        // 단축 스키마 (n: recipientName, p: paymentDate, i: [[date, detail, amount], ...])
+        if (parsed && (parsed.n !== undefined || parsed.i !== undefined)) {
+          const recipientName = parsed.n || '쇼호스트';
+          const paymentDate = parsed.p || '';
+          const items = (parsed.i || []).map(row => {
+            const date = row[0] || '';
+            const detail = row[1] || '';
+            const amount = typeof row[2] === 'number' ? row[2] : (parseInt(row[2], 10) || 0);
+            const tax = Math.floor(amount * 0.033);
+            const netAmount = amount - tax;
+            return { name: recipientName, date, detail, amount, tax, netAmount };
+          });
+          const totalAmount = items.reduce((s, it) => s + it.amount, 0);
+          const totalTax = items.reduce((s, it) => s + it.tax, 0);
+          const totalNet = totalAmount - totalTax;
+
+          return {
+            paymentDate,
+            recipientName,
+            company: { name: '라이진', bizNo: '821-29-01197', ceo: '채이준', email: 'choijun@ryzincorp.com' },
+            items,
+            totals: { amount: totalAmount, tax: totalTax, netAmount: totalNet }
+          };
+        }
+
+        return parsed;
       } catch { return null; }
     }
 
