@@ -885,10 +885,23 @@ class DataStore {
     const monthResults = results.filter(r => monthProjectIds.includes(r.liveId));
     const monthRevenue = monthResults.reduce((sum, r) => sum + (parseInt(r.liveRevenue) || 0), 0);
 
-    // 정산대기 (settleStatus === 'wait' or 'processing')
-    // 또는 프로젝트의 상태에 따라.
-    const settleWaitIds = projects.filter(p => p.settleStatus === 'pending' || p.settleStatus === 'wait').map(p => p.id);
-    const settleWaitAmount = finances.filter(f => settleWaitIds.includes(f.liveId)).reduce((sum, f) => sum + (parseInt(f.salesRevenue) || 0), 0);
+    // 정산대기 (settleStatus !== 'done' or 'settle_done')
+    const settleWaitProjects = projects.filter(p => p.settleStatus !== 'done' && p.settleStatus !== 'settle_done');
+    const settleWaitAmount = settleWaitProjects.reduce((sum, p) => {
+      const f = finances.find(fi => fi.liveId === p.id) || {};
+      const matchings = this.query('liveHosts', m => m.liveId === p.id);
+      const hostCost = matchings.reduce((s, m) => s + (m.fee || 0), 0);
+      const prodCost = parseInt(f.productionCost) || 0;
+      const adCost = parseInt(f.adCost) || 0;
+      const incHost = !!f.includeHostCost;
+      const brandHost = !!f.brandPaysHost;
+
+      const sRev = (f.salesRevenue !== undefined && f.salesRevenue !== null && parseInt(f.salesRevenue) > 0)
+        ? parseInt(f.salesRevenue)
+        : ((brandHost || incHost) ? (prodCost + adCost) : (prodCost + hostCost + adCost));
+
+      return sum + sRev;
+    }, 0);
 
     return {
       thisWeekBroadcasts,
