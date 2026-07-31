@@ -1284,13 +1284,21 @@ function renderFinanceTab(project) {
     el.querySelector('#btn-edit-finance')?.addEventListener('click', () => {
       const content = `
         <div class="form-grid">
-          <div class="input-group"><label>제작비</label><input class="input" type="number" id="fin-prod" value="${finance.productionCost || ''}"></div>
-          <div class="input-group"><label>광고비</label><input class="input" type="number" id="fin-ad" value="${finance.adCost || ''}"></div>
-          <div class="input-group"><label>기타비용</label><input class="input" type="number" id="fin-other" value="${finance.otherCost || ''}"></div>
+          <div class="input-group"><label>제작비</label><input class="input" type="number" id="fin-prod" value="${finance.productionCost || ''}" placeholder="0"></div>
+          <div class="input-group"><label>광고비</label><input class="input" type="number" id="fin-ad" value="${finance.adCost || ''}" placeholder="0"></div>
+          <div class="input-group"><label>기타비용</label><input class="input" type="number" id="fin-other" value="${finance.otherCost || ''}" placeholder="0"></div>
         </div>
-        <div style="margin-top: var(--space-4); padding: var(--space-3); background: var(--bg-secondary); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--text-tertiary);">
-          • 쇼호스트비(현재: ${formatCurrency(hostCost)})는 매칭 탭의 금액 합계로 자동 반영됩니다.<br>
-          • 영업매출액은 (제작비 + 쇼호스트비 + 광고비)로 자동 산출됩니다.
+        <div style="margin-top: var(--space-4); padding: var(--space-4); background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+          <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-primary); display: flex; justify-content: space-between;">
+            <span>⚡ 실시간 계산 미리보기</span>
+            <span style="font-weight: normal; color: var(--text-tertiary); font-size: 12px;">쇼호스트비: ${formatCurrency(hostCost)}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+            <div>영업매출액: <strong id="prev-sales" style="color: var(--text-primary);">-</strong></div>
+            <div>영업이익: <strong id="prev-profit" style="color: var(--text-primary);">-</strong></div>
+            <div>부가가치세 (10%): <strong id="prev-vat" style="color: var(--text-primary);">-</strong></div>
+            <div>순마진: <strong id="prev-margin" style="color: var(--text-primary);">-</strong></div>
+          </div>
         </div>
       `;
       const footer = document.createElement('div');
@@ -1316,6 +1324,46 @@ function renderFinanceTab(project) {
       });
       footer.appendChild(cancelBtn); footer.appendChild(saveBtn);
       openModal({ title: '정산 정보 수정', size: 'md', content, footer });
+
+      // 실시간 계산 이벤트 바인딩
+      setTimeout(() => {
+        const prodInp = document.getElementById('fin-prod');
+        const adInp = document.getElementById('fin-ad');
+        const otherInp = document.getElementById('fin-other');
+
+        const updateCalc = () => {
+          const prod = parseInt(prodInp?.value) || 0;
+          const ad = parseInt(adInp?.value) || 0;
+          const oth = parseInt(otherInp?.value) || 0;
+
+          const sRev = prod + hostCost + ad;
+          const oProf = sRev - hostCost - ad - oth;
+          const v = Math.round(sRev * 0.1);
+          const nMarg = oProf - v;
+          const mRate = sRev ? ((nMarg / sRev) * 100).toFixed(1) : '0.0';
+
+          const elSales = document.getElementById('prev-sales');
+          const elProfit = document.getElementById('prev-profit');
+          const elVat = document.getElementById('prev-vat');
+          const elMargin = document.getElementById('prev-margin');
+
+          if (elSales) elSales.textContent = formatCurrency(sRev);
+          if (elProfit) {
+            elProfit.textContent = formatCurrency(oProf);
+            elProfit.style.color = oProf >= 0 ? 'var(--status-success)' : 'var(--status-error)';
+          }
+          if (elVat) elVat.textContent = formatCurrency(v);
+          if (elMargin) {
+            elMargin.textContent = `${formatCurrency(nMarg)} (${mRate}%)`;
+            elMargin.style.color = nMarg >= 0 ? 'var(--status-success)' : 'var(--status-error)';
+          }
+        };
+
+        prodInp?.addEventListener('input', updateCalc);
+        adInp?.addEventListener('input', updateCalc);
+        otherInp?.addEventListener('input', updateCalc);
+        updateCalc();
+      }, 0);
     });
   }, 0);
 
