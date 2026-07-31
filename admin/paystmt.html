@@ -506,9 +506,8 @@
         <table>
           <thead>
             <tr>
-              <th class="tl">성명</th>
-              <th>방송일</th>
               <th class="tl">브랜드</th>
+              <th>방송일</th>
               <th class="tr">지급액</th>
               <th class="tr">3.3% 공제</th>
               <th class="tr">실지급액</th>
@@ -618,9 +617,8 @@
     d.items.forEach(item => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="tl" data-label="성명">${item.name||''}</td>
-        <td class="tc" data-label="방송일">${item.date||''}</td>
-        <td class="tl" data-label="브랜드">${item.detail||''}</td>
+        <td class="tl" data-label="브랜드">${item.detail || item.name || ''}</td>
+        <td class="tc" data-label="방송일">${item.date || ''}</td>
         <td class="tr" data-label="지급액">${fmt(item.amount)}</td>
         <td class="tr muted" data-label="3.3% 공제">${fmt(item.tax)}</td>
         <td class="tr" data-label="실지급액">${fmt(item.netAmount)}</td>
