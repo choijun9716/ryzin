@@ -41,7 +41,39 @@ export function renderFinance() {
       filteredResults = results.filter(r => fpIds.includes(r.liveId));
     }
 
-    // 월별 집계 (항상 전체 데이터로 보여줄지, 필터된 데이터로 보여줄지? 월별 집계는 월 필터 시 해당 월만 나옴)
+    // 각 프로젝트별 실시간 정산 수식 동기화 산출 함수
+    const getProjectFinanceData = (p) => {
+      const f = finances.find(fi => fi.liveId === p.id) || {};
+      const matchings = store.query('liveHosts', m => m.liveId === p.id);
+      const hostCost = matchings.reduce((sum, m) => sum + (m.fee || 0), 0);
+      const productionCost = parseInt(f.productionCost) || 0;
+      const adCost = parseInt(f.adCost) || 0;
+      const otherCost = parseInt(f.otherCost) || 0;
+
+      // 1. 영업매출액 = 제작비 + 쇼호스트비 + 광고비 (+대행 마진)
+      const salesRevenue = (f.salesRevenue !== undefined && f.salesRevenue !== null && parseInt(f.salesRevenue) > 0)
+        ? parseInt(f.salesRevenue)
+        : (productionCost + hostCost + adCost);
+
+      // 2. 영업이익 = 영업매출액 - (쇼호스트비 + 광고비 + 기타비용)
+      const operatingProfit = salesRevenue - (hostCost + adCost + otherCost);
+
+      // 3. 부가가치세 = 영업매출액 × 10%
+      const vat = Math.round(salesRevenue * 0.1);
+
+      // 4. 순마진 = 영업이익 - 부가가치세
+      const netMargin = operatingProfit - vat;
+
+      return { productionCost, hostCost, adCost, otherCost, salesRevenue, operatingProfit, vat, netMargin };
+    };
+
+    let totalRevenue = 0;
+    let totalProfit = 0;
+    let totalMargin = 0;
+    let totalAdCost = 0;
+    let totalProdCost = 0;
+    let totalHostCost = 0;
+
     const monthlyMap = {};
     filteredProjects.forEach(p => {
       let m = p.broadcastMonth;
@@ -51,30 +83,31 @@ export function renderFinance() {
           m = `${bDate.getFullYear()}-${String(bDate.getMonth() + 1).padStart(2, '0')}`;
         }
       }
-      if (!m) return;
-      
-      if (!m.includes('-') && m.length <= 2) {
-        m = `2026-${String(m).padStart(2, '0')}`; 
+      if (!m && p.date) {
+        const bDate = new Date(p.date.replace(/\./g, '-'));
+        if (!isNaN(bDate.getTime())) {
+          m = `${bDate.getFullYear()}-${String(bDate.getMonth() + 1).padStart(2, '0')}`;
+        }
       }
-      
+      if (!m) m = '2026-05';
+      if (!m.includes('-') && m.length <= 2) m = `2026-${String(m).padStart(2, '0')}`; 
+
       if (!monthlyMap[m]) monthlyMap[m] = { month: m, revenue: 0, profit: 0, margin: 0, count: 0 };
       monthlyMap[m].count++;
-      const f = filteredFinances.find(fi => fi.liveId === p.id);
-      if (f) {
-        monthlyMap[m].revenue += parseInt(f.salesRevenue) || 0;
-        monthlyMap[m].profit += parseInt(f.operatingProfit) || 0;
-        monthlyMap[m].margin += parseInt(f.netMargin) || 0;
-      }
+
+      const pFin = getProjectFinanceData(p);
+      monthlyMap[m].revenue += pFin.salesRevenue;
+      monthlyMap[m].profit += pFin.operatingProfit;
+      monthlyMap[m].margin += pFin.netMargin;
+
+      totalRevenue += pFin.salesRevenue;
+      totalProfit += pFin.operatingProfit;
+      totalMargin += pFin.netMargin;
+      totalAdCost += pFin.adCost;
+      totalProdCost += pFin.productionCost;
+      totalHostCost += pFin.hostCost;
     });
     const monthlyData = Object.values(monthlyMap).sort((a, b) => b.month.localeCompare(a.month));
-
-    // 전체 합계
-    const totalRevenue = filteredFinances.reduce((s, f) => s + (parseInt(f.salesRevenue) || 0), 0);
-    const totalProfit = filteredFinances.reduce((s, f) => s + (parseInt(f.operatingProfit) || 0), 0);
-    const totalMargin = filteredFinances.reduce((s, f) => s + (parseInt(f.netMargin) || 0), 0);
-    const totalAdCost = filteredFinances.reduce((s, f) => s + (parseInt(f.adCost) || 0), 0);
-    const totalProdCost = filteredFinances.reduce((s, f) => s + (parseInt(f.productionCost) || 0), 0);
-    const totalHostCost = filteredFinances.reduce((s, f) => s + (parseInt(f.hostCost) || 0), 0);
 
     // 브랜드별 매출 순위
     const brandRevenue = {};
@@ -126,7 +159,7 @@ export function renderFinance() {
         <div class="stats-grid" style="margin-bottom: var(--space-6);">
           <div class="stat-card"><div class="stat-label">총 영업매출</div><div class="stat-value">${formatCurrencyShort(totalRevenue)}</div></div>
           <div class="stat-card"><div class="stat-label">총 영업이익</div><div class="stat-value" style="color: ${totalProfit >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrencyShort(totalProfit)}</div></div>
-          <div class="stat-card"><div class="stat-label">총 순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 제외)</span></div><div class="stat-value" style="color: ${totalMargin >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrencyShort(totalMargin)}</div></div>
+          <div class="stat-card"><div class="stat-label">총 순마진 <span style="font-size: 11px; font-weight: normal; color: var(--text-tertiary);">(VAT 차감 후)</span></div><div class="stat-value" style="color: ${totalMargin >= 0 ? 'var(--status-success)' : 'var(--status-error)'};">${formatCurrencyShort(totalMargin)}</div></div>
           <div class="stat-card"><div class="stat-label">총 광고비</div><div class="stat-value">${formatCurrencyShort(totalAdCost)}</div></div>
           <div class="stat-card"><div class="stat-label">총 제작비</div><div class="stat-value">${formatCurrencyShort(totalProdCost)}</div></div>
           <div class="stat-card"><div class="stat-label">총 쇼호스트비</div><div class="stat-value">${formatCurrencyShort(totalHostCost)}</div></div>
