@@ -196,8 +196,8 @@ class DataStore {
       this._sheetDBReady = true;
       return true;
     } catch (e) {
-      console.error('Supabase 연동 실패:', e);
-      return false;
+      console.error('Supabase 연동 시도 중 오류 발생 (로컬 캐시로 진입):', e);
+      return true;
     }
   }
 

@@ -42,16 +42,12 @@ async function initApp() {
     </div>
   `;
 
-  // SheetDB 연동 및 로드
-  const success = await store.init();
-  if (!success) {
-    app.innerHTML = `
-      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:16px;">
-        <div style="color:var(--danger); font-weight:600; font-size:var(--text-lg);">구글 시트 연동에 실패했습니다.</div>
-        <div style="color:var(--text-secondary);">SheetDB API 주소나 네트워크 상태를 확인해주세요.</div>
-      </div>
-    `;
-    return;
+  // Supabase/DB 연동 및 로드 (최대 3초 타임아웃 처리로 로그인창 차단 방지)
+  try {
+    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(true), 3000));
+    await Promise.race([store.init(), timeoutPromise]);
+  } catch (e) {
+    console.warn('데이터 로딩 타임아웃/오류 발생, 로컬 데이터로 접속합니다.', e);
   }
 
   // 로그인되지 않은 경우 레이아웃(사이드바)을 그리지 않고 전체화면 처리
