@@ -330,15 +330,21 @@ ul {
     width: 100%;
     height: 80px;
     z-index: 1000;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     border-bottom: 1px solid transparent;
+    /* 스크롤 전: 상단에서 아래로 어두워지는 그라디언트 (로고/메뉴 가독성 확보) */
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.0) 100%
+    );
 }
 
 .navbar.scrolled {
-    background-color: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.82);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .nav-container {
