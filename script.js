@@ -739,55 +739,168 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 8. Hero Gallery Dynamic Loader
+    // 8. 3D Coverflow Carousel Loader
     async function loadHeroGallery() {
-        const container = document.getElementById('dynamicHeroGallery');
-        if (!container) return;
+        const track = document.getElementById('coverflowTrack');
+        if (!track) return;
 
         const defaultConfig = {
-            col1: ['everyhabit_enzyme.jpg', 'baegayul.jpg', 'everyhabit_enzyme.jpg', 'baegayul.jpg'],
-            col2: ['bodylove.jpg', 'miyabis.jpg', 'bodylove.jpg', 'miyabis.jpg'],
-            col3: ['yadah.jpg', 'natical.jpg', 'yadah.jpg', 'natical.jpg'],
-            col4: ['drolion.jpg', 'trusty.jpg', 'drolion.jpg', 'trusty.jpg']
+            col1: ['everyhabit_enzyme.jpg', 'baegayul.jpg'],
+            col2: ['bodylove.jpg', 'miyabis.jpg'],
+            col3: ['yadah.jpg', 'natical.jpg'],
+            col4: ['drolion.jpg', 'trusty.jpg']
         };
 
         let config = await fetchHpSetting('hero', './hero.json');
-        if (!config) {
-            config = defaultConfig;
+        if (!config) config = defaultConfig;
+
+        // 이미지 평탄화
+        const imageList = [];
+        ['col1', 'col2', 'col3', 'col4'].forEach(col => {
+            if (config[col]) {
+                config[col].forEach(img => {
+                    if (img && !imageList.includes(img)) imageList.push(img);
+                });
+            }
+        });
+
+        if (imageList.length === 0) {
+            imageList.push('001.jpg', '002.jpg', '003.jpg');
         }
 
-        container.innerHTML = '';
-        for (let i = 1; i <= 4; i++) {
-            const colKey = `col${i}`;
-            const images = config[colKey] || [];
-            const isReverse = i % 2 === 0;
+        // 워킷 레퍼런스 스타일 브랜드 특화 카드 삽입 (중앙 포인트)
+        const cardsData = [];
+        imageList.forEach((img, idx) => {
+            if (idx === Math.floor(imageList.length / 2)) {
+                cardsData.push({
+                    isBrand: true,
+                    topText: "생각의 차이가 만드는 가치",
+                    title: "RYZIN",
+                    logo: "worket"
+                });
+            }
+            cardsData.push({ isBrand: false, image: img });
+        });
 
-            const colDiv = document.createElement('div');
-            colDiv.className = 'gallery-column';
+        track.innerHTML = '';
+        const cardElements = [];
 
-            const trackDiv = document.createElement('div');
-            trackDiv.className = `gallery-track ${isReverse ? 'reverse' : ''}`;
+        cardsData.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'coverflow-card' + (item.isBrand ? ' brand-card' : '');
+            card.dataset.index = idx;
 
-            // To ensure infinite scroll works perfectly, we repeat images if the list is short
-            const displayImages = images.length < 4 ? [...images, ...images] : images;
+            if (item.isBrand) {
+                card.innerHTML = `
+                    <div class="brand-card-top">${item.topText}</div>
+                    <div class="brand-card-title">${item.title}</div>
+                    <div class="brand-card-logo">RYZIN LIVE</div>
+                `;
+            } else {
+                const imgSrc = (item.image.startsWith('http://') || item.image.startsWith('https://'))
+                    ? item.image
+                    : `./assets/${item.image}`;
+                card.innerHTML = `<img src="${imgSrc}" alt="RYZIN Portfolio" loading="lazy">`;
+            }
 
-            displayImages.forEach((img, idx) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'gallery-item';
-                const imgEl = document.createElement('img');
-                imgEl.src = `./assets/${img}`;
-                imgEl.alt = 'Portfolio';
-                imgEl.decoding = 'async';
-                if (idx === 0) imgEl.setAttribute('fetchpriority', 'high');
-                else imgEl.loading = 'lazy';
-
-                itemDiv.appendChild(imgEl);
-                trackDiv.appendChild(itemDiv);
+            card.addEventListener('click', () => {
+                goToSlide(idx);
             });
 
-            colDiv.appendChild(trackDiv);
-            container.appendChild(colDiv);
+            track.appendChild(card);
+            cardElements.push(card);
+        });
+
+        let activeIndex = Math.floor(cardsData.length / 2);
+        let autoplayTimer = null;
+
+        function updateCoverflow() {
+            const total = cardElements.length;
+            const isMobile = window.innerWidth <= 768;
+            const spacing = isMobile ? 140 : 230;
+
+            cardElements.forEach((card, i) => {
+                let offset = i - activeIndex;
+
+                // 순환 루프 오프셋 계산
+                if (offset > total / 2) offset -= total;
+                if (offset < -total / 2) offset += total;
+
+                const absOffset = Math.abs(offset);
+
+                if (absOffset > 3) {
+                    card.style.opacity = '0';
+                    card.style.pointerEvents = 'none';
+                    card.style.transform = `translateX(${offset * spacing}px) scale(0.6) rotateY(0deg)`;
+                    card.style.zIndex = '1';
+                } else {
+                    const scale = 1 - absOffset * 0.12;
+                    const rotateY = offset < 0 ? 15 : (offset > 0 ? -15 : 0);
+                    const translateX = offset * spacing;
+                    const translateZ = -absOffset * 80;
+                    const zIndex = 100 - absOffset * 10;
+                    const opacity = 1 - absOffset * 0.18;
+
+                    card.style.opacity = opacity;
+                    card.style.pointerEvents = 'auto';
+                    card.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+                    card.style.zIndex = zIndex;
+
+                    if (offset === 0) {
+                        card.style.filter = 'brightness(1)';
+                    } else {
+                        card.style.filter = 'brightness(0.75)';
+                    }
+                }
+            });
         }
+
+        function goToSlide(index) {
+            activeIndex = (index + cardElements.length) % cardElements.length;
+            updateCoverflow();
+            resetAutoplay();
+        }
+
+        function nextSlide() {
+            activeIndex = (activeIndex + 1) % cardElements.length;
+            updateCoverflow();
+        }
+
+        function prevSlide() {
+            activeIndex = (activeIndex - 1 + cardElements.length) % cardElements.length;
+            updateCoverflow();
+        }
+
+        function startAutoplay() {
+            stopAutoplay();
+            autoplayTimer = setInterval(nextSlide, 2200); // 2.2초마다 스르륵 빠르게 넘어감
+        }
+
+        function stopAutoplay() {
+            if (autoplayTimer) clearInterval(autoplayTimer);
+        }
+
+        function resetAutoplay() {
+            stopAutoplay();
+            startAutoplay();
+        }
+
+        // 버튼 이벤트 바인딩
+        document.getElementById('coverflowPrev')?.addEventListener('click', () => {
+            prevSlide();
+            resetAutoplay();
+        });
+        document.getElementById('coverflowNext')?.addEventListener('click', () => {
+            nextSlide();
+            resetAutoplay();
+        });
+
+        // 반응형 리사이즈 대응
+        window.addEventListener('resize', updateCoverflow);
+
+        // 초기 실행
+        updateCoverflow();
+        startAutoplay();
     }
     // 9. Load Dynamic Pricing Packages
     async function loadPackages() {
