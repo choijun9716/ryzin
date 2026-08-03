@@ -814,9 +814,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     disableOnInteraction: false,
                 },
                 coverflowEffect: {
-                    rotate: 15,
-                    stretch: -30,
-                    depth: 280,
+                    rotate: -20,
+                    stretch: 0,
+                    depth: 180,
                     modifier: 1,
                     slideShadows: false,
                 },
