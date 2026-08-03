@@ -28,4 +28,11 @@
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
+    <!-- 뉴스룸 페이지 -->
+    <url>
+        <loc>https://ryzincorp.com/news.html</loc>
+        <lastmod>2026-08-03</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
 </urlset>
