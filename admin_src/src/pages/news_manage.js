@@ -196,7 +196,7 @@ export function renderNewsManage() {
               <input type="text" id="news-form-date" class="input" value="${item ? item.date || '' : new Date().toISOString().slice(0,10).replace(/-/g,'.')}" placeholder="2026.08.03" style="width: 100%;">
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; align-items: end;">
             <div class="form-group">
               <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">대표 이미지 URL / 파일 업로드</label>
               <div style="display: flex; gap: 8px;">
@@ -206,15 +206,21 @@ export function renderNewsManage() {
               </div>
             </div>
             <div class="form-group">
-              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">사진 위아래 위치 조정</label>
-              <select id="news-form-image-position" class="input" style="width: 100%;">
-                <option value="center" ${item && item.imagePosition === 'center' ? 'selected' : ''}>가운데 정렬</option>
-                <option value="top" ${item && item.imagePosition === 'top' ? 'selected' : ''}>상단 기준 (얼굴 위주)</option>
-                <option value="bottom" ${item && item.imagePosition === 'bottom' ? 'selected' : ''}>하단 기준</option>
-              </select>
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">사진 위아래 세밀 조정 (<span id="val-pos">${item && item.imagePosition ? item.imagePosition : '50%'}</span>)</label>
+              <div style="display: flex; align-items: center; gap: 8px; height: 38px;">
+                <input type="range" id="news-form-image-position" min="0" max="100" value="${item && item.imagePosition ? parseInt(item.imagePosition) : 50}" style="width: 100%; accent-color: var(--primary);">
+              </div>
             </div>
           </div>
           <span style="font-size: 11px; color: var(--text-tertiary); margin-top: -6px; display: block;">* 한글 파일명(기사사진.jpg 등)도 영문 안전 파일명으로 자동 변환되어 정상 등록됩니다.</span>
+          
+          <!-- 실시간 크롭 미리보기 컨테이너 -->
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">구도 미리보기 (실시간 반영)</label>
+            <div style="width: 100%; height: 160px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); background: #000; position: relative;">
+              <img id="news-form-preview-img" src="${item ? item.image || 'assets/001.jpg' : 'assets/001.jpg'}" style="width: 100%; height: 100%; object-fit: cover; object-position: center ${item && item.imagePosition ? item.imagePosition : '50%'}; transition: none;">
+            </div>
+          </div>
           <div class="form-group">
             <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">원문 기사 URL (링크)</label>
             <input type="text" id="news-form-url" class="input" value="${item ? item.url || '' : ''}" placeholder="https://..." style="width: 100%;">
@@ -248,7 +254,7 @@ export function renderNewsManage() {
       const publisher = document.getElementById('news-form-publisher').value.trim();
       const date = document.getElementById('news-form-date').value.trim();
       const image = document.getElementById('news-form-image').value.trim();
-      const imagePosition = document.getElementById('news-form-image-position').value;
+      const imagePosition = document.getElementById('news-form-image-position').value + '%';
       const url = document.getElementById('news-form-url').value.trim();
       const summary = document.getElementById('news-form-summary').value.trim();
       const content = document.getElementById('news-form-content').value.trim();
@@ -262,7 +268,7 @@ export function renderNewsManage() {
       if (isEdit) {
         const idx = newsList.findIndex(n => n.id === item.id);
         if (idx !== -1) {
-          newsList[idx] = { ...newsList[idx], title, category, publisher, date, image, url, summary, content };
+          newsList[idx] = { ...newsList[idx], title, category, publisher, date, image, imagePosition, url, summary, content };
           targetItem = newsList[idx];
         }
       } else {
@@ -273,6 +279,7 @@ export function renderNewsManage() {
           publisher,
           date,
           image: image || 'assets/001.jpg',
+          imagePosition,
           url,
           summary,
           content
@@ -291,6 +298,25 @@ export function renderNewsManage() {
       const fileInput = document.getElementById('news-form-file-input');
       const triggerBtn = document.getElementById('btn-trigger-news-file');
       const imgUrlInput = document.getElementById('news-form-image');
+      const slider = document.getElementById('news-form-image-position');
+      const valLabel = document.getElementById('val-pos');
+      const previewImg = document.getElementById('news-form-preview-img');
+
+      // 1. 슬라이더 드래그 시 실시간 크롭 미리보기 업데이트
+      if (slider && valLabel && previewImg) {
+        slider.addEventListener('input', (e) => {
+          const val = e.target.value + '%';
+          valLabel.textContent = val;
+          previewImg.style.objectPosition = `center ${val}`;
+        });
+      }
+
+      // 2. 이미지 URL 직접 변경 시 미리보기 이미지 업데이트
+      if (imgUrlInput && previewImg) {
+        imgUrlInput.addEventListener('input', (e) => {
+          previewImg.src = e.target.value || 'assets/001.jpg';
+        });
+      }
 
       if (triggerBtn && fileInput) {
         triggerBtn.addEventListener('click', () => fileInput.click());
