@@ -172,6 +172,10 @@
             const newsModalContent = document.getElementById('newsModalContent');
             const closeNewsModal = document.getElementById('closeNewsModal');
 
+            let newsList = [];
+            let activeCategory = 'all';
+            let searchQuery = '';
+
             // 뉴스 데이터 로드 (Supabase 고속 DB/CDN 우선 연동)
             try {
                 const spRes = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/news?select=*&order=created_at.desc', {
@@ -290,8 +294,6 @@
                         }
                     });
                 });
-            } catch (e) {
-                console.error('news loading failed:', e);
             }
 
             if (closeNewsModal) {
