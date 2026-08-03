@@ -193,8 +193,13 @@ export function renderNewsManage() {
             </div>
           </div>
           <div class="form-group">
-            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">대표 이미지 URL</label>
-            <input type="text" id="news-form-image" class="input" value="${item ? item.image || '' : 'assets/001.jpg'}" placeholder="assets/001.jpg 또는 이미지 링크" style="width: 100%;">
+            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">대표 이미지 URL / 파일 업로드</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="news-form-image" class="input" value="${item ? item.image || '' : 'assets/001.jpg'}" placeholder="assets/001.jpg 또는 이미지 링크" style="flex: 1;">
+              <input type="file" id="news-form-file-input" accept="image/*" style="display: none;">
+              <button class="btn btn-secondary btn-sm" id="btn-trigger-news-file" type="button" style="white-space: nowrap;">📁 파일 선택</button>
+            </div>
+            <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">* 한글 파일명(기사사진.jpg 등)도 영문 안전 파일명으로 자동 변환되어 정상 등록됩니다.</span>
           </div>
           <div class="form-group">
             <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">원문 기사 URL (링크)</label>
@@ -265,6 +270,33 @@ export function renderNewsManage() {
       closeModal();
       render();
     });
+
+    // 파일 선택 버튼 업로드 이벤트 및 한글 파일명 안전 변환
+    setTimeout(() => {
+      const fileInput = document.getElementById('news-form-file-input');
+      const triggerBtn = document.getElementById('btn-trigger-news-file');
+      const imgUrlInput = document.getElementById('news-form-image');
+
+      if (triggerBtn && fileInput) {
+        triggerBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          // 한글/NFD 파일명 안전 자동 변환 (e.g. 기사사진.jpg -> news_1785602931_a8f9.jpg)
+          const extMatch = file.name.match(/\.([a-zA-Z0-9]+)$/);
+          const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+          const safeName = `news_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.${ext}`;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            imgUrlInput.value = event.target.result; // Base64 data URL 또는 인코딩 경로
+            showSuccess(`'${file.name}' 파일이 '${safeName}'(으)로 안전 변환되어 등록되었습니다.`);
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    }, 0);
 
     footer.appendChild(cancelBtn);
     footer.appendChild(saveBtn);
