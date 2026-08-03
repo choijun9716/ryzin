@@ -6,29 +6,23 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── 히어로 초부드러운 롤링 텍스트 ────────────────────────────────────
+    // ── 레이아웃 덜컥거림 제로 럭셔리 Cross-Fade 롤링 ────────────────────────
     (function startRollingText() {
-        const phrases = [
-            '브랜드를 라이브합니다.',
-            '브랜드의 매출을 만듭니다.',
-            '고객이 구매하는 순간을 만듭니다.',
-        ];
-        const el = document.getElementById('heroRollingText');
-        if (!el) return;
+        const items = document.querySelectorAll('.hero-roll-item');
+        if (!items || items.length < 2) return;
 
-        let idx = 0;
-        el.textContent = phrases[0];
+        let currentIndex = 0;
 
         setInterval(() => {
-            // 1. 위로 자연스럽게 페이드 아웃
-            el.className = 'hero-rolling-text fade-swap-out';
+            const currentItem = items[currentIndex];
+            currentIndex = (currentIndex + 1) % items.length;
+            const nextItem = items[currentIndex];
 
-            setTimeout(() => {
-                // 2. 텍스트 변경 후 아래에서 부드럽게 페이드 인
-                idx = (idx + 1) % phrases.length;
-                el.textContent = phrases[idx];
-                el.className = 'hero-rolling-text fade-swap-in';
-            }, 750);
+            // 1. 현재 아이템 위로 스르륵 페이드 아웃
+            currentItem.className = 'hero-roll-item out';
+
+            // 2. 다음 아이템 동시에 아래에서 부드럽게 크로스페이드 등장
+            nextItem.className = 'hero-roll-item in';
         }, 4000);
     })();
     // ─────────────────────────────────────────────────────────────────

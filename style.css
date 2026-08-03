@@ -3254,45 +3254,6 @@ footer {
     padding-bottom: 50px;
 }
 
-/* 60fps 초부드러운 롤링 텍스트 */
-.hero-rolling-text {
-    display: inline-block;
-    will-change: opacity, transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-}
-
-.hero-rolling-text.fade-swap-out {
-    animation: smoothFadeOut 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.hero-rolling-text.fade-swap-in {
-    animation: smoothFadeIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes smoothFadeOut {
-    0% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-}
-
-@keyframes smoothFadeIn {
-    0% {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 .hero-eyebrow {
     font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
     font-weight: 300;
@@ -3301,6 +3262,7 @@ footer {
     color: rgba(255, 255, 255, 0.5);
     margin: 0 0 14px 0;
     word-break: keep-all;
+    text-align: center;
 }
 
 .hero-header-text {
@@ -3313,6 +3275,7 @@ footer {
     align-items: center;
 }
 
+/* 레이아웃 덜컥거림 없는 럭셔리 Cross-Fade 롤링 */
 .hero-main-title {
     font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
     font-weight: 900;
@@ -3323,7 +3286,60 @@ footer {
     word-break: keep-all;
     margin: 0;
     text-align: center;
-    min-height: 1.3em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 1.3em;
+}
+
+.hero-prefix {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.hero-rolling-container {
+    position: relative;
+    display: inline-block;
+    height: 1.3em;
+    vertical-align: middle;
+}
+
+.hero-roll-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+    pointer-events: none;
+}
+
+.hero-roll-item.active {
+    position: relative; /* 첫 번째 active 아이템이 컨테이너 높이/너비 가이드를 형성 */
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.hero-roll-item.in {
+    position: absolute;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hero-roll-item.out {
+    position: absolute;
+    opacity: 0;
+    transform: translateY(-14px);
+}
+
+@media (max-width: 768px) {
+    .hero-main-title {
+        font-size: 28px;
+    }
 }
 
 .swiper-hero-container {
