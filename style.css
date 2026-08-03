@@ -3266,6 +3266,7 @@ footer {
 }
 
 .hero-header-text {
+    width: 100%;
     text-align: center;
     margin-bottom: 72px;
     z-index: 10;
@@ -3273,6 +3274,7 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
 
 /* Linear/Stripe 스타일 슬롯머신 휠 롤링 (Vertical Slot Roll) */
@@ -3284,17 +3286,19 @@ footer {
     letter-spacing: -1.8px;
     color: #ffffff;
     word-break: keep-all;
-    margin: 0;
+    margin: 0 auto;
     text-align: center;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    max-width: 100%;
 }
 
 .hero-prefix {
     white-space: nowrap;
     display: inline-block;
+    text-align: right;
 }
 
 .hero-slot-window {
@@ -3310,6 +3314,7 @@ footer {
     flex-direction: column;
     transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
     will-change: transform;
+    align-items: flex-start;
 }
 
 .hero-slot-track.no-transition {
