@@ -3254,52 +3254,30 @@ footer {
     padding-bottom: 50px;
 }
 
-/* 순환 텍스트 모션 */
-.hero-rotating-text-wrap {
-    height: 32px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
+/* 타이프라이터 커서 */
+.hero-cursor {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+    margin-left: 2px;
+    animation: cursorBlink 0.75s step-end infinite;
 }
 
-.hero-rotating-text {
+@keyframes cursorBlink {
+    from, to { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+/* 라이진 스튜디오 서브타이틀 */
+.hero-subtitle-static {
     font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
-    font-size: 15px;
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.55);
-    margin: 0;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: heroTextIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.hero-rotating-text.fade-out {
-    animation: heroTextOut 0.5s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-@keyframes heroTextIn {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes heroTextOut {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: 0.18em;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 16px 0 0 0;
+    text-transform: uppercase;
+    word-break: keep-all;
 }
 
 .hero-header-text {
