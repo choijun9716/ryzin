@@ -811,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             slide.innerHTML = `
-                <div class="swiper-hero-card relative rounded-2xl overflow-hidden transition-all duration-300 w-[300px] h-[451px] sm:w-[506px] sm:h-[760px]">
+                <div class="swiper-hero-card w-[300px] h-[451px] sm:w-[506px] sm:h-[760px]">
                     <div class="relative w-full h-full cursor-pointer">
                         ${mediaHtml}
                     </div>

@@ -3313,7 +3313,11 @@ footer {
     background: #111;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: transform 0.3s ease, border-color 0.3s ease;
+    /* transform transition 제거: Swiper 부모 transform과 충돌하여 중앙 이동 시 깜빡거림 발생 */
+    transition: border-color 0.3s ease;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .swiper-hero-card:hover {
