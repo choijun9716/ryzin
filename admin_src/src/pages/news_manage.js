@@ -294,7 +294,7 @@ export function renderNewsManage() {
 
       if (triggerBtn && fileInput) {
         triggerBtn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => {
+        fileInput.addEventListener('change', async (e) => {
           const file = e.target.files[0];
           if (!file) return;
 
@@ -303,12 +303,47 @@ export function renderNewsManage() {
           const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
           const safeName = `news_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.${ext}`;
 
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            imgUrlInput.value = event.target.result; // Base64 data URL 또는 인코딩 경로
-            showSuccess(`'${file.name}' 파일이 '${safeName}'(으)로 안전 변환되어 등록되었습니다.`);
-          };
-          reader.readAsDataURL(file);
+          // 버튼 비활성화 및 로딩 표시
+          triggerBtn.disabled = true;
+          triggerBtn.textContent = '업로드 중...';
+
+          try {
+            const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/news_images/${safeName}`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': file.type
+              },
+              body: file
+            });
+
+            if (uploadRes.ok) {
+              const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/news_images/${safeName}`;
+              imgUrlInput.value = publicUrl;
+              showSuccess(`이미지가 안전하게 업로드되어 연동되었습니다!`);
+            } else {
+              console.warn('Storage Upload Status:', uploadRes.status);
+              // Fallback: FileReader Base64로 세팅
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                imgUrlInput.value = event.target.result;
+                showSuccess(`'${file.name}' 로컬 변환되어 등록되었습니다.`);
+              };
+              reader.readAsDataURL(file);
+            }
+          } catch (err) {
+            console.warn('Storage Upload Catch:', err);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              imgUrlInput.value = event.target.result;
+              showSuccess(`'${file.name}' 로컬 변환되어 등록되었습니다.`);
+            };
+            reader.readAsDataURL(file);
+          } finally {
+            triggerBtn.disabled = false;
+            triggerBtn.textContent = '📁 파일 선택';
+          }
         });
       }
     }, 0);
