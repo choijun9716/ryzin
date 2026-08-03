@@ -6,7 +6,7 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── 히어로 은은한 롤링 텍스트 ────────────────────────────────────
+    // ── 히어로 초부드러운 롤링 텍스트 ────────────────────────────────────
     (function startRollingText() {
         const phrases = [
             '브랜드를 라이브합니다.',
@@ -20,24 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
         el.textContent = phrases[0];
 
         setInterval(() => {
-            // 위로 사라지기
-            el.classList.add('roll-out');
+            // 1. 위로 자연스럽게 페이드 아웃
+            el.className = 'hero-rolling-text fade-swap-out';
 
             setTimeout(() => {
+                // 2. 텍스트 변경 후 아래에서 부드럽게 페이드 인
                 idx = (idx + 1) % phrases.length;
                 el.textContent = phrases[idx];
-                // 아래에서 올라오도록 준비
-                el.classList.remove('roll-out');
-                el.classList.add('roll-in');
-
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        // 자연스럽게 페이드 인
-                        el.classList.remove('roll-in');
-                    });
-                });
-            }, 700); // fade-out 시간과 맞춤
-        }, 3500);
+                el.className = 'hero-rolling-text fade-swap-in';
+            }, 750);
+        }, 4000);
     })();
     // ─────────────────────────────────────────────────────────────────
 

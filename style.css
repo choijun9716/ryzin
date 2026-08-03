@@ -3254,22 +3254,43 @@ footer {
     padding-bottom: 50px;
 }
 
-/* 은은한 롤링 텍스트 */
+/* 60fps 초부드러운 롤링 텍스트 */
 .hero-rolling-text {
     display: inline-block;
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.7s ease, transform 0.7s ease;
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
-.hero-rolling-text.roll-out {
-    opacity: 0;
-    transform: translateY(-10px);
+.hero-rolling-text.fade-swap-out {
+    animation: smoothFadeOut 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.hero-rolling-text.roll-in {
-    opacity: 0;
-    transform: translateY(10px);
+.hero-rolling-text.fade-swap-in {
+    animation: smoothFadeIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes smoothFadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes smoothFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .hero-eyebrow {
