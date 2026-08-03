@@ -3249,6 +3249,8 @@ footer {
 
 .swiper-hero-container {
     width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
     position: relative;
     display: flex;
     align-items: center;
@@ -3259,7 +3261,7 @@ footer {
     width: 100%;
     padding-top: 20px;
     padding-bottom: 20px;
-    overflow: visible !important;
+    overflow: hidden !important;
 }
 
 /* 506px x 760px Card Dimension matching user snippet */

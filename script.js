@@ -767,8 +767,8 @@ document.addEventListener('DOMContentLoaded', () => {
             imageList.push('001.jpg', '002.jpg', '003.jpg');
         }
 
-        // Swiper 슬라이드 생성 (충분한 무한 루프를 위해 복제 바인딩)
-        const displayList = [...imageList, ...imageList];
+        // 전체 화면에서 최대 4개 정도만 시원하고 깔끔하게 표시
+        const displayList = imageList.slice(0, 4);
         wrapper.innerHTML = '';
 
         displayList.forEach((img, idx) => {
