@@ -767,8 +767,11 @@ document.addEventListener('DOMContentLoaded', () => {
             imageList.push('001.jpg', '002.jpg', '003.jpg');
         }
 
-        // 전체 화면에서 최대 4개 정도만 시원하고 깔끔하게 표시
-        const displayList = imageList.slice(0, 4);
+        // Swiper 무한 롤링과 좌우 대칭 밸런스를 위해 슬라이드 충분히 바인딩
+        let displayList = [];
+        while (displayList.length < 16) {
+            displayList = displayList.concat(imageList);
+        }
         wrapper.innerHTML = '';
 
         displayList.forEach((img, idx) => {
@@ -808,14 +811,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 centeredSlides: true,
                 slidesPerView: 'auto',
                 loop: true,
-                speed: 1000,
+                loopedSlides: 8,
+                speed: 700,
                 autoplay: {
-                    delay: 2800,
+                    delay: 2000,
                     disableOnInteraction: false,
                 },
                 coverflowEffect: {
-                    rotate: 8,
-                    stretch: -15,
+                    rotate: 10,
+                    stretch: -10,
                     depth: 100,
                     modifier: 1,
                     slideShadows: false,
