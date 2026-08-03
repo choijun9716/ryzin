@@ -3275,7 +3275,7 @@ footer {
     align-items: center;
 }
 
-/* 레이아웃 덜컥거림 없는 럭셔리 Cross-Fade 롤링 */
+/* Linear/Stripe 스타일 슬롯머신 휠 롤링 (Vertical Slot Roll) */
 .hero-main-title {
     font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
     font-weight: 900;
@@ -3290,7 +3290,6 @@ footer {
     align-items: center;
     justify-content: center;
     position: relative;
-    height: 1.3em;
 }
 
 .hero-prefix {
@@ -3298,47 +3297,37 @@ footer {
     display: inline-block;
 }
 
-.hero-rolling-container {
-    position: relative;
+.hero-slot-window {
     display: inline-block;
     height: 1.3em;
-    vertical-align: middle;
+    overflow: hidden;
+    vertical-align: bottom;
+    position: relative;
 }
 
-.hero-roll-item {
-    position: absolute;
-    top: 0;
-    left: 0;
+.hero-slot-track {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+    will-change: transform;
+}
+
+.hero-slot-track.no-transition {
+    transition: none !important;
+}
+
+.hero-slot-item {
+    height: 1.3em;
+    line-height: 1.3em;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
     white-space: nowrap;
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: opacity, transform;
-    pointer-events: none;
-}
-
-.hero-roll-item.active {
-    position: relative; /* 첫 번째 active 아이템이 컨테이너 높이/너비 가이드를 형성 */
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-.hero-roll-item.in {
-    position: absolute;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.hero-roll-item.out {
-    position: absolute;
-    opacity: 0;
-    transform: translateY(-14px);
 }
 
 @media (max-width: 768px) {
     .hero-main-title {
-        font-size: 28px;
+        font-size: 26px;
     }
 }
 

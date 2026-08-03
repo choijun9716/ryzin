@@ -6,24 +6,29 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── 레이아웃 덜컥거림 제로 럭셔리 Cross-Fade 롤링 ────────────────────────
-    (function startRollingText() {
-        const items = document.querySelectorAll('.hero-roll-item');
-        if (!items || items.length < 2) return;
+    // ── Linear/Stripe 스타일 무한 슬롯머신 휠 롤링 (Vertical Slot Roll) ────
+    (function startSlotRoll() {
+        const track = document.getElementById('heroSlotTrack');
+        if (!track) return;
 
+        const totalItems = 4; // 3개 문장 + 마지막 복사본 1개
         let currentIndex = 0;
 
         setInterval(() => {
-            const currentItem = items[currentIndex];
-            currentIndex = (currentIndex + 1) % items.length;
-            const nextItem = items[currentIndex];
+            currentIndex++;
+            // 수직 트랙을 한 문장 높이(25%)씩 위로 이동
+            track.classList.remove('no-transition');
+            track.style.transform = `translateY(-${currentIndex * 25}%)`;
 
-            // 1. 현재 아이템 위로 스르륵 페이드 아웃
-            currentItem.className = 'hero-roll-item out';
-
-            // 2. 다음 아이템 동시에 아래에서 부드럽게 크로스페이드 등장
-            nextItem.className = 'hero-roll-item in';
-        }, 4000);
+            // 마지막 복사본 문장에 도달했을 경우, 애니메이션 완료 후 instant 0%로 리셋
+            if (currentIndex === totalItems - 1) {
+                setTimeout(() => {
+                    track.classList.add('no-transition');
+                    currentIndex = 0;
+                    track.style.transform = 'translateY(0%)';
+                }, 920); // cubic-bezier 애니메이션 시간(900ms) 직후 리셋
+            }
+        }, 3600);
     })();
     // ─────────────────────────────────────────────────────────────────
 
