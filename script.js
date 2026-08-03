@@ -739,10 +739,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 8. 3D Coverflow Carousel Loader
+    // 8. Swiper 3D Coverflow Hero Slider (Native Swiper 11 Integration)
     async function loadHeroGallery() {
-        const track = document.getElementById('coverflowTrack');
-        if (!track) return;
+        const wrapper = document.getElementById('swiperHeroWrapper');
+        if (!wrapper) return;
 
         const defaultConfig = {
             col1: ['everyhabit_enzyme.jpg', 'baegayul.jpg'],
@@ -754,7 +754,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let config = await fetchHpSetting('hero', './hero.json');
         if (!config) config = defaultConfig;
 
-        // 이미지 평탄화
         const imageList = [];
         ['col1', 'col2', 'col3', 'col4'].forEach(col => {
             if (config[col]) {
@@ -768,136 +767,65 @@ document.addEventListener('DOMContentLoaded', () => {
             imageList.push('001.jpg', '002.jpg', '003.jpg');
         }
 
-        // 워킷 레퍼런스 스타일 브랜드 특화 카드 삽입 (중앙 포인트)
-        const cardsData = [];
-        imageList.forEach((img, idx) => {
-            if (idx === Math.floor(imageList.length / 2)) {
-                cardsData.push({
-                    isBrand: true,
-                    topText: "생각의 차이가 만드는 가치",
-                    title: "RYZIN",
-                    logo: "worket"
-                });
-            }
-            cardsData.push({ isBrand: false, image: img });
-        });
+        // Swiper 슬라이드 생성 (충분한 무한 루프를 위해 복제 바인딩)
+        const displayList = [...imageList, ...imageList];
+        wrapper.innerHTML = '';
 
-        track.innerHTML = '';
-        const cardElements = [];
+        displayList.forEach((img, idx) => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide !w-auto !flex !items-center !justify-center';
+            slide.setAttribute('data-swiper-slide-index', idx);
 
-        cardsData.forEach((item, idx) => {
-            const card = document.createElement('div');
-            card.className = 'coverflow-card' + (item.isBrand ? ' brand-card' : '');
-            card.dataset.index = idx;
+            const imgSrc = (img.startsWith('http://') || img.startsWith('https://'))
+                ? img
+                : `./assets/${img}`;
 
-            if (item.isBrand) {
-                card.innerHTML = `
-                    <div class="brand-card-top">${item.topText}</div>
-                    <div class="brand-card-title">${item.title}</div>
-                    <div class="brand-card-logo">RYZIN LIVE</div>
-                `;
+            const isVideo = img.endsWith('.mp4') || img.endsWith('.webm');
+
+            let mediaHtml = '';
+            if (isVideo) {
+                mediaHtml = `<video src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover" autoplay loop muted playsinline></video>`;
             } else {
-                const imgSrc = (item.image.startsWith('http://') || item.image.startsWith('https://'))
-                    ? item.image
-                    : `./assets/${item.image}`;
-                card.innerHTML = `<img src="${imgSrc}" alt="RYZIN Portfolio" loading="lazy">`;
+                mediaHtml = `<img src="${imgSrc}" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="lazy" draggable="false">`;
             }
 
-            card.addEventListener('click', () => {
-                goToSlide(idx);
-            });
+            slide.innerHTML = `
+                <div class="swiper-hero-card relative rounded-2xl overflow-hidden transition-all duration-300 w-[300px] h-[451px] sm:w-[506px] sm:h-[760px]">
+                    <div class="relative w-full h-full cursor-pointer">
+                        ${mediaHtml}
+                    </div>
+                </div>
+            `;
 
-            track.appendChild(card);
-            cardElements.push(card);
+            wrapper.appendChild(slide);
         });
 
-        let activeIndex = Math.floor(cardsData.length / 2);
-        let autoplayTimer = null;
-
-        function updateCoverflow() {
-            const total = cardElements.length;
-            const isMobile = window.innerWidth <= 768;
-            const spacing = isMobile ? 260 : 450; // 카드 폭(420px) + 여백(30px) -> 카드끼리 절대 겹치지 않음!
-
-            cardElements.forEach((card, i) => {
-                let offset = i - activeIndex;
-
-                // 순환 루프 오프셋 계산
-                if (offset > total / 2) offset -= total;
-                if (offset < -total / 2) offset += total;
-
-                const absOffset = Math.abs(offset);
-
-                if (absOffset > 3) {
-                    card.style.opacity = '0';
-                    card.style.pointerEvents = 'none';
-                    card.style.transform = `translateX(${offset * spacing}px) scale(0.6) rotateY(0deg)`;
-                    card.style.zIndex = '1';
-                } else {
-                    // 레퍼런스와 정확히 똑같은 3D 곡선 아치 각도 (좌측 카드는 우측으로 꺾이고, 우측 카드는 좌측으로 꺾임)
-                    const rotateY = offset === 0 ? 0 : (offset < 0 ? (8 + absOffset * 6) : -(8 + absOffset * 6));
-                    
-                    const scale = offset === 0 ? 1.05 : Math.max(0.85, 1 - absOffset * 0.08);
-                    const translateX = offset * spacing;
-                    const translateZ = -absOffset * 120; // 입체 원근 깊이감
-                    const translateY = absOffset * 12;  // 아치 곡선으로 미세하게 내려감
-                    const zIndex = 100 - absOffset * 10;
-
-                    card.style.opacity = '1'; // 겹치지 않고 완전히 맑고 선명하게 노출!
-                    card.style.pointerEvents = 'auto';
-                    card.style.transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
-                    card.style.zIndex = zIndex;
-                    card.style.filter = 'none'; // 무채색/어두움 없이 레퍼런스처럼 모든 사진이 맑고 선명!
-                }
+        // Swiper 3D Coverflow 인스턴스 실행
+        if (typeof Swiper !== 'undefined') {
+            new Swiper('.swiper-hero-coverflow', {
+                effect: 'coverflow',
+                grabCursor: true,
+                centeredSlides: true,
+                slidesPerView: 'auto',
+                loop: true,
+                speed: 600,
+                autoplay: {
+                    delay: 2500,
+                    disableOnInteraction: false,
+                },
+                coverflowEffect: {
+                    rotate: 18,
+                    stretch: 0,
+                    depth: 140,
+                    modifier: 1,
+                    slideShadows: false,
+                },
+                navigation: {
+                    nextEl: '#heroSwiperNext',
+                    prevEl: '#heroSwiperPrev',
+                },
             });
         }
-
-        function goToSlide(index) {
-            activeIndex = (index + cardElements.length) % cardElements.length;
-            updateCoverflow();
-            resetAutoplay();
-        }
-
-        function nextSlide() {
-            activeIndex = (activeIndex + 1) % cardElements.length;
-            updateCoverflow();
-        }
-
-        function prevSlide() {
-            activeIndex = (activeIndex - 1 + cardElements.length) % cardElements.length;
-            updateCoverflow();
-        }
-
-        function startAutoplay() {
-            stopAutoplay();
-            autoplayTimer = setInterval(nextSlide, 2200); // 2.2초마다 스르륵 빠르게 넘어감
-        }
-
-        function stopAutoplay() {
-            if (autoplayTimer) clearInterval(autoplayTimer);
-        }
-
-        function resetAutoplay() {
-            stopAutoplay();
-            startAutoplay();
-        }
-
-        // 버튼 이벤트 바인딩
-        document.getElementById('coverflowPrev')?.addEventListener('click', () => {
-            prevSlide();
-            resetAutoplay();
-        });
-        document.getElementById('coverflowNext')?.addEventListener('click', () => {
-            nextSlide();
-            resetAutoplay();
-        });
-
-        // 반응형 리사이즈 대응
-        window.addEventListener('resize', updateCoverflow);
-
-        // 초기 실행
-        updateCoverflow();
-        startAutoplay();
     }
     // 9. Load Dynamic Pricing Packages
     async function loadPackages() {
