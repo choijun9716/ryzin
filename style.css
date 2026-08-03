@@ -3250,7 +3250,7 @@ footer {
 
 .hero-header-text {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 72px;
     z-index: 10;
     padding: 0 20px;
 }
@@ -3280,6 +3280,18 @@ footer {
     padding-top: 20px;
     padding-bottom: 20px;
     overflow: hidden !important;
+    will-change: transform;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* 복제 슬라이드 이미지 깜빡임 방지 */
+.swiper-hero-coverflow .swiper-slide,
+.swiper-hero-coverflow .swiper-slide-duplicate {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 /* 506px x 760px Card Dimension matching user snippet */
@@ -3317,12 +3329,10 @@ footer {
     height: 100%;
     object-fit: cover;
     display: block;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
+    will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
-    -webkit-font-smoothing: antialiased;
 }
 
 /* Swiper Hero Nav Buttons */

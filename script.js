@@ -818,10 +818,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 slidesPerView: 'auto',
                 loop: true,
                 loopedSlides: 8,
-                speed: 700,
+                speed: 900,
+                watchSlidesProgress: true,
                 autoplay: {
-                    delay: 2000,
+                    delay: 2500,
                     disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
                 },
                 coverflowEffect: {
                     rotate: 10,
@@ -834,6 +836,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     nextEl: '#heroSwiperNext',
                     prevEl: '#heroSwiperPrev',
                 },
+                on: {
+                    // 루프 전환 전 슬라이드 미리 로드하여 깜빡임 방지
+                    beforeLoopFix: function(swiper) {
+                        swiper.slides.forEach(slide => {
+                            const img = slide.querySelector('img');
+                            if (img && img.dataset.src) {
+                                img.src = img.dataset.src;
+                            }
+                        });
+                    }
+                }
             });
         }
     }
