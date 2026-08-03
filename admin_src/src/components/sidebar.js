@@ -33,6 +33,7 @@ const menuConfig = [
   { key: 'shop_manage', label: '쇼핑몰 관리', path: '/shop_manage', icon: 'shop_manage' },
   { key: 'class_applications', label: '클래스 신청 관리', path: '/class_applications', icon: 'crm' },
   { key: 'news_manage', label: '뉴스룸 관리', path: '/news_manage', icon: 'marketing' },
+  { key: 'homepage_manage', label: '홈페이지 관리', path: '/homepage_manage', icon: 'dashboard' },
   { key: 'settings', label: '설정', path: '/settings', icon: 'settings' },
 ];
 

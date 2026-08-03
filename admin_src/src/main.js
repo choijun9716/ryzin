@@ -30,6 +30,7 @@ import { renderLogin } from './pages/login.js';
 import { renderShopManage } from './pages/shop_manage.js';
 import { renderClassApplications } from './pages/class_applications.js';
 import { renderNewsManage } from './pages/news_manage.js';
+import { renderHomepageManage } from './pages/homepage_manage.js';
 
 
 // 앱 레이아웃 생성
@@ -125,6 +126,7 @@ async function initApp() {
   router.register('/shop_manage', () => renderShopManage());
   router.register('/class_applications', () => renderClassApplications());
   router.register('/news_manage', () => renderNewsManage());
+  router.register('/homepage_manage', () => renderHomepageManage());
   router.register('/settings', () => renderSettings());
 
   // 라우터 시작 (SheetDB init 후에 호출되도록 대기 처리)
