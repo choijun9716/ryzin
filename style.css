@@ -3285,6 +3285,11 @@ footer {
     -webkit-transform: translateZ(0);
 }
 
+/* 프리미엄 easeOutQuint 이징 — 빠르게 시작해 부드럽게 감속 */
+.swiper-hero-coverflow .swiper-wrapper {
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
 /* 복제 슬라이드 이미지 깜빡임 방지 */
 .swiper-hero-coverflow .swiper-slide,
 .swiper-hero-coverflow .swiper-slide-duplicate {

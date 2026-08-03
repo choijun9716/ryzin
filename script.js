@@ -830,10 +830,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 slidesPerView: 'auto',
                 loop: false,
                 initialSlide: 4,
-                speed: 600,
+                speed: 1100,
                 watchSlidesProgress: true,
                 autoplay: {
-                    delay: 1500,
+                    delay: 2200,
                     disableOnInteraction: false,
                     pauseOnMouseEnter: true,
                     stopOnLastSlide: false,
