@@ -196,15 +196,25 @@ export function renderNewsManage() {
               <input type="text" id="news-form-date" class="input" value="${item ? item.date || '' : new Date().toISOString().slice(0,10).replace(/-/g,'.')}" placeholder="2026.08.03" style="width: 100%;">
             </div>
           </div>
-          <div class="form-group">
-            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">대표 이미지 URL / 파일 업로드</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="news-form-image" class="input" value="${item ? item.image || '' : 'assets/001.jpg'}" placeholder="assets/001.jpg 또는 이미지 링크" style="flex: 1;">
-              <input type="file" id="news-form-file-input" accept="image/*" style="display: none;">
-              <button class="btn btn-secondary btn-sm" id="btn-trigger-news-file" type="button" style="white-space: nowrap;">📁 파일 선택</button>
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">대표 이미지 URL / 파일 업로드</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="news-form-image" class="input" value="${item ? item.image || '' : 'assets/001.jpg'}" placeholder="assets/001.jpg 또는 이미지 링크" style="flex: 1;">
+                <input type="file" id="news-form-file-input" accept="image/*" style="display: none;">
+                <button class="btn btn-secondary btn-sm" id="btn-trigger-news-file" type="button" style="white-space: nowrap;">📁 파일 선택</button>
+              </div>
             </div>
-            <span style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: block;">* 한글 파일명(기사사진.jpg 등)도 영문 안전 파일명으로 자동 변환되어 정상 등록됩니다.</span>
+            <div class="form-group">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">사진 위아래 위치 조정</label>
+              <select id="news-form-image-position" class="input" style="width: 100%;">
+                <option value="center" ${item && item.imagePosition === 'center' ? 'selected' : ''}>가운데 정렬</option>
+                <option value="top" ${item && item.imagePosition === 'top' ? 'selected' : ''}>상단 기준 (얼굴 위주)</option>
+                <option value="bottom" ${item && item.imagePosition === 'bottom' ? 'selected' : ''}>하단 기준</option>
+              </select>
+            </div>
           </div>
+          <span style="font-size: 11px; color: var(--text-tertiary); margin-top: -6px; display: block;">* 한글 파일명(기사사진.jpg 등)도 영문 안전 파일명으로 자동 변환되어 정상 등록됩니다.</span>
           <div class="form-group">
             <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">원문 기사 URL (링크)</label>
             <input type="text" id="news-form-url" class="input" value="${item ? item.url || '' : ''}" placeholder="https://..." style="width: 100%;">
@@ -238,6 +248,7 @@ export function renderNewsManage() {
       const publisher = document.getElementById('news-form-publisher').value.trim();
       const date = document.getElementById('news-form-date').value.trim();
       const image = document.getElementById('news-form-image').value.trim();
+      const imagePosition = document.getElementById('news-form-image-position').value;
       const url = document.getElementById('news-form-url').value.trim();
       const summary = document.getElementById('news-form-summary').value.trim();
       const content = document.getElementById('news-form-content').value.trim();
