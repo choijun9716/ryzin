@@ -52,18 +52,22 @@ export function renderNewsManage() {
     if (itemToSync) {
       try {
         if (action === 'delete') {
-          await fetch(`${SUPABASE_URL}/rest/v1/news?id=eq.${itemToSync.id}`, {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/news?id=eq.${itemToSync.id}`, {
             method: 'DELETE',
             headers
-          }).catch(() => null);
+          });
+          if (!res.ok) console.warn('Supabase 삭제 응답 상태:', res.status);
         } else {
-          await fetch(`${SUPABASE_URL}/rest/v1/news`, {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/news`, {
             method: 'POST',
             headers: { ...headers, 'Prefer': 'resolution=merge-duplicates' },
             body: JSON.stringify(itemToSync)
-          }).catch(() => null);
+          });
+          if (!res.ok) console.warn('Supabase 저장 응답 상태:', res.status);
         }
-      } catch (err) {}
+      } catch (err) {
+        console.warn('Supabase DB 동기화 오류 (테이블 미생성 시 발생 가능):', err);
+      }
     }
   };
 
