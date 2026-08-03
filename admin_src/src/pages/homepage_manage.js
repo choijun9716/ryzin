@@ -64,10 +64,10 @@ export function renderHomepageManage() {
     }
     if (!heroData) {
       heroData = {
-        col1: ["everyhabit_enzyme.jpg", "baegayul.jpg", "Screenshot 2026-05-01 19-46-03.png"],
-        col2: ["1779278961975_Screenshot_2026-05-20_17-33-25.png", "gangneung.jpg", "miyabis.jpg"],
-        col3: ["1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", "003.jpg", "yadah.jpg"],
-        col4: ["001.png", "002.jpg"]
+        col1: ["1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", "1782397523767_123.png"],
+        col2: ["1779278961975_Screenshot_2026-05-20_17-33-25.png", "1781754117759_KakaoTalk_Photo_2026-06-09-20-46-25.png"],
+        col3: ["1781435269355_KakaoTalk_Photo_2026-06-14-20-07-32_003.png", "Screenshot 2026-05-01 19-46-03.png"],
+        col4: ["1777008630387_Screenshot_2026-04-22_18-20-42.png", "everyhabit_enzyme.jpg"]
       };
     }
 
