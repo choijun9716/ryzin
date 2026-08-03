@@ -3254,30 +3254,22 @@ footer {
     padding-bottom: 50px;
 }
 
-/* 타이프라이터 커서 */
-.hero-cursor {
+/* 은은한 롤링 텍스트 */
+.hero-rolling-text {
     display: inline-block;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 300;
-    margin-left: 2px;
-    animation: cursorBlink 0.75s step-end infinite;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
-@keyframes cursorBlink {
-    from, to { opacity: 1; }
-    50%       { opacity: 0; }
+.hero-rolling-text.roll-out {
+    opacity: 0;
+    transform: translateY(-10px);
 }
 
-/* 라이진 스튜디오 서브타이틀 */
-.hero-subtitle-static {
-    font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
-    font-weight: 500;
-    font-size: 20px;
-    letter-spacing: 0.18em;
-    color: rgba(255, 255, 255, 0.45);
-    margin: 16px 0 0 0;
-    text-transform: uppercase;
-    word-break: keep-all;
+.hero-rolling-text.roll-in {
+    opacity: 0;
+    transform: translateY(10px);
 }
 
 .hero-eyebrow {

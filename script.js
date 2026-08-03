@@ -6,48 +6,38 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── 히어로 타이프라이터 텍스트 모션 ─────────────────────────────
-    (function startTypewriter() {
+    // ── 히어로 은은한 롤링 텍스트 ────────────────────────────────────
+    (function startRollingText() {
         const phrases = [
             '브랜드를 라이브합니다.',
             '브랜드의 매출을 만듭니다.',
             '고객이 구매하는 순간을 만듭니다.',
         ];
-        const el = document.getElementById('heroTypewriterText');
+        const el = document.getElementById('heroRollingText');
         if (!el) return;
 
-        let phraseIdx = 0;
-        let charIdx   = 0;
-        let isDeleting = false;
+        let idx = 0;
+        el.textContent = phrases[0];
 
-        function tick() {
-            const current = phrases[phraseIdx];
+        setInterval(() => {
+            // 위로 사라지기
+            el.classList.add('roll-out');
 
-            if (isDeleting) {
-                charIdx--;
-                el.textContent = current.substring(0, charIdx);
+            setTimeout(() => {
+                idx = (idx + 1) % phrases.length;
+                el.textContent = phrases[idx];
+                // 아래에서 올라오도록 준비
+                el.classList.remove('roll-out');
+                el.classList.add('roll-in');
 
-                if (charIdx === 0) {
-                    isDeleting = false;
-                    phraseIdx = (phraseIdx + 1) % phrases.length;
-                    setTimeout(tick, 500);   // 다음 문장 전 잠깐 대기
-                    return;
-                }
-                setTimeout(tick, 35);        // 지우는 속도
-            } else {
-                charIdx++;
-                el.textContent = current.substring(0, charIdx);
-
-                if (charIdx === current.length) {
-                    isDeleting = true;
-                    setTimeout(tick, 2200);  // 완성 후 멈추는 시간
-                    return;
-                }
-                setTimeout(tick, 80);        // 타이핑 속도
-            }
-        }
-
-        setTimeout(tick, 600); // 첫 시작 딜레이
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        // 자연스럽게 페이드 인
+                        el.classList.remove('roll-in');
+                    });
+                });
+            }, 700); // fade-out 시간과 맞춤
+        }, 3500);
     })();
     // ─────────────────────────────────────────────────────────────────
 
