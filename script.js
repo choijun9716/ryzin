@@ -745,10 +745,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!wrapper) return;
 
         const defaultConfig = {
-            col1: ['everyhabit_enzyme.jpg', 'baegayul.jpg'],
-            col2: ['bodylove.jpg', 'miyabis.jpg'],
-            col3: ['yadah.jpg', 'natical.jpg'],
-            col4: ['drolion.jpg', 'trusty.jpg']
+            col1: ['1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png', '1782397523767_123.png'],
+            col2: ['1779278961975_Screenshot_2026-05-20_17-33-25.png', '1781754117759_KakaoTalk_Photo_2026-06-09-20-46-25.png'],
+            col3: ['1781435269355_KakaoTalk_Photo_2026-06-14-20-07-32_003.png', 'Screenshot 2026-05-01 19-46-03.png'],
+            col4: ['1777008630387_Screenshot_2026-04-22_18-20-42.png', 'everyhabit_enzyme.jpg']
         };
 
         let config = await fetchHpSetting('hero', './hero.json');
@@ -764,7 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (imageList.length === 0) {
-            imageList.push('001.jpg', '002.jpg', '003.jpg');
+            imageList.push('1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png', '1782397523767_123.png', '1779278961975_Screenshot_2026-05-20_17-33-25.png');
         }
 
         // Swiper 무한 롤링과 좌우 대칭 밸런스를 위해 슬라이드 충분히 바인딩
