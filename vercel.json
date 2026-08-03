@@ -7,6 +7,21 @@
       "permanent": true
     },
     {
+      "source": "/admin0",
+      "destination": "/admin/",
+      "permanent": true
+    },
+    {
+      "source": "/admin0/(.*)",
+      "destination": "/admin/$1",
+      "permanent": true
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin/",
+      "permanent": true
+    },
+    {
       "source": "/live",
       "has": [
         { "type": "query", "key": "id" }
@@ -24,6 +39,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin/index.html"
+    },
     {
       "source": "/live/:id([^.]+)",
       "destination": "/api/live"
