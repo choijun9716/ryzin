@@ -143,12 +143,18 @@ export function renderHomepageManage() {
     if (!heroData) await loadAllData();
 
     container.innerHTML = `
-      <div class="page-header">
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
         <div class="page-header-left">
           <div>
             <h1 class="page-title">홈페이지 관리 (Supabase 동기화)</h1>
             <p class="page-description">공식 웹사이트 메인 비주얼, 포트폴리오, 제작 패키지, 후기 및 파트너 로고 실시간 관리</p>
           </div>
+        </div>
+        <div class="page-header-right">
+          <button class="btn btn-secondary" id="btn-force-sync" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            기존 홈페이지 파일에서 동기화 가져오기
+          </button>
         </div>
       </div>
 
@@ -327,6 +333,58 @@ export function renderHomepageManage() {
   }
 
   function bindTabEvents() {
+    // 기존 홈페이지 파일 강제 동기화 가져오기 버튼 이벤트
+    container.querySelector('#btn-force-sync')?.addEventListener('click', () => {
+      confirmDialog('기존 홈페이지의 JSON 파일들로부터 모든 데이터(포트폴리오, 히어로 등)를 강제로 가져와 Supabase DB에 엎어쓰시겠습니까?', async () => {
+        try {
+          // 1. 히어로 로드 및 저장
+          const resHero = await fetch('/hero.json').catch(() => null);
+          if (resHero && resHero.ok) {
+            const data = await resHero.json();
+            heroData = data;
+            await saveHpSetting('hero', heroData);
+          }
+
+          // 2. 포트폴리오 로드 및 저장
+          const resPf = await fetch('/portfolio.json').catch(() => null);
+          if (resPf && resPf.ok) {
+            const data = await resPf.json();
+            portfolioData = data;
+            await saveHpSetting('portfolio', portfolioData);
+          }
+
+          // 3. 패키지 로드 및 저장
+          const resPkg = await fetch('/packages.json').catch(() => null);
+          if (resPkg && resPkg.ok) {
+            const data = await resPkg.json();
+            packagesData = data;
+            await saveHpSetting('packages', packagesData);
+          }
+
+          // 4. 스토리 로드 및 저장
+          const resSt = await fetch('/stories.json').catch(() => null);
+          if (resSt && resSt.ok) {
+            const data = await resSt.json();
+            storiesData = data;
+            await saveHpSetting('stories', storiesData);
+          }
+
+          // 5. 로고 로드 및 저장
+          const resLg = await fetch('/logos.json').catch(() => null);
+          if (resLg && resLg.ok) {
+            const data = await resLg.json();
+            logosData = data;
+            await saveHpSetting('logos', logosData);
+          }
+
+          showSuccess('기존 홈페이지 실데이터 전체가 성공적으로 Supabase DB와 동기화 마이그레이션되었습니다!');
+          render();
+        } catch (err) {
+          showError('기존 데이터 가져오기 중 오류가 발생했습니다.');
+        }
+      });
+    });
+
     // 📁 업로드 트리거 및 파일 변경 이벤트 바인딩
     if (activeTab === 'hero') {
       container.querySelectorAll('.btn-trigger-hero-upload').forEach(btn => {
