@@ -56,17 +56,48 @@ export function renderNewsManage() {
             method: 'DELETE',
             headers
           });
-          if (!res.ok) console.warn('Supabase 삭제 응답 상태:', res.status);
+          if (!res.ok) console.warn('Supabase 삭제 실패:', res.status);
         } else {
-          const res = await fetch(`${SUPABASE_URL}/rest/v1/news`, {
-            method: 'POST',
-            headers: { ...headers, 'Prefer': 'resolution=merge-duplicates' },
-            body: JSON.stringify(itemToSync)
+          // 1. 해당 ID가 이미 존재하는지 체크
+          const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/news?id=eq.${itemToSync.id}&select=id`, {
+            method: 'GET',
+            headers
           });
-          if (!res.ok) console.warn('Supabase 저장 응답 상태:', res.status);
+          
+          let exists = false;
+          if (checkRes.ok) {
+            const checkData = await checkRes.json();
+            if (checkData && checkData.length > 0) {
+              exists = true;
+            }
+          }
+
+          let res;
+          if (exists) {
+            // 2. 존재하면 PATCH로 업데이트
+            res = await fetch(`${SUPABASE_URL}/rest/v1/news?id=eq.${itemToSync.id}`, {
+              method: 'PATCH',
+              headers,
+              body: JSON.stringify(itemToSync)
+            });
+          } else {
+            // 3. 존재하지 않으면 POST로 신규 등록
+            res = await fetch(`${SUPABASE_URL}/rest/v1/news`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(itemToSync)
+            });
+          }
+          
+          if (!res.ok) {
+            const errText = await res.text();
+            console.warn('Supabase 저장 실패 응답:', res.status, errText);
+          } else {
+            console.log('Supabase 동기화 성공!');
+          }
         }
       } catch (err) {
-        console.warn('Supabase DB 동기화 오류 (테이블 미생성 시 발생 가능):', err);
+        console.warn('Supabase DB 동기화 통신 오류:', err);
       }
     }
   };
