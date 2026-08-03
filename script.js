@@ -6,30 +6,60 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── Linear/Stripe 스타일 무한 슬롯머신 휠 롤링 (Vertical Slot Roll) ────
-    (function startSlotRoll() {
-        const track = document.getElementById('heroSlotTrack');
-        if (!track) return;
+    // ── Supabase DB 실시간 동기화: 히어로 헤더 텍스트 & 슬롯 롤링 ──────────────
+    async function loadHeroTextAndSlotRoll() {
+        const eyebrowEl = document.querySelector('.hero-eyebrow');
+        const prefixEl = document.querySelector('.hero-prefix');
+        const trackEl = document.getElementById('heroSlotTrack');
 
-        const totalItems = 4; // 3개 문장 + 마지막 복사본 1개
-        let currentIndex = 0;
+        const defaultHeroText = {
+            eyebrow: '감도높은 라이브커머스',
+            prefix: '우리는',
+            phrases: [
+                '브랜드를 라이브합니다.',
+                '브랜드의 매출을 만듭니다.',
+                '고객이 구매하는 순간을 만듭니다.'
+            ]
+        };
 
-        setInterval(() => {
-            currentIndex++;
-            // 수직 트랙을 한 문장 높이(25%)씩 위로 이동
-            track.classList.remove('no-transition');
-            track.style.transform = `translateY(-${currentIndex * 25}%)`;
+        let heroText = await fetchHpSetting('hero_text', null);
+        if (!heroText || !heroText.phrases || heroText.phrases.length === 0) {
+            heroText = defaultHeroText;
+        }
 
-            // 마지막 복사본 문장에 도달했을 경우, 애니메이션 완료 후 instant 0%로 리셋
-            if (currentIndex === totalItems - 1) {
-                setTimeout(() => {
-                    track.classList.add('no-transition');
-                    currentIndex = 0;
-                    track.style.transform = 'translateY(0%)';
-                }, 920); // cubic-bezier 애니메이션 시간(900ms) 직후 리셋
-            }
-        }, 3600);
-    })();
+        // 1. 소제목 & 고정 접두사 업데이트
+        if (eyebrowEl && heroText.eyebrow) {
+            eyebrowEl.textContent = heroText.eyebrow;
+        }
+        if (prefixEl && heroText.prefix) {
+            prefixEl.textContent = heroText.prefix + '\u00A0';
+        }
+
+        // 2. 슬롯 롤링 트랙 아이템 구성 (마지막에 1번째 문장 복사본 추가로 무한 롤링)
+        if (trackEl && heroText.phrases.length > 0) {
+            const phrases = [...heroText.phrases, heroText.phrases[0]];
+            trackEl.innerHTML = phrases.map(p => `<span class="hero-slot-item">${p}</span>`).join('');
+
+            const totalItems = phrases.length;
+            const stepPercent = 100 / totalItems;
+            let currentIndex = 0;
+
+            setInterval(() => {
+                currentIndex++;
+                trackEl.classList.remove('no-transition');
+                trackEl.style.transform = `translateY(-${currentIndex * stepPercent}%)`;
+
+                if (currentIndex === totalItems - 1) {
+                    setTimeout(() => {
+                        trackEl.classList.add('no-transition');
+                        currentIndex = 0;
+                        trackEl.style.transform = 'translateY(0%)';
+                    }, 920);
+                }
+            }, 3600);
+        }
+    }
+    loadHeroTextAndSlotRoll();
     // ─────────────────────────────────────────────────────────────────
 
     // Supabase Homepage Settings Sync Helper

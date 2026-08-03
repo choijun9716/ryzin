@@ -47,10 +47,27 @@ export function renderHomepageManage() {
   let heroData = null;
   let portfolioData = null;
   let packagesData = null;
+  let heroTextData = null;
   let storiesData = null;
   let logosData = null;
 
+  const defaultHeroText = {
+    eyebrow: "감도높은 라이브커머스",
+    prefix: "우리는",
+    phrases: [
+      "브랜드를 라이브합니다.",
+      "브랜드의 매출을 만듭니다.",
+      "고객이 구매하는 순간을 만듭니다."
+    ]
+  };
+
   async function loadAllData() {
+    // 0. 메인 히어로 헤더 텍스트 문구 로드
+    heroTextData = await fetchHpSetting('hero_text', null);
+    if (!heroTextData || !heroTextData.phrases) {
+      heroTextData = defaultHeroText;
+    }
+
     // 1. 메인 히어로 갤러리 로드
     let rawHero = await fetchHpSetting('hero', null);
     if (!rawHero) {
@@ -193,10 +210,56 @@ export function renderHomepageManage() {
   function renderTabContent() {
     if (activeTab === 'hero') {
       return `
+        <!-- 1. 히어로 상단 헤더 텍스트 문구 설정 카드 -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="font-weight:800; font-size:16px;">✍️ 메인 히어로 상단 텍스트 문구 관리</h3>
+              <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                메인 화면 상단의 소제목, 타이틀 접두사, 슬롯 롤링 문구 3가지를 직접 변경할 수 있습니다.
+              </p>
+            </div>
+            <button class="btn btn-success btn-sm" id="btn-save-hero-text">💾 텍스트 문구 Supabase DB 저장</button>
+          </div>
+          <div class="card-body">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-primary);">상단 소제목 (Eyebrow)</label>
+                <input type="text" class="input" id="input-hero-eyebrow" value="${heroTextData.eyebrow || ''}" placeholder="예: 감도높은 라이브커머스" style="font-size:13px;">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-primary);">메인 타이틀 고정 접두사 (Prefix)</label>
+                <input type="text" class="input" id="input-hero-prefix" value="${heroTextData.prefix || ''}" placeholder="예: 우리는" style="font-size:13px;">
+              </div>
+            </div>
+
+            <div style="margin-top:16px; border-top:1px solid var(--border-light); padding-top:16px;">
+              <label style="font-size:12px; font-weight:700; color:var(--text-primary); display:block; margin-bottom:8px;">
+                🔄 슬롯 롤링 문구 목록 (3가지 순환 문구)
+              </label>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <span style="font-size:11px; color:var(--text-secondary);">롤링 문구 1</span>
+                  <input type="text" class="input input-hero-phrase" data-idx="0" value="${(heroTextData.phrases && heroTextData.phrases[0]) || ''}" placeholder="예: 브랜드를 라이브합니다." style="font-size:13px;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <span style="font-size:11px; color:var(--text-secondary);">롤링 문구 2</span>
+                  <input type="text" class="input input-hero-phrase" data-idx="1" value="${(heroTextData.phrases && heroTextData.phrases[1]) || ''}" placeholder="예: 브랜드의 매출을 만듭니다." style="font-size:13px;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <span style="font-size:11px; color:var(--text-secondary);">롤링 문구 3</span>
+                  <input type="text" class="input input-hero-phrase" data-idx="2" value="${(heroTextData.phrases && heroTextData.phrases[2]) || ''}" placeholder="예: 고객이 구매하는 순간을 만듭니다." style="font-size:13px;">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 메인 히어로 3D 슬라이더 카드 관리 카드 -->
         <div class="card">
           <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
-              <h3 style="font-weight:800; font-size:16px;">메인 히어로 3D 슬라이더 카드 관리</h3>
+              <h3 style="font-weight:800; font-size:16px;">🖼️ 메인 히어로 3D 슬라이더 카드 관리</h3>
               <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
                 등록된 순서대로 메인 3D 커버플로우 무대에 노출됩니다. 컴퓨터 사진 선택(📁) 시 Supabase 초고화질 원본 스토리지로 실시간 저장됩니다.
               </p>
@@ -425,6 +488,20 @@ export function renderHomepageManage() {
     // 히어로 카드 관리 이벤트 바인딩
     // --------------------------------------------------------
     if (activeTab === 'hero') {
+      // 0) 히어로 텍스트 문구 저장
+      container.querySelector('#btn-save-hero-text')?.addEventListener('click', async () => {
+        const eyebrow = container.querySelector('#input-hero-eyebrow')?.value.trim() || '';
+        const prefix = container.querySelector('#input-hero-prefix')?.value.trim() || '';
+        const phrases = [];
+        container.querySelectorAll('.input-hero-phrase').forEach(inp => {
+          if (inp.value.trim()) phrases.push(inp.value.trim());
+        });
+
+        heroTextData = { eyebrow, prefix, phrases };
+        await saveHpSetting('hero_text', heroTextData);
+        showSuccess('메인 히어로 상단 텍스트 문구가 Supabase DB에 실시간 저장되었습니다!');
+      });
+
       // 1) 전체 삭제 / 초기화
       container.querySelector('#btn-clear-all-hero')?.addEventListener('click', async () => {
         if (confirm('기존 등록된 모든 히어로 카드를 삭제하고 초기화하시겠습니까?\n(새로 직접 등록하실 수 있도록 전부 비워집니다.)')) {
