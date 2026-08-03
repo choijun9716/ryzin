@@ -833,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 speed: 900,
                 watchSlidesProgress: true,
                 autoplay: {
-                    delay: 2500,
+                    delay: 3000,
                     disableOnInteraction: false,
                     pauseOnMouseEnter: true,
                     stopOnLastSlide: false,
