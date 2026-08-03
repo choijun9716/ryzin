@@ -773,9 +773,22 @@ document.addEventListener('DOMContentLoaded', () => {
             imageList.push('1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png', '1782397523767_123.png', '1779278961975_Screenshot_2026-05-20_17-33-25.png');
         }
 
-        // Swiper 무한 롤링과 좌우 대칭 밸런스를 위해 슬라이드 충분히 바인딩
+        // 이미지 선 로드(preload) → 슬라이드 생성 전에 모든 이미지를 브라우저 캐시에 적재
+        // loop 리셋 없이 충분한 수의 슬라이드(48개)로 깜빡거림 원천 차단
+        const imageSources = imageList
+            .filter(img => !img.endsWith('.mp4') && !img.endsWith('.webm'))
+            .map(img => (img.startsWith('http://') || img.startsWith('https://')) ? img : `./assets/${img}`);
+
+        await Promise.all(imageSources.map(src => new Promise(resolve => {
+            const preImg = new Image();
+            preImg.onload = resolve;
+            preImg.onerror = resolve;
+            preImg.src = src;
+        })));
+
+        // 슬라이드를 48개 이상으로 복제 (loop 리셋 없이 autoplay가 자연스럽게 흐름)
         let displayList = [];
-        while (displayList.length < 16) {
+        while (displayList.length < 48) {
             displayList = displayList.concat(imageList);
         }
         wrapper.innerHTML = '';
@@ -783,7 +796,6 @@ document.addEventListener('DOMContentLoaded', () => {
         displayList.forEach((img, idx) => {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide !w-auto !flex !items-center !justify-center';
-            slide.setAttribute('data-swiper-slide-index', idx);
 
             const imgSrc = (img.startsWith('http://') || img.startsWith('https://'))
                 ? img
@@ -809,21 +821,22 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapper.appendChild(slide);
         });
 
-        // Swiper 3D Coverflow 인스턴스 실행
+        // Swiper 3D Coverflow — loop 제거, 48개 슬라이드로 자연스러운 흐름 (깜빡거림 완전 차단)
         if (typeof Swiper !== 'undefined') {
-            new Swiper('.swiper-hero-coverflow', {
+            const heroSwiper = new Swiper('.swiper-hero-coverflow', {
                 effect: 'coverflow',
                 grabCursor: true,
                 centeredSlides: true,
                 slidesPerView: 'auto',
-                loop: true,
-                loopedSlides: 8,
+                loop: false,
+                initialSlide: 4,
                 speed: 900,
                 watchSlidesProgress: true,
                 autoplay: {
                     delay: 2500,
                     disableOnInteraction: false,
                     pauseOnMouseEnter: true,
+                    stopOnLastSlide: false,
                 },
                 coverflowEffect: {
                     rotate: 10,
@@ -837,18 +850,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     prevEl: '#heroSwiperPrev',
                 },
                 on: {
-                    // 루프 전환 전 슬라이드 미리 로드하여 깜빡임 방지
-                    beforeLoopFix: function(swiper) {
-                        swiper.slides.forEach(slide => {
-                            const img = slide.querySelector('img');
-                            if (img && img.dataset.src) {
-                                img.src = img.dataset.src;
-                            }
-                        });
+                    // 마지막 슬라이드 근처에 오면 처음(중간 지점)으로 애니메이션 없이 리셋
+                    autoplayStop: function(swiper) {
+                        if (swiper.isEnd) {
+                            swiper.slideTo(4, 0, false);
+                            swiper.autoplay.start();
+                        }
+                    },
+                    reachEnd: function(swiper) {
+                        setTimeout(() => {
+                            swiper.slideTo(4, 0, false);
+                            swiper.autoplay.start();
+                        }, 100);
                     }
                 }
             });
         }
+
     }
     // 9. Load Dynamic Pricing Packages
     async function loadPackages() {
