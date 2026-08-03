@@ -4358,7 +4358,7 @@ Minimum version required to store current data is: `+c+`.
                 <div style="padding:16px; background:var(--bg-secondary); border-radius:var(--radius-md); border:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
                   <div>
                     <h4 style="font-size:16px; font-weight:700;">${e.name} <span style="color:var(--primary); font-size:14px; margin-left:8px;">${e.price}</span></h4>
-                    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">${e.features}</p>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">${Array.isArray(e.features)?e.features.join(`, `):e.features||``}</p>
                   </div>
                   <button class="btn btn-xs btn-danger btn-del-pkg" data-idx="${t}">삭제</button>
                 </div>
@@ -4377,9 +4377,9 @@ Minimum version required to store current data is: `+c+`.
               ${s.map((e,t)=>`
                 <div style="padding:16px; background:var(--bg-secondary); border-radius:var(--radius-md); border:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
                   <div>
-                    <strong style="font-size:15px; color:var(--text-primary);">${e.brand}</strong>
+                    <strong style="font-size:15px; color:var(--text-primary);">${e.brand||e.company||``}</strong>
                     <p style="font-size:14px; color:var(--text-secondary); margin-top:4px;">"${e.quote}"</p>
-                    <span style="font-size:12px; color:var(--text-tertiary);">${e.author||``}</span>
+                    <span style="font-size:12px; color:var(--text-tertiary);">${e.author||e.authorRole||``}</span>
                   </div>
                   <button class="btn btn-xs btn-danger btn-del-story" data-idx="${t}">삭제</button>
                 </div>

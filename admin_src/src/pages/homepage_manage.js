@@ -271,7 +271,7 @@ export function renderHomepageManage() {
                 <div style="padding:16px; background:var(--bg-secondary); border-radius:var(--radius-md); border:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
                   <div>
                     <h4 style="font-size:16px; font-weight:700;">${pkg.name} <span style="color:var(--primary); font-size:14px; margin-left:8px;">${pkg.price}</span></h4>
-                    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">${pkg.features}</p>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">${Array.isArray(pkg.features) ? pkg.features.join(', ') : (pkg.features || '')}</p>
                   </div>
                   <button class="btn btn-xs btn-danger btn-del-pkg" data-idx="${idx}">삭제</button>
                 </div>
@@ -294,9 +294,9 @@ export function renderHomepageManage() {
               ${storiesData.map((st, idx) => `
                 <div style="padding:16px; background:var(--bg-secondary); border-radius:var(--radius-md); border:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
                   <div>
-                    <strong style="font-size:15px; color:var(--text-primary);">${st.brand}</strong>
+                    <strong style="font-size:15px; color:var(--text-primary);">${st.brand || st.company || ''}</strong>
                     <p style="font-size:14px; color:var(--text-secondary); margin-top:4px;">"${st.quote}"</p>
-                    <span style="font-size:12px; color:var(--text-tertiary);">${st.author || ''}</span>
+                    <span style="font-size:12px; color:var(--text-tertiary);">${st.author || st.authorRole || ''}</span>
                   </div>
                   <button class="btn btn-xs btn-danger btn-del-story" data-idx="${idx}">삭제</button>
                 </div>
