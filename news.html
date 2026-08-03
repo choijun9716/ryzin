@@ -172,13 +172,30 @@
             const newsModalContent = document.getElementById('newsModalContent');
             const closeNewsModal = document.getElementById('closeNewsModal');
 
+            // 뉴스 데이터 로드 (Supabase 고속 DB/CDN 우선 연동)
             try {
-                const localData = localStorage.getItem('ryzin_news_data');
-                if (localData) {
-                    newsList = JSON.parse(localData);
-                } else {
-                    const res = await fetch('./news.json');
-                    newsList = await res.json();
+                const spRes = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/news?select=*', {
+                    headers: {
+                        'apikey': 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9',
+                        'Authorization': 'Bearer sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9'
+                    }
+                }).catch(() => null);
+
+                if (spRes && spRes.ok) {
+                    const spData = await spRes.json();
+                    if (spData && spData.length > 0) {
+                        newsList = spData;
+                    }
+                }
+                
+                if (!newsList || newsList.length === 0) {
+                    const localData = localStorage.getItem('ryzin_news_data');
+                    if (localData) {
+                        newsList = JSON.parse(localData);
+                    } else {
+                        const res = await fetch('./news.json');
+                        newsList = await res.json();
+                    }
                 }
                 
                 if (!newsList || newsList.length === 0) {
@@ -187,11 +204,11 @@
                 }
 
                 newsGrid.innerHTML = newsList.map(item => `
-                    <div class="news-card" data-id="${item.id}" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.3s ease, border-color 0.3s ease;">
+                    <div class="news-card" data-id="${item.id}" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.3s ease;">
                         <div style="width: 100%; height: 210px; overflow: hidden; position: relative;">
-                            <img src="${item.image || 'assets/001.jpg'}" alt="${item.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
+                            <img src="${item.image || 'assets/001.jpg'}" alt="${item.title}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
                             <span style="position: absolute; top: 12px; left: 12px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); color: #ff8730; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
-                                ${item.category}
+                                ${item.category || '언론보도'}
                             </span>
                         </div>
                         <div style="padding: 24px; display: flex; flex-direction: column; flex-grow: 1;">

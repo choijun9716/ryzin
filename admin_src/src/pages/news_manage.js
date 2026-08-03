@@ -3,11 +3,28 @@ import { store } from '../data/store.js';
 import { showSuccess, showError } from '../components/toast.js';
 import { confirmDialog, openModal, closeModal } from '../components/modal.js';
 
+const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+const headers = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation'
+};
+
 export function renderNewsManage() {
   const container = document.createElement('div');
 
-  // 로컬스토리지 또는 기본 데이터 로드
-  const getNewsData = () => {
+  // 로컬스토리지 & Supabase DB 이중 연동
+  const getNewsData = async () => {
+    try {
+      const spRes = await fetch(`${SUPABASE_URL}/rest/v1/news?select=*`, { headers }).catch(() => null);
+      if (spRes && spRes.ok) {
+        const spData = await spRes.json();
+        if (spData && spData.length > 0) return spData;
+      }
+    } catch (e) {}
+
     try {
       const cached = localStorage.getItem('ryzin_news_data');
       if (cached) return JSON.parse(cached);
@@ -28,13 +45,32 @@ export function renderNewsManage() {
     ];
   };
 
-  const saveNewsData = (newsList) => {
+  const saveNewsData = async (newsList, itemToSync = null, action = 'upsert') => {
     localStorage.setItem('ryzin_news_data', JSON.stringify(newsList));
+    
+    // Supabase DB 비동기 백그라운드 전송
+    if (itemToSync) {
+      try {
+        if (action === 'delete') {
+          await fetch(`${SUPABASE_URL}/rest/v1/news?id=eq.${itemToSync.id}`, {
+            method: 'DELETE',
+            headers
+          }).catch(() => null);
+        } else {
+          await fetch(`${SUPABASE_URL}/rest/v1/news`, {
+            method: 'POST',
+            headers: { ...headers, 'Prefer': 'resolution=merge-duplicates' },
+            body: JSON.stringify(itemToSync)
+          }).catch(() => null);
+        }
+      } catch (err) {}
+    }
   };
 
-  let newsList = getNewsData();
+  let newsList = [];
 
-  function render() {
+  async function render() {
+    newsList = await getNewsData();
     container.innerHTML = `
       <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
         <div class="page-header-left">
@@ -113,9 +149,10 @@ export function renderNewsManage() {
     container.querySelectorAll('.btn-delete-news').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const id = e.target.dataset.id;
-        confirmDialog('정말 이 보도자료를 삭제하시겠습니까?', () => {
+        const targetItem = newsList.find(n => n.id === id);
+        confirmDialog('정말 이 보도자료를 삭제하시겠습니까?', async () => {
           newsList = newsList.filter(n => n.id !== id);
-          saveNewsData(newsList);
+          await saveNewsData(newsList, targetItem, 'delete');
           showSuccess('보도자료가 삭제되었습니다.');
           render();
         });
@@ -201,13 +238,15 @@ export function renderNewsManage() {
         return;
       }
 
+      let targetItem = null;
       if (isEdit) {
         const idx = newsList.findIndex(n => n.id === item.id);
         if (idx !== -1) {
           newsList[idx] = { ...newsList[idx], title, category, publisher, date, image, url, summary, content };
+          targetItem = newsList[idx];
         }
       } else {
-        const newItem = {
+        targetItem = {
           id: `news-${Date.now()}`,
           title,
           category,
@@ -218,10 +257,10 @@ export function renderNewsManage() {
           summary,
           content
         };
-        newsList.unshift(newItem);
+        newsList.unshift(targetItem);
       }
 
-      saveNewsData(newsList);
+      saveNewsData(newsList, targetItem, 'upsert');
       showSuccess(isEdit ? '보도자료가 수정되었습니다.' : '새 보도자료가 등록되었습니다.');
       closeModal();
       render();
