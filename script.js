@@ -817,7 +817,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateCoverflow() {
             const total = cardElements.length;
             const isMobile = window.innerWidth <= 768;
-            const spacing = isMobile ? 140 : 230;
+            const spacing = isMobile ? 260 : 450; // 카드 폭(420px) + 여백(30px) -> 카드끼리 절대 겹치지 않음!
 
             cardElements.forEach((card, i) => {
                 let offset = i - activeIndex;
@@ -834,23 +834,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.style.transform = `translateX(${offset * spacing}px) scale(0.6) rotateY(0deg)`;
                     card.style.zIndex = '1';
                 } else {
-                    const scale = 1 - absOffset * 0.12;
-                    const rotateY = offset < 0 ? 15 : (offset > 0 ? -15 : 0);
+                    // 레퍼런스와 정확히 똑같은 3D 곡선 아치 각도 (좌측 카드는 우측으로 꺾이고, 우측 카드는 좌측으로 꺾임)
+                    const rotateY = offset === 0 ? 0 : (offset < 0 ? (8 + absOffset * 6) : -(8 + absOffset * 6));
+                    
+                    const scale = offset === 0 ? 1.05 : Math.max(0.85, 1 - absOffset * 0.08);
                     const translateX = offset * spacing;
-                    const translateZ = -absOffset * 80;
+                    const translateZ = -absOffset * 120; // 입체 원근 깊이감
+                    const translateY = absOffset * 12;  // 아치 곡선으로 미세하게 내려감
                     const zIndex = 100 - absOffset * 10;
-                    const opacity = 1 - absOffset * 0.18;
 
-                    card.style.opacity = opacity;
+                    card.style.opacity = '1'; // 겹치지 않고 완전히 맑고 선명하게 노출!
                     card.style.pointerEvents = 'auto';
-                    card.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+                    card.style.transform = `translateX(${translateX}px) translateY(${translateY}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
                     card.style.zIndex = zIndex;
-
-                    if (offset === 0) {
-                        card.style.filter = 'brightness(1)';
-                    } else {
-                        card.style.filter = 'brightness(0.75)';
-                    }
+                    card.style.filter = 'none'; // 무채색/어두움 없이 레퍼런스처럼 모든 사진이 맑고 선명!
                 }
             });
         }
