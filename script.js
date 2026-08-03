@@ -755,13 +755,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!config) config = defaultConfig;
 
         const imageList = [];
-        ['col1', 'col2', 'col3', 'col4'].forEach(col => {
-            if (config[col]) {
-                config[col].forEach(img => {
-                    if (img && !imageList.includes(img)) imageList.push(img);
-                });
-            }
-        });
+        if (Array.isArray(config)) {
+            config.forEach(img => {
+                if (img && typeof img === 'string' && !imageList.includes(img)) imageList.push(img);
+            });
+        } else if (config && typeof config === 'object') {
+            ['col1', 'col2', 'col3', 'col4'].forEach(col => {
+                if (config[col]) {
+                    config[col].forEach(img => {
+                        if (img && !imageList.includes(img)) imageList.push(img);
+                    });
+                }
+            });
+        }
 
         if (imageList.length === 0) {
             imageList.push('1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png', '1782397523767_123.png', '1779278961975_Screenshot_2026-05-20_17-33-25.png');

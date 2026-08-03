@@ -52,23 +52,29 @@ export function renderHomepageManage() {
 
   async function loadAllData() {
     // 1. 메인 히어로 갤러리 로드
-    heroData = await fetchHpSetting('hero', null);
-    if (!heroData) {
+    let rawHero = await fetchHpSetting('hero', null);
+    if (!rawHero) {
       try {
         const res = await fetch('/hero.json');
         if (res.ok) {
-          heroData = await res.json();
-          await saveHpSetting('hero', heroData);
+          rawHero = await res.json();
         }
       } catch (e) {}
     }
-    if (!heroData) {
-      heroData = {
-        col1: ["1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", "1782397523767_123.png"],
-        col2: ["1779278961975_Screenshot_2026-05-20_17-33-25.png", "1781754117759_KakaoTalk_Photo_2026-06-09-20-46-25.png"],
-        col3: ["1781435269355_KakaoTalk_Photo_2026-06-14-20-07-32_003.png", "Screenshot 2026-05-01 19-46-03.png"],
-        col4: ["1777008630387_Screenshot_2026-04-22_18-20-42.png", "everyhabit_enzyme.jpg"]
-      };
+
+    if (rawHero && typeof rawHero === 'object' && !Array.isArray(rawHero)) {
+      heroData = [];
+      ['col1', 'col2', 'col3', 'col4'].forEach(col => {
+        if (rawHero[col]) {
+          rawHero[col].forEach(img => {
+            if (img && !heroData.includes(img)) heroData.push(img);
+          });
+        }
+      });
+    } else if (Array.isArray(rawHero)) {
+      heroData = rawHero;
+    } else {
+      heroData = [];
     }
 
     // 2. 포트폴리오 로드
@@ -188,29 +194,59 @@ export function renderHomepageManage() {
     if (activeTab === 'hero') {
       return `
         <div class="card">
-          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>메인 히어로 이미지 갤러리 (4컬럼 수직 스크롤)</h3>
-            <button class="btn btn-primary btn-sm" id="btn-save-hero">Supabase DB 실시간 저장</button>
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="font-weight:800; font-size:16px;">메인 히어로 3D 슬라이더 카드 관리</h3>
+              <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                등록된 순서대로 메인 3D 커버플로우 무대에 노출됩니다. 컴퓨터 사진 선택(📁) 시 Supabase 초고화질 원본 스토리지로 실시간 저장됩니다.
+              </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-secondary btn-sm" id="btn-clear-all-hero" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">🗑️ 기존 카드 전체 비우기</button>
+              <button class="btn btn-primary btn-sm" id="btn-add-hero-card">+ 새 히어로 카드 추가</button>
+              <button class="btn btn-success btn-sm" id="btn-save-hero">💾 Supabase DB 실시간 저장</button>
+            </div>
           </div>
           <div class="card-body">
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-              ${['col1', 'col2', 'col3', 'col4'].map((colKey, idx) => `
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
-                  <h4 style="font-weight:700; margin-bottom:12px; font-size:14px;">컬럼 ${idx + 1}</h4>
-                  <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${(heroData[colKey] || []).map((img, i) => `
-                      <div style="display:flex; gap:6px; align-items:center;">
-                        <input type="text" class="input input-hero-img" id="hero-img-${colKey}-${i}" data-col="${colKey}" data-idx="${i}" value="${img}" style="font-size:12px; flex:1;">
-                        <input type="file" class="hero-file-input" id="hero-file-${colKey}-${i}" data-col="${colKey}" data-idx="${i}" accept="image/*" style="display:none;">
-                        <button class="btn btn-xs btn-secondary btn-trigger-hero-upload" data-col="${colKey}" data-idx="${i}" title="컴퓨터에서 사진 업로드">📁</button>
-                        <button class="btn btn-xs btn-danger btn-del-hero-img" data-col="${colKey}" data-idx="${i}">X</button>
+            ${heroData.length === 0 ? `
+              <div style="text-align:center; padding: 48px 20px; border:2px dashed var(--border-color); border-radius:12px; background:var(--bg-secondary);">
+                <p style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">등록된 히어로 카드가 없습니다.</p>
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">상단의 <strong>[ + 새 히어로 카드 추가 ]</strong> 버튼을 눌러 고화질 사진이나 동영상 파일을 직접 등록해 보세요!</p>
+                <button class="btn btn-primary btn-sm" id="btn-add-hero-card-empty">+ 첫 번째 히어로 카드 등록하기</button>
+              </div>
+            ` : `
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+                ${heroData.map((img, idx) => {
+                  const imgSrc = (img.startsWith('http://') || img.startsWith('https://')) ? img : `./assets/${img}`;
+                  return `
+                    <div class="hero-item-card" style="background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; position:relative;">
+                      <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="badge badge-primary" style="font-size:11px;">카드 NO. ${idx + 1}</span>
+                        <div style="display:flex; gap:4px;">
+                          ${idx > 0 ? `<button class="btn btn-xs btn-secondary btn-move-hero" data-idx="${idx}" data-dir="-1" title="위로">⬆️</button>` : ''}
+                          ${idx < heroData.length - 1 ? `<button class="btn btn-xs btn-secondary btn-move-hero" data-idx="${idx}" data-dir="1" title="아래로">⬇️</button>` : ''}
+                          <button class="btn btn-xs btn-danger btn-del-hero-card" data-idx="${idx}" title="삭제">🗑️</button>
+                        </div>
                       </div>
-                    `).join('')}
-                    <button class="btn btn-xs btn-secondary btn-add-hero-img" data-col="${colKey}">+ 이미지 추가</button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
+                      <div style="width:100%; height:200px; border-radius:8px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); position:relative;">
+                        ${img ? (img.endsWith('.mp4') || img.endsWith('.webm') ? 
+                          `<video src="${imgSrc}" style="width:100%; height:100%; object-fit:cover;" autoplay loop muted playsinline></video>` :
+                          `<img src="${imgSrc}" alt="Hero Image" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='./assets/001.jpg'">`
+                        ) : `<span style="font-size:12px; color:var(--text-tertiary);">사진을 선택해주세요</span>`}
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:11px; font-weight:700; color:var(--text-secondary);">이미지 경로 / Supabase URL</label>
+                        <div style="display:flex; gap:4px;">
+                          <input type="text" class="input input-hero-path" data-idx="${idx}" value="${img}" placeholder="./assets/파일명.jpg 또는 URL" style="font-size:11px; flex:1;">
+                          <input type="file" class="hero-card-file-input" id="hero-card-file-${idx}" data-idx="${idx}" accept="image/*,video/*" style="display:none;">
+                          <button class="btn btn-xs btn-secondary btn-upload-hero-card" data-idx="${idx}" style="font-size:11px; white-space:nowrap;">📁 사진 선택</button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
           </div>
         </div>
       `;
@@ -385,104 +421,136 @@ export function renderHomepageManage() {
       });
     });
 
-    // 📁 업로드 트리거 및 파일 변경 이벤트 바인딩
+    // --------------------------------------------------------
+    // 히어로 카드 관리 이벤트 바인딩
+    // --------------------------------------------------------
     if (activeTab === 'hero') {
-      container.querySelectorAll('.btn-trigger-hero-upload').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const col = e.currentTarget.dataset.col;
-          const idx = e.currentTarget.dataset.idx;
-          const fileInput = container.querySelector(`#hero-file-${col}-${idx}`);
-          fileInput?.click();
+      // 1) 전체 삭제 / 초기화
+      container.querySelector('#btn-clear-all-hero')?.addEventListener('click', async () => {
+        if (confirm('기존 등록된 모든 히어로 카드를 삭제하고 초기화하시겠습니까?\n(새로 직접 등록하실 수 있도록 전부 비워집니다.)')) {
+          heroData = [];
+          await saveHpSetting('hero', heroData);
+          showSuccess('히어로 카드가 전체 삭제되었습니다. 새 카드를 직접 추가해 보세요!');
+          render();
+        }
+      });
+
+      // 2) 카드 추가 버튼
+      const handleAddCard = async () => {
+        heroData.push('');
+        render();
+      };
+      container.querySelector('#btn-add-hero-card')?.addEventListener('click', handleAddCard);
+      container.querySelector('#btn-add-hero-card-empty')?.addEventListener('click', handleAddCard);
+
+      // 3) 카드 순서 이동 (위로/아래로)
+      container.querySelectorAll('.btn-move-hero').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const idx = parseInt(e.currentTarget.dataset.idx);
+          const dir = parseInt(e.currentTarget.dataset.dir);
+          const targetIdx = idx + dir;
+
+          if (targetIdx >= 0 && targetIdx < heroData.length) {
+            const temp = heroData[idx];
+            heroData[idx] = heroData[targetIdx];
+            heroData[targetIdx] = temp;
+            await saveHpSetting('hero', heroData);
+            render();
+          }
         });
       });
 
-      container.querySelectorAll('.hero-file-input').forEach(fileInput => {
-        fileInput.addEventListener('change', async (e) => {
+      // 4) 카드 개별 삭제
+      container.querySelectorAll('.btn-del-hero-card').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const idx = parseInt(e.currentTarget.dataset.idx);
+          heroData.splice(idx, 1);
+          await saveHpSetting('hero', heroData);
+          showSuccess('카드가 삭제되었습니다.');
+          render();
+        });
+      });
+
+      // 5) 경로 직접 입력 반영
+      container.querySelectorAll('.input-hero-path').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          heroData[idx] = e.target.value.trim();
+        });
+      });
+
+      // 6) 파일 직접 선택 및 Supabase 스토리지 업로드
+      container.querySelectorAll('.btn-upload-hero-card').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.currentTarget.dataset.idx;
+          const fileInput = document.getElementById(`hero-card-file-${idx}`);
+          if (fileInput) fileInput.click();
+        });
+      });
+
+      container.querySelectorAll('.hero-card-file-input').forEach(input => {
+        input.addEventListener('change', async (e) => {
+          const idx = parseInt(e.target.dataset.idx);
           const file = e.target.files[0];
           if (!file) return;
 
-          const col = e.target.dataset.col;
-          const idx = parseInt(e.target.dataset.idx);
-          const triggerBtn = container.querySelector(`.btn-trigger-hero-upload[data-col="${col}"][data-idx="${idx}"]`);
-          const imgInput = container.querySelector(`#hero-img-${col}-${idx}`);
-
-          // 한글/NFD 파일명 안전 자동 변환
-          const extMatch = file.name.match(/\.([a-zA-Z0-9]+)$/);
-          const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
-          const safeName = `hero_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.${ext}`;
-
+          const triggerBtn = container.querySelector(`.btn-upload-hero-card[data-idx="${idx}"]`);
           if (triggerBtn) {
             triggerBtn.disabled = true;
-            triggerBtn.textContent = '..';
+            triggerBtn.textContent = '⏳ 업로드 중...';
           }
 
           try {
-            const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/news_images/${safeName}`, {
-              method: 'POST',
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': file.type
-              },
-              body: file
-            });
-
-            if (uploadRes.ok) {
-              const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/news_images/${safeName}`;
-              if (imgInput) imgInput.value = publicUrl;
-              
-              // 즉시 로컬 데이터 갱신 및 백그라운드 자동 저장
-              heroData[col][idx] = publicUrl;
-              await saveHpSetting('hero', heroData);
-              showSuccess(`히어로 이미지가 성공적으로 업로드 및 동기화되었습니다!`);
-              render();
-            } else {
-              showError('이미지 업로드에 실패했습니다.');
+            const supabase = window.supabaseClient;
+            if (!supabase) {
+              alert('Supabase 연동 클라이언트를 찾을 수 없습니다.');
+              return;
             }
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+            const filePath = `hero/${fileName}`;
+
+            let { data, error } = await supabase.storage
+              .from('news_images')
+              .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+            if (error) {
+              const res = await supabase.storage
+                .from('hp_assets')
+                .upload(filePath, file, { cacheControl: '3600', upsert: true });
+              data = res.data;
+              error = res.error;
+            }
+
+            if (error) {
+              console.error('Storage Upload Error:', error);
+              alert('파일 업로드 실패: ' + error.message);
+              return;
+            }
+
+            const { data: publicUrlData } = supabase.storage
+              .from('news_images')
+              .getPublicUrl(filePath);
+
+            const publicUrl = publicUrlData.publicUrl;
+            heroData[idx] = publicUrl;
+            await saveHpSetting('hero', heroData);
+            showSuccess('사진이 Supabase 고화질 스토리지로 성공적으로 업로드되었습니다!');
+            render();
           } catch (err) {
-            showError('업로드 중 네트워크 오류가 발생했습니다.');
+            console.error(err);
+            alert('업로드 처리 중 오류 발생: ' + err.message);
           } finally {
             if (triggerBtn) {
               triggerBtn.disabled = false;
-              triggerBtn.textContent = '📁';
+              triggerBtn.textContent = '📁 사진 선택';
             }
           }
         });
       });
     }
 
-    // 히어로 저장
-    container.querySelector('#btn-save-hero')?.addEventListener('click', async () => {
-      const inputs = container.querySelectorAll('.input-hero-img');
-      const newHero = { col1: [], col2: [], col3: [], col4: [] };
-      inputs.forEach(inp => {
-        const col = inp.dataset.col;
-        if (inp.value.trim()) newHero[col].push(inp.value.trim());
-      });
-      heroData = newHero;
-      await saveHpSetting('hero', heroData);
-      showSuccess('메인 히어로 갤러리가 Supabase DB에 성공적으로 동기화 저장되었습니다.');
-    });
-
-    container.querySelectorAll('.btn-del-hero-img').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const col = e.target.dataset.col;
-        const idx = parseInt(e.target.dataset.idx);
-        heroData[col].splice(idx, 1);
-        await saveHpSetting('hero', heroData);
-        render();
-      });
-    });
-
-    container.querySelectorAll('.btn-add-hero-img').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const col = e.target.dataset.col;
-        if (!heroData[col]) heroData[col] = [];
-        heroData[col].push('assets/001.jpg');
-        await saveHpSetting('hero', heroData);
-        render();
-      });
-    });
 
     // 포트폴리오
     container.querySelector('#btn-add-pf')?.addEventListener('click', async () => {
