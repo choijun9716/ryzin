@@ -51,32 +51,92 @@ export function renderHomepageManage() {
   let logosData = null;
 
   async function loadAllData() {
-    heroData = await fetchHpSetting('hero', {
-      col1: ["everyhabit_enzyme.jpg", "baegayul.jpg", "Screenshot 2026-05-01 19-46-03.png"],
-      col2: ["1779278961975_Screenshot_2026-05-20_17-33-25.png", "gangneung.jpg", "miyabis.jpg"],
-      col3: ["1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", "003.jpg", "yadah.jpg"],
-      col4: ["001.png", "002.jpg"]
-    });
+    // 1. 메인 히어로 갤러리 로드
+    heroData = await fetchHpSetting('hero', null);
+    if (!heroData) {
+      try {
+        const res = await fetch('/hero.json');
+        if (res.ok) {
+          heroData = await res.json();
+          await saveHpSetting('hero', heroData);
+        }
+      } catch (e) {}
+    }
+    if (!heroData) {
+      heroData = {
+        col1: ["everyhabit_enzyme.jpg", "baegayul.jpg", "Screenshot 2026-05-01 19-46-03.png"],
+        col2: ["1779278961975_Screenshot_2026-05-20_17-33-25.png", "gangneung.jpg", "miyabis.jpg"],
+        col3: ["1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", "003.jpg", "yadah.jpg"],
+        col4: ["001.png", "002.jpg"]
+      };
+    }
 
-    portfolioData = await fetchHpSetting('portfolio', [
-      { title: "만나강정", category: "food", image: "./assets/1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", link: "#" },
-      { title: "트루쿡", category: "life", image: "./assets/1782397523767_123.png", link: "#" },
-      { title: "쏘랩 (SOLAB)", category: "beauty", image: "./assets/1779278961975_Screenshot_2026-05-20_17-33-25.png", link: "#" },
-      { title: "강릉은정한과", category: "food", image: "./assets/001.jpg", link: "https://view.shoppinglive.naver.com/replays/1836196" }
-    ]);
+    // 2. 포트폴리오 로드
+    portfolioData = await fetchHpSetting('portfolio', null);
+    if (!portfolioData) {
+      try {
+        const res = await fetch('/portfolio.json');
+        if (res.ok) {
+          portfolioData = await res.json();
+          await saveHpSetting('portfolio', portfolioData);
+        }
+      } catch (e) {}
+    }
+    if (!portfolioData) {
+      portfolioData = [
+        { title: "만나강정", category: "food", image: "./assets/1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", link: "#" },
+        { title: "트루쿡", category: "life", image: "./assets/1782397523767_123.png", link: "#" }
+      ];
+    }
 
-    packagesData = await fetchHpSetting('packages', [
-      { name: "STANDARD LIGHT", price: "990,000원", features: "1인 단독 진행, 기본 조명/음향, 1시간 방송" },
-      { name: "DELUXE PREMIUM", price: "1,990,000원", features: "2인 메인 쇼호스트, 4K 시네마틱 카메밍, 커스텀 세트 연출" }
-    ]);
+    // 3. 제작 패키지 로드
+    packagesData = await fetchHpSetting('packages', null);
+    if (!packagesData) {
+      try {
+        const res = await fetch('/packages.json');
+        if (res.ok) {
+          packagesData = await res.json();
+          await saveHpSetting('packages', packagesData);
+        }
+      } catch (e) {}
+    }
+    if (!packagesData) {
+      packagesData = [
+        { name: "STANDARD LIGHT", price: "990,000원", features: "1인 진행" }
+      ];
+    }
 
-    storiesData = await fetchHpSetting('stories', [
-      { brand: "강릉은정한과", quote: "방송 1회 만에 매출액 300% 상승 달성!", author: "대표 채이준" }
-    ]);
+    // 4. 브랜드 스토리 로드
+    storiesData = await fetchHpSetting('stories', null);
+    if (!storiesData) {
+      try {
+        const res = await fetch('/stories.json');
+        if (res.ok) {
+          storiesData = await res.json();
+          await saveHpSetting('stories', storiesData);
+        }
+      } catch (e) {}
+    }
+    if (!storiesData) {
+      storiesData = [
+        { brand: "강릉은정한과", quote: "매출액 300% 상승 달성!" }
+      ];
+    }
 
-    logosData = await fetchHpSetting('logos', [
-      { name: "네이버 쇼핑라이브", logo: "./assets/logo.png" }
-    ]);
+    // 5. 파트너 로고 로드
+    logosData = await fetchHpSetting('logos', null);
+    if (!logosData) {
+      try {
+        const res = await fetch('/logos.json');
+        if (res.ok) {
+          logosData = await res.json();
+          await saveHpSetting('logos', logosData);
+        }
+      } catch (e) {}
+    }
+    if (!logosData) {
+      logosData = [];
+    }
   }
 
   async function render() {
