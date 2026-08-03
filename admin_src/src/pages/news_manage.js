@@ -1,0 +1,242 @@
+// ===== 뉴스룸 관리 페이지 (보도자료 등록/수정/삭제) =====
+import { store } from '../data/store.js';
+import { showSuccess, showError } from '../components/toast.js';
+import { confirmDialog, openModal, closeModal } from '../components/modal.js';
+
+export function renderNewsManage() {
+  const container = document.createElement('div');
+
+  // 로컬스토리지 또는 기본 데이터 로드
+  const getNewsData = () => {
+    try {
+      const cached = localStorage.getItem('ryzin_news_data');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return [
+      {
+        id: "news-001",
+        category: "언론보도",
+        categoryEn: "PRESS",
+        title: "라이진 스튜디오, 2026 하반기 초고화질 미디어 융합 라이브 솔루션 공식 출시",
+        date: "2026.07.28",
+        publisher: "파이낸셜뉴스",
+        summary: "라이브커머스 전문 미디어 기업 라이진(RYZIN)이 방송 기술과 브랜드 스토리텔링을 결합한 차세대 미디어 융합 솔루션을 공개했습니다.",
+        image: "assets/001.jpg",
+        url: "https://blog.naver.com/ryzin_live",
+        content: "미디어 커머스 기업 라이진 스튜디오(RYZIN Studio)가 브랜드사의 미디어 몰입감을 극대화하는 '2026 초고화질 미디어 융합 라이브 솔루션'을 정식 출시했다고 28일 밝혔다.<br><br>라이진 스튜디오는 단순 상품 판매 방송을 넘어 시네마틱 카메라와 4K 방송용 조명 시스템을 도입하여 감도 높은 비주얼 퍼포먼스를 구축해왔다. 이번 솔루션을 통해 시청 몰입도 40% 증가 및 평균 전환율 2.5배 상승 성과를 거두었다."
+      }
+    ];
+  };
+
+  const saveNewsData = (newsList) => {
+    localStorage.setItem('ryzin_news_data', JSON.stringify(newsList));
+  };
+
+  let newsList = getNewsData();
+
+  function render() {
+    container.innerHTML = `
+      <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="page-header-left">
+          <div>
+            <h1 class="page-title">뉴스룸 관리</h1>
+            <p class="page-description">홈페이지 뉴스룸 보도자료 및 소식 등록, 수정, 삭제 관리</p>
+          </div>
+        </div>
+        <div class="page-header-right">
+          <button class="btn btn-primary" id="btn-add-news" style="display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            새 보도자료 등록
+          </button>
+        </div>
+      </div>
+
+      <div class="page-body">
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <h3>보도자료 내역</h3>
+              <span class="badge badge-secondary" id="news-count-badge">${newsList.length}개 항목</span>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th class="text-center" style="width: 60px;">번호</th>
+                  <th style="width: 100px;">카테고리</th>
+                  <th>제목</th>
+                  <th style="width: 120px;">언론사</th>
+                  <th class="text-center" style="width: 110px;">등록일자</th>
+                  <th class="text-center" style="width: 140px;">관리</th>
+                </tr>
+              </thead>
+              <tbody id="news-tbody">
+                ${newsList.length === 0 ? '<tr><td colspan="6" class="text-center" style="padding:40px; color:var(--text-tertiary);">등록된 뉴스룸 보도자료가 없습니다.</td></tr>' : ''}
+                ${newsList.map((item, index) => `
+                  <tr>
+                    <td class="text-center" style="font-weight:600; color:var(--text-tertiary);">${index + 1}</td>
+                    <td><span class="badge badge-primary">${item.category || '언론보도'}</span></td>
+                    <td style="font-weight: 600; color: var(--text-primary);">${item.title}</td>
+                    <td style="color: var(--text-secondary);">${item.publisher || '-'}</td>
+                    <td class="text-center" style="color: var(--text-secondary); font-size: 13px;">${item.date || '-'}</td>
+                    <td class="text-center">
+                      <div style="display:flex; gap: 6px; justify-content: center;">
+                        <button class="btn btn-xs btn-secondary btn-edit-news" data-id="${item.id}">수정</button>
+                        <button class="btn btn-xs btn-danger btn-delete-news" data-id="${item.id}">삭제</button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 등록 버튼 이벤트
+    container.querySelector('#btn-add-news')?.addEventListener('click', () => {
+      openNewsModal();
+    });
+
+    // 수정 버튼 이벤트
+    container.querySelectorAll('.btn-edit-news').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        const item = newsList.find(n => n.id === id);
+        if (item) openNewsModal(item);
+      });
+    });
+
+    // 삭제 버튼 이벤트
+    container.querySelectorAll('.btn-delete-news').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        confirmDialog('정말 이 보도자료를 삭제하시겠습니까?', () => {
+          newsList = newsList.filter(n => n.id !== id);
+          saveNewsData(newsList);
+          showSuccess('보도자료가 삭제되었습니다.');
+          render();
+        });
+      });
+    });
+  }
+
+  // 보도자료 작성/수정 모달
+  function openNewsModal(item = null) {
+    const isEdit = !!item;
+    const modalContent = document.createElement('div');
+    modalContent.innerHTML = `
+      <div style="padding: var(--space-4);">
+        <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">
+          ${isEdit ? '보도자료 수정' : '새 보도자료 등록'}
+        </h2>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">제목 *</label>
+            <input type="text" id="news-form-title" class="input" value="${item ? item.title : ''}" placeholder="보도자료 제목을 입력하세요" style="width: 100%;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">카테고리</label>
+              <select id="news-form-category" class="input" style="width: 100%;">
+                <option value="언론보도" ${item && item.category === '언론보도' ? 'selected' : ''}>언론보도</option>
+                <option value="트렌드&인사이트" ${item && item.category === '트렌드&인사이트' ? 'selected' : ''}>트렌드&인사이트</option>
+                <option value="회사소식" ${item && item.category === '회사소식' ? 'selected' : ''}>회사소식</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">언론사/출처</label>
+              <input type="text" id="news-form-publisher" class="input" value="${item ? item.publisher || '' : ''}" placeholder="예: 파이낸셜뉴스, RYZIN PR" style="width: 100%;">
+            </div>
+            <div class="form-group">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">보도/등록 일자</label>
+              <input type="text" id="news-form-date" class="input" value="${item ? item.date || '' : new Date().toISOString().slice(0,10).replace(/-/g,'.')}" placeholder="2026.08.03" style="width: 100%;">
+            </div>
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">대표 이미지 URL</label>
+            <input type="text" id="news-form-image" class="input" value="${item ? item.image || '' : 'assets/001.jpg'}" placeholder="assets/001.jpg 또는 이미지 링크" style="width: 100%;">
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">원문 기사 URL (링크)</label>
+            <input type="text" id="news-form-url" class="input" value="${item ? item.url || '' : ''}" placeholder="https://..." style="width: 100%;">
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">한줄 요약 (서머리)</label>
+            <input type="text" id="news-form-summary" class="input" value="${item ? item.summary || '' : ''}" placeholder="기사 카드에 보일 핵심 요약 내용" style="width: 100%;">
+          </div>
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 4px;">상세 본문 내용 (HTML/줄바꿈 가능)</label>
+            <textarea id="news-form-content" class="input" rows="6" placeholder="기사 상세 본문 내용을 입력하세요." style="width: 100%; font-family: inherit;">${item ? item.content || '' : ''}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const footer = document.createElement('div');
+    footer.style.cssText = 'display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%; margin-top: 16px;';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-secondary';
+    cancelBtn.textContent = '취소';
+    cancelBtn.addEventListener('click', closeModal);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-primary';
+    saveBtn.textContent = '저장';
+
+    saveBtn.addEventListener('click', () => {
+      const title = document.getElementById('news-form-title').value.trim();
+      const category = document.getElementById('news-form-category').value;
+      const publisher = document.getElementById('news-form-publisher').value.trim();
+      const date = document.getElementById('news-form-date').value.trim();
+      const image = document.getElementById('news-form-image').value.trim();
+      const url = document.getElementById('news-form-url').value.trim();
+      const summary = document.getElementById('news-form-summary').value.trim();
+      const content = document.getElementById('news-form-content').value.trim();
+
+      if (!title) {
+        showError('보도자료 제목을 입력해주세요.');
+        return;
+      }
+
+      if (isEdit) {
+        const idx = newsList.findIndex(n => n.id === item.id);
+        if (idx !== -1) {
+          newsList[idx] = { ...newsList[idx], title, category, publisher, date, image, url, summary, content };
+        }
+      } else {
+        const newItem = {
+          id: `news-${Date.now()}`,
+          title,
+          category,
+          publisher,
+          date,
+          image: image || 'assets/001.jpg',
+          url,
+          summary,
+          content
+        };
+        newsList.unshift(newItem);
+      }
+
+      saveNewsData(newsList);
+      showSuccess(isEdit ? '보도자료가 수정되었습니다.' : '새 보도자료가 등록되었습니다.');
+      closeModal();
+      render();
+    });
+
+    footer.appendChild(cancelBtn);
+    footer.appendChild(saveBtn);
+
+    openModal({
+      title: isEdit ? '뉴스룸 보도자료 수정' : '새 보도자료 등록',
+      content: modalContent,
+      footer
+    });
+  }
+
+  render();
+  return container;
+}

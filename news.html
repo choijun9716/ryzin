@@ -173,8 +173,13 @@
             const closeNewsModal = document.getElementById('closeNewsModal');
 
             try {
-                const res = await fetch('./news.json');
-                const newsList = await res.json();
+                const localData = localStorage.getItem('ryzin_news_data');
+                if (localData) {
+                    newsList = JSON.parse(localData);
+                } else {
+                    const res = await fetch('./news.json');
+                    newsList = await res.json();
+                }
                 
                 if (!newsList || newsList.length === 0) {
                     newsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: rgba(255,255,255,0.5); padding: 60px;">등록된 보도자료가 없습니다.</div>';
