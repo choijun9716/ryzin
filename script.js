@@ -6,6 +6,36 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Supabase Homepage Settings Sync Helper
+    const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+    const headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+    };
+
+    async function fetchHpSetting(key, fallbackUrl) {
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.${key}&select=*`, { headers }).catch(() => null);
+            if (res && res.ok) {
+                const data = await res.json();
+                if (data && data[0] && data[0].value) {
+                    return data[0].value;
+                }
+            }
+        } catch (e) {
+            console.warn('Supabase fetch failed for key:', key, e);
+        }
+        
+        // Fallback to static JSON file
+        try {
+            const res2 = await fetch(fallbackUrl + '?v=' + new Date().getTime());
+            if (res2.ok) {
+                return await res2.json();
+            }
+        } catch(e) {}
+        return null;
+    }
 
     // 0-2. Custom Cursor Logic (Desktop only)
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -172,10 +202,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadPortfolio() {
         try {
-            const response = await fetch('./portfolio.json?v=' + new Date().getTime());
-            const data = await response.json();
-            allPortfolioItems = data;
-            renderPortfolio();
+            const data = await fetchHpSetting('portfolio', './portfolio.json');
+            if (data) {
+                allPortfolioItems = data;
+                renderPortfolio();
+            }
         } catch (err) {
             console.error('Portfolio load error:', err);
         }
@@ -720,14 +751,9 @@ document.addEventListener('DOMContentLoaded', () => {
             col4: ['drolion.jpg', 'trusty.jpg', 'drolion.jpg', 'trusty.jpg']
         };
 
-        let config = defaultConfig;
-        try {
-            const response = await fetch('./hero.json?v=' + new Date().getTime());
-            if (response.ok) {
-                config = await response.json();
-            }
-        } catch (e) {
-            console.log('Failed to load hero.json, using default config.');
+        let config = await fetchHpSetting('hero', './hero.json');
+        if (!config) {
+            config = defaultConfig;
         }
 
         container.innerHTML = '';
@@ -770,9 +796,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tabsContainer || !contentContainer) return;
 
         try {
-            const res = await fetch('./packages.json?v=' + new Date().getTime());
-            if (!res.ok) return;
-            const packages = await res.json();
+            const packages = await fetchHpSetting('packages', './packages.json');
+            if (!packages) return;
             
             tabsContainer.innerHTML = '';
             contentContainer.innerHTML = '';
@@ -868,9 +893,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!grid) return;
 
         try {
-            const res = await fetch('./stories.json?v=' + new Date().getTime());
-            if (!res.ok) return;
-            const stories = await res.json();
+            const stories = await fetchHpSetting('stories', './stories.json');
+            if (!stories) return;
             
             grid.innerHTML = '';
             stories.forEach((story, idx) => {
@@ -879,7 +903,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const imgHtml = story.image ? 
                     `<img src="./assets/${story.image}" style="width:100%; height:100%; object-fit:cover;">` : 
                     `<i data-feather="user" style="color: #888; width: 24px; height: 24px;"></i>`;
-
+ 
                 const cardHtml = `
                     <div class="story-card fade-up" style="transition-delay: ${delay}s;">
                         <div class="story-content">
@@ -890,8 +914,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${imgHtml}
                             </div>
                             <div class="story-info">
-                                <h3>${story.company}</h3>
-                                <span>${story.authorRole}</span>
+                                <h3>${story.brand || story.company || ''}</h3>
+                                <span>${story.author || story.authorRole || ''}</span>
                             </div>
                         </div>
                     </div>
@@ -916,9 +940,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!track) return;
 
         try {
-            const res = await fetch('./logos.json?v=' + new Date().getTime());
-            if (!res.ok) return;
-            const logos = await res.json();
+            const logos = await fetchHpSetting('logos', './logos.json');
+            if (!logos) return;
             
             track.innerHTML = '';
             

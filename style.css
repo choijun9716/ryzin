@@ -3229,3 +3229,239 @@ footer {
         flex: 0 0 220px;
     }
 }
+
+/* ==========================================================================
+   RYZIN Split Screen Hero Styling (Outfit Font & Rolling Live Screen Media)
+   ========================================================================== */
+.hero {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100vh;
+    height: 100svh;
+    background-color: #000;
+    overflow: hidden;
+    position: relative;
+}
+
+.hero-left {
+    width: 48%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 80px;
+    z-index: 10;
+    background-color: #000;
+    position: relative;
+}
+
+.hero-left-inner {
+    max-width: 580px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.hero-title-split {
+    font-family: 'Outfit', 'Pretendard', sans-serif;
+    font-size: 68px;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    color: #fff;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+}
+
+.hero-title-split span {
+    color: #ff8730; /* Orange highlight for YOUR BRAND */
+}
+
+.outline-text {
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.85);
+    font-family: 'Outfit', sans-serif;
+}
+
+.hero-desc-split {
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 40px;
+    font-weight: 400;
+    word-break: keep-all;
+    text-align: left;
+}
+
+.hero-btns-split {
+    display: flex;
+    gap: 16px;
+}
+
+.btn-orange-split {
+    background: #ff8730;
+    color: #fff;
+    padding: 16px 36px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(255, 135, 48, 0.3);
+}
+
+.btn-orange-split:hover {
+    background: #e06d1b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 135, 48, 0.4);
+}
+
+.btn-translucent-split {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 16px 36px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-translucent-split:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Right side gallery column scroll */
+.hero-right {
+    width: 52%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
+
+.hero-gallery-split {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: 16px;
+    padding: 0 16px;
+}
+
+.hero-gallery-fade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #000 0%, transparent 20%, transparent 80%, #000 100%),
+                linear-gradient(to bottom, #000 0%, transparent 10%, transparent 90%, #000 100%);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Customize vertical columns layout for split screen hero */
+.hero-gallery-split .gallery-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hero-gallery-split .gallery-track {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: scroll-vertical 30s linear infinite;
+}
+
+.hero-gallery-split .gallery-track.reverse {
+    animation: scroll-vertical-reverse 30s linear infinite;
+}
+
+.hero-gallery-split .gallery-item {
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    aspect-ratio: 9/16;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-gallery-split .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.6);
+    transition: filter 0.4s ease;
+}
+
+.hero-gallery-split .gallery-item:hover img {
+    filter: brightness(0.95);
+}
+
+/* Hide columns 3 and 4 on split screen to keep it clean */
+.hero-gallery-split .gallery-column:nth-child(3),
+.hero-gallery-split .gallery-column:nth-child(4) {
+    display: none !important;
+}
+
+/* Responsive constraints */
+@media (max-width: 1024px) {
+    .hero-left {
+        padding: 0 40px;
+        width: 50%;
+    }
+    .hero-right {
+        width: 50%;
+    }
+    .hero-title-split {
+        font-size: 52px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+    }
+    .hero-left {
+        width: 100%;
+        height: 60%;
+        padding: 60px 24px 20px 24px;
+        align-items: flex-end;
+        justify-content: center;
+        text-align: center;
+    }
+    .hero-left-inner {
+        align-items: center;
+        max-width: 100%;
+        text-align: center;
+    }
+    .hero-title-split {
+        font-size: 38px;
+        text-align: center;
+        margin-bottom: 16px;
+    }
+    .hero-desc-split {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .hero-right {
+        width: 100%;
+        height: 40%;
+    }
+    .hero-gallery-split {
+        gap: 10px;
+        padding: 0 10px;
+    }
+    .hero-gallery-split .gallery-column {
+        gap: 10px;
+    }
+    .hero-gallery-split .gallery-track {
+        gap: 10px;
+        animation-duration: 20s;
+    }
+}
