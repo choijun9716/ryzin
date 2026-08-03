@@ -89,6 +89,8 @@ export function getAccessibleMenus() {
     { key: 'crm', label: '영업 CRM' },
     { key: 'shop_manage', label: '쇼핑몰 관리' },
     { key: 'class_applications', label: '클래스 신청 관리' },
+    { key: 'news_manage', label: '뉴스룸 관리' },
+    { key: 'homepage_manage', label: '홈페이지 관리' },
     { key: 'settings', label: '설정' },
   ];
 
