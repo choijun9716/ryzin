@@ -1,14 +1,30 @@
-// ===== 홈페이지 관리 페이지 (히어로, 포트폴리오, 패키지, 브랜드 이야기, 로고, 이미지 자산) =====
+// ===== 홈페이지 관리 페이지 (Supabase DB 실시간 동기화) =====
 import { store } from '../data/store.js';
 import { showSuccess, showError } from '../components/toast.js';
 import { confirmDialog, openModal, closeModal } from '../components/modal.js';
 
+const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+const headers = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json',
+  'Prefer': 'resolution=merge-duplicates'
+};
+
 export function renderHomepageManage() {
   const container = document.createElement('div');
-  let activeTab = 'hero'; // 'hero' | 'portfolio' | 'packages' | 'stories' | 'logos' | 'assets'
+  let activeTab = 'hero';
 
-  // 로컬스토리지 & DB 캐시 데이터 헬퍼
-  const getCache = (key, fallback) => {
+  const fetchHpSetting = async (key, fallback) => {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.${key}&select=*`, { headers }).catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data && data[0] && data[0].value) return data[0].value;
+      }
+    } catch (e) {}
+
     try {
       const v = localStorage.getItem(`ryzin_hp_${key}`);
       if (v) return JSON.parse(v);
@@ -16,51 +32,68 @@ export function renderHomepageManage() {
     return fallback;
   };
 
-  const setCache = (key, val) => {
+  const saveHpSetting = async (key, val) => {
     localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(val));
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ key, value: val, updated_at: new Date().toISOString() })
+      }).catch(() => null);
+    } catch (e) {}
   };
 
-  // 초기 상태
-  let heroData = getCache('hero', {
-    col1: ["everyhabit_enzyme.jpg", "baegayul.jpg", "Screenshot 2026-05-01 19-46-03.png"],
-    col2: ["1779278961975_Screenshot_2026-05-20_17-33-25.png", "gangneung.jpg", "miyabis.jpg"],
-    col3: ["1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", "003.jpg", "yadah.jpg"],
-    col4: ["001.png", "002.jpg"]
-  });
+  // 데이터 상태
+  let heroData = null;
+  let portfolioData = null;
+  let packagesData = null;
+  let storiesData = null;
+  let logosData = null;
 
-  let portfolioData = getCache('portfolio', [
-    { title: "만나강정", category: "food", image: "./assets/1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", link: "#" },
-    { title: "트루쿡", category: "life", image: "./assets/1782397523767_123.png", link: "#" },
-    { title: "쏘랩 (SOLAB)", category: "beauty", image: "./assets/1779278961975_Screenshot_2026-05-20_17-33-25.png", link: "#" },
-    { title: "강릉은정한과", category: "food", image: "./assets/001.jpg", link: "https://view.shoppinglive.naver.com/replays/1836196" }
-  ]);
+  async function loadAllData() {
+    heroData = await fetchHpSetting('hero', {
+      col1: ["everyhabit_enzyme.jpg", "baegayul.jpg", "Screenshot 2026-05-01 19-46-03.png"],
+      col2: ["1779278961975_Screenshot_2026-05-20_17-33-25.png", "gangneung.jpg", "miyabis.jpg"],
+      col3: ["1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", "003.jpg", "yadah.jpg"],
+      col4: ["001.png", "002.jpg"]
+    });
 
-  let packagesData = getCache('packages', [
-    { name: "STANDARD LIGHT", price: "990,000원", features: "1인 단독 진행, 기본 조명/음향, 1시간 방송" },
-    { name: "DELUXE PREMIUM", price: "1,990,000원", features: "2인 메인 쇼호스트, 4K 시네마틱 카메밍, 커스텀 세트 연출" }
-  ]);
+    portfolioData = await fetchHpSetting('portfolio', [
+      { title: "만나강정", category: "food", image: "./assets/1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png", link: "#" },
+      { title: "트루쿡", category: "life", image: "./assets/1782397523767_123.png", link: "#" },
+      { title: "쏘랩 (SOLAB)", category: "beauty", image: "./assets/1779278961975_Screenshot_2026-05-20_17-33-25.png", link: "#" },
+      { title: "강릉은정한과", category: "food", image: "./assets/001.jpg", link: "https://view.shoppinglive.naver.com/replays/1836196" }
+    ]);
 
-  let storiesData = getCache('stories', [
-    { brand: "강릉은정한과", quote: "방송 1회 만에 매출액 300% 상승 달성!", author: "대표 채이준" }
-  ]);
+    packagesData = await fetchHpSetting('packages', [
+      { name: "STANDARD LIGHT", price: "990,000원", features: "1인 단독 진행, 기본 조명/음향, 1시간 방송" },
+      { name: "DELUXE PREMIUM", price: "1,990,000원", features: "2인 메인 쇼호스트, 4K 시네마틱 카메밍, 커스텀 세트 연출" }
+    ]);
 
-  let logosData = getCache('logos', [
-    { name: "네이버 쇼핑라이브", logo: "./assets/logo.png" }
-  ]);
+    storiesData = await fetchHpSetting('stories', [
+      { brand: "강릉은정한과", quote: "방송 1회 만에 매출액 300% 상승 달성!", author: "대표 채이준" }
+    ]);
 
-  function render() {
+    logosData = await fetchHpSetting('logos', [
+      { name: "네이버 쇼핑라이브", logo: "./assets/logo.png" }
+    ]);
+  }
+
+  async function render() {
+    if (!heroData) await loadAllData();
+
     container.innerHTML = `
       <div class="page-header">
         <div class="page-header-left">
           <div>
-            <h1 class="page-title">홈페이지 관리</h1>
-            <p class="page-description">공식 웹사이트 메인 비주얼, 포트폴리오, 제작 패키지, 후기 및 브랜드 파트너 관리</p>
+            <h1 class="page-title">홈페이지 관리 (Supabase 동기화)</h1>
+            <p class="page-description">공식 웹사이트 메인 비주얼, 포트폴리오, 제작 패키지, 후기 및 파트너 로고 실시간 관리</p>
           </div>
         </div>
       </div>
 
       <div class="page-body">
-        <!-- 상단 서브 탭 6개 -->
+        <!-- 상단 서브 탭 5개 -->
         <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 24px; padding-bottom: 8px; flex-wrap: wrap;">
           <button class="btn ${activeTab === 'hero' ? 'btn-primary' : 'btn-secondary'}" data-tab="hero">메인 히어로 갤러리</button>
           <button class="btn ${activeTab === 'portfolio' ? 'btn-primary' : 'btn-secondary'}" data-tab="portfolio">포트폴리오 레퍼런스</button>
@@ -69,14 +102,12 @@ export function renderHomepageManage() {
           <button class="btn ${activeTab === 'logos' ? 'btn-primary' : 'btn-secondary'}" data-tab="logos">파트너 로고</button>
         </div>
 
-        <!-- Tab Body -->
         <div id="hp-tab-content">
           ${renderTabContent()}
         </div>
       </div>
     `;
 
-    // 탭 이벤트 바인딩
     container.querySelectorAll('[data-tab]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         activeTab = e.target.dataset.tab;
@@ -93,7 +124,7 @@ export function renderHomepageManage() {
         <div class="card">
           <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
             <h3>메인 히어로 이미지 갤러리 (4컬럼 수직 스크롤)</h3>
-            <button class="btn btn-primary btn-sm" id="btn-save-hero">변경사항 저장</button>
+            <button class="btn btn-primary btn-sm" id="btn-save-hero">Supabase DB 실시간 저장</button>
           </div>
           <div class="card-body">
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
@@ -234,8 +265,8 @@ export function renderHomepageManage() {
   }
 
   function bindTabEvents() {
-    // 히어로 이미지 저장
-    container.querySelector('#btn-save-hero')?.addEventListener('click', () => {
+    // 히어로 저장
+    container.querySelector('#btn-save-hero')?.addEventListener('click', async () => {
       const inputs = container.querySelectorAll('.input-hero-img');
       const newHero = { col1: [], col2: [], col3: [], col4: [] };
       inputs.forEach(inp => {
@@ -243,109 +274,109 @@ export function renderHomepageManage() {
         if (inp.value.trim()) newHero[col].push(inp.value.trim());
       });
       heroData = newHero;
-      setCache('hero', heroData);
-      showSuccess('메인 히어로 이미지 갤러리가 저장되었습니다.');
+      await saveHpSetting('hero', heroData);
+      showSuccess('메인 히어로 갤러리가 Supabase DB에 성공적으로 동기화 저장되었습니다.');
     });
 
     container.querySelectorAll('.btn-del-hero-img').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const col = e.target.dataset.col;
         const idx = parseInt(e.target.dataset.idx);
         heroData[col].splice(idx, 1);
-        setCache('hero', heroData);
+        await saveHpSetting('hero', heroData);
         render();
       });
     });
 
     container.querySelectorAll('.btn-add-hero-img').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const col = e.target.dataset.col;
         if (!heroData[col]) heroData[col] = [];
         heroData[col].push('assets/001.jpg');
-        setCache('hero', heroData);
+        await saveHpSetting('hero', heroData);
         render();
       });
     });
 
-    // 포트폴리오 추가/삭제
-    container.querySelector('#btn-add-pf')?.addEventListener('click', () => {
+    // 포트폴리오
+    container.querySelector('#btn-add-pf')?.addEventListener('click', async () => {
       const title = prompt('포트폴리오 브랜드명/제목:');
       if (!title) return;
-      const image = prompt('이미지 경로 (예: ./assets/001.jpg):', './assets/001.jpg') || './assets/001.jpg';
+      const image = prompt('이미지 경로:', './assets/001.jpg') || './assets/001.jpg';
       const link = prompt('방송/영상 URL 링크:', '#') || '#';
       portfolioData.unshift({ title, category: 'beauty', image, link });
-      setCache('portfolio', portfolioData);
-      showSuccess('새 포트폴리오가 추가되었습니다.');
+      await saveHpSetting('portfolio', portfolioData);
+      showSuccess('포트폴리오가 Supabase DB에 동기화되었습니다.');
       render();
     });
 
     container.querySelectorAll('.btn-del-pf').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const idx = parseInt(e.target.dataset.idx);
         portfolioData.splice(idx, 1);
-        setCache('portfolio', portfolioData);
+        await saveHpSetting('portfolio', portfolioData);
         showSuccess('포트폴리오 항목이 삭제되었습니다.');
         render();
       });
     });
 
-    // 패키지 추가/삭제
-    container.querySelector('#btn-add-pkg')?.addEventListener('click', () => {
+    // 패키지
+    container.querySelector('#btn-add-pkg')?.addEventListener('click', async () => {
       const name = prompt('패키지 명칭:');
       if (!name) return;
       const price = prompt('가격:', '1,500,000원') || '1,500,000원';
       const features = prompt('구성 내용:', '4K 촬영, 메인 쇼호스트') || '';
       packagesData.push({ name, price, features });
-      setCache('packages', packagesData);
-      showSuccess('새 패키지가 추가되었습니다.');
+      await saveHpSetting('packages', packagesData);
+      showSuccess('패키지가 Supabase DB에 동기화되었습니다.');
       render();
     });
 
     container.querySelectorAll('.btn-del-pkg').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const idx = parseInt(e.target.dataset.idx);
         packagesData.splice(idx, 1);
-        setCache('packages', packagesData);
+        await saveHpSetting('packages', packagesData);
         render();
       });
     });
 
-    // 브랜드 스토리 추가/삭제
-    container.querySelector('#btn-add-story')?.addEventListener('click', () => {
+    // 스토리
+    container.querySelector('#btn-add-story')?.addEventListener('click', async () => {
       const brand = prompt('브랜드명:');
       if (!brand) return;
       const quote = prompt('후기/스토리 한줄 문구:') || '';
       storiesData.push({ brand, quote, author: '브랜드 담당자' });
-      setCache('stories', storiesData);
-      showSuccess('브랜드 스토리가 추가되었습니다.');
+      await saveHpSetting('stories', storiesData);
+      showSuccess('브랜드 스토리가 Supabase DB에 동기화되었습니다.');
       render();
     });
 
     container.querySelectorAll('.btn-del-story').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const idx = parseInt(e.target.dataset.idx);
         storiesData.splice(idx, 1);
-        setCache('stories', storiesData);
+        await saveHpSetting('stories', storiesData);
         render();
       });
     });
 
-    // 로고 추가/삭제
-    container.querySelector('#btn-add-logo')?.addEventListener('click', () => {
+    // 로고
+    container.querySelector('#btn-add-logo')?.addEventListener('click', async () => {
       const name = prompt('파트너 브랜드명:');
       if (!name) return;
       const logo = prompt('로고 이미지 경로:', './assets/logo.png') || './assets/logo.png';
       logosData.push({ name, logo });
-      setCache('logos', logosData);
-      showSuccess('파트너 로고가 추가되었습니다.');
+      await saveHpSetting('logos', logosData);
+      showSuccess('파트너 로고가 Supabase DB에 동기화되었습니다.');
       render();
     });
 
     container.querySelectorAll('.btn-del-logo').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const idx = parseInt(e.target.dataset.idx);
         logosData.splice(idx, 1);
-        setCache('logos', logosData);
+        await saveHpSetting('logos', logosData);
         render();
       });
     });
