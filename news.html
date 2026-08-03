@@ -174,7 +174,7 @@
 
             // 뉴스 데이터 로드 (Supabase 고속 DB/CDN 우선 연동)
             try {
-                const spRes = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/news?select=*', {
+                const spRes = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/news?select=*&order=created_at.desc', {
                     headers: {
                         'apikey': 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9',
                         'Authorization': 'Bearer sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9'
@@ -197,13 +197,33 @@
                         newsList = await res.json();
                     }
                 }
-                
+            } catch(e) {
+                console.error('뉴스 데이터 로딩 예외:', e);
+            }
+
+            renderNews();
+
+            function renderNews() {
                 if (!newsList || newsList.length === 0) {
                     newsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: rgba(255,255,255,0.5); padding: 60px;">등록된 보도자료가 없습니다.</div>';
                     return;
                 }
 
-                newsGrid.innerHTML = newsList.map(item => `
+                const filtered = newsList.filter(item => {
+                    const matchCategory = activeCategory === 'all' || !activeCategory || !item.category || (item.category.trim() === activeCategory.trim());
+                    const matchSearch = !searchQuery || 
+                        (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) || 
+                        (item.summary && item.summary.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                        (item.publisher && item.publisher.toLowerCase().includes(searchQuery.toLowerCase()));
+                    return matchCategory && matchSearch;
+                });
+
+                if (filtered.length === 0) {
+                    newsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: rgba(255,255,255,0.5); padding: 80px 0;">해당 조건의 보도자료가 없습니다.</div>';
+                    return;
+                }
+
+                newsGrid.innerHTML = filtered.map(item => `
                     <div class="news-card" data-id="${item.id}" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.3s ease;">
                         <div style="width: 100%; height: 210px; overflow: hidden; position: relative;">
                             <img src="${item.image || 'assets/001.jpg'}" alt="${item.title}" loading="lazy" decoding="async" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;">
