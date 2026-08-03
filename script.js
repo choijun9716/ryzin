@@ -6,6 +6,38 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ── 히어로 순환 텍스트 모션 ──────────────────────────────────────
+    (function startHeroRotatingText() {
+        const phrases = [
+            '우리는 브랜드를 라이브합니다.',
+            '우리는 브랜드의 매출을 만듭니다.',
+            '우리는 고객이 구매하는 순간을 만듭니다.',
+        ];
+        const el = document.getElementById('heroRotatingText');
+        if (!el) return;
+
+        let idx = 0;
+
+        function showNext() {
+            // 페이드 아웃
+            el.classList.add('fade-out');
+            setTimeout(() => {
+                idx = (idx + 1) % phrases.length;
+                el.textContent = phrases[idx];
+                // 클래스 리셋 후 페이드 인 재트리거
+                el.classList.remove('fade-out');
+                el.style.animation = 'none';
+                void el.offsetHeight; // reflow 강제 (animation 재시작 트릭)
+                el.style.animation = '';
+                el.classList.remove('fade-out');
+            }, 500);
+        }
+
+        // 첫 텍스트는 CSS animation으로 자동 인트로 적용
+        setInterval(showNext, 3500);
+    })();
+    // ─────────────────────────────────────────────────────────────────
+
     // Supabase Homepage Settings Sync Helper
     const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
