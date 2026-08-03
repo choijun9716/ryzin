@@ -786,7 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isVideo) {
                 mediaHtml = `<video src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover" autoplay loop muted playsinline></video>`;
             } else {
-                mediaHtml = `<img src="${imgSrc}" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="lazy" draggable="false">`;
+                mediaHtml = `<img src="${imgSrc}" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="sync" fetchpriority="high" draggable="false">`;
             }
 
             slide.innerHTML = `
@@ -814,7 +814,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     disableOnInteraction: false,
                 },
                 coverflowEffect: {
-                    rotate: 18,
+                    rotate: -18,
                     stretch: 0,
                     depth: 140,
                     modifier: 1,
