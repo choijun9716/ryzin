@@ -9,9 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── 히어로 타이프라이터 텍스트 모션 ─────────────────────────────
     (function startTypewriter() {
         const phrases = [
-            '우리는 브랜드를 라이브합니다.',
-            '우리는 브랜드의 매출을 만듭니다.',
-            '우리는 고객이 구매하는 순간을 만듭니다.',
+            '브랜드를 라이브합니다.',
+            '브랜드의 매출을 만듭니다.',
+            '고객이 구매하는 순간을 만듭니다.',
         ];
         const el = document.getElementById('heroTypewriterText');
         if (!el) return;
