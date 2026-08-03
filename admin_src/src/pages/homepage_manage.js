@@ -134,7 +134,9 @@ export function renderHomepageManage() {
                   <div style="display:flex; flex-direction:column; gap:8px;">
                     ${(heroData[colKey] || []).map((img, i) => `
                       <div style="display:flex; gap:6px; align-items:center;">
-                        <input type="text" class="input input-hero-img" data-col="${colKey}" data-idx="${i}" value="${img}" style="font-size:12px; flex:1;">
+                        <input type="text" class="input input-hero-img" id="hero-img-${colKey}-${i}" data-col="${colKey}" data-idx="${i}" value="${img}" style="font-size:12px; flex:1;">
+                        <input type="file" class="hero-file-input" id="hero-file-${colKey}-${i}" data-col="${colKey}" data-idx="${i}" accept="image/*" style="display:none;">
+                        <button class="btn btn-xs btn-secondary btn-trigger-hero-upload" data-col="${colKey}" data-idx="${i}" title="컴퓨터에서 사진 업로드">📁</button>
                         <button class="btn btn-xs btn-danger btn-del-hero-img" data-col="${colKey}" data-idx="${i}">X</button>
                       </div>
                     `).join('')}
@@ -265,6 +267,72 @@ export function renderHomepageManage() {
   }
 
   function bindTabEvents() {
+    // 📁 업로드 트리거 및 파일 변경 이벤트 바인딩
+    if (activeTab === 'hero') {
+      container.querySelectorAll('.btn-trigger-hero-upload').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const col = e.currentTarget.dataset.col;
+          const idx = e.currentTarget.dataset.idx;
+          const fileInput = container.querySelector(`#hero-file-${col}-${idx}`);
+          fileInput?.click();
+        });
+      });
+
+      container.querySelectorAll('.hero-file-input').forEach(fileInput => {
+        fileInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const col = e.target.dataset.col;
+          const idx = parseInt(e.target.dataset.idx);
+          const triggerBtn = container.querySelector(`.btn-trigger-hero-upload[data-col="${col}"][data-idx="${idx}"]`);
+          const imgInput = container.querySelector(`#hero-img-${col}-${idx}`);
+
+          // 한글/NFD 파일명 안전 자동 변환
+          const extMatch = file.name.match(/\.([a-zA-Z0-9]+)$/);
+          const ext = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+          const safeName = `hero_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.${ext}`;
+
+          if (triggerBtn) {
+            triggerBtn.disabled = true;
+            triggerBtn.textContent = '..';
+          }
+
+          try {
+            const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/news_images/${safeName}`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': file.type
+              },
+              body: file
+            });
+
+            if (uploadRes.ok) {
+              const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/news_images/${safeName}`;
+              if (imgInput) imgInput.value = publicUrl;
+              
+              // 즉시 로컬 데이터 갱신 및 백그라운드 자동 저장
+              heroData[col][idx] = publicUrl;
+              await saveHpSetting('hero', heroData);
+              showSuccess(`히어로 이미지가 성공적으로 업로드 및 동기화되었습니다!`);
+              render();
+            } else {
+              showError('이미지 업로드에 실패했습니다.');
+            }
+          } catch (err) {
+            showError('업로드 중 네트워크 오류가 발생했습니다.');
+          } finally {
+            if (triggerBtn) {
+              triggerBtn.disabled = false;
+              triggerBtn.textContent = '📁';
+            }
+          }
+        });
+      });
+    }
+
     // 히어로 저장
     container.querySelector('#btn-save-hero')?.addEventListener('click', async () => {
       const inputs = container.querySelectorAll('.input-hero-img');
