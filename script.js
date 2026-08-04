@@ -89,7 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchHpSetting(key, fallbackUrl) {
         try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.${key}&select=*`, { headers }).catch(() => null);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 500); // 500ms fast timeout
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.${key}&select=*`, { 
+                headers, 
+                signal: controller.signal 
+            }).catch(() => null);
+            clearTimeout(timeoutId);
+
             if (res && res.ok) {
                 const data = await res.json();
                 if (data && data[0] && data[0].value) {
@@ -97,12 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (e) {
-            console.warn('Supabase fetch failed for key:', key, e);
+            console.warn('Supabase fetch timeout or error for key:', key);
         }
         
-        // Fallback to static JSON file
+        // Fallback to static JSON file instantly
         try {
-            const res2 = await fetch(fallbackUrl + '?v=' + new Date().getTime());
+            const res2 = await fetch(fallbackUrl);
             if (res2.ok) {
                 return await res2.json();
             }
