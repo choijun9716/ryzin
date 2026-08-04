@@ -233,7 +233,7 @@ export function renderNewsManage() {
               <div style="display: flex; gap: 8px;">
                 <input type="text" id="news-form-image" class="input" value="${item ? item.image || '' : 'assets/001.jpg'}" placeholder="assets/001.jpg 또는 이미지 링크" style="flex: 1;">
                 <input type="file" id="news-form-file-input" accept="image/*" style="display: none;">
-                <button class="btn btn-secondary btn-sm" id="btn-trigger-news-file" type="button" style="white-space: nowrap;">📁 파일 선택</button>
+                <button class="btn btn-secondary btn-sm" id="btn-trigger-news-file" type="button" style="white-space: nowrap;">파일 선택</button>
               </div>
             </div>
             <div class="form-group">
@@ -399,7 +399,7 @@ export function renderNewsManage() {
             reader.readAsDataURL(file);
           } finally {
             triggerBtn.disabled = false;
-            triggerBtn.textContent = '📁 파일 선택';
+            triggerBtn.textContent = '파일 선택';
           }
         });
       }

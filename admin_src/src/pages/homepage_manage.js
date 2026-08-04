@@ -214,41 +214,45 @@ export function renderHomepageManage() {
         <div class="card" style="margin-bottom:24px;">
           <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
-              <h3 style="font-weight:800; font-size:16px;">✍️ 메인 히어로 상단 텍스트 문구 관리</h3>
+              <h3 style="font-weight:800; font-size:16px;">메인 히어로 상단 텍스트 문구 관리</h3>
               <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-                메인 화면 상단의 소제목, 타이틀 접두사, 슬롯 롤링 문구 3가지를 직접 변경할 수 있습니다.
+                메인 화면 상단의 소제목, 고정 접두사/접미사, 슬롯 롤링 문구 3가지를 직접 변경할 수 있습니다.
               </p>
             </div>
-            <button class="btn btn-success btn-sm" id="btn-save-hero-text">💾 텍스트 문구 Supabase DB 저장</button>
+            <button class="btn btn-success btn-sm" id="btn-save-hero-text">텍스트 문구 Supabase DB 저장</button>
           </div>
           <div class="card-body">
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <label style="font-size:12px; font-weight:700; color:var(--text-primary);">상단 소제목 (Eyebrow)</label>
-                <input type="text" class="input" id="input-hero-eyebrow" value="${heroTextData.eyebrow || ''}" placeholder="예: 감도높은 라이브커머스" style="font-size:13px;">
+                <input type="text" class="input" id="input-hero-eyebrow" value="${heroTextData.eyebrow || ''}" placeholder="예: 브랜드를 가장 생생하게 만나는 순간" style="font-size:13px;">
               </div>
               <div style="display:flex; flex-direction:column; gap:6px;">
                 <label style="font-size:12px; font-weight:700; color:var(--text-primary);">메인 타이틀 고정 접두사 (Prefix)</label>
                 <input type="text" class="input" id="input-hero-prefix" value="${heroTextData.prefix || ''}" placeholder="예: 우리는" style="font-size:13px;">
               </div>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-primary);">메인 타이틀 고정 접미사 (Suffix)</label>
+                <input type="text" class="input" id="input-hero-suffix" value="${heroTextData.suffix || ''}" placeholder="예: 만듭니다." style="font-size:13px;">
+              </div>
             </div>
 
             <div style="margin-top:16px; border-top:1px solid var(--border-light); padding-top:16px;">
               <label style="font-size:12px; font-weight:700; color:var(--text-primary); display:block; margin-bottom:8px;">
-                🔄 슬롯 롤링 문구 목록 (3가지 순환 문구)
+                슬롯 롤링 핵심 키워드 목록 (3가지 순환 문구)
               </label>
               <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
                 <div style="display:flex; flex-direction:column; gap:4px;">
                   <span style="font-size:11px; color:var(--text-secondary);">롤링 문구 1</span>
-                  <input type="text" class="input input-hero-phrase" data-idx="0" value="${(heroTextData.phrases && heroTextData.phrases[0]) || ''}" placeholder="예: 브랜드를 라이브합니다." style="font-size:13px;">
+                  <input type="text" class="input input-hero-phrase" data-idx="0" value="${(heroTextData.phrases && heroTextData.phrases[0]) || ''}" placeholder="예: 브랜드를 라이브" style="font-size:13px;">
                 </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">
                   <span style="font-size:11px; color:var(--text-secondary);">롤링 문구 2</span>
-                  <input type="text" class="input input-hero-phrase" data-idx="1" value="${(heroTextData.phrases && heroTextData.phrases[1]) || ''}" placeholder="예: 브랜드의 매출을 만듭니다." style="font-size:13px;">
+                  <input type="text" class="input input-hero-phrase" data-idx="1" value="${(heroTextData.phrases && heroTextData.phrases[1]) || ''}" placeholder="예: 브랜드의 매출을" style="font-size:13px;">
                 </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">
                   <span style="font-size:11px; color:var(--text-secondary);">롤링 문구 3</span>
-                  <input type="text" class="input input-hero-phrase" data-idx="2" value="${(heroTextData.phrases && heroTextData.phrases[2]) || ''}" placeholder="예: 고객이 구매하는 순간을 만듭니다." style="font-size:13px;">
+                  <input type="text" class="input input-hero-phrase" data-idx="2" value="${(heroTextData.phrases && heroTextData.phrases[2]) || ''}" placeholder="예: 구매하는 순간을" style="font-size:13px;">
                 </div>
               </div>
             </div>
@@ -259,22 +263,22 @@ export function renderHomepageManage() {
         <div class="card">
           <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
             <div>
-              <h3 style="font-weight:800; font-size:16px;">🖼️ 메인 히어로 3D 슬라이더 카드 관리</h3>
+              <h3 style="font-weight:800; font-size:16px;">메인 히어로 3D 슬라이더 카드 관리</h3>
               <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-                등록된 순서대로 메인 3D 커버플로우 무대에 노출됩니다. 컴퓨터 사진 선택(📁) 시 Supabase 초고화질 원본 스토리지로 실시간 저장됩니다.
+                등록된 순서대로 메인 3D 커버플로우 무대에 노출됩니다. 컴퓨터 사진 선택 시 Supabase 원본 스토리지로 실시간 저장됩니다.
               </p>
             </div>
             <div style="display:flex; gap:8px;">
-              <button class="btn btn-secondary btn-sm" id="btn-clear-all-hero" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">🗑️ 기존 카드 전체 비우기</button>
+              <button class="btn btn-secondary btn-sm" id="btn-clear-all-hero" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">기존 카드 전체 비우기</button>
               <button class="btn btn-primary btn-sm" id="btn-add-hero-card">+ 새 히어로 카드 추가</button>
-              <button class="btn btn-success btn-sm" id="btn-save-hero">💾 Supabase DB 실시간 저장</button>
+              <button class="btn btn-success btn-sm" id="btn-save-hero">Supabase DB 실시간 저장</button>
             </div>
           </div>
           <div class="card-body">
             ${heroData.length === 0 ? `
               <div style="text-align:center; padding: 48px 20px; border:2px dashed var(--border-color); border-radius:12px; background:var(--bg-secondary);">
                 <p style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">등록된 히어로 카드가 없습니다.</p>
-                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">상단의 <strong>[ + 새 히어로 카드 추가 ]</strong> 버튼을 눌러 고화질 사진이나 동영상 파일을 직접 등록해 보세요!</p>
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">상단의 <strong>[ + 새 히어로 카드 추가 ]</strong> 버튼을 눌러 고화질 사진이나 동영상 파일을 직접 등록해 보세요.</p>
                 <button class="btn btn-primary btn-sm" id="btn-add-hero-card-empty">+ 첫 번째 히어로 카드 등록하기</button>
               </div>
             ` : `
@@ -286,9 +290,9 @@ export function renderHomepageManage() {
                       <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span class="badge badge-primary" style="font-size:11px;">카드 NO. ${idx + 1}</span>
                         <div style="display:flex; gap:4px;">
-                          ${idx > 0 ? `<button class="btn btn-xs btn-secondary btn-move-hero" data-idx="${idx}" data-dir="-1" title="위로">⬆️</button>` : ''}
-                          ${idx < heroData.length - 1 ? `<button class="btn btn-xs btn-secondary btn-move-hero" data-idx="${idx}" data-dir="1" title="아래로">⬇️</button>` : ''}
-                          <button class="btn btn-xs btn-danger btn-del-hero-card" data-idx="${idx}" title="삭제">🗑️</button>
+                          ${idx > 0 ? `<button class="btn btn-xs btn-secondary btn-move-hero" data-idx="${idx}" data-dir="-1" title="위로">위로</button>` : ''}
+                          ${idx < heroData.length - 1 ? `<button class="btn btn-xs btn-secondary btn-move-hero" data-idx="${idx}" data-dir="1" title="아래로">아래로</button>` : ''}
+                          <button class="btn btn-xs btn-danger btn-del-hero-card" data-idx="${idx}" title="삭제">삭제</button>
                         </div>
                       </div>
                       <div style="width:100%; height:200px; border-radius:8px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1); position:relative;">
@@ -302,7 +306,7 @@ export function renderHomepageManage() {
                         <div style="display:flex; gap:4px;">
                           <input type="text" class="input input-hero-path" data-idx="${idx}" value="${img}" placeholder="./assets/파일명.jpg 또는 URL" style="font-size:11px; flex:1;">
                           <input type="file" class="hero-card-file-input" id="hero-card-file-${idx}" data-idx="${idx}" accept="image/*,video/*" style="display:none;">
-                          <button class="btn btn-xs btn-secondary btn-upload-hero-card" data-idx="${idx}" style="font-size:11px; white-space:nowrap;">📁 사진 선택</button>
+                          <button class="btn btn-xs btn-secondary btn-upload-hero-card" data-idx="${idx}" style="font-size:11px; white-space:nowrap;">사진 선택</button>
                         </div>
                       </div>
                     </div>
@@ -492,14 +496,15 @@ export function renderHomepageManage() {
       container.querySelector('#btn-save-hero-text')?.addEventListener('click', async () => {
         const eyebrow = container.querySelector('#input-hero-eyebrow')?.value.trim() || '';
         const prefix = container.querySelector('#input-hero-prefix')?.value.trim() || '';
+        const suffix = container.querySelector('#input-hero-suffix')?.value.trim() || '';
         const phrases = [];
         container.querySelectorAll('.input-hero-phrase').forEach(inp => {
           if (inp.value.trim()) phrases.push(inp.value.trim());
         });
 
-        heroTextData = { eyebrow, prefix, phrases };
+        heroTextData = { eyebrow, prefix, suffix, phrases };
         await saveHpSetting('hero_text', heroTextData);
-        showSuccess('메인 히어로 상단 텍스트 문구가 Supabase DB에 실시간 저장되었습니다!');
+        showSuccess('메인 히어로 상단 텍스트 문구가 Supabase DB에 실시간 저장되었습니다.');
       });
 
       // 1) 전체 삭제 / 초기화
@@ -507,7 +512,7 @@ export function renderHomepageManage() {
         if (confirm('기존 등록된 모든 히어로 카드를 삭제하고 초기화하시겠습니까?\n(새로 직접 등록하실 수 있도록 전부 비워집니다.)')) {
           heroData = [];
           await saveHpSetting('hero', heroData);
-          showSuccess('히어로 카드가 전체 삭제되었습니다. 새 카드를 직접 추가해 보세요!');
+          showSuccess('히어로 카드가 전체 삭제되었습니다. 새 카드를 직접 추가해 보세요.');
           render();
         }
       });
@@ -655,7 +660,7 @@ export function renderHomepageManage() {
           } finally {
             if (triggerBtn) {
               triggerBtn.disabled = false;
-              triggerBtn.textContent = '📁 사진 선택';
+              triggerBtn.textContent = '사진 선택';
             }
           }
         });

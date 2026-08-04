@@ -357,7 +357,7 @@ export function renderCRM() {
                   <span style="color: var(--text-tertiary); font-size: 12px;">${formatDate(a.date)}</span>
                 </div>
                 <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 4px;">${a.content}</div>
-                ${a.followUpDate ? `<div style="font-size: 11px; color: var(--primary-color);">👉 다음 예정일: ${formatDate(a.followUpDate)}</div>` : ''}
+                ${a.followUpDate ? `<div style="font-size: 11px; color: var(--primary-color);">다음 예정일: ${formatDate(a.followUpDate)}</div>` : ''}
               </div>
               `;
             }).join('') : '<div style="color: var(--text-tertiary); font-size: 13px; text-align: center;">기록된 활동이 없습니다.</div>'}
