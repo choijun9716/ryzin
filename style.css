@@ -1280,99 +1280,170 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* Portfolio Layout: PC Grid / Mobile Slider Hybrid */
+/* Portfolio Layout: PC Grid / Mobile Compact 2-Column Grid */
 .portfolio-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 30px;
-    margin-top: 60px;
+    margin-top: 40px;
     transition: all 0.5s ease;
 }
 
-/* Mobile: Horizontal Slider */
-@media (max-width: 767px) {
-    .portfolio-grid {
-        display: flex !important;
-        grid-template-columns: none !important;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        gap: 15px;
-        padding: 10px 0 30px 0;
-        scrollbar-width: none;
-        /* Firefox */
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .portfolio-grid::-webkit-scrollbar {
-        display: none;
-        /* Chrome/Safari */
-    }
-
-    .portfolio-card {
-        flex: 0 0 280px;
-        scroll-snap-align: center;
-    }
-
-    /* Allow load more on all screens */
+/* Portfolio Filters & Buttons Styling */
+.filter-pill-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0;
+    touch-action: pan-x pan-y;
+    overscroll-behavior-x: contain;
 }
 
-/* Tablet & Mobile Layouts */
-@media (max-width: 1199px) {
-    .portfolio-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    /* Allow load more on all screens */
+.filter-pill-btn {
+    padding: 8px 18px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+    white-space: nowrap;
 }
 
-@media (max-width: 767px) {
-    .portfolio-grid {
-        display: flex !important;
-    }
+.filter-pill-btn:hover,
+.filter-pill-btn.active {
+    background: #ff8730;
+    border-color: #ff8730;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(255, 135, 48, 0.35);
+    transform: translateY(-1px);
+}
+
+/* Load More Button Styling */
+#loadMoreBtn {
+    padding: 13px 42px;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #ff8730;
+    background: rgba(255, 135, 48, 0.08);
+    border: 1px solid rgba(255, 135, 48, 0.4);
+    border-radius: 28px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+#loadMoreBtn:hover,
+#loadMoreBtn:active {
+    background: #ff8730;
+    border-color: #ff8730;
+    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(255, 135, 48, 0.4);
+    transform: translateY(-2px);
 }
 
 .portfolio-card {
     display: flex;
     flex-direction: column;
     text-decoration: none;
-    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background: #0d0d0f;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 12px;
+    transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .portfolio-card:hover {
-    transform: translateY(-15px);
+    transform: translateY(-8px);
+    border-color: rgba(255, 135, 48, 0.3);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
 }
 
 .p-img-box {
     width: 100%;
-    /* Remove fixed aspect ratio to prevent forced cropping */
-    border-radius: 16px;
+    height: 240px;
+    border-radius: 12px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    max-height: 75vh;
-    /* Prevent cards from becoming excessively tall */
+    position: relative;
 }
 
 .p-img-box img {
     width: 100%;
-    height: auto;
-    max-height: 75vh;
-    object-fit: contain;
-    /* Absolutely NO original image parts are cut off */
+    height: 100%;
+    object-fit: cover;
     display: block;
+    transition: transform 0.4s ease;
 }
 
+.portfolio-card:hover .p-img-box img {
+    transform: scale(1.04);
+}
+
+/* Tablet Layout */
 @media (max-width: 1024px) {
     .portfolio-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
     }
 }
 
+/* Mobile Layout - Compact 2 Columns & No Horizontal Wobble */
 @media (max-width: 768px) {
     .portfolio-grid {
-        grid-template-columns: repeat(1, 1fr);
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        margin-top: 24px !important;
+        overflow-x: hidden !important;
+    }
+
+    .portfolio-card {
+        padding: 8px !important;
+        border-radius: 12px !important;
+    }
+
+    .p-img-box {
+        height: 165px !important;
+        max-height: 185px !important;
+        border-radius: 10px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .filter-pill-group {
+        justify-content: flex-start;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .filter-pill-group::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-pill-btn {
+        padding: 6px 14px !important;
+        font-size: 12.5px !important;
+        border-radius: 18px !important;
+        flex-shrink: 0;
+    }
+
+    #loadMoreBtn {
+        padding: 10px 32px !important;
+        font-size: 13.5px !important;
     }
 }
 
@@ -3227,6 +3298,8 @@ footer {
     gap: 0;
     max-width: 1300px;
     margin: 0 auto;
+    overflow: hidden;
+    touch-action: pan-x pan-y;
 }
 
 .shorts-slider-track {
@@ -3241,6 +3314,8 @@ footer {
     cursor: grab;
     flex: 1;
     justify-content: safe center;
+    touch-action: pan-x pan-y;
+    overscroll-behavior-x: contain;
 }
 
 .shorts-slider-track:active {
