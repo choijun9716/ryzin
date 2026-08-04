@@ -177,28 +177,28 @@
             let searchQuery = '';
 
             // 뉴스 데이터 로드 (Supabase 고속 DB/CDN 우선 연동)
-            // 뉴스 데이터 로드 (PC/모바일 100% 동일 정체성 보장)
+            // 뉴스 데이터 로드 (어드민 Supabase DB & homepage_settings 최우선 실시간 동기화)
             try {
-                // 1차: news.json 최신 파일 로드
-                const res = await fetch('./news.json?v=' + Date.now()).catch(() => null);
-                if (res && res.ok) {
-                    newsList = await res.json();
-                }
-
-                // 2차: Supabase DB 및 어드민 연동 데이터 통합
-                if (!newsList || newsList.length === 0) {
-                    if (typeof fetchHpSetting === 'function') {
-                        const hpNews = await fetchHpSetting('news', null);
-                        if (hpNews && Array.isArray(hpNews) && hpNews.length > 0) {
-                            newsList = hpNews;
-                        }
+                // 1차: Supabase DB 및 어드민 연동 데이터 최우선 로드
+                if (typeof fetchHpSetting === 'function') {
+                    const hpNews = await fetchHpSetting('news', null);
+                    if (hpNews && Array.isArray(hpNews) && hpNews.length > 0) {
+                        newsList = hpNews;
                     }
                 }
 
-                // 3차: 로컬스토리지 캐시
+                // 2차: 로컬스토리지 캐시
                 if (!newsList || newsList.length === 0) {
                     const localData = localStorage.getItem('ryzin_news_data');
                     if (localData) newsList = JSON.parse(localData);
+                }
+
+                // 3차: news.json 최신 파일 백업
+                if (!newsList || newsList.length === 0) {
+                    const res = await fetch('./news.json?v=' + Date.now()).catch(() => null);
+                    if (res && res.ok) {
+                        newsList = await res.json();
+                    }
                 }
             } catch(e) {
                 console.error('뉴스 데이터 로딩 예외:', e);

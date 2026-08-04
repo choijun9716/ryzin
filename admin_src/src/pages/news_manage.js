@@ -47,6 +47,15 @@ export function renderNewsManage() {
 
   const saveNewsData = async (newsList, itemToSync = null, action = 'upsert') => {
     localStorage.setItem('ryzin_news_data', JSON.stringify(newsList));
+
+    // homepage_settings (key = 'news') 및 rest/v1/news 이중 실시간 동기화
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings`, {
+        method: 'POST',
+        headers: { ...headers, 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ key: 'news', value: newsList })
+      }).catch(() => null);
+    } catch(e) {}
     
     // Supabase DB 비동기 백그라운드 전송
     if (itemToSync) {
