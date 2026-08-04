@@ -3536,7 +3536,7 @@ footer {
 }
 
 /* ==========================================================================
-   RYZIN Studio Prism Opening Splash Screen
+   RYZIN Studio Minimal White Opening Splash Screen
    ========================================================================== */
 .splash-screen {
     position: fixed;
@@ -3545,148 +3545,49 @@ footer {
     width: 100vw;
     height: 100vh;
     height: 100svh;
-    background-color: #000000;
+    background-color: #ffffff;
     z-index: 999999;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     pointer-events: auto;
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: opacity, filter, transform;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
 }
 
 .splash-screen.fade-out {
     opacity: 0;
-    filter: blur(20px);
-    transform: scale(1.05);
+    transform: scale(1.04);
     pointer-events: none;
-}
-
-.prism-glow-bg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 135, 48, 0.25) 0%, rgba(138, 43, 226, 0.2) 40%, rgba(0, 212, 255, 0.15) 70%, transparent 100%);
-    filter: blur(80px);
-    animation: prismPulse 2.4s ease-in-out infinite alternate;
-}
-
-.prism-beam-wrapper {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.prism-beam {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200vw;
-    height: 120px;
-    margin-top: -60px;
-    margin-left: -100vw;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,135,48,0.4) 30%, rgba(255,0,128,0.5) 50%, rgba(0,212,255,0.4) 70%, transparent 100%);
-    filter: blur(25px);
-    transform: rotate(45deg) scaleX(0.1);
-    opacity: 0;
-    animation: prismBeamUnfold 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.prism-beam-2 {
-    background: linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.4) 25%, rgba(138,43,226,0.6) 50%, rgba(255,135,48,0.4) 75%, transparent 100%);
-    transform: rotate(-35deg) scaleX(0.1);
-    animation-delay: 0.15s;
-}
-
-.prism-beam-3 {
-    height: 200px;
-    margin-top: -100px;
-    background: radial-gradient(ellipse at center, rgba(255,255,255,0.7) 0%, rgba(255,135,48,0.3) 40%, transparent 80%);
-    transform: rotate(0deg) scale(0.1);
-    animation: prismFlash 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    animation-delay: 0.2s;
 }
 
 .splash-content {
-    position: relative;
-    z-index: 10;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    padding: 0 20px;
 }
 
 .splash-logo-wrap {
-    margin-bottom: 20px;
     opacity: 0;
-    transform: scale(0.85);
-    animation: splashLogoReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+    transform: scale(0.92);
+    animation: splashLogoAppear 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .splash-logo-img {
-    height: 52px;
+    height: 56px;
     width: auto;
     display: block;
-    filter: invert(1) brightness(2) drop-shadow(0 0 20px rgba(255, 135, 48, 0.6));
+    filter: brightness(0); /* Pure sharp black logo on crisp white background */
 }
 
-.splash-title {
-    font-family: 'Outfit', 'Pretendard', sans-serif;
-    font-size: clamp(24px, 6vw, 36px);
-    font-weight: 900;
-    letter-spacing: 0.2em;
-    color: #ffffff;
-    opacity: 0;
-    transform: translateY(15px);
-    animation: splashTextFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-}
-
-.splash-subtitle {
-    font-family: 'Outfit', 'Pretendard', sans-serif;
-    font-size: clamp(11px, 2.5vw, 14px);
-    font-weight: 600;
-    letter-spacing: 0.35em;
-    color: rgba(255, 255, 255, 0.6);
-    margin-top: 8px;
-    opacity: 0;
-    transform: translateY(12px);
-    animation: splashTextFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
-}
-
-@keyframes prismPulse {
-    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; }
-    100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.95; }
-}
-
-@keyframes prismBeamUnfold {
-    0% { opacity: 0; transform: rotate(45deg) scaleX(0.05); }
-    50% { opacity: 0.95; }
-    100% { opacity: 0.8; transform: rotate(45deg) scaleX(1.3); }
-}
-
-@keyframes prismFlash {
-    0% { opacity: 0; transform: scale(0.05); }
-    40% { opacity: 1; transform: scale(1.4); }
-    100% { opacity: 0.4; transform: scale(1.8); }
-}
-
-@keyframes splashLogoReveal {
-    0% { opacity: 0; transform: scale(0.8) translateY(10px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-@keyframes splashTextFadeUp {
-    0% { opacity: 0; transform: translateY(15px); }
-    100% { opacity: 1; transform: translateY(0); }
+@keyframes splashLogoAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }

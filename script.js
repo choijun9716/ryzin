@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 splashScreen.classList.add('fade-out');
                 setTimeout(() => {
                     splashScreen.remove();
-                }, 650);
-            }, 1250);
+                }, 500);
+            }, 1000);
         }
     }
 
