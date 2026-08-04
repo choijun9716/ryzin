@@ -1854,18 +1854,18 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         width: 100%;
         height: calc(100vh - 60px);
         height: calc(100svh - 60px);
-        background-color: rgba(0, 0, 0, 0.96);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(10, 10, 12, 0.97);
+        backdrop-filter: blur(28px);
+        -webkit-backdrop-filter: blur(28px);
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        padding: 48px 24px;
-        gap: 28px;
+        padding: 32px 24px 48px 24px;
+        gap: 12px;
         transform: translateY(-150%);
         transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 999;
-        border-bottom: 1px solid var(--border-light);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
         overflow-y: auto;
     }
 
@@ -1874,10 +1874,26 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
     .nav-link {
-        font-size: 1.25rem;
+        width: 100%;
+        max-width: 340px;
+        text-align: center;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: var(--text-pure);
-        padding: 8px 16px;
+        letter-spacing: -0.02em;
+        color: rgba(255, 255, 255, 0.9);
+        padding: 14px 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        transition: all 0.25s ease;
+        box-sizing: border-box;
+    }
+
+    .nav-link:active,
+    .nav-link:hover {
+        background: rgba(255, 135, 48, 0.12);
+        border-color: rgba(255, 135, 48, 0.4);
+        color: #ff8730;
     }
 
     .studio-item {
@@ -3498,16 +3514,16 @@ footer {
     right: 40px;
 }
 
-/* Mobile Responsive Dimensions for Swiper & Hero Header - Tightened Spacing */
+/* Mobile Responsive Dimensions for Swiper & Hero Header - UI/UX Refined Spacing */
 @media (max-width: 768px) {
     .hero-swiper-section {
-        padding-top: 98px !important;
-        padding-bottom: 36px !important;
+        padding-top: 118px !important;
+        padding-bottom: 42px !important;
         min-height: auto;
     }
     .hero-header-text {
-        margin-top: 0px;
-        margin-bottom: 14px !important;
+        margin-top: 6px;
+        margin-bottom: 22px !important;
         padding: 0 16px;
     }
     .hero-eyebrow {
@@ -3515,15 +3531,15 @@ footer {
         font-weight: 500;
         letter-spacing: 0.04em;
         color: rgba(255, 255, 255, 0.65);
-        margin-bottom: 6px !important;
+        margin-bottom: 8px !important;
     }
     .hero-main-title {
         font-size: clamp(20px, 5.8vw, 26px) !important;
-        line-height: 1.35 !important;
+        line-height: 1.38 !important;
         letter-spacing: -0.8px !important;
     }
     .swiper-hero-container {
-        margin-top: 8px !important;
+        margin-top: 20px !important;
     }
     .swiper-hero-coverflow .swiper-slide {
         width: min(80vw, 305px) !important;
@@ -3543,14 +3559,14 @@ footer {
 
 @media (max-width: 480px) {
     .hero-swiper-section {
-        padding-top: 92px !important;
-        padding-bottom: 30px !important;
+        padding-top: 112px !important;
+        padding-bottom: 36px !important;
     }
     .hero-header-text {
-        margin-bottom: 12px !important;
+        margin-bottom: 20px !important;
     }
     .swiper-hero-container {
-        margin-top: 6px !important;
+        margin-top: 18px !important;
     }
     .swiper-hero-coverflow .swiper-slide {
         width: min(84vw, 285px) !important;
