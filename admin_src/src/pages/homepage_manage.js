@@ -568,7 +568,7 @@ export function renderHomepageManage() {
       container.querySelectorAll('.hero-card-file-input').forEach(input => {
         input.addEventListener('change', async (e) => {
           const idx = parseInt(e.target.dataset.idx);
-          const file = e.target.files[0];
+          let file = e.target.files[0];
           if (!file) return;
 
           const triggerBtn = container.querySelector(`.btn-upload-hero-card[data-idx="${idx}"]`);
@@ -578,6 +578,40 @@ export function renderHomepageManage() {
           }
 
           try {
+            // 화질 깨짐 없는 고품질(0.88) 용량 최적화
+            if (file.type.startsWith('image/')) {
+              file = await new Promise((resolve) => {
+                const img = new Image();
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 1920;
+                    if (width > MAX_WIDTH) {
+                      height = Math.round((height * MAX_WIDTH) / width);
+                      width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => {
+                      if (!blob) { resolve(file); return; }
+                      const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                      });
+                      resolve(newFile);
+                    }, 'image/jpeg', 0.88);
+                  };
+                  img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+              });
+            }
+
             const supabase = window.supabaseClient;
             if (!supabase) {
               alert('Supabase 연동 클라이언트를 찾을 수 없습니다.');
