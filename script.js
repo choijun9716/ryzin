@@ -892,22 +892,21 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapper.appendChild(slide);
         });
 
-        // Swiper 3D Coverflow — loop 제거, 48개 슬라이드로 자연스러운 흐름 (깜빡거림 완전 차단)
+        // Swiper 3D Coverflow — 무한 연속 자동 슬라이드 (클릭 없이 자동 슬라이드)
         if (typeof Swiper !== 'undefined') {
             const heroSwiper = new Swiper('.swiper-hero-coverflow', {
                 effect: 'coverflow',
                 grabCursor: true,
                 centeredSlides: true,
                 slidesPerView: 'auto',
-                loop: false,
-                initialSlide: 4,
-                speed: 1400,
+                loop: true,
+                speed: 1000,
                 watchSlidesProgress: true,
                 autoplay: {
-                    delay: 2800,
+                    delay: 2200,
                     disableOnInteraction: false,
-                    pauseOnMouseEnter: true,
-                    stopOnLastSlide: false,
+                    pauseOnMouseEnter: false,
+                    waitForTransition: false,
                 },
                 coverflowEffect: {
                     rotate: 10,
@@ -919,23 +918,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 navigation: {
                     nextEl: '#heroSwiperNext',
                     prevEl: '#heroSwiperPrev',
-                },
-                on: {
-                    // 마지막 슬라이드 근처에 오면 처음(중간 지점)으로 애니메이션 없이 리셋
-                    autoplayStop: function(swiper) {
-                        if (swiper.isEnd) {
-                            swiper.slideTo(4, 0, false);
-                            swiper.autoplay.start();
-                        }
-                    },
-                    reachEnd: function(swiper) {
-                        setTimeout(() => {
-                            swiper.slideTo(4, 0, false);
-                            swiper.autoplay.start();
-                        }, 100);
-                    }
                 }
             });
+
+            // 페이지 로드 후 즉시 자동 슬라이드 강제 실행 보장
+            if (heroSwiper && heroSwiper.autoplay) {
+                heroSwiper.autoplay.start();
+            }
         }
 
     }
