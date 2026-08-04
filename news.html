@@ -211,21 +211,34 @@
             ];
 
             try {
-                // 1차: news.json 최신 버저닝 파일 최우선 로드
-                const res = await fetch('./news.json?v=' + Date.now()).catch(() => null);
-                if (res && res.ok) {
-                    const fetchedNews = await res.json();
-                    if (fetchedNews && Array.isArray(fetchedNews) && fetchedNews.length > 0) {
-                        newsList = fetchedNews;
+                // 1차: Supabase DB homepage_settings (key = 'news') 직접 fetch (최우선 어드민 실시간 연동)
+                const hpRes = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/homepage_settings?key=eq.news&select=*', {
+                    headers: {
+                        'apikey': 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9',
+                        'Authorization': 'Bearer sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9'
+                    }
+                }).catch(() => null);
+
+                if (hpRes && hpRes.ok) {
+                    const hpData = await hpRes.json();
+                    if (hpData && hpData[0] && hpData[0].value) {
+                        let val = hpData[0].value;
+                        if (typeof val === 'string') {
+                            try { val = JSON.parse(val); } catch(e) {}
+                        }
+                        if (Array.isArray(val) && val.length > 0) {
+                            newsList = val;
+                        }
                     }
                 }
 
-                // 2차: Supabase DB 및 어드민 연동 (예전 더미 기사 검증 제외)
+                // 2차: news.json 버저닝 파일 로드
                 if (!newsList || newsList.length === 0) {
-                    if (typeof fetchHpSetting === 'function') {
-                        const hpNews = await fetchHpSetting('news', null);
-                        if (hpNews && Array.isArray(hpNews) && hpNews.length > 0 && !JSON.stringify(hpNews).includes('파이낸셜뉴스')) {
-                            newsList = hpNews;
+                    const res = await fetch('./news.json?v=' + Date.now()).catch(() => null);
+                    if (res && res.ok) {
+                        const fetchedNews = await res.json();
+                        if (fetchedNews && Array.isArray(fetchedNews) && fetchedNews.length > 0) {
+                            newsList = fetchedNews;
                         }
                     }
                 }
