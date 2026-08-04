@@ -236,6 +236,21 @@ ul {
     /* Ensure no transparency issues */
 }
 
+/* Mobile Sticky Scroll Wobble Prevention */
+@media (max-width: 768px) {
+    .scroll-reveal-container {
+        height: auto !important;
+        min-height: auto !important;
+    }
+    .sticky-reveal {
+        position: relative !important;
+        top: auto !important;
+        height: auto !important;
+        min-height: auto !important;
+        padding: 50px 0 !important;
+    }
+}
+
 .badge-pill {
     display: inline-block;
     padding: 6px 16px;

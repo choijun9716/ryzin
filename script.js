@@ -422,6 +422,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scrollRevealContainer && scrollRevealText) {
         const handleScrollReveal = () => {
             const spans = Array.from(scrollRevealText.querySelectorAll('span, strong'));
+            if (window.innerWidth <= 768) {
+                spans.forEach((span) => {
+                    span.style.color = 'var(--text-pure)';
+                    span.style.fontWeight = '600';
+                });
+                return;
+            }
             const rect = scrollRevealContainer.getBoundingClientRect();
             const windowHeight = window.innerHeight;
 
