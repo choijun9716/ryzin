@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     let allPortfolioItems = [];
     let visibleCount = 6;
-    let currentFilter = 'food';
+    let currentFilter = 'all';
 
     const categoryMap = {
         'beauty': '뷰티',
@@ -319,25 +319,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderPortfolio(isAppend = false) {
+    function renderPortfolio() {
         if (!portfolioGrid) return;
         
         const filtered = allPortfolioItems.filter(item =>
             currentFilter === 'all' || item.category === currentFilter
         );
 
-        if (!isAppend) {
-            portfolioGrid.innerHTML = '';
-        }
-
-        const isMobileView = window.innerWidth <= 768;
-        let toShow;
-        if (isMobileView) {
-            toShow = filtered;
-        } else {
-            const startIndex = isAppend ? visibleCount - 6 : 0;
-            toShow = filtered.slice(startIndex, visibleCount);
-        }
+        const toShow = filtered.slice(0, visibleCount);
 
         let newItemsHtml = '';
         toShow.forEach(item => {
@@ -355,18 +344,14 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         });
 
-        if (isAppend) {
-            portfolioGrid.insertAdjacentHTML('beforeend', newItemsHtml);
-        } else {
-            portfolioGrid.innerHTML = newItemsHtml;
-        }
+        portfolioGrid.innerHTML = newItemsHtml;
 
-        // Toggle Load More button
+        // Toggle Load More button: hide if no more items to load
         if (loadMoreBtn) {
-            if (isMobileView) {
+            if (filtered.length <= visibleCount) {
                 loadMoreBtn.style.display = 'none';
             } else {
-                loadMoreBtn.style.display = (filtered.length > visibleCount) ? 'inline-block' : 'none';
+                loadMoreBtn.style.display = 'block';
             }
         }
 
