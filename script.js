@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const trackEl = document.getElementById('heroSlotTrack');
 
         const defaultHeroText = {
-            eyebrow: '감도높은 라이브커머스',
+            eyebrow: '브랜드를 가장 생생하게 만나는 순간',
             prefix: '우리는',
             phrases: [
                 '브랜드를 라이브합니다.',
