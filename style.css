@@ -3802,3 +3802,17 @@ footer {
     transform: scale(1) !important;
     opacity: 1 !important;
 }
+
+/* Mobile Ultra-Fast Performance & Latency Elimination */
+@media (max-width: 768px) {
+    *, ::before, ::after {
+        animation-duration: 0.15s !important;
+        transition-duration: 0.15s !important;
+        will-change: auto !important;
+    }
+    .fade-up, .fade-in {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}

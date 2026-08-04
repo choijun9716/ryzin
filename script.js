@@ -250,29 +250,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    let isScrollTicking = false;
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 30) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
+        if (!isScrollTicking) {
+            requestAnimationFrame(() => {
+                if (navbar) {
+                    if (window.scrollY > 30) navbar.classList.add('scrolled');
+                    else navbar.classList.remove('scrolled');
+                }
+                if (window.innerWidth > 768) {
+                    let current = '';
+                    sections.forEach(section => {
+                        const sectionTop = section.offsetTop;
+                        if (scrollY >= (sectionTop - 100)) {
+                            current = section.getAttribute('id');
+                        }
+                    });
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${current}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+                isScrollTicking = false;
+            });
+            isScrollTicking = true;
         }
-
-        // Active link tracking
-        let current = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            if (scrollY >= (sectionTop - 100)) {
-                current = section.getAttribute('id');
-            }
-        });
-
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href').includes(current)) {
-                link.classList.add('active');
-            }
-        });
-    });
+    }, { passive: true });
 
     // 2. Scroll Reveal Animations (Intersection Observer)
     const observerOptions = {
@@ -292,9 +297,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }, observerOptions);
 
     const revealElements = document.querySelectorAll('.fade-up, .fade-in');
-    revealElements.forEach(el => {
-        observer.observe(el);
-    });
+    if (window.innerWidth <= 768) {
+        revealElements.forEach(el => el.classList.add('visible'));
+    } else {
+        revealElements.forEach(el => observer.observe(el));
+    }
 
     // 3. Simple Interaction for Pricing Cards
     const priceCards = document.querySelectorAll('.price-table');
@@ -535,11 +542,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    (function () { var w = window; if (w.ChannelIO) { return w.console.error("ChannelIO script included twice."); } var ch = function () { ch.c(arguments); }; ch.q = []; ch.c = function (args) { ch.q.push(args); }; w.ChannelIO = ch; function l() { if (w.ChannelIOInitialized) { return; } w.ChannelIOInitialized = true; var s = document.createElement("script"); s.type = "text/javascript"; s.async = true; s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js"; var x = document.getElementsByTagName("script")[0]; if (x.parentNode) { x.parentNode.insertBefore(s, x); } } if (document.readyState === "complete") { l(); } else { w.addEventListener("DOMContentLoaded", l); w.addEventListener("load", l); } })();
+    setTimeout(() => {
+        (function () { var w = window; if (w.ChannelIO) { return w.console.error("ChannelIO script included twice."); } var ch = function () { ch.c(arguments); }; ch.q = []; ch.c = function (args) { ch.q.push(args); }; w.ChannelIO = ch; function l() { if (w.ChannelIOInitialized) { return; } w.ChannelIOInitialized = true; var s = document.createElement("script"); s.type = "text/javascript"; s.async = true; s.src = "https://cdn.channel.io/plugin/ch-plugin-web.js"; var x = document.getElementsByTagName("script")[0]; if (x.parentNode) { x.parentNode.insertBefore(s, x); } } if (document.readyState === "complete") { l(); } else { w.addEventListener("DOMContentLoaded", l); w.addEventListener("load", l); } })();
 
-    ChannelIO('boot', {
-        "pluginKey": "33157f92-9ee2-4c09-9776-c7daa26b5f25"
-    });
+        ChannelIO('boot', {
+            "pluginKey": "33157f92-9ee2-4c09-9776-c7daa26b5f25"
+        });
+    }, window.innerWidth <= 768 ? 1800 : 0);
 
 
     // 6. Theme Toggle (REMOVED)
