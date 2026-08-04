@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     let allPortfolioItems = [];
     let visibleCount = 6;
-    let currentFilter = 'all';
+    let currentFilter = 'food';
 
     const categoryMap = {
         'beauty': '뷰티',
