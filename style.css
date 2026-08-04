@@ -336,20 +336,20 @@ ul {
     height: 80px;
     z-index: 1000;
     transition: all 0.4s ease;
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     /* 스크롤 전: 상단에서 아래로 어두워지는 그라디언트 (로고/메뉴 가독성 확보) */
     background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.55) 0%,
         rgba(0, 0, 0, 0.0) 100%
     );
 }
 
 .navbar.scrolled {
-    background: rgba(0, 0, 0, 0.82);
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .nav-container {
@@ -3523,7 +3523,7 @@ footer {
         letter-spacing: -0.8px !important;
     }
     .swiper-hero-container {
-        margin-top: 32px !important;
+        margin-top: 30px !important;
     }
     .swiper-hero-coverflow .swiper-slide {
         width: min(80vw, 305px) !important;
@@ -3550,7 +3550,7 @@ footer {
         margin-bottom: 32px !important;
     }
     .swiper-hero-container {
-        margin-top: 36px !important;
+        margin-top: 34px !important;
     }
     .swiper-hero-coverflow .swiper-slide {
         width: min(84vw, 285px) !important;
