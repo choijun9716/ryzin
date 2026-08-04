@@ -866,13 +866,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 : `./assets/${img}`;
 
             const isVideo = img.endsWith('.mp4') || img.endsWith('.webm');
-            const isPriority = idx < 3; // 첫 3개 슬라이드만 우선 로딩
 
             let mediaHtml = '';
             if (isVideo) {
                 mediaHtml = `<video src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover" autoplay loop muted playsinline></video>`;
             } else {
-                mediaHtml = `<img src="${imgSrc}" alt="RYZIN Portfolio" class="progressive-img absolute inset-0 w-full h-full object-cover" loading="${isPriority ? 'eager' : 'lazy'}" decoding="${isPriority ? 'sync' : 'async'}" ${isPriority ? 'fetchpriority="high"' : ''} draggable="false" onload="this.classList.add('is-loaded')">`;
+                mediaHtml = `<img src="${imgSrc}" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="eager" draggable="false">`;
             }
 
             slide.innerHTML = `
@@ -884,11 +883,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             wrapper.appendChild(slide);
-        });
-
-        // 이미 캐시된 이미지는 즉시 is-loaded 클래스 부여
-        wrapper.querySelectorAll('img.progressive-img').forEach(img => {
-            if (img.complete) img.classList.add('is-loaded');
         });
 
         // Swiper 3D Coverflow — loop 제거, 48개 슬라이드로 자연스러운 흐름 (깜빡거림 완전 차단)
