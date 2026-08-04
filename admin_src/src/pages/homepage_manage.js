@@ -26,7 +26,10 @@ export function renderHomepageManage() {
           if (typeof val === 'string') {
             try { val = JSON.parse(val); } catch(e) {}
           }
-          return val;
+          if (val) {
+            try { localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(val)); } catch(e) {}
+            return val;
+          }
         }
       }
     } catch (e) {}
@@ -39,17 +42,25 @@ export function renderHomepageManage() {
   };
 
   const saveHpSetting = async (key, val) => {
-    localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(val));
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings`, {
+      localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(val));
+    } catch (e) {}
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?on_conflict=key`, {
         method: 'POST',
         headers: {
           ...headers,
           'Prefer': 'resolution=merge-duplicates'
         },
         body: JSON.stringify({ key, value: val, updated_at: new Date().toISOString() })
-      }).catch(() => null);
-    } catch (e) {}
+      });
+      if (!res.ok) {
+        console.warn('Supabase save response error:', await res.text());
+      }
+    } catch (e) {
+      console.error('Supabase save error:', e);
+    }
   };
 
   // 데이터 상태

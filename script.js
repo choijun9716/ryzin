@@ -109,14 +109,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (typeof val === 'string') {
                         try { val = JSON.parse(val); } catch(e) {}
                     }
-                    return val;
+                    if (val) {
+                        try { localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(val)); } catch(e) {}
+                        return val;
+                    }
                 }
             }
         } catch (e) {
             console.warn('Supabase fetch failed for key:', key, e);
         }
         
-        // Fallback to static JSON file if DB query yields no value
+        // 2. LocalStorage 캐시 백업 확인
+        try {
+            const localVal = localStorage.getItem(`ryzin_hp_${key}`);
+            if (localVal) {
+                return JSON.parse(localVal);
+            }
+        } catch(e) {}
+
+        // 3. Static JSON 백업
         if (fallbackUrl) {
             try {
                 const res2 = await fetch(fallbackUrl + '?v=' + Date.now());
