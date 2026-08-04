@@ -411,9 +411,14 @@ document.addEventListener('DOMContentLoaded', () => {
             tabSlider.style.transform = `translateX(${activeTab.offsetLeft - 5}px)`;
         }
     }
+    let resizeTimer = null;
     window.addEventListener('resize', () => {
         updateTabSlider();
-        renderPortfolio();
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            // Only update tab slider on window size changes, avoid redrawing DOM
+            updateTabSlider();
+        }, 200);
     });
 
     // 6. Scroll Text Reveal Effect
