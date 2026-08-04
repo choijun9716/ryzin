@@ -3685,6 +3685,15 @@ footer {
     will-change: opacity, transform;
 }
 
+@media (max-width: 768px) {
+    .splash-screen {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+}
+
 .splash-screen.fade-out {
     opacity: 0;
     transform: scale(1.04);

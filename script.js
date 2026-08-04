@@ -9,8 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Prism Opening Splash Screen Control ──
     const splashScreen = document.getElementById('splashScreen');
     if (splashScreen) {
+        const isMobile = window.innerWidth <= 768;
         const hasSeenSplash = sessionStorage.getItem('ryzin_splash_shown');
-        if (hasSeenSplash) {
+        if (isMobile || hasSeenSplash) {
             splashScreen.remove();
         } else {
             sessionStorage.setItem('ryzin_splash_shown', 'true');
