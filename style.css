@@ -3629,6 +3629,15 @@ footer {
 
 /* Mobile Responsive Dimensions for Swiper & Hero Header - UI/UX Refined Spacing */
 @media (max-width: 768px) {
+    #about {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
     .hero-swiper-section {
         padding-top: 118px !important;
         padding-bottom: 42px !important;
