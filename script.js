@@ -104,8 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.${key}&select=*`, { headers }).catch(() => null);
             if (res && res.ok) {
                 const data = await res.json();
-                if (data && data[0] && data[0].value) {
-                    return data[0].value;
+                if (data && data[0] && data[0].value !== undefined) {
+                    let val = data[0].value;
+                    if (typeof val === 'string') {
+                        try { val = JSON.parse(val); } catch(e) {}
+                    }
+                    return val;
                 }
             }
         } catch (e) {
