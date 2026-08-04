@@ -3360,12 +3360,21 @@ footer {
 }
 
 @media (max-width: 768px) {
-    .shorts-arrow { display: none; }
+    .shorts-arrow { display: none !important; }
+    .shorts-slider-wrapper {
+        padding: 0 !important;
+    }
     .shorts-slider-track {
-        padding: 16px 20px 24px;
+        padding: 16px 24px 24px 24px !important;
+        scroll-padding-left: 24px !important;
+        gap: 14px !important;
+        justify-content: flex-start !important;
     }
     .shorts-slider-track .short-clip-card {
-        flex: 0 0 220px;
+        flex: 0 0 215px !important;
+    }
+    .shorts-slider-track .short-clip-card:first-child {
+        margin-left: 4px !important;
     }
 }
 
