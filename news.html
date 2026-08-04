@@ -177,21 +177,34 @@
             let searchQuery = '';
 
             // 뉴스 데이터 로드 (Supabase 고속 DB/CDN 우선 연동)
+            // 뉴스 데이터 로드 (어드민 Supabase DB & homepage_settings 최우선 통합 동기화)
             try {
-                const spRes = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/news?select=*&order=created_at.desc', {
-                    headers: {
-                        'apikey': 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9',
-                        'Authorization': 'Bearer sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9'
-                    }
-                }).catch(() => null);
-
-                if (spRes && spRes.ok) {
-                    const spData = await spRes.json();
-                    if (spData && spData.length > 0) {
-                        newsList = spData;
-                    }
+                // 1차: fetchHpSetting('news') 탐색 (homepage_settings DB)
+                let hpNews = null;
+                if (typeof fetchHpSetting === 'function') {
+                    hpNews = await fetchHpSetting('news', null);
                 }
                 
+                if (hpNews && Array.isArray(hpNews) && hpNews.length > 0) {
+                    newsList = hpNews;
+                } else {
+                    // 2차: Supabase rest/v1/news 테이블 direct fetch
+                    const spRes = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/news?select=*&order=created_at.desc', {
+                        headers: {
+                            'apikey': 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9',
+                            'Authorization': 'Bearer sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9'
+                        }
+                    }).catch(() => null);
+
+                    if (spRes && spRes.ok) {
+                        const spData = await spRes.json();
+                        if (spData && Array.isArray(spData) && spData.length > 0) {
+                            newsList = spData;
+                        }
+                    }
+                }
+
+                // 3차: localStorage ryzin_news_data 또는 local news.json 로 fallback
                 if (!newsList || newsList.length === 0) {
                     const localData = localStorage.getItem('ryzin_news_data');
                     if (localData) {
