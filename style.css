@@ -1367,43 +1367,36 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     text-decoration: none;
-    background: #0d0d0f;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 16px;
-    overflow: hidden;
-    padding: 12px;
-    transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .portfolio-card:hover {
-    transform: translateY(-8px);
-    border-color: rgba(255, 135, 48, 0.3);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    transform: translateY(-12px);
 }
 
 .p-img-box {
     width: 100%;
-    height: 240px;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
     background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
+    max-height: 75vh;
 }
 
 .p-img-box img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    max-height: 75vh;
+    object-fit: contain;
     display: block;
     transition: transform 0.4s ease;
 }
 
 .portfolio-card:hover .p-img-box img {
-    transform: scale(1.04);
+    transform: scale(1.03);
 }
 
 /* Tablet Layout */
@@ -1425,6 +1418,8 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
     .portfolio-card {
+        background: #0d0d0f;
+        border: 1px solid rgba(255, 255, 255, 0.07);
         padding: 8px !important;
         border-radius: 12px !important;
     }
@@ -1432,6 +1427,15 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     .p-img-box {
         height: 165px !important;
         max-height: 185px !important;
+        border-radius: 10px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .p-img-box img {
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+
     .portfolio-filters {
         width: 100% !important;
         margin-bottom: 20px !important;
