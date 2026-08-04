@@ -3,6 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>뉴스룸 | 라이진 스튜디오</title>
 
@@ -34,7 +37,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css?v=20260803">
+    <link rel="stylesheet" href="style.css?v=20260804214155">
 
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons" defer></script>
@@ -162,10 +165,16 @@
     <script>
         if (window.feather) feather.replace();
     </script>
-    <script src="script.js"></script>
+    <script src="script.js?v=20260804214155"></script>
 
     <!-- Newsroom Script -->
     <script>
+        // 모바일 디바이스 예전 더미 캐시 강제 자폭 삭제
+        try {
+            localStorage.removeItem('ryzin_news_data');
+            localStorage.removeItem('ryzin_hp_news');
+        } catch(e) {}
+
         document.addEventListener('DOMContentLoaded', async () => {
             const newsGrid = document.getElementById('newsGrid');
             const newsModal = document.getElementById('newsModal');
