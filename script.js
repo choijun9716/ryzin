@@ -101,39 +101,62 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     async function fetchHpSetting(key, fallbackUrl) {
-        try {
-            const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.${key}&select=*`, { headers }).catch(() => null);
-            if (res && res.ok) {
-                const data = await res.json();
-                if (data && data[0] && data[0].value !== undefined) {
-                    let val = data[0].value;
-                    if (typeof val === 'string') {
-                        try { val = JSON.parse(val); } catch(e) {}
-                    }
-                    if (val) {
-                        try { localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(val)); } catch(e) {}
-                        return val;
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn('Supabase fetch failed for key:', key, e);
-        }
-        
-        // 2. LocalStorage 캐시 백업 확인
+        // 1. LocalStorage 캐시 즉시 반환 (0ms 지연 없음)
+        let cachedData = null;
         try {
             const localVal = localStorage.getItem(`ryzin_hp_${key}`);
-            if (localVal) {
-                return JSON.parse(localVal);
-            }
+            if (localVal) cachedData = JSON.parse(localVal);
         } catch(e) {}
+
+        // 2. Supabase DB 비동기 백그라운드 갱신 (600ms 타임아웃 제한으로 블로킹 전면 차단)
+        const fetchPromise = new Promise(async (resolve) => {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 600);
+
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.${key}&select=*`, {
+                    headers,
+                    signal: controller.signal
+                }).catch(() => null);
+
+                clearTimeout(timeoutId);
+
+                if (res && res.ok) {
+                    const data = await res.json();
+                    if (data && data[0] && data[0].value !== undefined) {
+                        let val = data[0].value;
+                        if (typeof val === 'string') {
+                            try { val = JSON.parse(val); } catch(e) {}
+                        }
+                        if (val) {
+                            try { localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(val)); } catch(e) {}
+                            resolve(val);
+                            return;
+                        }
+                    }
+                }
+            } catch(e) {}
+            resolve(null);
+        });
+
+        if (cachedData) {
+            // 캐시가 있으면 즉시 반환하고 백그라운드에서 갱신
+            fetchPromise.then(() => {});
+            return cachedData;
+        }
+
+        // 캐시가 없을 때만 600ms 타임아웃 내 응답 대기
+        const remoteData = await fetchPromise;
+        if (remoteData) return remoteData;
 
         // 3. Static JSON 백업
         if (fallbackUrl) {
             try {
-                const res2 = await fetch(fallbackUrl + '?v=' + Date.now());
-                if (res2.ok) {
-                    return await res2.json();
+                const res2 = await fetch(fallbackUrl).catch(() => null);
+                if (res2 && res2.ok) {
+                    const jsonVal = await res2.json();
+                    try { localStorage.setItem(`ryzin_hp_${key}`, JSON.stringify(jsonVal)); } catch(e) {}
+                    return jsonVal;
                 }
             } catch(e) {}
         }
