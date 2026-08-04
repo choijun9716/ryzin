@@ -1385,15 +1385,41 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .p-img-box {
+    position: relative;
     width: 100%;
     border-radius: 16px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     max-height: 75vh;
+}
+
+.p-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    background: #ff8730;
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    letter-spacing: -0.2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.p-caption {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-top: 10px;
+    line-height: 1.35;
+    word-break: keep-all;
 }
 
 .p-img-box img {
@@ -1422,16 +1448,16 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     .portfolio-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
+        gap: 24px 12px !important;
         margin-top: 24px !important;
         overflow-x: hidden !important;
     }
 
     .portfolio-card {
-        background: #0d0d0f;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        padding: 8px !important;
-        border-radius: 12px !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
         transition: none !important;
     }
 
@@ -1439,7 +1465,6 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     .portfolio-card:active {
         transform: none !important;
         box-shadow: none !important;
-        border-color: rgba(255, 255, 255, 0.07) !important;
     }
 
     .portfolio-card:hover .p-img-box img {
@@ -1447,13 +1472,16 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
     .p-img-box {
-        height: 165px !important;
-        max-height: 185px !important;
-        border-radius: 10px !important;
-        margin-bottom: 8px !important;
+        height: 290px !important;
+        max-height: 310px !important;
+        border-radius: 16px !important;
+        margin-bottom: 0 !important;
+        position: relative !important;
+        overflow: hidden !important;
     }
 
     .p-img-box img {
+        width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
     }
@@ -1517,8 +1545,21 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
     #loadMoreBtn {
-        padding: 10px 32px !important;
-        font-size: 13.5px !important;
+        display: block !important;
+        width: 85% !important;
+        max-width: 280px !important;
+        height: 48px !important;
+        line-height: 48px !important;
+        padding: 0 !important;
+        margin: 32px auto 0 !important;
+        background: #ff8730 !important;
+        color: #ffffff !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        text-align: center !important;
+        box-shadow: none !important;
     }
 }
 

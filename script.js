@@ -345,10 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
             newItemsHtml += `
                 <a href="${item.link || '#'}" class="portfolio-card portfolio-item-new" target="_blank">
                     <div class="p-img-box">
+                        <span class="p-badge">${catLabel}</span>
                         <img src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1584362924585-cdb273ff5f3e?q=80&w=400&h=700&fit=crop'">
                     </div>
                     <div class="p-caption">
-                        <span>${catLabel}</span> | ${item.title}
+                        ${item.title}
                     </div>
                 </a>
             `;
