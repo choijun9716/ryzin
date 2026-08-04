@@ -3498,48 +3498,63 @@ footer {
     right: 40px;
 }
 
-/* Mobile Responsive Dimensions for Swiper & Hero Header */
+/* Mobile Responsive Dimensions for Swiper & Hero Header - Positioned Lower for Optimal UI/UX */
 @media (max-width: 768px) {
     .hero-swiper-section {
-        padding-top: 80px;
-        padding-bottom: 30px;
+        padding-top: 115px !important;
+        padding-bottom: 48px !important;
         min-height: auto;
     }
     .hero-header-text {
-        margin-bottom: 28px;
-        padding: 0 16px;
+        margin-top: 10px;
+        margin-bottom: 36px !important;
+        padding: 0 20px;
     }
     .hero-eyebrow {
-        font-size: 13px;
-        margin-bottom: 8px;
+        font-size: 13.5px !important;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: rgba(255, 255, 255, 0.65);
+        margin-bottom: 10px !important;
     }
     .hero-main-title {
-        font-size: clamp(20px, 5.8vw, 26px) !important;
-        letter-spacing: -1px;
+        font-size: clamp(21px, 6vw, 27px) !important;
+        line-height: 1.4 !important;
+        letter-spacing: -0.8px !important;
+    }
+    .swiper-hero-container {
+        margin-top: 32px !important;
     }
     .swiper-hero-coverflow .swiper-slide {
-        width: min(80vw, 300px) !important;
-        height: min(120vw, 450px) !important;
+        width: min(80vw, 305px) !important;
+        height: min(120vw, 455px) !important;
         max-height: 480px;
         margin-right: 12px !important;
     }
     .swiper-hero-btn {
-        width: 40px;
-        height: 40px;
-        background: rgba(0, 0, 0, 0.4);
-        border-color: rgba(255, 255, 255, 0.2);
+        width: 42px;
+        height: 42px;
+        background: rgba(0, 0, 0, 0.5);
+        border-color: rgba(255, 255, 255, 0.25);
     }
-    .swiper-hero-prev { left: 6px; }
-    .swiper-hero-next { right: 6px; }
+    .swiper-hero-prev { left: 8px; }
+    .swiper-hero-next { right: 8px; }
 }
 
 @media (max-width: 480px) {
     .hero-swiper-section {
-        padding-top: 75px;
+        padding-top: 108px !important;
+        padding-bottom: 40px !important;
+    }
+    .hero-header-text {
+        margin-bottom: 32px !important;
+    }
+    .swiper-hero-container {
+        margin-top: 36px !important;
     }
     .swiper-hero-coverflow .swiper-slide {
-        width: min(84vw, 280px) !important;
-        height: min(126vw, 420px) !important;
+        width: min(84vw, 285px) !important;
+        height: min(126vw, 425px) !important;
     }
 }
 
