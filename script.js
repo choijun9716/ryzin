@@ -6,6 +6,23 @@ window.scrollTo(0, 0);
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ── Prism Opening Splash Screen Control ──
+    const splashScreen = document.getElementById('splashScreen');
+    if (splashScreen) {
+        const hasSeenSplash = sessionStorage.getItem('ryzin_splash_shown');
+        if (hasSeenSplash) {
+            splashScreen.remove();
+        } else {
+            sessionStorage.setItem('ryzin_splash_shown', 'true');
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    splashScreen.remove();
+                }, 650);
+            }, 1250);
+        }
+    }
+
     // ── Supabase DB 실시간 동기화: 히어로 헤더 텍스트 & 슬롯 롤링 ──────────────
     async function loadHeroTextAndSlotRoll() {
         const eyebrowEl = document.querySelector('.hero-eyebrow');
@@ -151,10 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileMenuBtn && navMenu) {
         mobileMenuBtn.addEventListener('click', () => {
             navMenu.classList.toggle('active');
+            const isOpen = navMenu.classList.contains('active');
+            document.body.classList.toggle('no-scroll', isOpen);
+
             // Toggle hamburger icon if using feather icons
             const icon = mobileMenuBtn.querySelector('i');
             if (icon) {
-                if (navMenu.classList.contains('active')) {
+                if (isOpen) {
                     icon.setAttribute('data-feather', 'x');
                 } else {
                     icon.setAttribute('data-feather', 'menu');
@@ -167,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
                 navMenu.classList.remove('active');
+                document.body.classList.remove('no-scroll');
                 const icon = mobileMenuBtn.querySelector('i');
                 if (icon) {
                     icon.setAttribute('data-feather', 'menu');
@@ -829,22 +850,9 @@ document.addEventListener('DOMContentLoaded', () => {
             imageList.push('1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png', '1782397523767_123.png', '1779278961975_Screenshot_2026-05-20_17-33-25.png');
         }
 
-        // 이미지 선 로드(preload) → 슬라이드 생성 전에 모든 이미지를 브라우저 캐시에 적재
-        // loop 리셋 없이 충분한 수의 슬라이드(48개)로 깜빡거림 원천 차단
-        const imageSources = imageList
-            .filter(img => !img.endsWith('.mp4') && !img.endsWith('.webm'))
-            .map(img => (img.startsWith('http://') || img.startsWith('https://')) ? img : `./assets/${img}`);
-
-        await Promise.all(imageSources.map(src => new Promise(resolve => {
-            const preImg = new Image();
-            preImg.onload = resolve;
-            preImg.onerror = resolve;
-            preImg.src = src;
-        })));
-
-        // 슬라이드를 48개 이상으로 복제 (loop 리셋 없이 autoplay가 자연스럽게 흐름)
+        // 48개 슬라이드 구성 (Promise.all 사전 로드 대기 제거로 즉시 렌더링)
         let displayList = [];
-        while (displayList.length < 48) {
+        while (displayList.length < 32) {
             displayList = displayList.concat(imageList);
         }
         wrapper.innerHTML = '';
@@ -858,12 +866,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 : `./assets/${img}`;
 
             const isVideo = img.endsWith('.mp4') || img.endsWith('.webm');
+            const isPriority = idx < 3; // 첫 3개 슬라이드만 우선 로딩
 
             let mediaHtml = '';
             if (isVideo) {
                 mediaHtml = `<video src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover" autoplay loop muted playsinline></video>`;
             } else {
-                mediaHtml = `<img src="${imgSrc}" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="sync" fetchpriority="high" draggable="false">`;
+                mediaHtml = `<img src="${imgSrc}" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="${isPriority ? 'eager' : 'lazy'}" decoding="${isPriority ? 'sync' : 'async'}" ${isPriority ? 'fetchpriority="high"' : ''} draggable="false">`;
             }
 
             slide.innerHTML = `

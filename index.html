@@ -46,7 +46,7 @@
 
     <!-- Swiper 3D Coverflow CSS & JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css?v=202608032328">
@@ -122,6 +122,23 @@
 </head>
 
 <body>
+    <!-- Prism Opening Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="prism-glow-bg"></div>
+        <div class="prism-beam-wrapper">
+            <div class="prism-beam prism-beam-1"></div>
+            <div class="prism-beam prism-beam-2"></div>
+            <div class="prism-beam prism-beam-3"></div>
+        </div>
+        <div class="splash-content">
+            <div class="splash-logo-wrap">
+                <img src="./assets/logo.png" alt="RYZIN" class="splash-logo-img">
+            </div>
+            <div class="splash-title">RYZIN STUDIO</div>
+            <div class="splash-subtitle">CREATIVE MEDIA & LIVE PRODUCTION</div>
+        </div>
+    </div>
+
     <!-- Background Effects -->
     <div class="glow-bg glow-bg-top"></div>
     <div class="glow-bg glow-bg-bottom"></div>
@@ -191,7 +208,21 @@
             <div class="swiper-hero-container">
                 <div class="swiper swiper-coverflow swiper-hero-coverflow">
                     <div class="swiper-wrapper" id="swiperHeroWrapper">
-                        <!-- Dynamically populated by script.js -->
+                        <!-- Static initial placeholder slides for instant zero-latency FCP -->
+                        <div class="swiper-slide !w-auto !flex !items-center !justify-center">
+                            <div class="swiper-hero-card w-[300px] h-[451px] sm:w-[506px] sm:h-[760px]">
+                                <div class="relative w-full h-full cursor-pointer">
+                                    <img src="./assets/1783519975524_KakaoTalk_Photo_2026-07-08-23-07-21.png" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="sync" fetchpriority="high" draggable="false">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-slide !w-auto !flex !items-center !justify-center">
+                            <div class="swiper-hero-card w-[300px] h-[451px] sm:w-[506px] sm:h-[760px]">
+                                <div class="relative w-full h-full cursor-pointer">
+                                    <img src="./assets/1782397523767_123.png" alt="RYZIN Portfolio" class="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="sync" fetchpriority="high" draggable="false">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
