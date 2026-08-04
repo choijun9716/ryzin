@@ -381,6 +381,16 @@ ul {
     font-size: 1.4rem;
     font-weight: 800;
     letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 40px !important;
+    width: auto !important;
+    display: block !important;
+    filter: invert(1) brightness(2) !important;
+    -webkit-filter: invert(1) brightness(2) !important;
 }
 
 .nav-menu {

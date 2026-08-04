@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const icon = mobileMenuBtn.querySelector('i');
                 if (icon) {
                     icon.setAttribute('data-feather', 'menu');
-                    feather.replace();
+                    if (window.feather) feather.replace();
                 }
             });
         });
