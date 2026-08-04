@@ -378,6 +378,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── Mobile Live Preview Modal Handler ──
+    const mobileModal = document.getElementById('mobileLiveModal');
+    const closeMobileModalBtn = document.getElementById('closeMobileLiveModal');
+    const mobileModalImg = document.getElementById('mobileLiveModalImg');
+    const mobileModalTitle = document.getElementById('mobileLiveModalTitle');
+    const mobileModalCategory = document.getElementById('mobileLiveModalCategory');
+    const mobileModalLink = document.getElementById('mobileLiveModalLink');
+
+    if (portfolioGrid) {
+        portfolioGrid.addEventListener('click', (e) => {
+            const isMobile = window.innerWidth <= 768;
+            if (!isMobile) return; // PC allows direct link navigation
+
+            const card = e.target.closest('.portfolio-card');
+            if (card && mobileModal) {
+                e.preventDefault();
+                const img = card.querySelector('img')?.src || '';
+                const captionText = card.querySelector('.p-caption')?.innerText || '';
+                const linkUrl = card.getAttribute('href') || '#';
+
+                if (mobileModalImg) mobileModalImg.src = img;
+                if (mobileModalTitle) mobileModalTitle.innerText = captionText;
+                if (mobileModalLink) mobileModalLink.href = linkUrl;
+
+                mobileModal.style.display = 'flex';
+                document.body.classList.add('no-scroll');
+                if (window.feather) feather.replace();
+            }
+        });
+    }
+
+    if (closeMobileModalBtn && mobileModal) {
+        closeMobileModalBtn.addEventListener('click', () => {
+            mobileModal.style.display = 'none';
+            document.body.classList.remove('no-scroll');
+        });
+        mobileModal.addEventListener('click', (e) => {
+            if (e.target === mobileModal) {
+                mobileModal.style.display = 'none';
+                document.body.classList.remove('no-scroll');
+            }
+        });
+    }
+
     if (loadMoreBtn) {
         loadMoreBtn.addEventListener('click', (e) => {
             e.preventDefault();
