@@ -1451,10 +1451,11 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         align-items: center !important;
         justify-content: center !important;
         flex-wrap: wrap !important;
-        gap: 8px 6px !important;
+        gap: 10px 8px !important;
         padding: 0 !important;
         margin: 0 auto !important;
         width: 100% !important;
+        max-width: 360px !important;
         box-sizing: border-box !important;
     }
 
