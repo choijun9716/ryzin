@@ -1980,6 +1980,10 @@ box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         gap: 12px 6px;
     }
 
+    .news-main-wrap {
+        padding-top: 92px !important;
+    }
+
     .studio-item {
         flex: 0 0 95vw;
     }
