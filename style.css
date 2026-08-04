@@ -3351,25 +3351,21 @@ footer {
 }
 
 .hero-slot-window {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
     height: 1.35em;
     overflow: hidden;
-    vertical-align: middle;
+    vertical-align: top;
     position: relative;
     padding: 0 4px;
-    border-bottom: 2px solid #ff8730;
+    border-bottom: none !important;
     margin: 0 2px;
 }
 
 .hero-slot-track {
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+    display: block;
+    width: 100%;
+    transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
     will-change: transform;
-    align-items: center;
-    justify-content: center;
 }
 
 .hero-slot-track.no-transition {

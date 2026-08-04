@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const stepPercent = 100 / totalItems;
             let currentIndex = 0;
 
+            // 수직 롤링 애니메이션 제어 (2.5초마다 부드럽게 롤링)
             setInterval(() => {
                 currentIndex++;
                 trackEl.classList.remove('no-transition');
@@ -77,9 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         trackEl.classList.add('no-transition');
                         currentIndex = 0;
                         trackEl.style.transform = 'translateY(0%)';
-                    }, 920);
+                    }, 820);
                 }
-            }, 3600);
+            }, 2500);
         }
     }
     loadHeroTextAndSlotRoll();
