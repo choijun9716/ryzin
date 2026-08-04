@@ -3323,36 +3323,44 @@ footer {
     justify-content: center;
 }
 
-/* Linear/Stripe 스타일 슬롯머신 휠 롤링 (Vertical Slot Roll) */
+/* Linear/Stripe 스타일 슬롯머신 휠 롤링 (Vertical Slot Roll) - UI/UX Center Aligned */
 .hero-main-title {
     font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
     font-weight: 900;
-    font-size: 46px;
-    line-height: 1.3;
-    letter-spacing: -1.8px;
+    font-size: clamp(22px, 5vw, 48px);
+    line-height: 1.35;
+    letter-spacing: -1.5px;
     color: #ffffff;
     word-break: keep-all;
     margin: 0 auto;
     text-align: center;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
     position: relative;
     max-width: 100%;
 }
 
-.hero-prefix {
+.hero-prefix,
+.hero-suffix {
     white-space: nowrap;
     display: inline-block;
-    text-align: right;
+    color: #ffffff;
+    font-weight: 900;
 }
 
 .hero-slot-window {
-    display: inline-block;
-    height: 1.3em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.35em;
     overflow: hidden;
-    vertical-align: bottom;
+    vertical-align: middle;
     position: relative;
+    padding: 0 4px;
+    border-bottom: 2px solid #ff8730;
+    margin: 0 2px;
 }
 
 .hero-slot-track {
@@ -3360,7 +3368,8 @@ footer {
     flex-direction: column;
     transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
     will-change: transform;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
 }
 
 .hero-slot-track.no-transition {
@@ -3368,12 +3377,15 @@ footer {
 }
 
 .hero-slot-item {
-    height: 1.3em;
-    line-height: 1.3em;
+    height: 1.35em;
+    line-height: 1.35em;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     white-space: nowrap;
+    color: #ff8730;
+    font-weight: 900;
+    text-align: center;
 }
 
 @media (max-width: 768px) {

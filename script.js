@@ -29,13 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const prefixEl = document.querySelector('.hero-prefix');
         const trackEl = document.getElementById('heroSlotTrack');
 
+        const suffixEl = document.querySelector('.hero-suffix');
+
         const defaultHeroText = {
             eyebrow: '브랜드를 가장 생생하게 만나는 순간',
             prefix: '우리는',
+            suffix: '만듭니다.',
             phrases: [
-                '브랜드를 라이브합니다.',
-                '브랜드의 매출을 만듭니다.',
-                '고객이 구매하는 순간을 만듭니다.'
+                '브랜드를 라이브',
+                '브랜드의 매출을',
+                '구매하는 순간을'
             ]
         };
 
@@ -44,12 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
             heroText = defaultHeroText;
         }
 
-        // 1. 소제목 & 고정 접두사 업데이트
+        // 1. 소제목 & 고정 접두사/접미사 업데이트
         if (eyebrowEl && heroText.eyebrow) {
             eyebrowEl.textContent = heroText.eyebrow;
         }
         if (prefixEl && heroText.prefix) {
             prefixEl.textContent = heroText.prefix + '\u00A0';
+        }
+        if (suffixEl && heroText.suffix) {
+            suffixEl.textContent = '\u00A0' + heroText.suffix;
         }
 
         // 2. 슬롯 롤링 트랙 아이템 구성 (마지막에 1번째 문장 복사본 추가로 무한 롤링)
