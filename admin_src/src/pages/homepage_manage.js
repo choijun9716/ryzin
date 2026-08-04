@@ -37,7 +37,10 @@ export function renderHomepageManage() {
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings`, {
         method: 'POST',
-        headers,
+        headers: {
+          ...headers,
+          'Prefer': 'resolution=merge-duplicates'
+        },
         body: JSON.stringify({ key, value: val, updated_at: new Date().toISOString() })
       }).catch(() => null);
     } catch (e) {}
@@ -52,12 +55,13 @@ export function renderHomepageManage() {
   let logosData = null;
 
   const defaultHeroText = {
-    eyebrow: "감도높은 라이브커머스",
+    eyebrow: "브랜드를 가장 생생하게 만나는 순간",
     prefix: "우리는",
+    suffix: "만듭니다.",
     phrases: [
-      "브랜드를 라이브합니다.",
-      "브랜드의 매출을 만듭니다.",
-      "고객이 구매하는 순간을 만듭니다."
+      "브랜드를 라이브",
+      "브랜드의 매출을",
+      "구매하는 순간을"
     ]
   };
 

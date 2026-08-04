@@ -45,6 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let heroText = await fetchHpSetting('hero_text', null);
         if (!heroText || !heroText.phrases || heroText.phrases.length === 0) {
             heroText = defaultHeroText;
+        } else {
+            heroText = {
+                ...defaultHeroText,
+                ...heroText
+            };
         }
 
         // 1. 소제목 & 고정 접두사/접미사 업데이트
