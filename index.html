@@ -60,26 +60,20 @@
     <!-- Feather Icons (Minimalist icons) -->
     <script src="https://unpkg.com/feather-icons" defer></script>
 
-    <!-- Naver Analytics (Basic) -->
-    <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js" defer></script>
+    <!-- Naver Analytics (Deferred Async Load) -->
     <script type="text/javascript">
-        if (!wcs_add) var wcs_add = {};
-        wcs_add["wa"] = "1870f14e9dff3a0";
-        if (window.wcs) {
-            wcs_do();
-        }
-    </script>
-
-    <!-- Naver Analytics (Inflow Tracking) -->
-    <script type="text/javascript" src="//wcs.naver.net/wcslog.js" defer> </script>
-    <script type="text/javascript">
-        if (!wcs_add) var wcs_add = {};
-        wcs_add["wa"] = "s_3b474817ff03";
-        if (!_nasa) var _nasa = {};
-        if (window.wcs) {
-            wcs.inflow();
-            wcs_do();
-        }
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var s = document.createElement('script');
+                s.src = "//wcs.naver.net/wcslog.js";
+                s.onload = function() {
+                    if (!window.wcs_add) window.wcs_add = {};
+                    window.wcs_add["wa"] = "s_3b474817ff03";
+                    if (window.wcs) { window.wcs.inflow(); window.wcs_do(); }
+                };
+                document.body.appendChild(s);
+            }, window.innerWidth <= 768 ? 2000 : 500);
+        });
     </script>
 
     <!-- Structured Data (JSON-LD) for SEO -->
