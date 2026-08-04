@@ -48,14 +48,31 @@ export function renderNewsManage() {
   const saveNewsData = async (newsList, itemToSync = null, action = 'upsert') => {
     localStorage.setItem('ryzin_news_data', JSON.stringify(newsList));
 
-    // homepage_settings (key = 'news') 및 rest/v1/news 이중 실시간 동기화
+    // homepage_settings (key = 'news') 100% 안전한 2단계 PATCH / POST 실시간 동기화
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings`, {
-        method: 'POST',
-        headers: { ...headers, 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify({ key: 'news', value: newsList })
-      }).catch(() => null);
-    } catch(e) {}
+      const checkHp = await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.news&select=key`, { headers }).catch(() => null);
+      let hpExists = false;
+      if (checkHp && checkHp.ok) {
+        const hpData = await checkHp.json();
+        if (hpData && hpData.length > 0) hpExists = true;
+      }
+
+      if (hpExists) {
+        await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings?key=eq.news`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ value: newsList })
+        }).catch(() => null);
+      } else {
+        await fetch(`${SUPABASE_URL}/rest/v1/homepage_settings`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ key: 'news', value: newsList })
+        }).catch(() => null);
+      }
+    } catch(e) {
+      console.warn('homepage_settings save error:', e);
+    }
     
     // Supabase DB 비동기 백그라운드 전송
     if (itemToSync) {
