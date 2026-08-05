@@ -214,6 +214,12 @@
   </script>
 
   <div class="live-container">
+    <!-- 데모 시연 전용 최상단 알림 배너 -->
+    <div id="demo-top-notice" style="background:#0f172a; color:#fff; text-align:center; padding:8px 12px; font-size:11px; font-weight:700; border-bottom:1px solid rgba(255,255,255,0.1); letter-spacing:-0.2px; z-index:99999; pointer-events:auto; display:flex; align-items:center; justify-content:center; gap:6px; flex-shrink:0;">
+      <span style="background:#ef4444; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:900; line-height:1; transform:translateY(-1px);">DEMO</span>
+      <span>RYZIN 라이브 Commerce 데모 시연용 화면입니다.</span>
+    </div>
+
     <!-- 비디오 영역 -->
     <div class="video-wrapper">
       <video id="live-video" autoplay muted playsinline autopictureinpicture="true"></video>
@@ -440,6 +446,24 @@
           </button>
         </div>
       </div>
+
+      <!-- 도입 문의 고정 플로팅 버튼 (모바일에 핏되는 화사하고 눈길을 끄는 그라데이션) -->
+      <button id="btn-demo-lead-trigger" style="position:fixed; bottom:20px; left:20px; z-index:99999; background:linear-gradient(135deg, #3b82f6, #1d4ed8); color:#ffffff; border:none; padding:10px 18px; border-radius:50px; font-size:12px; font-weight:700; box-shadow:0 8px 20px -4px rgba(37,99,235,0.4); cursor:pointer; outline:none; display:flex; align-items:center; gap:6px; transition:all 0.2s; pointer-events:auto;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        <span style="font-size:13px;">✉️</span>
+        <span>도입 문의</span>
+      </button>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const trigger = document.getElementById("btn-demo-lead-trigger");
+          if (trigger) {
+            trigger.addEventListener("click", () => {
+              const modal = document.getElementById("lead-form-modal");
+              if (modal) modal.style.display = "flex";
+            });
+          }
+        });
+      </script>
 
     </div>
 
