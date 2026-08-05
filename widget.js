@@ -79,7 +79,8 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 44px;
+      min-height: 44px;
+      height: auto;
       background: linear-gradient(90deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
       border-bottom: 2px solid #3b82f6;
       color: #ffffff;
@@ -94,6 +95,9 @@
       letter-spacing: -0.3px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
       user-select: none;
+      padding: 8px 16px;
+      box-sizing: border-box;
+      text-align: center;
     }
     .ryzin-demo-top-badge {
       background: rgba(59, 130, 246, 0.15);
@@ -105,6 +109,20 @@
       font-weight: 800;
       letter-spacing: 0.06em;
       line-height: 1;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 600px) {
+      .ryzin-demo-top-notice {
+        font-size: 10.5px;
+        gap: 6px;
+        padding: 6px 12px;
+        line-height: 1.4;
+      }
+      .ryzin-demo-top-badge {
+        padding: 2px 6px;
+        font-size: 8.5px;
+      }
     }
 
     /* 홈페이지 우측 하단 도입 문의 플로팅 버튼 (라이브 방송 보기 밑으로 정렬) */
