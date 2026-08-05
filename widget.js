@@ -89,9 +89,9 @@
     }
     .ryzin-modal-content {
       position: relative;
-      width: 440px;
+      width: 390px;
       max-width: 95vw;
-      height: 780px;
+      height: 812px;
       max-height: 94vh;
       background: #000;
       border-radius: 26px;
@@ -122,9 +122,10 @@
       transform: scale(1.08);
     }
     .ryzin-modal-iframe {
-      width: 100%;
-      height: 100%;
+      width: 375px;
+      height: 812px;
       border: none;
+      display: block;
     }
   `;
   document.head.appendChild(style);
@@ -144,7 +145,7 @@
   modal.innerHTML = `
     <div class="ryzin-modal-content">
       <div class="ryzin-modal-close">&times;</div>
-      <iframe class="ryzin-modal-iframe" src="${targetLiveUrl}?view=full" allow="autoplay; fullscreen" allowfullscreen></iframe>
+      <iframe class="ryzin-modal-iframe" src="${targetLiveUrl}" allow="autoplay; fullscreen" allowfullscreen></iframe>
     </div>
   `;
   document.body.appendChild(modal);
