@@ -1492,24 +1492,24 @@ function renderLiveEditView(container, liveId, showView) {
     document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
     document.getElementById('cfg-shareImageFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'share-image-preview', 'shareImageUrl'));
     document.getElementById('cfg-likeFile').addEventListener('change', (e) => uploadLikeImage(e.target.files[0]));
-
-    const standbyFileEl = document.getElementById('cfg-standbyImageFile');
-    if (standbyFileEl) {
-      standbyFileEl.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        try {
-          const base64 = await compressImage(file, 720, 1280, 0.85);
-          const url = await uploadToImgBB(base64);
-          config.standbyImageUrl = url;
-          config.useStandbyImage = true;
-          saveConfig();
-          renderConfigTab();
-        } catch (err) {
-          alert('예비 썸네일 업로드 실패: ' + err.message);
-        }
-      });
-    }
+    document.getElementById('cfg-standbyImageFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      await uploadImage(file, 'standby-image-preview', 'standbyImageUrl');
+      config.useStandbyImage = true;
+      saveConfig();
+      const useCb = document.getElementById('cfg-useStandbyImage');
+      if (useCb) useCb.checked = true;
+      const lbl = document.getElementById('cfg-useStandbyImage-label');
+      if (lbl) {
+        lbl.textContent = 'ON';
+        lbl.style.color = '#2563eb';
+      }
+      const ph = document.getElementById('standby-image-placeholder');
+      if (ph) ph.style.display = 'none';
+      const clearBtn = document.getElementById('btn-clear-standby-image');
+      if (clearBtn) clearBtn.style.display = 'block';
+    });
 
     const btnClearStandby = document.getElementById('btn-clear-standby-image');
     if (btnClearStandby) {
