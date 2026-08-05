@@ -228,23 +228,28 @@ export function renderDemoManagePage(container) {
     }
 
     try {
-      // live_leads 조회 시 live_control 조인하여 brand_name(브랜드명) 및 title(방송 제목) 획득
-      const { data: leads, error } = await db
+      // 1. live_leads 단독 조회 (관계 에러 차단)
+      const { data: leads, error: leadsError } = await db
         .from('live_leads')
-        .select(`
-          id,
-          live_id,
-          name,
-          phone,
-          created_at,
-          live_control (
-            brand_name,
-            title
-          )
-        `)
+        .select('id, live_id, name, phone, created_at')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (leadsError) throw leadsError;
+
+      // 2. live_control 단독 조회 (브랜드 및 방송 타이틀 매핑용)
+      const { data: lives, error: livesError } = await db
+        .from('live_control')
+        .select('live_id, brand_name, title');
+
+      const liveMap = {};
+      if (!livesError && lives) {
+        lives.forEach(item => {
+          liveMap[item.live_id] = {
+            brand: item.brand_name || '미지정',
+            title: item.title || ''
+          };
+        });
+      }
 
       if (!leads || leads.length === 0) {
         leadsContainer.innerHTML = `
@@ -261,8 +266,8 @@ export function renderDemoManagePage(container) {
             <thead>
               <tr style="border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;">
                 <th style="padding: 12px 20px;">신청 일시</th>
-                <th style="padding: 12px 20px;">브랜드명</th>
-                <th style="padding: 12px 20px;">연동 라이브 ID</th>
+                <th style="padding: 12px 20px;">작성한 브랜드명</th>
+                <th style="padding: 12px 20px;">연동 라이브 ID (기본 브랜드)</th>
                 <th style="padding: 12px 20px;">신청자 성함</th>
                 <th style="padding: 12px 20px;">연락처</th>
               </tr>
@@ -271,17 +276,34 @@ export function renderDemoManagePage(container) {
               ${leads.map(lead => {
                 const date = new Date(lead.created_at);
                 const dateStr = date.toLocaleString('ko-KR', { hour12: false });
-                const brand = lead.live_control ? (lead.live_control.brand_name || '미지정') : '미지정';
-                const title = lead.live_control ? (lead.live_control.title || '') : '';
+                
+                // 이름 필드에서 브랜드명 파싱 테스트 (예: 홍길동 (쏘랩))
+                let displayName = lead.name || '';
+                let displayBrand = '';
+                
+                const match = displayName.match(/^(.+?)\s*\((.+?)\)$/);
+                if (match) {
+                  displayName = match[1].trim();
+                  displayBrand = match[2].trim();
+                }
+
+                // 매핑 데이터 조회
+                const mapped = liveMap[lead.live_id] || { brand: '미지정', title: '' };
+                
+                // 만약 사용자가 적은 브랜드명이 비어있다면 매핑된 기본 브랜드명을 활용
+                if (!displayBrand) {
+                  displayBrand = mapped.brand;
+                }
+
                 return `
                   <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
                     <td style="padding: 14px 20px; color: #64748b; font-size: 12px; white-space: nowrap;">${dateStr}</td>
-                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${brand}</td>
+                    <td style="padding: 14px 20px; font-weight: 700; color: #2563eb;">${displayBrand}</td>
                     <td style="padding: 14px 20px; color: #475569; font-size: 12px;">
                       <span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: 600;">${lead.live_id}</span>
-                      <span style="color:#94a3b8; font-size:11px; margin-left:4px;">${title}</span>
+                      <span style="color:#94a3b8; font-size:11px; margin-left:4px;">${mapped.brand} - ${mapped.title}</span>
                     </td>
-                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${lead.name}</td>
+                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${displayName}</td>
                     <td style="padding: 14px 20px; font-weight: 700; color: #2563eb; font-family: monospace;">${lead.phone}</td>
                   </tr>
                 `;

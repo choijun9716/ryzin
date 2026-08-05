@@ -278,6 +278,10 @@
       <p class="ryzin-lead-modal-desc">연락처를 남겨주시면 빠르게 안내해 드리겠습니다.</p>
       <div class="ryzin-lead-field-group">
         <div class="ryzin-lead-field">
+          <label class="ryzin-lead-label">브랜드명 (회사명)</label>
+          <input type="text" class="ryzin-lead-input" id="ryzin-lead-brand" placeholder="예: 쏘랩">
+        </div>
+        <div class="ryzin-lead-field">
           <label class="ryzin-lead-label">성함</label>
           <input type="text" class="ryzin-lead-input" id="ryzin-lead-name" placeholder="성함을 입력해 주세요">
         </div>
@@ -309,6 +313,7 @@
   // 이벤트 연동 2: 도입 문의 버튼 클릭 시 모달 열기
   leadBtn.addEventListener('click', function () {
     leadModal.style.display = 'flex';
+    document.getElementById('ryzin-lead-brand').value = '';
     document.getElementById('ryzin-lead-name').value = '';
     document.getElementById('ryzin-lead-phone').value = '';
   });
@@ -325,16 +330,20 @@
   // 이벤트 연동 4: 리드 폼 제출 API 통신
   const submitBtn = document.getElementById('ryzin-lead-submit');
   submitBtn.addEventListener('click', async function () {
+    const brandVal = document.getElementById('ryzin-lead-brand').value.trim();
     const nameVal = document.getElementById('ryzin-lead-name').value.trim();
     const phoneVal = document.getElementById('ryzin-lead-phone').value.trim();
 
-    if (!nameVal || !phoneVal) {
-      alert('성함과 연락처를 모두 입력해 주세요.');
+    if (!brandVal || !nameVal || !phoneVal) {
+      alert('모든 필수 정보를 정확하게 입력해 주세요.');
       return;
     }
 
     submitBtn.disabled = true;
     submitBtn.textContent = '제출 중...';
+
+    // DB Schema 에러 방지를 위해 name 컬럼에 성함과 브랜드를 안전하게 병합 저장
+    const combinedName = `${nameVal} (${brandVal})`;
 
     try {
       const response = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/live_leads', {
@@ -347,7 +356,7 @@
         },
         body: JSON.stringify({
           live_id: liveId,
-          name: nameVal,
+          name: combinedName,
           phone: phoneVal,
           created_at: new Date().toISOString()
         })

@@ -4620,17 +4620,7 @@ Minimum version required to store current data is: `+c+`.
         <div style="padding: 40px; text-align: center; color: #ef4444; font-size: 14px; font-weight: 600;">
           Supabase 클라이언트가 초기화되지 않았습니다.
         </div>
-      `;return}try{let{data:e,error:r}=await n.from(`live_leads`).select(`
-          id,
-          live_id,
-          name,
-          phone,
-          created_at,
-          live_control (
-            brand_name,
-            title
-          )
-        `).order(`created_at`,{ascending:!1});if(r)throw r;if(!e||e.length===0){t.innerHTML=`
+      `;return}try{let{data:e,error:r}=await n.from(`live_leads`).select(`id, live_id, name, phone, created_at`).order(`created_at`,{ascending:!1});if(r)throw r;let{data:i,error:a}=await n.from(`live_control`).select(`live_id, brand_name, title`),o={};if(!a&&i&&i.forEach(e=>{o[e.live_id]={brand:e.brand_name||`미지정`,title:e.title||``}}),!e||e.length===0){t.innerHTML=`
           <div style="padding: 40px; text-align: center; color: #94a3b8; font-size: 14px;">
             아직 접수된 상담문의가 없습니다.
           </div>
@@ -4640,22 +4630,22 @@ Minimum version required to store current data is: `+c+`.
             <thead>
               <tr style="border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;">
                 <th style="padding: 12px 20px;">신청 일시</th>
-                <th style="padding: 12px 20px;">브랜드명</th>
-                <th style="padding: 12px 20px;">연동 라이브 ID</th>
+                <th style="padding: 12px 20px;">작성한 브랜드명</th>
+                <th style="padding: 12px 20px;">연동 라이브 ID (기본 브랜드)</th>
                 <th style="padding: 12px 20px;">신청자 성함</th>
                 <th style="padding: 12px 20px;">연락처</th>
               </tr>
             </thead>
             <tbody>
-              ${e.map(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`,{hour12:!1}),n=e.live_control&&e.live_control.brand_name||`미지정`,r=e.live_control&&e.live_control.title||``;return`
+              ${e.map(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`,{hour12:!1}),n=e.name||``,r=``,i=n.match(/^(.+?)\s*\((.+?)\)$/);i&&(n=i[1].trim(),r=i[2].trim());let a=o[e.live_id]||{brand:`미지정`,title:``};return r||=a.brand,`
                   <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
                     <td style="padding: 14px 20px; color: #64748b; font-size: 12px; white-space: nowrap;">${t}</td>
-                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${n}</td>
+                    <td style="padding: 14px 20px; font-weight: 700; color: #2563eb;">${r}</td>
                     <td style="padding: 14px 20px; color: #475569; font-size: 12px;">
                       <span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: 600;">${e.live_id}</span>
-                      <span style="color:#94a3b8; font-size:11px; margin-left:4px;">${r}</span>
+                      <span style="color:#94a3b8; font-size:11px; margin-left:4px;">${a.brand} - ${a.title}</span>
                     </td>
-                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${e.name}</td>
+                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${n}</td>
                     <td style="padding: 14px 20px; font-weight: 700; color: #2563eb; font-family: monospace;">${e.phone}</td>
                   </tr>
                 `}).join(``)}
