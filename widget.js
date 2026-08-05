@@ -14,9 +14,7 @@
     } catch(e) {}
   }
 
-  const targetLiveUrl = `${hostUrl}/live/embed.html?id=${liveId}`;
-
-  // CSS 주입 (플로팅 뱃지는 한단계 아담하고 균형잡힌 크기, 모달은 시원한 큼직함 유지)
+  // CSS 주입 (플로팅 뱃지는 깔끔하고 세련된 유선형 알약 디자인 유지)
   const style = document.createElement('style');
   style.innerHTML = `
     .ryzin-widget-container {
@@ -74,60 +72,6 @@
       70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
-    .ryzin-modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.75);
-      z-index: 9999999;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(5px);
-    }
-    .ryzin-modal-content {
-      position: relative;
-      width: 375px;
-      max-width: 95vw;
-      height: 812px;
-      max-height: 94vh;
-      background: #000;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6);
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-    .ryzin-modal-close {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 10;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.65);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.25);
-      transition: all 0.2s;
-    }
-    .ryzin-modal-close:hover {
-      background: rgba(0,0,0,0.85);
-      transform: scale(1.08);
-    }
-    .ryzin-modal-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-      background: transparent;
-    }
   `;
   document.head.appendChild(style);
 
@@ -140,25 +84,18 @@
   `;
   document.body.appendChild(widget);
 
-  // 모달 돔 생성
-  const modal = document.createElement('div');
-  modal.className = 'ryzin-modal-overlay';
-  modal.innerHTML = `
-    <div class="ryzin-modal-content">
-      <div class="ryzin-modal-close">&times;</div>
-      <iframe class="ryzin-modal-iframe" src="${targetLiveUrl}" allow="autoplay; fullscreen" allowfullscreen></iframe>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  const closeBtn = modal.querySelector('.ryzin-modal-close');
+  // 위젯 클릭 이벤트 - 별도의 팝업창으로 깔끔하게 노출 (여백/사이즈 문제 100% 해결)
   widget.addEventListener('click', function () {
-    modal.style.display = 'flex';
-  });
-  closeBtn.addEventListener('click', function () {
-    modal.style.display = 'none';
-  });
-  modal.addEventListener('click', function (e) {
-    if (e.target === modal) modal.style.display = 'none';
+    const popupUrl = `${hostUrl}/live/?id=${liveId}`;
+    const popupWidth = 375;
+    const popupHeight = 812;
+    const left = (window.screen.width - popupWidth) / 2;
+    const top = (window.screen.height - popupHeight) / 2;
+    
+    window.open(
+      popupUrl,
+      'ryzin_live_popup',
+      `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=no,scrollbars=no,status=no,location=no,toolbar=no,menubar=no`
+    );
   });
 })();

@@ -26,54 +26,36 @@
 
   <link rel="stylesheet" href="live.css?v=202607211451">
   <style>
-    /* Embed Mode: live-container 가림 철회 (100% 핏 가득 참 보장) */
-    html, body {
-      width: 100% !important;
-      height: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: hidden !important;
+    /* Embed Mode Overrides */
+    body.embed-mode {
       background: transparent !important;
     }
-    .live-container {
-      width: 100% !important;
-      height: 100% !important;
-      max-width: none !important;
-      max-height: none !important;
-      min-width: 0 !important;
-      min-height: 0 !important;
-      margin: 0 !important;
-      padding: 0 !important;
+    body.embed-mode .live-container {
+      display: none !important;
+    }
+    body.embed-mode #splash-screen {
+      display: none !important;
     }
 
-    /* view=full 모달 전체화면 모드: 100% 빈틈없이 꽉 채움 */
-    body.view-full-mode,
-    body.embed-active-full {
-      background: transparent !important;
-      width: 100% !important;
-      height: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      overflow: hidden !important;
-      display: block !important;
-    }
-    body.view-full-mode .live-container,
+    /* 위젯/임베드 클릭으로 켜진 라이브 화면 꽉 채움 스타일 */
     body.embed-active-full .live-container {
       display: flex !important;
       width: 100% !important;
       height: 100% !important;
-      min-height: unset !important;
       max-width: none !important;
       max-height: none !important;
       border-radius: 0 !important;
       overflow: hidden !important;
       box-shadow: none !important;
-      position: fixed !important;
+      position: absolute !important;
       top: 0 !important;
       left: 0 !important;
       right: 0 !important;
       bottom: 0 !important;
       margin: 0 !important;
+    }
+    body.embed-active-full {
+      background: transparent !important;
     }
 
     /* Floating Banner CSS */
@@ -181,15 +163,10 @@
       const isViewFull = urlParams.get('view') === 'full';   // 모달 전체화면 모드
       const isInsideIframe = window.self !== window.top;
 
-      if (isViewFull || (isInsideIframe && !isEmbedParam && !isWidgetParam)) {
-        // 모달 전체화면: html 및 body에 클래스 추가 + 100% 핏 인라인 스크립트
-        document.documentElement.classList.add('embed-mode-active', 'view-full-mode');
-        document.write('<style>html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: transparent !important; display: block !important; justify-content: unset !important; align-items: unset !important; } .live-container { display: flex !important; width: 100% !important; height: 100% !important; min-height: unset !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; } #splash-screen { display: none !important; }</style>');
-        window.addEventListener('DOMContentLoaded', () => {
-          if (document.body) {
-            document.body.classList.add('embed-mode-active', 'view-full-mode');
-          }
-        });
+      // iframe 내부이거나 widget/embed 파라미터가 있으면 무조건 부모 크기에 100% 가득 핏
+      if (isInsideIframe || isEmbedParam || isWidgetParam) {
+        document.write('<style>html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: transparent !important; } .live-container { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }</style>');
+        document.documentElement.classList.add('embed-mode-active');
       }
 
       const liveId = window.INJECTED_LIVE_ID || urlParams.get('id') || 'live01';

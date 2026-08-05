@@ -26,10 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
   window.resizeParentIframe = function(expand) {
-    // embed.html 이거나 꽉찬 모드이면 iframe 크기를 92px로 축소하는 시도를 100% 원천 차단
-    if (window.location.pathname.includes('embed.html') || document.body.classList.contains('embed-active-full')) {
-      return;
-    }
     const width = expand ? '440px' : '92px';
     const height = expand ? '780px' : '112px';
     const bottom = expand ? '12px' : '74px';
@@ -451,11 +447,13 @@ document.addEventListener('DOMContentLoaded', () => {
       .subscribe();
   }
 
-  // 0ms 즉시 동기 실행 (100ms 지연 완전 제거)
-  loadConfigOnce();
-  loadChatOnce();
-  subscribeConfig();
-  subscribeChat();
+  // 초기 1회 로드 및 실시간 구독 시작
+  setTimeout(() => {
+    loadConfigOnce();
+    loadChatOnce();
+    subscribeConfig();
+    subscribeChat();
+  }, 100);
 
   // === 페이지 로드(새로고침 포함) 시마다 누적 시청자수 +1 ===
   setTimeout(async () => {
