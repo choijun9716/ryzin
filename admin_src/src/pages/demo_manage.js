@@ -251,10 +251,13 @@ export function renderDemoManagePage(container) {
         });
       }
 
-      if (!leads || leads.length === 0) {
+      // [도입문의] 말머리가 들어간 영업용 데이터만 필터링 분리
+      const filteredLeads = leads.filter(lead => lead.name && lead.name.includes('[도입문의]'));
+
+      if (!filteredLeads || filteredLeads.length === 0) {
         leadsContainer.innerHTML = `
           <div style="padding: 40px; text-align: center; color: #94a3b8; font-size: 14px;">
-            아직 접수된 상담문의가 없습니다.
+            아직 접수된 영업용 상담문의가 없습니다.
           </div>
         `;
         return;
@@ -273,12 +276,12 @@ export function renderDemoManagePage(container) {
               </tr>
             </thead>
             <tbody>
-              ${leads.map(lead => {
+              ${filteredLeads.map(lead => {
                 const date = new Date(lead.created_at);
                 const dateStr = date.toLocaleString('ko-KR', { hour12: false });
                 
-                // 이름 필드에서 브랜드명 파싱 테스트 (예: 홍길동 (쏘랩))
-                let displayName = lead.name || '';
+                // 이름 필드에서 식별 접두사 제거 및 브랜드명 파싱 (예: [도입문의] 홍길동 (라이진))
+                let displayName = (lead.name || '').replace('[도입문의]', '').trim();
                 let displayBrand = '';
                 
                 const match = displayName.match(/^(.+?)\s*\((.+?)\)$/);

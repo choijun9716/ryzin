@@ -342,8 +342,8 @@
     submitBtn.disabled = true;
     submitBtn.textContent = '제출 중...';
 
-    // DB Schema 에러 방지를 위해 name 컬럼에 성함과 브랜드를 안전하게 병합 저장
-    const combinedName = `${nameVal} (${brandVal})`;
+    // DB Schema 에러 방지를 위해 name 컬럼에 도입문의 식별 접두어와 성함, 브랜드를 안전하게 병합 저장
+    const combinedName = `[도입문의] ${nameVal} (${brandVal})`;
 
     try {
       const response = await fetch('https://vybrnhyaeugfwezbygdt.supabase.co/rest/v1/live_leads', {

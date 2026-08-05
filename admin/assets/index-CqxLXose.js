@@ -883,7 +883,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">불러오는 중...</div>
         </div>
       </div>
-    `;let e=[],n=async()=>{try{if(!X)throw Error(`Supabase 미연동`);let{data:n,error:r}=await X.from(`live_leads`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});if(r)throw r;e=n||[];let i=document.getElementById(`leads-list-container`),a=document.getElementById(`btn-download-csv-leads`);if(a&&(a.style.display=e.length>0?`block`:`none`),!i)return;if(e.length===0){i.innerHTML=`<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">아직 접수된 상담문의가 없습니다.</div>`;return}let o=`
+    `;let e=[],n=async()=>{try{if(!X)throw Error(`Supabase 미연동`);let{data:n,error:r}=await X.from(`live_leads`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});if(r)throw r;e=(n||[]).filter(e=>!e.name||!e.name.startsWith(`[도입문의]`));let i=document.getElementById(`leads-list-container`),a=document.getElementById(`btn-download-csv-leads`);if(a&&(a.style.display=e.length>0?`block`:`none`),!i)return;if(e.length===0){i.innerHTML=`<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">아직 접수된 상담문의가 없습니다.</div>`;return}let o=`
           <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
             <thead style="background:#f1f5f9; color:#475569;">
               <tr>
@@ -4620,9 +4620,9 @@ Minimum version required to store current data is: `+c+`.
         <div style="padding: 40px; text-align: center; color: #ef4444; font-size: 14px; font-weight: 600;">
           Supabase 클라이언트가 초기화되지 않았습니다.
         </div>
-      `;return}try{let{data:e,error:r}=await n.from(`live_leads`).select(`id, live_id, name, phone, created_at`).order(`created_at`,{ascending:!1});if(r)throw r;let{data:i,error:a}=await n.from(`live_control`).select(`live_id, brand_name, title`),o={};if(!a&&i&&i.forEach(e=>{o[e.live_id]={brand:e.brand_name||`미지정`,title:e.title||``}}),!e||e.length===0){t.innerHTML=`
+      `;return}try{let{data:e,error:r}=await n.from(`live_leads`).select(`id, live_id, name, phone, created_at`).order(`created_at`,{ascending:!1});if(r)throw r;let{data:i,error:a}=await n.from(`live_control`).select(`live_id, brand_name, title`),o={};!a&&i&&i.forEach(e=>{o[e.live_id]={brand:e.brand_name||`미지정`,title:e.title||``}});let s=e.filter(e=>e.name&&e.name.includes(`[도입문의]`));if(!s||s.length===0){t.innerHTML=`
           <div style="padding: 40px; text-align: center; color: #94a3b8; font-size: 14px;">
-            아직 접수된 상담문의가 없습니다.
+            아직 접수된 영업용 상담문의가 없습니다.
           </div>
         `;return}t.innerHTML=`
         <div style="overflow-x: auto;">
@@ -4637,7 +4637,7 @@ Minimum version required to store current data is: `+c+`.
               </tr>
             </thead>
             <tbody>
-              ${e.map(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`,{hour12:!1}),n=e.name||``,r=``,i=n.match(/^(.+?)\s*\((.+?)\)$/);i&&(n=i[1].trim(),r=i[2].trim());let a=o[e.live_id]||{brand:`미지정`,title:``};return r||=a.brand,`
+              ${s.map(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`,{hour12:!1}),n=(e.name||``).replace(`[도입문의]`,``).trim(),r=``,i=n.match(/^(.+?)\s*\((.+?)\)$/);i&&(n=i[1].trim(),r=i[2].trim());let a=o[e.live_id]||{brand:`미지정`,title:``};return r||=a.brand,`
                   <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
                     <td style="padding: 14px 20px; color: #64748b; font-size: 12px; white-space: nowrap;">${t}</td>
                     <td style="padding: 14px 20px; font-weight: 700; color: #2563eb;">${r}</td>

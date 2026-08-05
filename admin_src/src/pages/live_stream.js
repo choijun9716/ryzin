@@ -2713,7 +2713,8 @@ function renderLiveEditView(container, liveId, showView) {
           .order('created_at', { ascending: false });
         if (error) throw error;
 
-        currentLeads = list || [];
+        // 도입문의 식별자로 시작하지 않는 순수 시청자 상담건만 필터링 분리
+        currentLeads = (list || []).filter(lead => !lead.name || !lead.name.startsWith('[도입문의]'));
         const container = document.getElementById('leads-list-container');
         const btnCsv = document.getElementById('btn-download-csv-leads');
         
