@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
   window.resizeParentIframe = function(expand) {
-    const width = expand ? '360px' : '92px';
-    const height = expand ? '600px' : '112px';
-    const bottom = '74px';
+    const width = expand ? '440px' : '92px';
+    const height = expand ? '780px' : '112px';
+    const bottom = expand ? '12px' : '74px';
     const position = window.currentWidgetPosition || 'right';
 
     if (window.parent) {
