@@ -89,30 +89,30 @@
     }
     .ryzin-modal-content {
       position: relative;
-      width: 390px;
-      max-width: 95vw;
-      height: 812px;
-      max-height: 94vh;
-      background: #000;
-      border-radius: 26px;
+      width: 400px;
+      max-width: 92vw;
+      height: 720px;
+      max-height: 90vh;
+      background: #0f172a;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
       border: 1px solid rgba(255,255,255,0.15);
     }
     .ryzin-modal-close {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      top: 14px;
+      right: 14px;
       z-index: 10;
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: rgba(0,0,0,0.65);
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 20px;
       cursor: pointer;
       border: 1px solid rgba(255,255,255,0.25);
       transition: all 0.2s;
@@ -122,10 +122,11 @@
       transform: scale(1.08);
     }
     .ryzin-modal-iframe {
-      width: 375px;
-      height: 812px;
+      width: 100%;
+      height: 100%;
       border: none;
       display: block;
+      background: transparent;
     }
   `;
   document.head.appendChild(style);

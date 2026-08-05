@@ -481,14 +481,14 @@ body {
 
 /* PC 화면을 위한 모바일 크기 제한 (임베드/위젯/iframe 모드 제외) */
 @media (min-width: 600px) {
-  body:not(.embed-mode):not(.widget-mode):not(.embed-mode-active) {
+  html:not(.embed-mode-active) body:not(.embed-mode):not(.widget-mode):not(.embed-mode-active):not(.view-full-mode) {
     background-color: #333;
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  body:not(.embed-mode):not(.widget-mode):not(.embed-mode-active) .live-container {
+  html:not(.embed-mode-active) body:not(.embed-mode):not(.widget-mode):not(.embed-mode-active):not(.view-full-mode) .live-container {
     width: 375px;
     height: 812px;
     border-radius: 24px;
@@ -499,9 +499,26 @@ body {
 }
 
 /* iframe 내부 또는 임베드/위젯일 때는 부모 너비/높이에 100% 빈틈없이 자동 밀착 */
+html.embed-mode-active body,
+body.embed-mode-active,
+body.view-full-mode,
+body.embed-mode,
+body.embed-active-full {
+  background: transparent !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+
+html.embed-mode-active .live-container,
 body.embed-mode-active .live-container,
+body.view-full-mode .live-container,
 body.embed-mode .live-container,
 body.embed-active-full .live-container {
+  display: flex !important;
   width: 100% !important;
   height: 100% !important;
   max-width: none !important;
