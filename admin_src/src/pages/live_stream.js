@@ -391,12 +391,14 @@ function renderLiveEditView(container, liveId, showView) {
   const uploadToImgBB = async (base64Data) => {
     // 0. 전송할 Blob 및 확장자 획득
     const blob = base64ToBlob(base64Data);
-    let ext = 'png';
+    let ext = 'jpg';
     if (blob.type && blob.type.includes('/')) {
-      ext = blob.type.split('/')[1] || 'png';
+      ext = blob.type.split('/')[1] || 'jpg';
     }
 
-    // 1. 개인 설정 API 키 1순위 설정 및 백업 키 어레이 구성
+    const errors = [];
+
+    // 1. ImgBB 멀티 API 키 시도
     const userKey = localStorage.getItem('ryzin_imgbb_key') || '';
     const IMGBB_KEYS = [];
     if (userKey) IMGBB_KEYS.push(userKey);
@@ -406,15 +408,11 @@ function renderLiveEditView(container, liveId, showView) {
       '6049a4f479f67a26eb3ccb8823b1eef7'
     );
 
-    console.log('⚡ 이미지 서버(ImgBB) 업로드를 진행합니다. 시도할 키 개수:', IMGBB_KEYS.length);
-    let lastError = null;
-    const errors = [];
-
     for (const key of IMGBB_KEYS) {
       try {
         const fd = new FormData();
         fd.append('key', key);
-        fd.append('image', blob, `image.${ext}`); // base64 문자열 대신 blob을 바이너리 파일 형태로 전송
+        fd.append('image', blob, `image.${ext}`);
         const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
         const json = await res.json();
         if (json.success && json.data && json.data.url) {
@@ -424,12 +422,53 @@ function renderLiveEditView(container, liveId, showView) {
         }
       } catch (err) {
         const maskedKey = key ? `${key.substring(0, 4)}...` : 'none';
-        console.warn(`[ImgBB] API Key (${maskedKey}) 업로드 실패:`, err);
-        errors.push(`Key (${maskedKey}): ${err.message}`);
-        lastError = err;
+        errors.push(`[ImgBB] Key (${maskedKey}): ${err.message}`);
       }
     }
-    throw new Error('모든 이미지 업로드 서버(ImgBB) 전송이 실패했습니다.\n\n[상세 원인 리스트]\n' + errors.join('\n'));
+
+    // 2. FreeImageHost 무료 호스팅 폴백 시도
+    try {
+      const fd = new FormData();
+      fd.append('key', '6d207e02198a847aa98d0a2a901485a5');
+      fd.append('action', 'upload');
+      fd.append('source', blob, `image.${ext}`);
+      fd.append('format', 'json');
+      const res = await fetch('https://freeimage.host/api/1/upload', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (json.status_code === 200 && json.image && json.image.url) {
+        console.log('⚡ FreeImageHost 폴백 업로드 성공!');
+        return json.image.url;
+      }
+    } catch (err) {
+      errors.push(`[FreeImageHost]: ${err.message}`);
+    }
+
+    // 3. Supabase Storage 버킷 폴백 시도
+    if (db && db.storage) {
+      try {
+        const fileName = `uploads/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const { data, error } = await db.storage.from('live_images').upload(fileName, blob, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        if (!error && data) {
+          const { data: pubData } = db.storage.from('live_images').getPublicUrl(fileName);
+          if (pubData && pubData.publicUrl) {
+            console.log('⚡ Supabase Storage 폴백 업로드 성공!');
+            return pubData.publicUrl;
+          }
+        }
+      } catch (err) {
+        errors.push(`[SupabaseStorage]: ${err.message}`);
+      }
+    }
+
+    // 4. 최종 안전망 무적 폴백 (압축 Base64 Data URL)
+    console.warn('⚠️ 외부 이미지 호스팅 전송 중 오류로 인해 인라인 Data URL 폴백으로 저장합니다.\n' + errors.join('\n'));
+    if (base64Data.startsWith('data:image')) {
+      return base64Data;
+    }
+    return `data:image/${ext};base64,${base64Data}`;
   };
 
   const compressImage = (file, maxWidth, maxHeight, quality = 0.82) => {
