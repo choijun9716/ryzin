@@ -479,24 +479,7 @@ body {
   cursor: pointer;
 }
 
-/* PC 화면을 위한 모바일 크기 제한 (임베드/위젯/iframe 모드 제외) */
-@media (min-width: 600px) {
-  html:not(.embed-mode-active) body:not(.embed-mode):not(.widget-mode):not(.embed-mode-active):not(.view-full-mode) {
-    background-color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  html:not(.embed-mode-active) body:not(.embed-mode):not(.widget-mode):not(.embed-mode-active):not(.view-full-mode) .live-container {
-    width: 375px;
-    height: 812px;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    position: relative;
-  }
-}
+/* PC 화면 모바일 크기 제한 미디어쿼리 삭제 (부모 프레임 100% 반응형 자율 핏 연동) */
 
 /* iframe 내부 또는 임베드/위젯일 때는 부모 너비/높이에 100% 빈틈없이 자동 밀착 */
 html.embed-mode-active body,

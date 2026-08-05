@@ -27,11 +27,23 @@
   <link rel="stylesheet" href="live.css?v=202607211451">
   <style>
     /* Embed Mode: live-container 가림 철회 (100% 핏 가득 참 보장) */
-    body.embed-mode {
+    html, body {
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
       background: transparent !important;
     }
-    body.embed-mode #splash-screen {
-      display: none !important;
+    .live-container {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      max-height: none !important;
+      min-width: 0 !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
     /* view=full 모달 전체화면 모드: 100% 빈틈없이 꽉 채움 */
