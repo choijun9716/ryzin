@@ -14,7 +14,7 @@
     } catch(e) {}
   }
 
-  const targetLiveUrl = `${hostUrl}/live/${liveId}`;
+  const targetLiveUrl = `${hostUrl}/live/embed.html?id=${liveId}`;
 
   // CSS 주입 (플로팅 뱃지는 한단계 아담하고 균형잡힌 크기, 모달은 시원한 큼직함 유지)
   const style = document.createElement('style');

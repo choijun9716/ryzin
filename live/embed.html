@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ryzin Live Widget Viewer</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="live.css?v=202608052150">
+  <style>
+    /* 임베드 독립 뷰어 전용 100% 가득 참 무적 스타일 */
+    html, body {
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      background: #000 !important;
+      display: block !important;
+    }
+    .live-container {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+    /* 미디어쿼리 완전 차단 강제 무력화 */
+    @media (min-width: 1px) {
+      .live-container {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+      }
+    }
+    /* 임베드 모드에서는 내부 플로팅 배너 및 스플래시 제거 */
+    #live-floating-banner, #btn-close-widget, #btn-close-live, #splash-screen {
+      display: none !important;
+    }
+  </style>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
+</head>
+<body class="embed-mode-active embed-active-full">
+
+  <div class="live-container">
+    <!-- 비디오 영역 -->
+    <div class="video-wrapper">
+      <video id="live-video" autoplay muted playsinline autopictureinpicture="true"></video>
+
+      <!-- 썸네일 오버레이 -->
+      <div id="thumbnail-overlay" class="thumbnail-overlay">
+        <img id="thumbnail-img" class="thumbnail-img" src="" alt="Live Thumbnail" style="display:none;">
+        <div class="thumbnail-content">
+          <div id="live-start-text" class="live-start-text"></div>
+        </div>
+      </div>
+
+      <!-- 방송 진행 중 예비 썸네일 오버레이 -->
+      <div id="standby-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; background:#000; align-items:center; justify-content:center; overflow:hidden;">
+        <img id="standby-img" src="" alt="Standby Thumbnail" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+
+      <!-- 하단 그라데이션 오버레이 -->
+      <div class="bottom-gradient"></div>
+    </div>
+
+    <!-- UI 레이어 -->
+    <div class="ui-layer">
+      <!-- 상단 방송 정보 -->
+      <div class="header">
+        <div class="brand-info">
+          <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
+          <div class="text-side">
+            <h1 class="brand-name"></h1>
+            <p class="broadcast-title"></p>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="live-badge">LIVE</div>
+          <div class="viewers-count">0명 시청중</div>
+        </div>
+      </div>
+
+      <!-- 실시간 반응 애니메이션 영역 -->
+      <div class="floating-reactions" id="floating-reactions"></div>
+
+      <!-- 방송용 하단 인터랙션 영역 -->
+      <div class="bottom-area">
+        <div class="winner-confetti-container" id="winner-confetti-container"></div>
+        
+        <!-- 실시간 소통왕 당첨자 발표 오버레이 카드 -->
+        <div class="winner-alert-overlay" id="winner-alert-overlay" style="display: none;">
+          <div class="winner-badge">소통왕 이벤트 당첨</div>
+          <div class="winner-name-display" id="winner-name-display">축하합니다!</div>
+          <div class="winner-timer-bar">
+            <span>남은시간 <strong id="winner-timer-seconds">60</strong>초</span>
+          </div>
+          <button id="btn-open-winner-modal" class="winner-action-btn">선물 주소지 입력하기</button>
+        </div>
+
+        <!-- 하단 상품 카드 및 하트 반응 버튼 -->
+        <div class="product-bar-wrapper">
+          <div class="product-card" id="featured-product-card" style="display: none;">
+            <div class="product-badge" id="product-badge">특가</div>
+            <img src="" alt="Product Thumbnail" class="product-img" id="product-img">
+            <div class="product-info">
+              <div class="product-title" id="product-title">상품명</div>
+              <div class="product-price" id="product-price">0원</div>
+            </div>
+            <div class="product-action">
+              <span class="product-count" id="product-count">0</span>
+              <span class="product-more">더보기</span>
+            </div>
+          </div>
+          
+          <button class="heart-btn" id="heart-btn" aria-label="Heart reaction">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span class="heart-count" id="heart-count">0</span>
+          </button>
+        </div>
+
+        <!-- 채팅 입력 영역 -->
+        <div class="input-section">
+          <input type="text" class="chat-input" id="chat-input" placeholder="실시간 채팅에 참여하세요..." maxlength="100">
+          <button class="send-btn" id="send-btn">전송</button>
+        </div>
+
+        <!-- 채팅 메시지 리스트 영역 -->
+        <div class="chat-section">
+          <div class="chat-messages" id="chat-messages"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 전체 상품 목록 모달 팝업 -->
+  <div class="modal-overlay" id="product-modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>전체 상품 목록</h2>
+        <button class="close-btn" id="close-product-modal">&times;</button>
+      </div>
+      <div class="product-list" id="full-product-list"></div>
+    </div>
+  </div>
+
+  <!-- 소통왕 당첨자 주소지 입력 모달 팝업 -->
+  <div class="modal-overlay" id="winner-address-modal" style="display: none; z-index: 1000000;">
+    <div class="modal-content" style="max-width: 360px; padding: 24px; border-radius: 20px;">
+      <div class="modal-header" style="margin-bottom: 16px;">
+        <h2 style="font-size: 18px; font-weight: 800; color: #0f172a;">축하합니다! 소통왕 당첨</h2>
+        <button class="close-btn" id="close-winner-modal">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: #64748b; margin-bottom: 16px; line-height: 1.5;">
+        선물 배송을 위한 정보를 입력해주세요.
+      </p>
+      <form id="winner-address-form" style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">수령인 성함</label>
+          <input type="text" id="winner-name-input" required placeholder="성함을 입력하세요" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">연락처</label>
+          <input type="tel" id="winner-phone-input" required placeholder="010-0000-0000" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="font-size: 12px; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">배송지 주소</label>
+          <textarea id="winner-address-input" required placeholder="상세 주소를 입력하세요" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; height: 60px; resize: none; box-sizing: border-box;"></textarea>
+        </div>
+        <button type="submit" style="background: #ef4444; color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px;">
+          배송 정보 제출하기
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Supabase & Live App Logic -->
+  <script src="/supabase_config.js"></script>
+  <script src="live.js?v=202608052150"></script>
+</body>
+</html>

@@ -13,7 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // URL 파라미터에서 라이브 ID 추출 (예: /live?id=live01)
   const urlParams = new URLSearchParams(window.location.search);
-  LIVE_ID = window.INJECTED_LIVE_ID || urlParams.get('id') || 'live01';
+  let parsedLiveId = urlParams.get('id');
+  if (!parsedLiveId) {
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const lastPart = pathParts[pathParts.length - 1];
+    if (lastPart && lastPart !== 'live' && lastPart !== 'embed.html' && lastPart !== 'index.html') {
+      parsedLiveId = lastPart;
+    }
+  }
+  LIVE_ID = window.INJECTED_LIVE_ID || parsedLiveId || 'PAZIW92';
 
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
