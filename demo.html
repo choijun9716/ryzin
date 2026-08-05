@@ -74,6 +74,12 @@
     const params = new URLSearchParams(window.location.search);
     const initialUrl = params.get('url') || 'https://oliveyoung.co.kr';
     const liveId = params.get('live_id') || 'PAZIW92';
+    const isCleanMode = params.get('clean') === 'true' || params.get('embed') === 'true';
+
+    if (isCleanMode) {
+      const topBar = document.querySelector('.top-bar');
+      if (topBar) topBar.style.display = 'none';
+    }
 
     urlInput.value = initialUrl;
 
@@ -97,7 +103,7 @@
     });
 
     btnCopyLink.addEventListener('click', () => {
-      const shareUrl = `${window.location.origin}/demo.html?url=${encodeURIComponent(urlInput.value)}&live_id=${liveId}`;
+      const shareUrl = `${window.location.origin}/demo.html?url=${encodeURIComponent(urlInput.value)}&live_id=${liveId}&clean=true`;
       navigator.clipboard.writeText(shareUrl).then(() => {
         btnCopyLink.textContent = '복사 완료!';
         setTimeout(() => { btnCopyLink.textContent = '데모 링크 복사'; }, 2000);

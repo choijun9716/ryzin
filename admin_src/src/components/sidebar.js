@@ -34,6 +34,7 @@ const menuConfig = [
   { key: 'class_applications', label: '클래스 신청 관리', path: '/class_applications', icon: 'crm' },
   { key: 'news_manage', label: '뉴스룸 관리', path: '/news_manage', icon: 'marketing' },
   { key: 'homepage_manage', label: '홈페이지 관리', path: '/homepage_manage', icon: 'dashboard' },
+  { key: 'demo_manage', label: '데모 시연 관리', path: '/demo_manage', icon: 'projects' },
   { key: 'settings', label: '설정', path: '/settings', icon: 'settings' },
 ];
 
