@@ -4543,12 +4543,23 @@ Minimum version required to store current data is: `+c+`.
       </div>
 
       <!-- 데모 목록 -->
-      <div style="background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+      <div style="background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 28px;">
         <div style="padding: 16px 24px; border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
           <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">등록된 데모 시연 목록</h3>
           <span id="demo-count-badge" style="font-size: 12px; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe;">0개</span>
         </div>
         <div id="demo-list-table-container"></div>
+      </div>
+
+      <!-- 데모 시연 상담문의 접수 현황 -->
+      <div style="background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div style="padding: 16px 24px; border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">데모 시연 상담문의 접수 현황</h3>
+          <button id="btn-refresh-demo-leads" style="background: #fff; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; color: #475569; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">새로고침</button>
+        </div>
+        <div id="demo-leads-table-container">
+          <div style="padding: 40px; text-align: center; color: #94a3b8; font-size: 14px;">데이터를 불러오는 중입니다...</div>
+        </div>
       </div>
     </div>
   `,(async()=>{let t=e.querySelector(`#demo-live-select`),n=window.supabaseClient;if(!(!t||!n))try{let{data:e,error:r}=await n.from(`live_control`).select(`live_id, title`);!r&&e&&e.length>0&&(t.innerHTML=e.map(e=>`
@@ -4605,7 +4616,57 @@ Minimum version required to store current data is: `+c+`.
           </tbody>
         </table>
       </div>
-    `,n.querySelectorAll(`.btn-copy-clean-link`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.currentTarget.dataset.url;navigator.clipboard.writeText(t).then(()=>{let t=e.currentTarget.textContent;e.currentTarget.textContent=`복사 완료!`,e.currentTarget.style.background=`#16a34a`,setTimeout(()=>{e.currentTarget.textContent=t,e.currentTarget.style.background=`#2563eb`},2e3)})})}),n.querySelectorAll(`.btn-preview-demo`).forEach(e=>{e.addEventListener(`click`,e=>{window.open(e.currentTarget.dataset.url,`_blank`)})}),n.querySelectorAll(`.btn-delete-demo`).forEach(e=>{e.addEventListener(`click`,e=>{if(!confirm(`이 데모 시연을 삭제하시겠습니까?`))return;let n=parseInt(e.currentTarget.dataset.index),r=za();r.splice(n,1),Ba(r),t()})})},n=e.querySelector(`#btn-create-demo`);n&&n.addEventListener(`click`,()=>{let n=e.querySelector(`#demo-name-input`).value.trim(),r=e.querySelector(`#demo-url-input`).value.trim(),i=e.querySelector(`#demo-live-select`).value;if(!n||!r){alert(`데모명과 타겟 사이트 URL을 모두 입력해주세요.`);return}let a=za();a.unshift({name:n,url:r,liveId:i,createdAt:new Date().toISOString()}),Ba(a),e.querySelector(`#demo-name-input`).value=``,e.querySelector(`#demo-url-input`).value=``,t()}),t()}x(),j();async function Ha(){let e=document.getElementById(`app`);e.innerHTML=`
+    `,n.querySelectorAll(`.btn-copy-clean-link`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.currentTarget.dataset.url;navigator.clipboard.writeText(t).then(()=>{let t=e.currentTarget.textContent;e.currentTarget.textContent=`복사 완료!`,e.currentTarget.style.background=`#16a34a`,setTimeout(()=>{e.currentTarget.textContent=t,e.currentTarget.style.background=`#2563eb`},2e3)})})}),n.querySelectorAll(`.btn-preview-demo`).forEach(e=>{e.addEventListener(`click`,e=>{window.open(e.currentTarget.dataset.url,`_blank`)})}),n.querySelectorAll(`.btn-delete-demo`).forEach(e=>{e.addEventListener(`click`,e=>{if(!confirm(`이 데모 시연을 삭제하시겠습니까?`))return;let n=parseInt(e.currentTarget.dataset.index),r=za();r.splice(n,1),Ba(r),t()})})},n=e.querySelector(`#btn-create-demo`);n&&n.addEventListener(`click`,()=>{let n=e.querySelector(`#demo-name-input`).value.trim(),r=e.querySelector(`#demo-url-input`).value.trim(),i=e.querySelector(`#demo-live-select`).value;if(!n||!r){alert(`데모명과 타겟 사이트 URL을 모두 입력해주세요.`);return}let a=za();a.unshift({name:n,url:r,liveId:i,createdAt:new Date().toISOString()}),Ba(a),e.querySelector(`#demo-name-input`).value=``,e.querySelector(`#demo-url-input`).value=``,t()});let r=async()=>{let t=e.querySelector(`#demo-leads-table-container`);if(!t)return;let n=window.supabaseClient;if(!n){t.innerHTML=`
+        <div style="padding: 40px; text-align: center; color: #ef4444; font-size: 14px; font-weight: 600;">
+          Supabase 클라이언트가 초기화되지 않았습니다.
+        </div>
+      `;return}try{let{data:e,error:r}=await n.from(`live_leads`).select(`
+          id,
+          live_id,
+          name,
+          phone,
+          created_at,
+          live_control (
+            brand_name,
+            title
+          )
+        `).order(`created_at`,{ascending:!1});if(r)throw r;if(!e||e.length===0){t.innerHTML=`
+          <div style="padding: 40px; text-align: center; color: #94a3b8; font-size: 14px;">
+            아직 접수된 상담문의가 없습니다.
+          </div>
+        `;return}t.innerHTML=`
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 800px;">
+            <thead>
+              <tr style="border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;">
+                <th style="padding: 12px 20px;">신청 일시</th>
+                <th style="padding: 12px 20px;">브랜드명</th>
+                <th style="padding: 12px 20px;">연동 라이브 ID</th>
+                <th style="padding: 12px 20px;">신청자 성함</th>
+                <th style="padding: 12px 20px;">연락처</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${e.map(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`,{hour12:!1}),n=e.live_control&&e.live_control.brand_name||`미지정`,r=e.live_control&&e.live_control.title||``;return`
+                  <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                    <td style="padding: 14px 20px; color: #64748b; font-size: 12px; white-space: nowrap;">${t}</td>
+                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${n}</td>
+                    <td style="padding: 14px 20px; color: #475569; font-size: 12px;">
+                      <span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: 600;">${e.live_id}</span>
+                      <span style="color:#94a3b8; font-size:11px; margin-left:4px;">${r}</span>
+                    </td>
+                    <td style="padding: 14px 20px; font-weight: 700; color: #0f172a;">${e.name}</td>
+                    <td style="padding: 14px 20px; font-weight: 700; color: #2563eb; font-family: monospace;">${e.phone}</td>
+                  </tr>
+                `}).join(``)}
+            </tbody>
+          </table>
+        </div>
+      `}catch(e){console.error(`Leads 로드 오류:`,e),t.innerHTML=`
+        <div style="padding: 40px; text-align: center; color: #ef4444; font-size: 13px;">
+          데이터 로드 중 오류가 발생했습니다. (오류 내용: ${e.message})
+        </div>
+      `}},i=e.querySelector(`#btn-refresh-demo-leads`);i&&i.addEventListener(`click`,()=>{r()}),t(),r()}x(),j();async function Ha(){let e=document.getElementById(`app`);e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>

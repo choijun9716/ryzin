@@ -19,7 +19,7 @@
   style.innerHTML = `
     .ryzin-widget-container {
       position: fixed;
-      bottom: 26px;
+      bottom: 94px;
       right: 26px;
       z-index: 999999;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -106,11 +106,11 @@
       line-height: 1;
     }
 
-    /* 홈페이지 좌측 하단 도입 문의 플로팅 버튼 */
+    /* 홈페이지 우측 하단 도입 문의 플로팅 버튼 (라이브 방송 보기 밑으로 정렬) */
     .ryzin-demo-lead-btn {
       position: fixed;
       bottom: 26px;
-      left: 26px;
+      right: 26px;
       z-index: 999999;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       cursor: pointer;
