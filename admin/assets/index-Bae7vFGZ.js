@@ -4496,99 +4496,108 @@ Minimum version required to store current data is: `+c+`.
           </div>
         </div>
       `:``}function m(){if(e.querySelector(`#btn-force-sync`)?.addEventListener(`click`,()=>{st(`기존 홈페이지의 JSON 파일들로부터 모든 데이터(포트폴리오, 히어로 등)를 강제로 가져와 Supabase DB에 엎어쓰시겠습니까?`,async()=>{try{let e=await fetch(`/hero.json`).catch(()=>null);e&&e.ok&&(i=await e.json(),await r(`hero`,i));let t=await fetch(`/portfolio.json`).catch(()=>null);t&&t.ok&&(a=await t.json(),await r(`portfolio`,a));let n=await fetch(`/packages.json`).catch(()=>null);n&&n.ok&&(o=await n.json(),await r(`packages`,o));let s=await fetch(`/stories.json`).catch(()=>null);s&&s.ok&&(c=await s.json(),await r(`stories`,c));let u=await fetch(`/logos.json`).catch(()=>null);u&&u.ok&&(l=await u.json(),await r(`logos`,l)),J(`기존 홈페이지 실데이터 전체가 성공적으로 Supabase DB와 동기화 마이그레이션되었습니다!`),f()}catch{Y(`기존 데이터 가져오기 중 오류가 발생했습니다.`)}})}),t===`hero`){e.querySelector(`#btn-save-hero-text`)?.addEventListener(`click`,async()=>{let t=e.querySelector(`#input-hero-eyebrow`)?.value.trim()||``,n=e.querySelector(`#input-hero-prefix`)?.value.trim()||``,i=e.querySelector(`#input-hero-suffix`)?.value.trim()||``,a=[];e.querySelectorAll(`.input-hero-phrase`).forEach(e=>{e.value.trim()&&a.push(e.value.trim())}),s={eyebrow:t,prefix:n,suffix:i,phrases:a},await r(`hero_text`,s),J(`메인 히어로 상단 텍스트 문구가 Supabase DB에 실시간 저장되었습니다.`)}),e.querySelector(`#btn-clear-all-hero`)?.addEventListener(`click`,async()=>{confirm(`기존 등록된 모든 히어로 카드를 삭제하고 초기화하시겠습니까?
-(새로 직접 등록하실 수 있도록 전부 비워집니다.)`)&&(i=[],await r(`hero`,i),J(`히어로 카드가 전체 삭제되었습니다. 새 카드를 직접 추가해 보세요.`),f())});let t=async()=>{i.push(``),f()};e.querySelector(`#btn-add-hero-card`)?.addEventListener(`click`,t),e.querySelector(`#btn-add-hero-card-empty`)?.addEventListener(`click`,t),e.querySelectorAll(`.btn-move-hero`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.currentTarget.dataset.idx),n=t+parseInt(e.currentTarget.dataset.dir);if(n>=0&&n<i.length){let e=i[t];i[t]=i[n],i[n]=e,await r(`hero`,i),f()}})}),e.querySelectorAll(`.btn-del-hero-card`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.currentTarget.dataset.idx);i.splice(t,1),await r(`hero`,i),J(`카드가 삭제되었습니다.`),f()})}),e.querySelectorAll(`.input-hero-path`).forEach(e=>{e.addEventListener(`change`,e=>{let t=parseInt(e.target.dataset.idx);i[t]=e.target.value.trim()})}),e.querySelectorAll(`.btn-upload-hero-card`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.currentTarget.dataset.idx,n=document.getElementById(`hero-card-file-${t}`);n&&n.click()})}),e.querySelectorAll(`.hero-card-file-input`).forEach(t=>{t.addEventListener(`change`,async t=>{let n=parseInt(t.target.dataset.idx),a=t.target.files[0];if(!a)return;let o=e.querySelector(`.btn-upload-hero-card[data-idx="${n}"]`);o&&(o.disabled=!0,o.textContent=`⏳ 업로드 중...`);try{a.type.startsWith(`image/`)&&(a=await new Promise(e=>{let t=new Image,n=new FileReader;n.onload=n=>{t.onload=()=>{let n=document.createElement(`canvas`),r=t.width,i=t.height,o=1920;r>o&&(i=Math.round(i*o/r),r=o),n.width=r,n.height=i,n.getContext(`2d`).drawImage(t,0,0,r,i),n.toBlob(t=>{if(!t){e(a);return}e(new File([t],a.name.replace(/\.[^/.]+$/,``)+`.jpg`,{type:`image/jpeg`,lastModified:Date.now()}))},`image/jpeg`,.88)},t.src=n.target.result},n.readAsDataURL(a)}));let e=window.supabaseClient;if(!e){alert(`Supabase 연동 클라이언트를 찾을 수 없습니다.`);return}let t=a.name.split(`.`).pop(),o=`hero/${`${Date.now()}_${Math.random().toString(36).substring(2,7)}.${t}`}`,{data:s,error:c}=await e.storage.from(`news_images`).upload(o,a,{cacheControl:`3600`,upsert:!0});if(c){let t=await e.storage.from(`hp_assets`).upload(o,a,{cacheControl:`3600`,upsert:!0});s=t.data,c=t.error}if(c){console.error(`Storage Upload Error:`,c),alert(`파일 업로드 실패: `+c.message);return}let{data:l}=e.storage.from(`news_images`).getPublicUrl(o),u=l.publicUrl;i[n]=u,await r(`hero`,i),J(`사진이 Supabase 고화질 스토리지로 성공적으로 업로드되었습니다!`),f()}catch(e){console.error(e),alert(`업로드 처리 중 오류 발생: `+e.message)}finally{o&&(o.disabled=!1,o.textContent=`사진 선택`)}})})}e.querySelector(`#btn-add-pf`)?.addEventListener(`click`,async()=>{let e=prompt(`포트폴리오 브랜드명/제목:`);if(!e)return;let t=prompt(`이미지 경로:`,`./assets/001.jpg`)||`./assets/001.jpg`,n=prompt(`방송/영상 URL 링크:`,`#`)||`#`;a.unshift({title:e,category:`beauty`,image:t,link:n}),await r(`portfolio`,a),J(`포트폴리오가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-pf`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);a.splice(t,1),await r(`portfolio`,a),J(`포트폴리오 항목이 삭제되었습니다.`),f()})}),e.querySelector(`#btn-add-pkg`)?.addEventListener(`click`,async()=>{let e=prompt(`패키지 명칭:`);if(!e)return;let t=prompt(`가격:`,`1,500,000원`)||`1,500,000원`,n=prompt(`구성 내용:`,`4K 촬영, 메인 쇼호스트`)||``;o.push({name:e,price:t,features:n}),await r(`packages`,o),J(`패키지가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-pkg`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);o.splice(t,1),await r(`packages`,o),f()})}),e.querySelector(`#btn-add-story`)?.addEventListener(`click`,async()=>{let e=prompt(`브랜드명:`);if(!e)return;let t=prompt(`후기/스토리 한줄 문구:`)||``;c.push({brand:e,quote:t,author:`브랜드 담당자`}),await r(`stories`,c),J(`브랜드 스토리가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-story`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);c.splice(t,1),await r(`stories`,c),f()})}),e.querySelector(`#btn-add-logo`)?.addEventListener(`click`,async()=>{let e=prompt(`파트너 브랜드명:`);if(!e)return;let t=prompt(`로고 이미지 경로:`,`./assets/logo.png`)||`./assets/logo.png`;l.push({name:e,logo:t}),await r(`logos`,l),J(`파트너 로고가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-logo`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);l.splice(t,1),await r(`logos`,l),f()})})}return f(),e}var za=window.supabaseClient,Ba=()=>JSON.parse(localStorage.getItem(`ryzin_demo_list`)||`[]`),Va=e=>localStorage.setItem(`ryzin_demo_list`,JSON.stringify(e));function Ha(e){e.innerHTML=`
-    <div style="padding: 28px; max-width: 1200px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+(새로 직접 등록하실 수 있도록 전부 비워집니다.)`)&&(i=[],await r(`hero`,i),J(`히어로 카드가 전체 삭제되었습니다. 새 카드를 직접 추가해 보세요.`),f())});let t=async()=>{i.push(``),f()};e.querySelector(`#btn-add-hero-card`)?.addEventListener(`click`,t),e.querySelector(`#btn-add-hero-card-empty`)?.addEventListener(`click`,t),e.querySelectorAll(`.btn-move-hero`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.currentTarget.dataset.idx),n=t+parseInt(e.currentTarget.dataset.dir);if(n>=0&&n<i.length){let e=i[t];i[t]=i[n],i[n]=e,await r(`hero`,i),f()}})}),e.querySelectorAll(`.btn-del-hero-card`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.currentTarget.dataset.idx);i.splice(t,1),await r(`hero`,i),J(`카드가 삭제되었습니다.`),f()})}),e.querySelectorAll(`.input-hero-path`).forEach(e=>{e.addEventListener(`change`,e=>{let t=parseInt(e.target.dataset.idx);i[t]=e.target.value.trim()})}),e.querySelectorAll(`.btn-upload-hero-card`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.currentTarget.dataset.idx,n=document.getElementById(`hero-card-file-${t}`);n&&n.click()})}),e.querySelectorAll(`.hero-card-file-input`).forEach(t=>{t.addEventListener(`change`,async t=>{let n=parseInt(t.target.dataset.idx),a=t.target.files[0];if(!a)return;let o=e.querySelector(`.btn-upload-hero-card[data-idx="${n}"]`);o&&(o.disabled=!0,o.textContent=`⏳ 업로드 중...`);try{a.type.startsWith(`image/`)&&(a=await new Promise(e=>{let t=new Image,n=new FileReader;n.onload=n=>{t.onload=()=>{let n=document.createElement(`canvas`),r=t.width,i=t.height,o=1920;r>o&&(i=Math.round(i*o/r),r=o),n.width=r,n.height=i,n.getContext(`2d`).drawImage(t,0,0,r,i),n.toBlob(t=>{if(!t){e(a);return}e(new File([t],a.name.replace(/\.[^/.]+$/,``)+`.jpg`,{type:`image/jpeg`,lastModified:Date.now()}))},`image/jpeg`,.88)},t.src=n.target.result},n.readAsDataURL(a)}));let e=window.supabaseClient;if(!e){alert(`Supabase 연동 클라이언트를 찾을 수 없습니다.`);return}let t=a.name.split(`.`).pop(),o=`hero/${`${Date.now()}_${Math.random().toString(36).substring(2,7)}.${t}`}`,{data:s,error:c}=await e.storage.from(`news_images`).upload(o,a,{cacheControl:`3600`,upsert:!0});if(c){let t=await e.storage.from(`hp_assets`).upload(o,a,{cacheControl:`3600`,upsert:!0});s=t.data,c=t.error}if(c){console.error(`Storage Upload Error:`,c),alert(`파일 업로드 실패: `+c.message);return}let{data:l}=e.storage.from(`news_images`).getPublicUrl(o),u=l.publicUrl;i[n]=u,await r(`hero`,i),J(`사진이 Supabase 고화질 스토리지로 성공적으로 업로드되었습니다!`),f()}catch(e){console.error(e),alert(`업로드 처리 중 오류 발생: `+e.message)}finally{o&&(o.disabled=!1,o.textContent=`사진 선택`)}})})}e.querySelector(`#btn-add-pf`)?.addEventListener(`click`,async()=>{let e=prompt(`포트폴리오 브랜드명/제목:`);if(!e)return;let t=prompt(`이미지 경로:`,`./assets/001.jpg`)||`./assets/001.jpg`,n=prompt(`방송/영상 URL 링크:`,`#`)||`#`;a.unshift({title:e,category:`beauty`,image:t,link:n}),await r(`portfolio`,a),J(`포트폴리오가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-pf`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);a.splice(t,1),await r(`portfolio`,a),J(`포트폴리오 항목이 삭제되었습니다.`),f()})}),e.querySelector(`#btn-add-pkg`)?.addEventListener(`click`,async()=>{let e=prompt(`패키지 명칭:`);if(!e)return;let t=prompt(`가격:`,`1,500,000원`)||`1,500,000원`,n=prompt(`구성 내용:`,`4K 촬영, 메인 쇼호스트`)||``;o.push({name:e,price:t,features:n}),await r(`packages`,o),J(`패키지가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-pkg`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);o.splice(t,1),await r(`packages`,o),f()})}),e.querySelector(`#btn-add-story`)?.addEventListener(`click`,async()=>{let e=prompt(`브랜드명:`);if(!e)return;let t=prompt(`후기/스토리 한줄 문구:`)||``;c.push({brand:e,quote:t,author:`브랜드 담당자`}),await r(`stories`,c),J(`브랜드 스토리가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-story`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);c.splice(t,1),await r(`stories`,c),f()})}),e.querySelector(`#btn-add-logo`)?.addEventListener(`click`,async()=>{let e=prompt(`파트너 브랜드명:`);if(!e)return;let t=prompt(`로고 이미지 경로:`,`./assets/logo.png`)||`./assets/logo.png`;l.push({name:e,logo:t}),await r(`logos`,l),J(`파트너 로고가 Supabase DB에 동기화되었습니다.`),f()}),e.querySelectorAll(`.btn-del-logo`).forEach(e=>{e.addEventListener(`click`,async e=>{let t=parseInt(e.target.dataset.idx);l.splice(t,1),await r(`logos`,l),f()})})}return f(),e}var za=()=>JSON.parse(localStorage.getItem(`ryzin_demo_list`)||`[]`),Ba=e=>localStorage.setItem(`ryzin_demo_list`,JSON.stringify(e));function Va(e){e.innerHTML=`
+    <div style="padding: 28px; max-width: 1300px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
       <!-- 헤더 -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <div>
-          <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">데모 시연 관리</h1>
-          <p style="font-size: 13px; color: #64748b; margin: 0;">권한이 없는 타사 웹사이트 주소를 등록하여, 상단바 없이 100% 깔끔한 라이브 위젯 데모 링크를 생성하고 공유합니다.</p>
-        </div>
+      <div style="margin-bottom: 24px;">
+        <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">데모 시연 관리</h1>
+        <p style="font-size: 13px; color: #64748b; margin: 0;">권한이 없는 타사 웹사이트 주소를 등록하여, 상단바 없이 100% 깔끔한 라이브 위젯 데모 링크를 생성하고 공유합니다.</p>
       </div>
 
       <!-- 신규 데모 생성 카드 -->
       <div style="background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 24px; margin-bottom: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
         <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0;">신규 데모 시연 생성</h3>
-        <div style="display: grid; grid-template-columns: 1.2fr 2fr 1fr; gap: 16px; align-items: flex-end;">
+        <div style="display: grid; grid-template-columns: 1fr 2.5fr 1.2fr auto; gap: 12px; align-items: flex-end;">
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; text-transform: uppercase;">데모명 (구분용)</label>
-            <input type="text" id="demo-name-input" placeholder="예: 올리브영 메인 시연" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none;">
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; letter-spacing: 0.05em;">데모명 (구분용)</label>
+            <input type="text" id="demo-name-input" placeholder="예: 올리브영 메인 시연" style="width: 100%; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;">
           </div>
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; text-transform: uppercase;">타겟 웹사이트 URL</label>
-            <input type="text" id="demo-url-input" placeholder="예: https://oliveyoung.co.kr 또는 musinsa.com" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none;">
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; letter-spacing: 0.05em;">타겟 웹사이트 URL</label>
+            <input type="text" id="demo-url-input" placeholder="예: https://oliveyoung.co.kr" style="width: 100%; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;">
           </div>
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; text-transform: uppercase;">연동 라이브 선택</label>
-            <select id="demo-live-select" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; background: #fff;">
+            <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; letter-spacing: 0.05em;">연동 라이브</label>
+            <select id="demo-live-select" style="width: 100%; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; background: #fff; box-sizing: border-box; height: 38px;">
               <option value="PAZIW92">PAZIW92 (쏘랩)</option>
               <option value="HRNCB9K">HRNCB9K (기억의문화)</option>
               <option value="live02">live02 (하나스톤)</option>
             </select>
           </div>
-        </div>
-        <div style="margin-top: 18px; display: flex; justify-content: flex-end;">
-          <button id="btn-create-demo" style="background: #2563eb; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;">
-            데모 링크 생성 및 등록
-          </button>
+          <div>
+            <button id="btn-create-demo" style="background: #2563eb; color: #fff; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; height: 38px;">
+              링크 생성 및 등록
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 데모 목록 리스트 -->
+      <!-- 데모 목록 -->
       <div style="background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-        <div style="padding: 18px 24px; border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+        <div style="padding: 16px 24px; border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
           <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0;">등록된 데모 시연 목록</h3>
           <span id="demo-count-badge" style="font-size: 12px; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 4px 10px; border-radius: 20px; border: 1px solid #bfdbfe;">0개</span>
         </div>
-        <div id="demo-list-table-container">
-          <!-- 테이블 영역 -->
-        </div>
+        <div id="demo-list-table-container"></div>
       </div>
     </div>
-  `,(async()=>{let t=e.querySelector(`#demo-live-select`);if(!(!t||!za))try{let{data:e,error:n}=await za.from(`live_control`).select(`live_id, title`);!n&&e&&e.length>0&&(t.innerHTML=e.map(e=>`
+  `,(async()=>{let t=e.querySelector(`#demo-live-select`),n=window.supabaseClient;if(!(!t||!n))try{let{data:e,error:r}=await n.from(`live_control`).select(`live_id, title`);!r&&e&&e.length>0&&(t.innerHTML=e.map(e=>`
           <option value="${e.live_id}">${e.live_id} (${e.title||`라이브`})</option>
-        `).join(``))}catch{}})();let t=()=>{let n=e.querySelector(`#demo-list-table-container`),r=e.querySelector(`#demo-count-badge`),i=Ba();if(r&&(r.textContent=`${i.length}개`),i.length===0){n.innerHTML=`
+        `).join(``))}catch{}})();let t=()=>{let n=e.querySelector(`#demo-list-table-container`),r=e.querySelector(`#demo-count-badge`),i=za();if(r&&(r.textContent=`${i.length}개`),i.length===0){n.innerHTML=`
         <div style="padding: 40px; text-align: center; color: #94a3b8; font-size: 14px;">
           등록된 데모 시연이 없습니다. 위에서 새로운 데모를 생성해보세요.
         </div>
       `;return}n.innerHTML=`
-      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-        <thead>
-          <tr style="border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b; font-weight: 700;">
-            <th style="padding: 14px 20px;">데모명</th>
-            <th style="padding: 14px 20px;">타겟 URL</th>
-            <th style="padding: 14px 20px;">연동 라이브</th>
-            <th style="padding: 14px 20px;">시연 링크 (상단바 없음)</th>
-            <th style="padding: 14px 20px; text-align: right;">작업</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${i.map((e,t)=>{let n=e.url;!n.startsWith(`http://`)&&!n.startsWith(`https://`)&&(n=`https://`+n);let r=`${window.location.origin}/demo.html?url=${encodeURIComponent(n)}&live_id=${e.liveId}&clean=true`;return`
-              <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="padding: 16px 20px; font-weight: 700; color: #0f172a;">${e.name}</td>
-                <td style="padding: 16px 20px; color: #3b82f6;"><a href="${n}" target="_blank" style="color:#2563eb; text-decoration:none;">${e.url}</a></td>
-                <td style="padding: 16px 20px; font-weight: 600; color: #475569;">${e.liveId}</td>
-                <td style="padding: 16px 20px;">
-                  <input type="text" readonly value="${r}" style="width: 280px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; background: #f8fafc; font-family: monospace;">
-                </td>
-                <td style="padding: 16px 20px; text-align: right;">
-                  <button class="btn-copy-clean-link" data-url="${r}" style="background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; margin-right: 6px;">
-                    순수 링크 복사
-                  </button>
-                  <button class="btn-preview-demo" data-url="${r}" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin-right: 6px;">
-                    미리보기
-                  </button>
-                  <button class="btn-delete-demo" data-index="${t}" style="background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
-                    삭제
-                  </button>
-                </td>
-              </tr>
-            `}).join(``)}
-        </tbody>
-      </table>
-    `,n.querySelectorAll(`.btn-copy-clean-link`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.target.dataset.url;navigator.clipboard.writeText(t).then(()=>{let t=e.target.textContent;e.target.textContent=`복사 완료!`,e.target.style.background=`#16a34a`,setTimeout(()=>{e.target.textContent=t,e.target.style.background=`#2563eb`},2e3)})})}),n.querySelectorAll(`.btn-preview-demo`).forEach(e=>{e.addEventListener(`click`,e=>{window.open(e.target.dataset.url,`_blank`)})}),n.querySelectorAll(`.btn-delete-demo`).forEach(e=>{e.addEventListener(`click`,e=>{let n=parseInt(e.target.dataset.index),r=Ba();r.splice(n,1),Va(r),t()})})},n=e.querySelector(`#btn-create-demo`);n&&n.addEventListener(`click`,()=>{let n=e.querySelector(`#demo-name-input`).value.trim(),r=e.querySelector(`#demo-url-input`).value.trim(),i=e.querySelector(`#demo-live-select`).value;if(!n||!r){alert(`데모명과 타겟 사이트 URL을 모두 입력해주세요.`);return}let a=Ba();a.unshift({name:n,url:r,liveId:i,createdAt:new Date().toISOString()}),Va(a),e.querySelector(`#demo-name-input`).value=``,e.querySelector(`#demo-url-input`).value=``,t(),alert(`✅ 데모 링크가 성공적으로 등록되었습니다!`)}),t()}x(),j();async function Ua(){let e=document.getElementById(`app`);e.innerHTML=`
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; table-layout: fixed;">
+          <colgroup>
+            <col style="width: 130px;">
+            <col style="width: 220px;">
+            <col style="width: 110px;">
+            <col style="min-width: 200px;">
+            <col style="width: 230px;">
+          </colgroup>
+          <thead>
+            <tr style="border-bottom: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;">
+              <th style="padding: 12px 16px;">데모명</th>
+              <th style="padding: 12px 16px;">타겟 URL</th>
+              <th style="padding: 12px 16px;">연동 라이브</th>
+              <th style="padding: 12px 16px;">시연 링크</th>
+              <th style="padding: 12px 16px; text-align: right;">작업</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${i.map((e,t)=>{let n=e.url;!n.startsWith(`http://`)&&!n.startsWith(`https://`)&&(n=`https://`+n);let r=`${window.location.origin}/demo.html?url=${encodeURIComponent(n)}&live_id=${e.liveId}&clean=true`,i=e.url;try{i=new URL(n).hostname}catch{}return`
+                <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                  <td style="padding: 14px 16px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${e.name}</td>
+                  <td style="padding: 14px 16px; overflow: hidden;">
+                    <a href="${n}" target="_blank" style="color:#2563eb; text-decoration:none; font-size:12px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${n}">${i}</a>
+                  </td>
+                  <td style="padding: 14px 16px;">
+                    <span style="background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; border: 1px solid #bfdbfe; white-space: nowrap;">${e.liveId}</span>
+                  </td>
+                  <td style="padding: 14px 16px; overflow: hidden;">
+                    <input type="text" readonly value="${r}" onclick="this.select()" style="width: 100%; padding: 5px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 10px; background: #f8fafc; font-family: monospace; box-sizing: border-box; color: #475569; cursor: pointer;">
+                  </td>
+                  <td style="padding: 14px 16px; text-align: right; white-space: nowrap;">
+                    <button class="btn-copy-clean-link" data-url="${r}" style="background: #2563eb; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-right: 4px;">
+                      링크 복사
+                    </button>
+                    <button class="btn-preview-demo" data-url="${r}" style="background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; margin-right: 4px;">
+                      미리보기
+                    </button>
+                    <button class="btn-delete-demo" data-index="${t}" style="background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                      삭제
+                    </button>
+                  </td>
+                </tr>
+              `}).join(``)}
+          </tbody>
+        </table>
+      </div>
+    `,n.querySelectorAll(`.btn-copy-clean-link`).forEach(e=>{e.addEventListener(`click`,e=>{let t=e.currentTarget.dataset.url;navigator.clipboard.writeText(t).then(()=>{let t=e.currentTarget.textContent;e.currentTarget.textContent=`복사 완료!`,e.currentTarget.style.background=`#16a34a`,setTimeout(()=>{e.currentTarget.textContent=t,e.currentTarget.style.background=`#2563eb`},2e3)})})}),n.querySelectorAll(`.btn-preview-demo`).forEach(e=>{e.addEventListener(`click`,e=>{window.open(e.currentTarget.dataset.url,`_blank`)})}),n.querySelectorAll(`.btn-delete-demo`).forEach(e=>{e.addEventListener(`click`,e=>{if(!confirm(`이 데모 시연을 삭제하시겠습니까?`))return;let n=parseInt(e.currentTarget.dataset.index),r=za();r.splice(n,1),Ba(r),t()})})},n=e.querySelector(`#btn-create-demo`);n&&n.addEventListener(`click`,()=>{let n=e.querySelector(`#demo-name-input`).value.trim(),r=e.querySelector(`#demo-url-input`).value.trim(),i=e.querySelector(`#demo-live-select`).value;if(!n||!r){alert(`데모명과 타겟 사이트 URL을 모두 입력해주세요.`);return}let a=za();a.unshift({name:n,url:r,liveId:i,createdAt:new Date().toISOString()}),Ba(a),e.querySelector(`#demo-name-input`).value=``,e.querySelector(`#demo-url-input`).value=``,t()}),t()}x(),j();async function Ha(){let e=document.getElementById(`app`);e.innerHTML=`
     <div style="display:flex; align-items:center; justify-content:center; height:100vh;">
       <div style="width:48px; height:48px; border:4px solid rgba(0,0,0,0.05); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite;"></div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
     </div>
-  `;try{let e=new Promise(e=>setTimeout(()=>e(!0),3e3));await Promise.race([U.init(),e])}catch(e){console.warn(`데이터 로딩 타임아웃/오류 발생, 로컬 데이터로 접속합니다.`,e)}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild(Qe());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!U.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=U.getCurrentUser();if(U.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>Xi()),M.register(`/`,()=>pt()),M.register(`/live_stream`,()=>Nt()),M.register(`/projects`,()=>Gt()),M.register(`/projects/new`,()=>Gt()),M.register(`/projects/:id`,e=>qt(e)),M.register(`/hosts`,()=>It()),M.register(`/hosts/:id`,e=>Rt(e)),M.register(`/brands`,()=>Vt()),M.register(`/brands/:id`,e=>Ut(e)),M.register(`/finance`,()=>rn()),M.register(`/settlement`,()=>sn()),M.register(`/contracts`,()=>un()),M.register(`/marketing`,()=>mn()),M.register(`/crm`,()=>hn()),M.register(`/shop_manage`,()=>ya()),M.register(`/class_applications`,()=>Aa()),M.register(`/news_manage`,()=>Pa()),M.register(`/homepage_manage`,()=>Ra()),M.register(`/demo_manage`,()=>Ha(document.getElementById(`page-content`))),M.register(`/settings`,()=>gn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}Ua();
+  `;try{let e=new Promise(e=>setTimeout(()=>e(!0),3e3));await Promise.race([U.init(),e])}catch(e){console.warn(`데이터 로딩 타임아웃/오류 발생, 로컬 데이터로 접속합니다.`,e)}let t=()=>{if(e.querySelector(`.sidebar`))return;e.innerHTML=``,e.className=`app-layout`,e.appendChild(Qe());let t=document.createElement(`div`);t.className=`mobile-overlay`,t.onclick=()=>document.querySelector(`.sidebar`).classList.remove(`open`),e.appendChild(t);let n=document.createElement(`button`);n.className=`mobile-menu-btn`,n.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>`,n.onclick=()=>document.querySelector(`.sidebar`).classList.toggle(`open`),e.appendChild(n);let r=document.createElement(`main`);r.className=`main-content`,r.id=`page-content`,e.appendChild(r),M.setContainer(r)};M.beforeEach(n=>{let r=!!U.getCurrentUser();if(!r&&n!==`/login`)return`/login`;if(r&&n===`/login`)return`/`;if(r&&n===`/live_stream`){let e=U.getCurrentUser();if(U.isDemoMode||e&&(e.id===`demo`||e.role===`demo`))return`/`}return n===`/login`?(e.innerHTML=``,e.className=``,M.setContainer(e)):t(),!0}),M.register(`/login`,()=>Xi()),M.register(`/`,()=>pt()),M.register(`/live_stream`,()=>Nt()),M.register(`/projects`,()=>Gt()),M.register(`/projects/new`,()=>Gt()),M.register(`/projects/:id`,e=>qt(e)),M.register(`/hosts`,()=>It()),M.register(`/hosts/:id`,e=>Rt(e)),M.register(`/brands`,()=>Vt()),M.register(`/brands/:id`,e=>Ut(e)),M.register(`/finance`,()=>rn()),M.register(`/settlement`,()=>sn()),M.register(`/contracts`,()=>un()),M.register(`/marketing`,()=>mn()),M.register(`/crm`,()=>hn()),M.register(`/shop_manage`,()=>ya()),M.register(`/class_applications`,()=>Aa()),M.register(`/news_manage`,()=>Pa()),M.register(`/homepage_manage`,()=>Ra()),M.register(`/demo_manage`,()=>Va(document.getElementById(`page-content`))),M.register(`/settings`,()=>gn()),M.start(),document.addEventListener(`click`,e=>{let t=e.target.closest(`a[href]`);t&&t.getAttribute(`href`).startsWith(`/`)&&!t.getAttribute(`target`)&&(e.preventDefault(),M.navigate(t.getAttribute(`href`)))})}Ha();
