@@ -1271,10 +1271,15 @@ function renderLiveEditView(container, liveId, showView) {
       stats.hearts = parseInt(document.getElementById('cfg-hearts').value) || 0;
       config.showViewers = document.getElementById('cfg-showViewers').checked;
       config.showSplash = document.getElementById('cfg-showSplash').checked;
+      const useStandbyCb = document.getElementById('cfg-useStandbyImage');
+      if (useStandbyCb) {
+        config.useStandbyImage = useStandbyCb.checked;
+      }
       config.shareTitle = document.getElementById('cfg-shareTitle').value;
       config.shareDesc = document.getElementById('cfg-shareDesc').value;
       saveConfig();
       saveStats();
+      syncToSheetDB(liveId, config, stats, products, true);
       topBar.querySelector('span[style*="font-weight:700; color:#0f172a"]').textContent = config.brandName;
 
       saveBtn.disabled = false;
@@ -1483,8 +1488,22 @@ function renderLiveEditView(container, liveId, showView) {
           if (ogImg) { ogImg.src = url; ogImg.style.display = 'block'; }
           if (ogImgPh) ogImgPh.style.display = 'none';
           if (ogThumb) ogThumb.style.display = 'none';
+        } else if (configKey === 'standbyImageUrl') {
+          config.useStandbyImage = true;
+          const useCb = document.getElementById('cfg-useStandbyImage');
+          if (useCb) useCb.checked = true;
+          const lbl = document.getElementById('cfg-useStandbyImage-label');
+          if (lbl) {
+            lbl.textContent = 'ON';
+            lbl.style.color = '#2563eb';
+          }
+          const ph = document.getElementById('standby-image-placeholder');
+          if (ph) ph.style.display = 'none';
+          const clearBtn = document.getElementById('btn-clear-standby-image');
+          if (clearBtn) clearBtn.style.display = 'block';
         }
         saveConfig();
+        syncToSheetDB(liveId, config, stats, products, true);
       } catch (err) {
         console.error('이미지 업로드 오류:', err);
         alert('이미지 업로드 실패: ' + err.message);
