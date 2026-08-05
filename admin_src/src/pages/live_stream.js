@@ -783,7 +783,7 @@ function renderLiveEditView(container, liveId, showView) {
   const previewUrl = `${previewBase}?id=${liveId}&v=202607251156`;
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
-  const embedUrlWithParam = `${viewerUrl}?embed=1&v=202607251156`;
+  const embedUrlWithParam = `https://ryzincorp.com/live/embed.html?id=${liveId}`;
   const widgetUrlWithParam = `${viewerUrl}?widget=1&v=202607251156`;
 
   const embedCodeMobile = `<iframe src="${embedUrlWithParam}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden; border:none;"></iframe>`;
