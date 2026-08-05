@@ -447,13 +447,11 @@ document.addEventListener('DOMContentLoaded', () => {
       .subscribe();
   }
 
-  // 초기 1회 로드 및 실시간 구독 시작
-  setTimeout(() => {
-    loadConfigOnce();
-    loadChatOnce();
-    subscribeConfig();
-    subscribeChat();
-  }, 100);
+  // 0ms 즉시 동기 실행 (100ms 지연 완전 제거)
+  loadConfigOnce();
+  loadChatOnce();
+  subscribeConfig();
+  subscribeChat();
 
   // === 페이지 로드(새로고침 포함) 시마다 누적 시청자수 +1 ===
   setTimeout(async () => {
