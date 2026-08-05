@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     let html = await response.text();
 
-    // 1. <base> 태그 추가하여 상대경로 자원(이미지, CSS 등) 깨짐 방지
+    // 1. <base> 태그 추가하여 상대경로 자원 깨짐 방지
     const baseTag = `<base href="${origin}/">`;
     if (html.includes('<head>')) {
       html = html.replace('<head>', `<head>${baseTag}`);
@@ -32,54 +32,9 @@ export default async function handler(req, res) {
       html = baseTag + html;
     }
 
-    // 2. 라이브 위젯 스크립트 주입 (정교한 ryzin-widget-resize 동적 리사이즈)
+    // 2. 초기 캡슐 뱃지 스타일 (더 큼직한 프리미엄 크기)
     const widgetScript = `
-      <iframe id="ryzin-live-iframe" src="https://ryzincorp.com/live/${targetLiveId}?widget=1&v=${Date.now()}" style="position:fixed; bottom:74px; right:12px; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
-      <script>
-        window.addEventListener('message', function(e) {
-          var data = e.data;
-          if (typeof data === 'string') {
-            try { data = JSON.parse(data); } catch(err) {}
-          }
-          if (data && data.type === 'ryzin-widget-resize') {
-            var iframes = document.querySelectorAll('iframe');
-            var iframe = null;
-            for (var i = 0; i < iframes.length; i++) {
-              if (iframes[i].contentWindow === e.source) {
-                iframe = iframes[i];
-                break;
-              }
-            }
-            if (!iframe) {
-              iframe = document.getElementById('ryzin-live-iframe');
-            }
-            if (iframe) {
-              iframe.style.setProperty('width', data.width, 'important');
-              iframe.style.setProperty('height', data.height, 'important');
-              iframe.style.setProperty('bottom', data.bottom, 'important');
-              iframe.style.setProperty('top', 'auto', 'important');
-              if (data.expand) {
-                iframe.style.setProperty('border-radius', '20px', 'important');
-                iframe.style.setProperty('overflow', 'hidden', 'important');
-                iframe.style.setProperty('border', 'none', 'important');
-                iframe.style.setProperty('box-shadow', '0 12px 40px rgba(0,0,0,0.15)', 'important');
-              } else {
-                iframe.style.setProperty('border-radius', '50%', 'important');
-                iframe.style.setProperty('overflow', 'visible', 'important');
-                iframe.style.setProperty('border', 'none', 'important');
-                iframe.style.setProperty('box-shadow', 'none', 'important');
-              }
-              if (data.position === 'left') {
-                iframe.style.setProperty('left', '12px', 'important');
-                iframe.style.setProperty('right', 'auto', 'important');
-              } else {
-                iframe.style.setProperty('right', '12px', 'important');
-                iframe.style.setProperty('left', 'auto', 'important');
-              }
-            }
-          }
-        });
-      </script>
+      <script src="https://ryzincorp.com/widget.js" data-live-id="${targetLiveId}"></script>
     `;
 
     if (html.includes('</body>')) {
