@@ -779,7 +779,7 @@ function renderLiveEditView(container, liveId, showView) {
   rightPanel.style.cssText = 'width:340px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; padding:24px 20px; background:#fff; border-left:1.5px solid #e2e8f0; gap:16px; overflow-y:auto;';
 
   const isLocal = window.location.origin.includes('localhost:5173');
-  const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
+  const previewBase = isLocal ? 'http://localhost:8080/live/embed.html' : '/live/embed.html';
   const previewUrl = `${previewBase}?id=${liveId}&v=202607251156`;
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
