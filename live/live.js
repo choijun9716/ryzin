@@ -147,22 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
             video.pause();
           }
 
-          // 2. 라이브 컨테이너 숨김 스타일 동적 적용 및 클래스 복원
+          // 2. 라이브 컨테이너 숨김 대신 100% 핏 보장
           document.body.classList.add('embed-mode');
           document.body.classList.remove('embed-active-full');
-          
-          let hasHideStyle = false;
-          const styleTags = document.querySelectorAll('style');
-          styleTags.forEach(tag => {
-            if (tag.innerHTML.includes('.live-container { display: none !important; }')) {
-              hasHideStyle = true;
-            }
-          });
-          if (!hasHideStyle) {
-            const style = document.createElement('style');
-            style.innerHTML = '.live-container { display: none !important; } #splash-screen { display: none !important; }';
-            document.head.appendChild(style);
-          }
 
           // 3. 라이브 닫기 버튼 숨김
           closeLiveBtn.style.display = 'none';
