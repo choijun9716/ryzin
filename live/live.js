@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
   window.resizeParentIframe = function(expand) {
+    // embed.html 이거나 꽉찬 모드이면 iframe 크기를 92px로 축소하는 시도를 100% 원천 차단
+    if (window.location.pathname.includes('embed.html') || document.body.classList.contains('embed-active-full')) {
+      return;
+    }
     const width = expand ? '440px' : '92px';
     const height = expand ? '780px' : '112px';
     const bottom = expand ? '12px' : '74px';
