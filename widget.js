@@ -279,7 +279,7 @@
       <div class="ryzin-lead-field-group">
         <div class="ryzin-lead-field">
           <label class="ryzin-lead-label">브랜드명 (회사명)</label>
-          <input type="text" class="ryzin-lead-input" id="ryzin-lead-brand" placeholder="예: 쏘랩">
+          <input type="text" class="ryzin-lead-input" id="ryzin-lead-brand" placeholder="예: 라이진">
         </div>
         <div class="ryzin-lead-field">
           <label class="ryzin-lead-label">성함</label>
