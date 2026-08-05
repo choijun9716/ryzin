@@ -563,7 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
           window.currentWidgetPosition = c.widgetPosition;
           
           const container = document.querySelector('.live-container');
-          const isClosed = container && (container.style.display === 'none' || window.getComputedStyle(container).display === 'none');
+          const isViewFullMode = new URLSearchParams(window.location.search).get('view') === 'full';
+          const isClosed = !isViewFullMode && container && (container.style.display === 'none' || window.getComputedStyle(container).display === 'none');
           if (isClosed && !document.body.classList.contains('embed-active-full')) {
             resizeParentIframe(false);
           }
