@@ -112,6 +112,10 @@
       flex-shrink: 0;
     }
 
+    .ryzin-mobile-br {
+      display: none;
+    }
+
     @media (max-width: 600px) {
       .ryzin-demo-top-notice {
         font-size: 10.5px;
@@ -121,6 +125,10 @@
       }
       .ryzin-demo-top-badge {
         display: none;
+      }
+      .ryzin-mobile-br {
+        display: block;
+        margin-top: 2px;
       }
     }
 
@@ -264,7 +272,7 @@
   topNotice.className = 'ryzin-demo-top-notice';
   topNotice.innerHTML = `
     <span class="ryzin-demo-top-badge">CONNECT</span>
-    <span>현재 보고계신 화면은, 라이진 커넥트가 적용된 화면입니다. 실제로 반영이 되지 않는 예시 화면으로 안심하세요.</span>
+    <span>현재 보고계신 화면은, 라이진 커넥트가 적용된 화면입니다.<br class="ryzin-mobile-br">실제로 반영이 되지 않는 예시 화면으로 안심하세요.</span>
   `;
   document.body.appendChild(topNotice);
 
