@@ -159,9 +159,12 @@
       const urlParams = new URLSearchParams(window.location.search);
       const isAdminPreview = urlParams.get('admin') === '1';
       const isEmbedParam = urlParams.get('embed') === '1';
+      const isWidgetParam = urlParams.get('widget') === '1';
+      const isInsideIframe = window.self !== window.top;
       
-      if (isEmbedParam) {
-        document.write('<style>body { background: transparent !important; } .live-container { display: none !important; } #splash-screen { display: none !important; }</style>');
+      // iframe 내부이거나 widget/embed 파라미터가 있으면 무조건 부모 크기에 100% 가득 핏
+      if (isInsideIframe || isEmbedParam || isWidgetParam) {
+        document.write('<style>html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: transparent !important; } .live-container { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }</style>');
         document.documentElement.classList.add('embed-mode-active');
       }
 
@@ -169,10 +172,8 @@
       const cached = JSON.parse(localStorage.getItem(`ryzin_live_config_${liveId}`) || '{}');
       
       // 어드민 미리보기이거나 스플래시 비활성화 상태면 즉시 가림
-      if (isAdminPreview || cached.showSplash === false || isEmbedParam) {
+      if (isAdminPreview || cached.showSplash === false || isEmbedParam || isWidgetParam || isInsideIframe) {
         document.write('<style>#splash-screen { display: none !important; }</style>');
-      } else {
-        // No audio play
       }
     } catch(e) {}
   </script>
