@@ -16,56 +16,56 @@
 
   const targetLiveUrl = `${hostUrl}/live/${liveId}`;
 
-  // CSS 주입 (처음 배찌 디자인 + 더 큼직한 프리미엄 크기)
+  // CSS 주입 (더 큼직하고 웅장한 프리미엄 크기)
   const style = document.createElement('style');
   style.innerHTML = `
     .ryzin-widget-container {
       position: fixed;
-      bottom: 30px;
-      right: 30px;
+      bottom: 36px;
+      right: 36px;
       z-index: 999999;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       background: #0f172a;
       color: #fff;
-      padding: 14px 24px;
-      border-radius: 50px;
-      box-shadow: 0 14px 35px -5px rgba(0,0,0,0.4);
+      padding: 16px 28px;
+      border-radius: 60px;
+      box-shadow: 0 16px 40px -5px rgba(0,0,0,0.45);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1.5px solid rgba(255,255,255,0.18);
+      border: 2px solid rgba(255,255,255,0.22);
     }
     .ryzin-widget-container:hover {
-      transform: translateY(-4px) scale(1.04);
-      box-shadow: 0 20px 40px -5px rgba(0,0,0,0.5);
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 22px 45px -5px rgba(0,0,0,0.55);
       background: #1e293b;
     }
     .ryzin-widget-badge {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
       color: #ef4444;
       background: #fee2e2;
-      border: 1px solid #fecaca;
-      padding: 4px 9px;
-      border-radius: 6px;
+      border: 1.5px solid #fecaca;
+      padding: 5px 11px;
+      border-radius: 8px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
     }
     .ryzin-widget-badge-dot {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       background: #ef4444;
       border-radius: 50%;
       box-shadow: 0 0 0 2px #fee2e2;
       animation: ryzin-pulse 1.5s infinite;
     }
     .ryzin-widget-title {
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 800;
       white-space: nowrap;
       letter-spacing: -0.01em;
     }
@@ -81,39 +81,45 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.75);
       z-index: 9999999;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(5px);
     }
     .ryzin-modal-content {
       position: relative;
-      width: 400px;
-      max-width: 94vw;
-      height: 720px;
-      max-height: 92vh;
+      width: 440px;
+      max-width: 95vw;
+      height: 780px;
+      max-height: 94vh;
       background: #000;
-      border-radius: 24px;
+      border-radius: 26px;
       overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.15);
     }
     .ryzin-modal-close {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 16px;
+      right: 16px;
       z-index: 10;
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.65);
       color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 22px;
       cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.25);
+      transition: all 0.2s;
+    }
+    .ryzin-modal-close:hover {
+      background: rgba(0,0,0,0.85);
+      transform: scale(1.08);
     }
     .ryzin-modal-iframe {
       width: 100%;
