@@ -16,62 +16,62 @@
 
   const targetLiveUrl = `${hostUrl}/live/${liveId}`;
 
-  // CSS 주입 (더 큼직하고 웅장한 프리미엄 크기)
+  // CSS 주입 (플로팅 뱃지는 한단계 아담하고 균형잡힌 크기, 모달은 시원한 큼직함 유지)
   const style = document.createElement('style');
   style.innerHTML = `
     .ryzin-widget-container {
       position: fixed;
-      bottom: 36px;
-      right: 36px;
+      bottom: 26px;
+      right: 26px;
       z-index: 999999;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 11px;
       background: #0f172a;
       color: #fff;
-      padding: 16px 28px;
-      border-radius: 60px;
-      box-shadow: 0 16px 40px -5px rgba(0,0,0,0.45);
+      padding: 13px 22px;
+      border-radius: 50px;
+      box-shadow: 0 12px 30px -4px rgba(0,0,0,0.38);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 2px solid rgba(255,255,255,0.22);
+      border: 1.5px solid rgba(255,255,255,0.18);
     }
     .ryzin-widget-container:hover {
-      transform: translateY(-5px) scale(1.05);
-      box-shadow: 0 22px 45px -5px rgba(0,0,0,0.55);
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 18px 36px -4px rgba(0,0,0,0.48);
       background: #1e293b;
     }
     .ryzin-widget-badge {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       color: #ef4444;
       background: #fee2e2;
-      border: 1.5px solid #fecaca;
-      padding: 5px 11px;
-      border-radius: 8px;
+      border: 1px solid #fecaca;
+      padding: 4px 9px;
+      border-radius: 6px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      letter-spacing: 0.05em;
+      gap: 5px;
+      letter-spacing: 0.04em;
     }
     .ryzin-widget-badge-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       background: #ef4444;
       border-radius: 50%;
       box-shadow: 0 0 0 2px #fee2e2;
       animation: ryzin-pulse 1.5s infinite;
     }
     .ryzin-widget-title {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 16px;
+      font-weight: 700;
       white-space: nowrap;
       letter-spacing: -0.01em;
     }
     @keyframes ryzin-pulse {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+      70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(239, 68, 68, 0); }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
     .ryzin-modal-overlay {
