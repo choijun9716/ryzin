@@ -87,8 +87,8 @@
   // 위젯 클릭 이벤트 - 별도의 팝업창으로 깔끔하게 노출 (여백/사이즈 문제 100% 해결)
   widget.addEventListener('click', function () {
     const popupUrl = `${hostUrl}/live/?id=${liveId}`;
-    const popupWidth = 375;
-    const popupHeight = 812;
+    const popupWidth = 390;
+    const popupHeight = 693;
     const left = (window.screen.width - popupWidth) / 2;
     const top = (window.screen.height - popupHeight) / 2;
     
