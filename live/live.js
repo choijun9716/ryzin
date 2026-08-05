@@ -77,8 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const isEmbedParam = urlParams.get('embed') === '1';
   const isWidgetParam = urlParams.get('widget') === '1';
 
-  if (isEmbedParam) {
+  if (isEmbedParam || window.location.pathname.includes('embed.html')) {
     document.body.classList.add('embed-active-full');
+    document.body.classList.remove('embed-mode');
   }
 
   if (isWidgetParam) {
@@ -571,8 +572,9 @@ document.addEventListener('DOMContentLoaded', () => {
           window.currentWidgetPosition = c.widgetPosition;
           
           const container = document.querySelector('.live-container');
+          const isEmbedPage = window.location.pathname.includes('embed.html');
           const isViewFullMode = new URLSearchParams(window.location.search).get('view') === 'full';
-          const isClosed = !isViewFullMode && container && (container.style.display === 'none' || window.getComputedStyle(container).display === 'none');
+          const isClosed = !isEmbedPage && !isViewFullMode && container && (container.style.display === 'none' || window.getComputedStyle(container).display === 'none');
           if (isClosed && !document.body.classList.contains('embed-active-full')) {
             resizeParentIframe(false);
           }
