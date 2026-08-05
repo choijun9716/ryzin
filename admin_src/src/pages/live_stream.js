@@ -2738,7 +2738,15 @@ function renderLiveEditView(container, liveId, showView) {
         config.bannedUsers = newData.banned_users || '';
         if (newData.winner_name !== undefined) config.winner_name = newData.winner_name;
         if (newData.winner_timestamp !== undefined) config.winner_timestamp = newData.winner_timestamp;
+        if (newData.viewers !== undefined) stats.viewers = parseInt(newData.viewers) || 0;
+        if (newData.cum_viewers !== undefined) stats.cumViewers = parseInt(newData.cum_viewers) || 0;
+        if (newData.hearts !== undefined) stats.hearts = parseInt(newData.hearts) || 0;
         saveLiveConfig(liveId, config);
+        saveLiveStats(liveId, stats);
+
+        if (typeof window.updateAdminViewersDisplay === 'function') {
+          window.updateAdminViewersDisplay();
+        }
 
         // 입력 중인 엘리먼트는 제외하고 UI 갱신 (타이핑 증발 방지)
         const safeUpdate = (id, val) => {
@@ -2801,6 +2809,31 @@ function renderLiveEditView(container, liveId, showView) {
       .subscribe();
   };
   subscribeAdminSync();
+
+  // ── 전역 실시간 통계 폴링 (어느 탭에 있든 통계 수치 2.5초 주기 실시간 자동 갱신) ──
+  let globalStatsPollingInterval = null;
+  const startGlobalStatsPolling = () => {
+    if (!db) return;
+    globalStatsPollingInterval = setInterval(async () => {
+      try {
+        const { data, error } = await db
+          .from('live_control')
+          .select('viewers, cum_viewers, hearts')
+          .eq('live_id', liveId)
+          .maybeSingle();
+        if (data && !error) {
+          stats.viewers = parseInt(data.viewers) || 0;
+          stats.cumViewers = parseInt(data.cum_viewers) || 0;
+          stats.hearts = parseInt(data.hearts) || 0;
+          saveLiveStats(liveId, stats);
+          if (typeof window.updateAdminViewersDisplay === 'function') {
+            window.updateAdminViewersDisplay();
+          }
+        }
+      } catch (e) {}
+    }, 2500);
+  };
+  startGlobalStatsPolling();
 
   const tabBtns = topBar.querySelectorAll('.tab-btn');
   const switchTab = (tabName) => {
