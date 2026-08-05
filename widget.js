@@ -79,30 +79,31 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 40px;
-      background: rgba(15, 23, 42, 0.96);
-      border-bottom: 1.5px solid rgba(255,255,255,0.12);
+      height: 44px;
+      background: linear-gradient(90deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+      border-bottom: 2px solid #3b82f6;
       color: #ffffff;
       z-index: 9999998;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: -0.3px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
       user-select: none;
     }
     .ryzin-demo-top-badge {
-      background: #ef4444;
-      color: #ffffff;
-      padding: 3px 7px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: 0.05em;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(96, 165, 250, 0.4);
+      padding: 3px 8px;
+      border-radius: 50px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
       line-height: 1;
     }
 
@@ -245,8 +246,8 @@
   const topNotice = document.createElement('div');
   topNotice.className = 'ryzin-demo-top-notice';
   topNotice.innerHTML = `
-    <span class="ryzin-demo-top-badge">DEMO</span>
-    <span>RYZIN 라이브 Commerce 데모 시연용 화면입니다.</span>
+    <span class="ryzin-demo-top-badge">CONNECT</span>
+    <span>현재 보고계신 화면은, 라이진 커넥트가 적용된 화면입니다. 실제로 반영이 되지 않는 예시 화면으로 안심하세요.</span>
   `;
   document.body.appendChild(topNotice);
 
