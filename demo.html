@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>라이브 위젯 데모 시연기 - Ryzin Live</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0f172a; color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    .top-bar {
+      height: 54px;
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .brand-title { font-weight: 800; font-size: 15px; color: #38bdf8; display: flex; align-items: center; gap: 6px; }
+    .url-input-group { flex: 1; display: flex; align-items: center; gap: 8px; max-width: 650px; margin: 0 auto; }
+    .url-input {
+      flex: 1;
+      height: 36px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 0 12px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .url-input:focus { border-color: #38bdf8; }
+    .btn {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-primary { background: #0284c7; color: #fff; }
+    .btn-primary:hover { background: #0369a1; }
+    .btn-success { background: #16a34a; color: #fff; }
+    .btn-success:hover { background: #15803d; }
+    .iframe-container { flex: 1; width: 100%; height: 100%; position: relative; background: #fff; }
+    iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="brand-title">RYZIN LIVE <span>위젯 시연기</span></div>
+    <div class="url-input-group">
+      <input type="text" id="target-url" class="url-input" placeholder="데모를 보일 사이트 주소 입력 (예: musinsa.com 또는 자사몰 주소)" value="https://oliveyoung.co.kr">
+      <button id="btn-generate" class="btn btn-primary">데모 보기</button>
+      <button id="btn-copy-link" class="btn btn-success">데모 링크 복사</button>
+    </div>
+  </div>
+  <div class="iframe-container">
+    <iframe id="demo-iframe" src=""></iframe>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById('target-url');
+    const btnGenerate = document.getElementById('btn-generate');
+    const btnCopyLink = document.getElementById('btn-copy-link');
+    const iframe = document.getElementById('demo-iframe');
+
+    const params = new URLSearchParams(window.location.search);
+    const initialUrl = params.get('url') || 'https://oliveyoung.co.kr';
+    const liveId = params.get('live_id') || 'PAZIW92';
+
+    urlInput.value = initialUrl;
+
+    function loadDemo(targetUrl) {
+      if (!targetUrl) return;
+      let cleanUrl = targetUrl.trim();
+      if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+        cleanUrl = 'https://' + cleanUrl;
+      }
+      urlInput.value = cleanUrl;
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(cleanUrl)}&live_id=${liveId}`;
+      iframe.src = proxyUrl;
+    }
+
+    btnGenerate.addEventListener('click', () => {
+      loadDemo(urlInput.value);
+    });
+
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loadDemo(urlInput.value);
+    });
+
+    btnCopyLink.addEventListener('click', () => {
+      const shareUrl = `${window.location.origin}/demo.html?url=${encodeURIComponent(urlInput.value)}&live_id=${liveId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        btnCopyLink.textContent = '복사 완료!';
+        setTimeout(() => { btnCopyLink.textContent = '데모 링크 복사'; }, 2000);
+      }).catch(() => {
+        prompt('아래 링크를 복사하여 공유하세요:', shareUrl);
+      });
+    });
+
+    loadDemo(initialUrl);
+  </script>
+</body>
+</html>
