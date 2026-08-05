@@ -310,6 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let widgetText = '라이브 보기';
     let widgetPosition = 'right';
     let widgetImageUrl = '';
+    let standbyImageUrl = '';
+    let useStandbyImage = false;
     
     const hashParts = rawLogoUrl.split('#');
     const cleanLogoUrl = hashParts[0];
@@ -323,6 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
         widgetPosition = part.replace('widgetPosition=', '');
       } else if (part.startsWith('widgetImageUrl=')) {
         widgetImageUrl = part.replace('widgetImageUrl=', '');
+      } else if (part.startsWith('standbyImageUrl=')) {
+        standbyImageUrl = decodeURIComponent(part.replace('standbyImageUrl=', ''));
+      } else if (part.startsWith('useStandbyImage=')) {
+        useStandbyImage = part.replace('useStandbyImage=', '') === 'true';
       }
     });
     window.currentWidgetPosition = widgetPosition;
@@ -352,7 +358,9 @@ document.addEventListener('DOMContentLoaded', () => {
       likeImageUrl: row.like_image_url || '',
       widgetText: widgetText,
       widgetPosition: widgetPosition,
-      widgetImageUrl: widgetImageUrl
+      widgetImageUrl: widgetImageUrl,
+      standbyImageUrl: standbyImageUrl,
+      useStandbyImage: useStandbyImage
     };
 
     const stats = {
@@ -488,6 +496,20 @@ document.addEventListener('DOMContentLoaded', () => {
           c.isLive = false;
         }
         const overlay = document.getElementById('thumbnail-overlay');
+        const standbyOverlay = document.getElementById('standby-overlay');
+        const standbyImg = document.getElementById('standby-img');
+
+        // ── 방송 진행 중 예비 썸네일 오버레이 제어 (ON 설정 시 표시) ──
+        if (c.useStandbyImage && c.standbyImageUrl && c.standbyImageUrl.trim()) {
+          if (standbyOverlay && standbyImg) {
+            standbyImg.src = c.standbyImageUrl.trim();
+            standbyOverlay.style.display = 'flex';
+          }
+        } else {
+          if (standbyOverlay) {
+            standbyOverlay.style.display = 'none';
+          }
+        }
 
         // 라이브 상태 변경 확인 (streamUrl 변경 또는 isLive 변경)
         if (c.streamUrl && (window.__lastStreamUrl !== c.streamUrl || window.__lastIsLive !== c.isLive)) {

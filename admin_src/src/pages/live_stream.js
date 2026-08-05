@@ -63,7 +63,9 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
                      `#widgetText=${encodeURIComponent(config.widgetText || '라이브 보기')}` +
                      `#widgetPosition=${config.widgetPosition || 'right'}` +
                      `#widgetImageUrl=${config.widgetImageUrl || ''}` +
-                     `#showOnMain=${config.showOnMain === true}`,
+                     `#showOnMain=${config.showOnMain === true}` +
+                     `#standbyImageUrl=${encodeURIComponent(config.standbyImageUrl || '')}` +
+                     `#useStandbyImage=${config.useStandbyImage === true}`,
       stream_url: config.streamUrl || '',
       viewers: parseInt(stats.viewers) || 0,
       hearts: parseInt(stats.hearts) || 0,
@@ -500,6 +502,8 @@ function renderLiveEditView(container, liveId, showView) {
           let widgetPosition = 'right';
           let widgetImageUrl = '';
           let showOnMain = false;
+          let standbyImageUrl = '';
+          let useStandbyImage = false;
 
           const hashParts = rawLogoUrl.split('#');
           let cleanLogoUrl = hashParts[0];
@@ -515,6 +519,10 @@ function renderLiveEditView(container, liveId, showView) {
               widgetImageUrl = part.replace('widgetImageUrl=', '');
             } else if (part.startsWith('showOnMain=')) {
               showOnMain = part.replace('showOnMain=', '') === 'true';
+            } else if (part.startsWith('standbyImageUrl=')) {
+              standbyImageUrl = decodeURIComponent(part.replace('standbyImageUrl=', ''));
+            } else if (part.startsWith('useStandbyImage=')) {
+              useStandbyImage = part.replace('useStandbyImage=', '') === 'true';
             }
           });
 
@@ -524,6 +532,8 @@ function renderLiveEditView(container, liveId, showView) {
           config.widgetPosition = widgetPosition;
           config.widgetImageUrl = widgetImageUrl;
           config.showOnMain = showOnMain;
+          config.standbyImageUrl = standbyImageUrl;
+          config.useStandbyImage = useStandbyImage;
           config.thumbnailUrl = data.thumbnail_url || '';
           config.liveStartTime = data.start_time || '';
           config.showViewers = data.show_viewers !== false;
@@ -1022,7 +1032,7 @@ function renderLiveEditView(container, liveId, showView) {
           <label class="modern-label">방송 시작 예정 일시 (카운트다운용)</label>
           <input type="datetime-local" class="modern-input" id="cfg-liveStartTime" value="${config.liveStartTime || ''}">
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-bottom:18px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:18px; margin-bottom:18px;">
           <div class="file-upload-wrapper">
             <div style="width:56px; height:56px; border-radius:50%; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0;">
               <img id="logo-preview" src="${config.logoUrl || ''}" style="width:100%; height:100%; object-fit:cover;">
@@ -1041,6 +1051,24 @@ function renderLiveEditView(container, liveId, showView) {
               <label class="modern-label">썸네일 (9:16)</label>
               <label class="file-upload-btn" for="cfg-thumbnailFile">이미지 업로드</label>
               <input type="file" id="cfg-thumbnailFile" accept="image/*" style="display:none;">
+            </div>
+          </div>
+          <div class="file-upload-wrapper">
+            <div style="width:40px; height:71px; border-radius:8px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0; position:relative; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+              <img id="standby-image-preview" src="${config.standbyImageUrl || ''}" style="width:100%; height:100%; object-fit:cover; display:${config.standbyImageUrl ? 'block' : 'none'};">
+              <span id="standby-image-placeholder" style="font-size:11px; font-weight:700; color:#94a3b8; display:${config.standbyImageUrl ? 'none' : 'block'};">예비</span>
+            </div>
+            <div>
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                <label class="modern-label" style="margin:0;">예비 썸네일</label>
+                <input type="checkbox" id="cfg-useStandbyImage" style="width:15px; height:15px; accent-color:#3b82f6; cursor:pointer;" ${config.useStandbyImage ? 'checked' : ''} title="예비 썸네일 송출 ON/OFF">
+                <span id="cfg-useStandbyImage-label" style="font-size:11px; font-weight:700; color:${config.useStandbyImage ? '#2563eb' : '#94a3b8'};">${config.useStandbyImage ? 'ON' : 'OFF'}</span>
+              </div>
+              <div style="display:flex; gap:4px;">
+                <label class="file-upload-btn" style="margin:0; padding:6px 12px; font-size:12px;" for="cfg-standbyImageFile">업로드</label>
+                <button id="btn-clear-standby-image" class="action-btn btn-neutral" style="padding:4px 6px; font-size:11px; height:28px; border-color:#fee2e2; background:#fff5f5; color:#ef4444; display:${config.standbyImageUrl ? 'block' : 'none'};">삭제</button>
+              </div>
+              <input type="file" id="cfg-standbyImageFile" accept="image/*" style="display:none;">
             </div>
           </div>
           <div class="file-upload-wrapper">
@@ -1464,6 +1492,49 @@ function renderLiveEditView(container, liveId, showView) {
     document.getElementById('cfg-thumbnailFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'thumbnail-preview', 'thumbnailUrl'));
     document.getElementById('cfg-shareImageFile').addEventListener('change', (e) => uploadImage(e.target.files[0], 'share-image-preview', 'shareImageUrl'));
     document.getElementById('cfg-likeFile').addEventListener('change', (e) => uploadLikeImage(e.target.files[0]));
+
+    const standbyFileEl = document.getElementById('cfg-standbyImageFile');
+    if (standbyFileEl) {
+      standbyFileEl.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const base64 = await compressImage(file, 720, 1280, 0.85);
+          const url = await uploadToImgBB(base64);
+          config.standbyImageUrl = url;
+          config.useStandbyImage = true;
+          saveConfig();
+          renderConfigTab();
+        } catch (err) {
+          alert('예비 썸네일 업로드 실패: ' + err.message);
+        }
+      });
+    }
+
+    const btnClearStandby = document.getElementById('btn-clear-standby-image');
+    if (btnClearStandby) {
+      btnClearStandby.addEventListener('click', () => {
+        config.standbyImageUrl = '';
+        config.useStandbyImage = false;
+        saveConfig();
+        renderConfigTab();
+      });
+    }
+
+    const useStandbyCheckbox = document.getElementById('cfg-useStandbyImage');
+    if (useStandbyCheckbox) {
+      useStandbyCheckbox.addEventListener('change', (e) => {
+        config.useStandbyImage = e.target.checked;
+        saveConfig();
+        const lbl = document.getElementById('cfg-useStandbyImage-label');
+        if (lbl) {
+          lbl.textContent = config.useStandbyImage ? 'ON' : 'OFF';
+          lbl.style.color = config.useStandbyImage ? '#2563eb' : '#94a3b8';
+        }
+        const prevIframe = document.getElementById('live-preview-iframe');
+        if (prevIframe) prevIframe.src = previewUrl + '?t=' + Date.now();
+      });
+    }
 
     // 응원 이미지 삭제 버튼 바인딩
     document.getElementById('btn-clear-like-icon').addEventListener('click', () => {
