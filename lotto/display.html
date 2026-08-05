@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RYZIN 3D 로또 추첨 모션 (OBS 송출 전용 사이트)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body class="greenscreen display-mode">
+
+  <!-- 3D WebGL Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- OBS Overlay Result Bar (방송 하단 당첨 번호 디스플레이) -->
+  <div id="drawn-numbers-bar" class="drawn-bar">
+    <div class="bar-header">
+      <span class="live-pill"><span class="live-dot"></span> RYZIN LIVE</span>
+      <span class="bar-title">LOTTO DRAW</span>
+    </div>
+    <div class="balls-container" id="balls-display-container">
+      <div class="ball-slot" data-index="0"><span>1</span></div>
+      <div class="ball-slot" data-index="1"><span>2</span></div>
+      <div class="ball-slot" data-index="2"><span>3</span></div>
+      <div class="ball-slot" data-index="3"><span>4</span></div>
+      <div class="ball-slot" data-index="4"><span>5</span></div>
+      <div class="ball-slot" data-index="5"><span>6</span></div>
+      <div class="bonus-plus">+</div>
+      <div class="ball-slot bonus-slot" data-index="6"><span>보너스</span></div>
+    </div>
+  </div>
+
+  <!-- Realtime Sync Listener & 3D Modules -->
+  <script src="js/audio.js"></script>
+  <script src="js/lotto3d.js"></script>
+  <script src="js/remote.js"></script>
+  <script src="js/display_app.js"></script>
+</body>
+</html>
