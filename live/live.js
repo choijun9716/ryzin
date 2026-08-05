@@ -483,6 +483,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const c = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`));
       if (c) {
+        // [NEW] 스트리밍 URL이 비어있으면 로컬스토리지 캐시 오염 방지를 위해 isLive 강제 취소
+        if (!c.streamUrl || !c.streamUrl.trim()) {
+          c.isLive = false;
+        }
         const overlay = document.getElementById('thumbnail-overlay');
 
         // 라이브 상태 변경 확인 (streamUrl 변경 또는 isLive 변경)
