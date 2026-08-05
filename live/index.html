@@ -26,7 +26,7 @@
 
   <link rel="stylesheet" href="live.css?v=202607211451">
   <style>
-    /* Embed Mode Overrides */
+    /* Embed Mode (widget=1): 원형 배너 전용 - live-container 숨김 */
     body.embed-mode {
       background: transparent !important;
     }
@@ -37,25 +37,34 @@
       display: none !important;
     }
 
-    /* 위젯/임베드 클릭으로 켜진 라이브 화면 꽉 채움 스타일 */
+    /* view=full 모달 전체화면 모드: 100% 빈틈없이 꽉 채움 */
+    body.view-full-mode,
+    body.embed-active-full {
+      background: transparent !important;
+      width: 100% !important;
+      height: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      display: block !important;
+    }
+    body.view-full-mode .live-container,
     body.embed-active-full .live-container {
       display: flex !important;
       width: 100% !important;
       height: 100% !important;
+      min-height: unset !important;
       max-width: none !important;
       max-height: none !important;
       border-radius: 0 !important;
       overflow: hidden !important;
       box-shadow: none !important;
-      position: absolute !important;
+      position: fixed !important;
       top: 0 !important;
       left: 0 !important;
       right: 0 !important;
       bottom: 0 !important;
       margin: 0 !important;
-    }
-    body.embed-active-full {
-      background: transparent !important;
     }
 
     /* Floating Banner CSS */
@@ -158,21 +167,20 @@
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const isAdminPreview = urlParams.get('admin') === '1';
-      const isEmbedParam = urlParams.get('embed') === '1';
-      const isWidgetParam = urlParams.get('widget') === '1';
+      const isEmbedParam = urlParams.get('embed') === '1';   // 원형 위젯 배너 모드
+      const isWidgetParam = urlParams.get('widget') === '1'; // 원형 위젯 배너 모드
+      const isViewFull = urlParams.get('view') === 'full';   // 모달 전체화면 모드
       const isInsideIframe = window.self !== window.top;
-      
-      // iframe 내부이거나 widget/embed 파라미터가 있으면 무조건 부모 크기에 100% 가득 핏
-      if (isInsideIframe || isEmbedParam || isWidgetParam) {
-        document.write('<style>html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: transparent !important; } .live-container { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; }</style>');
-        document.documentElement.classList.add('embed-mode-active');
+
+      if (isViewFull || (isInsideIframe && !isEmbedParam && !isWidgetParam)) {
+        // 모달 전체화면: body에 view-full-mode 클래스 추가 + 미디어쿼리 강제 무효화
+        document.write('<style>html { width: 100% !important; height: 100% !important; } body { width: 100% !important; height: 100% !important; min-height: unset !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; background: transparent !important; display: block !important; justify-content: unset !important; align-items: unset !important; } .live-container { display: flex !important; width: 100% !important; height: 100% !important; min-height: unset !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; } #splash-screen { display: none !important; }</style>');
       }
 
       const liveId = window.INJECTED_LIVE_ID || urlParams.get('id') || 'live01';
       const cached = JSON.parse(localStorage.getItem(`ryzin_live_config_${liveId}`) || '{}');
-      
-      // 어드민 미리보기이거나 스플래시 비활성화 상태면 즉시 가림
-      if (isAdminPreview || cached.showSplash === false || isEmbedParam || isWidgetParam || isInsideIframe) {
+
+      if (isAdminPreview || cached.showSplash === false || isEmbedParam || isWidgetParam) {
         document.write('<style>#splash-screen { display: none !important; }</style>');
       }
     } catch(e) {}

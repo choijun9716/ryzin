@@ -144,7 +144,7 @@
   modal.innerHTML = `
     <div class="ryzin-modal-content">
       <div class="ryzin-modal-close">&times;</div>
-      <iframe class="ryzin-modal-iframe" src="${targetLiveUrl}"></iframe>
+      <iframe class="ryzin-modal-iframe" src="${targetLiveUrl}?view=full" allow="autoplay; fullscreen" allowfullscreen></iframe>
     </div>
   `;
   document.body.appendChild(modal);
