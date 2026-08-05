@@ -89,14 +89,14 @@
     }
     .ryzin-modal-content {
       position: relative;
-      width: 400px;
-      max-width: 92vw;
-      height: 720px;
-      max-height: 90vh;
-      background: #0f172a;
-      border-radius: 20px;
+      width: 375px;
+      max-width: 95vw;
+      height: 812px;
+      max-height: 94vh;
+      background: #000;
+      border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+      box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6);
       border: 1px solid rgba(255,255,255,0.15);
     }
     .ryzin-modal-close {
