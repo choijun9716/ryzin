@@ -1252,6 +1252,25 @@ function renderLiveEditView(container, liveId, showView) {
     `;
 
 
+    // 코드 복사 버튼 이벤트
+    const btnCopyCode = document.getElementById('btn-copy-widget-code');
+    if (btnCopyCode) {
+      btnCopyCode.addEventListener('click', () => {
+        const codeInput = document.getElementById('cfg-widget-code');
+        if (codeInput) {
+          navigator.clipboard.writeText(codeInput.value).then(() => {
+            const orig = btnCopyCode.textContent;
+            btnCopyCode.textContent = '복사 완료!';
+            btnCopyCode.style.background = '#16a34a';
+            setTimeout(() => {
+              btnCopyCode.textContent = orig;
+              btnCopyCode.style.background = '#2563eb';
+            }, 2000);
+          });
+        }
+      });
+    }
+
     // 이벤트
     document.getElementById('btn-save-config').addEventListener('click', async () => {
       const saveBtn = document.getElementById('btn-save-config');
@@ -1712,6 +1731,16 @@ function renderLiveEditView(container, liveId, showView) {
               <div style="font-size:10px; color:#94a3b8; margin-top:4px;">쉼표(,)로 구분하여 직접 추가하거나, 채팅방에서 바로 차단할 수 있습니다.</div>
             </div>
           </div>
+        </div>
+
+        <!-- 타사 사이트용 1줄 임베드 스크립트 복사 영역 (고정 사이즈 제약 없음) -->
+        <div style="margin-top:20px; padding:14px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="font-size:12px; font-weight:700; color:#334155;">타사 웹사이트 외부 임베드 코드 (반응형 1줄 스크립트)</label>
+            <button id="btn-copy-widget-code" class="action-btn btn-primary-solid" style="padding:4px 10px; font-size:11px; font-weight:700;">코드 복사</button>
+          </div>
+          <input type="text" readonly id="cfg-widget-code" value='<script src="https://ryzincorp.com/widget.js" data-live-id="${liveId}"></script>' style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:11px; background:#fff; font-family:monospace; color:#0f172a; box-sizing:border-box;">
+          <div style="font-size:10px; color:#64748b; margin-top:6px;">하드코딩 고정 사이즈 제약이 없는 자율 반응형 라이브 위젯 스크립트입니다. 타사 웹사이트 HTML 문서 하단에 붙여넣으시면 됩니다.</div>
         </div>
       </div>
 
