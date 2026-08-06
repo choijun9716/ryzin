@@ -23,8 +23,8 @@ function parseDateToRFC822(dateStr) {
 let itemsXml = '';
 newsData.forEach(item => {
   const rfcDate = parseDateToRFC822(item.date);
-  // 외부 뉴스 링크가 있으면 그 주소로, 없으면 뉴스룸 상세 앵커로 처리
-  const link = item.url.startsWith('http') ? item.url : `https://ryzincorp.com/${item.url}`;
+  // 네이버 서치어드바이저 제약조건(피드 내 모든 URL은 소유확인된 동일 도메인이어야 함) 충족을 위해 자사몰 주소로 강제 지정
+  const link = `https://ryzincorp.com/news.html#${item.id}`;
   
   itemsXml += `    <item>
       <title><![CDATA[${item.title}]]></title>
