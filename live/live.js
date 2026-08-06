@@ -329,16 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     window.currentWidgetPosition = widgetPosition;
     
-    // 스플래시 제어
-    if (showSplash === false) {
-      const splash = document.getElementById('splash-screen');
-      if (splash) splash.remove();
-      const splashAudio = document.getElementById('splash-audio');
-      if (splashAudio) {
-        splashAudio.pause();
-        splashAudio.remove();
-      }
-    }
+
 
     const config = {
       liveId: row.live_id || 'live01',
