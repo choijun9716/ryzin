@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. 실시간 라이브 제어 감지 설정
   function subscribeConfig() {
     if (!db) return;
-    db.channel('live-control-channel')
+    db.channel(`live-control-channel-${LIVE_ID}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, async payload => {
         // Supabase 실시간 UPDATE 시, 누락된 필드로 인한 UI 오염을 막기 위해 DB에서 100% 온전한 전체 레코드를 다시 조회해서 안전하게 적용
         try {
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 4. 실시간 채팅 감지 설정 (구독)
   function subscribeChat() {
     if (!db) return;
-    db.channel('live-chats-channel')
+    db.channel(`live-chats-channel-${LIVE_ID}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_chats', filter: `live_id=eq.${LIVE_ID}` }, payload => {
         const c = payload.new;
         if (!c) return;
