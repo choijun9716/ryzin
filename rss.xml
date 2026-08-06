@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>라이진 뉴스룸</title>
+    <link>https://ryzincorp.com/news.html</link>
+    <description>라이진 스튜디오(RYZIN)의 최신 언론 보도 및 보도자료를 만나보세요.</description>
+    <language>ko</language>
+    <pubDate>Mon, 03 Aug 2026 00:00:00 +0900</pubDate>
+    <generator>RYZIN RSS Generator</generator>
+
+    <item>
+      <title><![CDATA[라이진 스튜디오, 자사몰 라이브커머스 송출 서비스 '라이진커넥트' 출시]]></title>
+      <link>https://blog.naver.com/ryzin_live</link>
+      <description><![CDATA[라이진 스튜디오가 자사몰 브랜드 커머스 라이브 송출 솔루션인 '라이진커넥트'를 정식 출시하고 미디어 커머스 영역 확장에 나섭니다.]]></description>
+      <pubDate>Mon, 03 Aug 2026 00:00:00 +0900</pubDate>
+      <guid>https://blog.naver.com/ryzin_live</guid>
+      <author>RYZIN Corp.</author>
+    </item>
+  </channel>
+</rss>
