@@ -487,10 +487,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const c = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`));
       if (c) {
-        // [NEW] 스트리밍 URL이 비어있으면 로컬스토리지 캐시 오염 방지를 위해 isLive 강제 취소
-        if (!c.streamUrl || !c.streamUrl.trim()) {
-          c.isLive = false;
-        }
         const overlay = document.getElementById('thumbnail-overlay');
         const standbyOverlay = document.getElementById('standby-overlay');
         const standbyImg = document.getElementById('standby-img');
@@ -653,12 +649,10 @@ document.addEventListener('DOMContentLoaded', () => {
           viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : '';
         }
 
-        // 라이브 배지 텍스트 업데이트 (스트리밍 URL 없으면 숨김)
+        // 라이브 배지 텍스트 업데이트
         const liveBadge = document.querySelector('.live-badge');
         if (liveBadge) {
-          if (!c.streamUrl) {
-            liveBadge.style.display = 'none';
-          } else if (c.isLive) {
+          if (c.isLive) {
             liveBadge.style.display = '';
             liveBadge.textContent = 'LIVE';
             liveBadge.style.background = '#e50914';
