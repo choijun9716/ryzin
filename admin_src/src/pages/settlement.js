@@ -60,6 +60,8 @@ export function renderSettlement() {
       const rawSsn = hostObj.ssn || hostObj.birthDate || '';
       const birthDate = rawSsn.replace(/[^0-9]/g, '').slice(0, 6);
       const phone = hostObj.phone || '';
+      const bank = hostObj.bank || '';
+      const account = hostObj.account || '';
 
       settlementItems.push({
         id: lh.id,
@@ -74,7 +76,11 @@ export function renderSettlement() {
         tax,
         netFee,
         settleStatus,
-        rawMatching: lh
+        rawMatching: lh,
+        liveId,
+        bank,
+        account,
+        ssn: rawSsn
       });
     });
 
@@ -92,6 +98,8 @@ export function renderSettlement() {
         const rawSsn = hostObj.ssn || hostObj.birthDate || '';
         const birthDate = rawSsn.replace(/[^0-9]/g, '').slice(0, 6);
         const phone = hostObj.phone || '';
+        const bank = hostObj.bank || '';
+        const account = hostObj.account || '';
         settlementItems.push({
           id: `proj-host-${p.id}`,
           hostId: p.hostId || p.hostName,
@@ -105,7 +113,11 @@ export function renderSettlement() {
           tax,
           netFee,
           settleStatus: p.hostSettleStatus || 'pending',
-          rawMatching: null
+          rawMatching: null,
+          liveId: p.id,
+          bank,
+          account,
+          ssn: rawSsn
         });
       }
     });
@@ -158,6 +170,10 @@ export function renderSettlement() {
               <option value="${m}" ${selectedMonth === m ? 'selected' : ''}>${m.replace('-', '년 ')}월</option>
             `).join('')}
           </select>
+          <button class="btn btn-sm" id="btn-download-excel" style="display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-color); background: #fff; color: var(--text-primary); padding: 8px 16px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            사업소득 내역 다운로드
+          </button>
           <button class="btn btn-primary btn-sm" id="btn-open-payslip-modal" style="display: inline-flex; align-items: center; gap: 6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             지급명세서 생성 및 CSV 업로드
@@ -291,6 +307,55 @@ export function renderSettlement() {
         monthFilterSelect.addEventListener('change', (e) => {
           selectedMonth = e.target.value;
           render();
+        });
+      }
+
+      function downloadExcel(items) {
+        const BOM = '\uFEFF';
+        const headers = ['라이브번호', '진행월', '라이브 일정', '브랜드', '쇼호스트', '진행비용', '입금은행', '계좌번호', '공제금액', '실 지급', '주민번호'];
+        
+        let csvContent = headers.join(',') + '\n';
+        
+        items.forEach(item => {
+          const escape = (val) => {
+            if (val === undefined || val === null) return '';
+            const str = String(val).replace(/"/g, '""');
+            return str.includes(',') || str.includes('\n') || str.includes('"') ? `"${str}"` : str;
+          };
+          
+          const row = [
+            escape(item.liveId || item.id),
+            escape(item.month ? item.month.replace('-', '년 ') + '월' : ''),
+            escape(item.date),
+            escape(item.brandName),
+            escape(item.hostName),
+            item.fee,
+            escape(item.bank),
+            escape(item.account),
+            item.tax,
+            item.netFee,
+            escape(item.ssn)
+          ];
+          
+          csvContent += row.join(',') + '\n';
+        });
+        
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        const dateStr = new Date().toISOString().slice(0, 10);
+        link.setAttribute('download', `쇼호스트_사업소득내역_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      const btnDownloadExcel = container.querySelector('#btn-download-excel');
+      if (btnDownloadExcel) {
+        btnDownloadExcel.addEventListener('click', () => {
+          downloadExcel(filteredItems);
         });
       }
 
