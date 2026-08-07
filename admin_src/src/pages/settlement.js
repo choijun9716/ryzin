@@ -415,6 +415,10 @@ export function renderSettlement() {
           store.update('projects', liveId, { hostSettleStatus: newStatus, settleStatus: newStatus });
         } else {
           store.update('liveHosts', id, { settleStatus: newStatus });
+          const lhObj = store.getById('liveHosts', id);
+          if (lhObj && lhObj.liveId) {
+            store.update('projects', lhObj.liveId, { settleStatus: newStatus });
+          }
         }
         showSuccess(`정산 상태가 '${newStatus === 'done' ? '지급완료' : '지급대기'}'(으)로 변경되었습니다.`);
       });
@@ -475,6 +479,12 @@ export function renderSettlement() {
           filteredItems.filter(i => i.settleStatus !== 'done').forEach(i => {
             if (i.rawMatching) {
               store.update('liveHosts', i.rawMatching.id, { settleStatus: 'done' });
+              if (i.rawMatching.liveId) {
+                store.update('projects', i.rawMatching.liveId, { settleStatus: 'done' });
+              }
+            } else if (i.id && i.id.startsWith('proj-host-')) {
+              const liveId = i.id.replace('proj-host-', '');
+              store.update('projects', liveId, { hostSettleStatus: 'done', settleStatus: 'done' });
             }
           });
           showSuccess('전체 지급 완료 처리되었습니다.');
