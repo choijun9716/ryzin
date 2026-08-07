@@ -636,19 +636,31 @@ class DataStore {
       }
 
       if (payload) {
-        await fetch(`${SUPABASE_URL}${endpoint}`, {
+        const res = await fetch(`${SUPABASE_URL}${endpoint}`, {
           method: method,
           headers: headers,
           body: JSON.stringify(payload)
         });
+        if (!res.ok) {
+          const errBody = await res.text();
+          console.error(`[Supabase Sync Error] ${method} ${endpoint} (Status: ${res.status}):`, errBody);
+        } else {
+          console.log(`[Supabase Sync Success] ${method} ${endpoint}`);
+        }
       } else if (method === 'DELETE') {
-        await fetch(`${SUPABASE_URL}${endpoint}`, {
+        const res = await fetch(`${SUPABASE_URL}${endpoint}`, {
           method: 'DELETE',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`
           }
         });
+        if (!res.ok) {
+          const errBody = await res.text();
+          console.error(`[Supabase Sync Error] DELETE ${endpoint} (Status: ${res.status}):`, errBody);
+        } else {
+          console.log(`[Supabase Sync Success] DELETE ${endpoint}`);
+        }
       }
     } catch (e) {
       console.error('Supabase 동기화 에러:', e);
