@@ -571,7 +571,7 @@ class DataStore {
       }
       else if (['projects', 'results', 'finances', 'liveHosts'].includes(collection)) {
         const liveId = item.liveId || item.id;
-        endpoint = '/rest/v1/live_broadcasts';
+        endpoint = '/rest/v1/live_broadcasts?on_conflict=id';
         
         if (action === 'delete' && collection === 'projects') {
           method = 'DELETE';
