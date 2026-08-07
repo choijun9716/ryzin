@@ -235,7 +235,7 @@ function openHostModal(hostId = null) {
       store.update('hosts', hostId, data);
       showSuccess('쇼호스트 정보가 수정되었습니다.');
     } else {
-      data.id = 'h_' + name;
+      data.id = generateId('host');
       data.memo = { features: '', strengths: '', weaknesses: '', style: '', brandPreference: '', caution: '', comment: '' };
       data.createdAt = new Date().toISOString().split('T')[0];
       store.create('hosts', data);

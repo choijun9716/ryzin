@@ -339,7 +339,7 @@ class DataStore {
     validShData.forEach(row => {
       if (!row.name) return;
       hosts.push({
-        id: 'h_' + row.name,
+        id: row.id || ('h_' + row.name),
         name: row.name,
         phone: row.phone || '',
         ssn: row.ssn || '',
@@ -465,14 +465,18 @@ class DataStore {
       });
 
       if (row.host_a) {
+        const foundHost = validShData.find(h => h.name === row.host_a);
+        const actualHostId = foundHost ? (foundHost.id || ('h_' + foundHost.name)) : ('h_' + row.host_a);
         liveHosts.push({
-          id: 'lh' + lhCounter++, liveId: pId, hostId: 'h_' + row.host_a, role: 'main',
+          id: 'lh' + lhCounter++, liveId: pId, hostId: actualHostId, role: 'main',
           fee: this._parseNum(row.fee_a), settleStatus: getSettleStatus(row.settle_status), memo: ''
         });
       }
       if (row.host_b) {
+        const foundHost = validShData.find(h => h.name === row.host_b);
+        const actualHostId = foundHost ? (foundHost.id || ('h_' + foundHost.name)) : ('h_' + row.host_b);
         liveHosts.push({
-          id: 'lh' + lhCounter++, liveId: pId, hostId: 'h_' + row.host_b, role: 'guest',
+          id: 'lh' + lhCounter++, liveId: pId, hostId: actualHostId, role: 'guest',
           fee: this._parseNum(row.fee_b), settleStatus: getSettleStatus(row.settle_status), memo: ''
         });
       }
