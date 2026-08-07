@@ -339,7 +339,7 @@ class DataStore {
     validShData.forEach(row => {
       if (!row.name) return;
       hosts.push({
-        id: row.id || ('h_' + row.name),
+        id: 'h_' + row.name,
         name: row.name,
         phone: row.phone || '',
         ssn: row.ssn || '',
