@@ -26,9 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
   window.resizeParentIframe = function(expand) {
-    const width = expand ? '440px' : '182px';
-    const height = expand ? '780px' : '64px';
-    const bottom = expand ? '12px' : '74px';
+    const width = expand ? '440px' : '220px';
+    const height = expand ? '780px' : '90px';
+    const bottom = expand ? '12px' : '56px';
     const position = window.currentWidgetPosition || 'right';
 
     if (window.parent) {
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
           myIframe.style.border = '1px solid #e2e8f0';
           myIframe.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
         } else {
-          myIframe.style.borderRadius = '50px';
+          myIframe.style.borderRadius = '0px';
           myIframe.style.overflow = 'visible';
           myIframe.style.border = 'none';
           myIframe.style.boxShadow = 'none';
@@ -99,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
             bannerText.textContent = c.widgetText || '라이브 보기';
           }
           const isLeft = c.widgetPosition === 'left';
-          banner.style.right = isLeft ? 'auto' : '0';
-          banner.style.left = isLeft ? '0' : 'auto';
+          banner.style.right = isLeft ? 'auto' : '16px';
+          banner.style.left = isLeft ? '16px' : 'auto';
           const circle = banner.querySelector('.banner-circle');
           if (circle) {
             circle.style.borderRadius = '50px';
@@ -554,8 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
             resizeParentIframe(false);
           }
           
-          banner.style.right = '0';
-          banner.style.left = '0';
+          banner.style.right = isLeft ? 'auto' : '16px';
+          banner.style.left = isLeft ? '16px' : 'auto';
 
           const circle = banner.querySelector('.banner-circle');
           if (circle) {

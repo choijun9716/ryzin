@@ -789,7 +789,7 @@ function renderLiveEditView(container, liveId, showView) {
   const embedCodeMobile = `<iframe src="${embedUrlWithParam}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden; border:none;"></iframe>`;
   const embedCodeWide = `<iframe src="${embedUrlWithParam}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none; border-radius:12px; overflow:hidden;"></iframe>`;
 
-  const widgetCode = `<iframe id="ryzin-live-iframe" src="${widgetUrlWithParam}" style="position:fixed; bottom:74px; right:12px; width:182px; height:64px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  const widgetCode = `<iframe id="ryzin-live-iframe" src="${widgetUrlWithParam}" style="position:fixed; bottom:56px; right:12px; width:220px; height:90px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
 <script>
   window.addEventListener('message', function(e) {
     var data = e.data;
@@ -820,7 +820,7 @@ function renderLiveEditView(container, liveId, showView) {
           iframe.style.setProperty('border', 'none', 'important');
           iframe.style.setProperty('box-shadow', '0 12px 40px rgba(0,0,0,0.15)', 'important');
         } else {
-          iframe.style.setProperty('border-radius', '50px', 'important');
+          iframe.style.setProperty('border-radius', '0px', 'important');
           iframe.style.setProperty('overflow', 'visible', 'important');
           iframe.style.setProperty('border', 'none', 'important');
           iframe.style.setProperty('box-shadow', 'none', 'important');
