@@ -780,16 +780,16 @@ function renderLiveEditView(container, liveId, showView) {
 
   const isLocal = window.location.origin.includes('localhost:5173');
   const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
-  const previewUrl = `${previewBase}?id=${liveId}&v=202607251156`;
+  const previewUrl = `${previewBase}?id=${liveId}&v=202608121330`;
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
-  const embedUrlWithParam = `${viewerUrl}?embed=1&v=202607251156`;
-  const widgetUrlWithParam = `${viewerUrl}?widget=1&v=202607251156`;
+  const embedUrlWithParam = `${viewerUrl}?embed=1&v=202608121330`;
+  const widgetUrlWithParam = `${viewerUrl}?widget=1&v=202608121330`;
 
   const embedCodeMobile = `<iframe src="${embedUrlWithParam}" width="390" height="693" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:20px; overflow:hidden; border:none;"></iframe>`;
   const embedCodeWide = `<iframe src="${embedUrlWithParam}" width="100%" height="600" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border:none; border-radius:12px; overflow:hidden;"></iframe>`;
 
-  const widgetCode = `<iframe id="ryzin-live-iframe" src="${widgetUrlWithParam}" style="position:fixed; bottom:74px; right:12px; width:92px; height:112px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  const widgetCode = `<iframe id="ryzin-live-iframe" src="${widgetUrlWithParam}" style="position:fixed; bottom:74px; right:12px; width:182px; height:64px; border:none; z-index:999999; background:transparent;" allow="autoplay; fullscreen" allowfullscreen></iframe>
 <script>
   window.addEventListener('message', function(e) {
     var data = e.data;
@@ -820,7 +820,7 @@ function renderLiveEditView(container, liveId, showView) {
           iframe.style.setProperty('border', 'none', 'important');
           iframe.style.setProperty('box-shadow', '0 12px 40px rgba(0,0,0,0.15)', 'important');
         } else {
-          iframe.style.setProperty('border-radius', '50%', 'important');
+          iframe.style.setProperty('border-radius', '50px', 'important');
           iframe.style.setProperty('overflow', 'visible', 'important');
           iframe.style.setProperty('border', 'none', 'important');
           iframe.style.setProperty('box-shadow', 'none', 'important');

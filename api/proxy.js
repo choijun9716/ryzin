@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
     // 2. 초기 캡슐 뱃지 스타일 (더 큼직한 프리미엄 크기)
     const widgetScript = `
-      <script src="https://ryzincorp.com/widget.js" data-live-id="${targetLiveId}"></script>
+      <script src="https://ryzincorp.com/widget.js" data-live-id="${targetLiveId}" data-demo="true"></script>
     `;
 
     if (html.includes('</body>')) {

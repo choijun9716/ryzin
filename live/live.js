@@ -26,8 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
   window.resizeParentIframe = function(expand) {
-    const width = expand ? '440px' : '92px';
-    const height = expand ? '780px' : '112px';
+    const width = expand ? '440px' : '182px';
+    const height = expand ? '780px' : '64px';
     const bottom = expand ? '12px' : '74px';
     const position = window.currentWidgetPosition || 'right';
 
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
           myIframe.style.border = '1px solid #e2e8f0';
           myIframe.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
         } else {
-          myIframe.style.borderRadius = '50%';
+          myIframe.style.borderRadius = '50px';
           myIframe.style.overflow = 'visible';
           myIframe.style.border = 'none';
           myIframe.style.boxShadow = 'none';
@@ -94,22 +94,24 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const c = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`));
         if (c) {
-          const bannerText = banner.querySelector('.banner-label-text');
+          const bannerText = banner.querySelector('.ryzin-widget-title');
           if (bannerText) {
-            bannerText.innerHTML = (c.widgetText || '라이브 보기').replace(' ', '<br>');
+            bannerText.textContent = c.widgetText || '라이브 보기';
           }
           const isLeft = c.widgetPosition === 'left';
           banner.style.right = isLeft ? 'auto' : '0';
           banner.style.left = isLeft ? '0' : 'auto';
           const circle = banner.querySelector('.banner-circle');
           if (circle) {
-            circle.style.borderRadius = '50%';
+            circle.style.borderRadius = '50px';
             circle.style.border = '1px solid #e2e8f0';
             circle.style.boxShadow = 'none';
             if (c.widgetImageUrl) {
               circle.style.backgroundImage = `url('${c.widgetImageUrl}')`;
               circle.style.backgroundSize = 'cover';
               circle.style.backgroundPosition = 'center';
+              const badge = banner.querySelector('.ryzin-widget-badge');
+              if (badge) badge.style.display = 'none';
               if (bannerText) bannerText.style.display = 'none';
             }
           }
@@ -535,10 +537,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const banner = document.getElementById('live-floating-banner');
         if (banner) {
           // 1. 문구 적용
-          const bannerText = banner.querySelector('.banner-label-text');
+          const bannerText = banner.querySelector('.ryzin-widget-title');
           if (bannerText) {
-            const rawText = c.widgetText || '라이브 보기';
-            bannerText.innerHTML = rawText.replace(' ', '<br>');
+            bannerText.textContent = c.widgetText || '라이브 보기';
           }
 
           // 2. 위치 적용 (좌측 vs 우측)
@@ -558,22 +559,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
           const circle = banner.querySelector('.banner-circle');
           if (circle) {
-            circle.style.borderRadius = '50%';
-            circle.style.border = '1px solid #e2e8f0';
+            circle.style.borderRadius = '50px';
+            circle.style.border = '1.5px solid rgba(255,255,255,0.18)';
             circle.style.boxShadow = 'none';
 
             // 3. 이미지 적용
+            const badge = banner.querySelector('.ryzin-widget-badge');
             if (c.widgetImageUrl) {
               circle.style.backgroundImage = `url('${c.widgetImageUrl}')`;
               circle.style.backgroundSize = 'cover';
               circle.style.backgroundPosition = 'center';
+              if (badge) badge.style.display = 'none';
               if (bannerText) bannerText.style.display = 'none';
             } else {
               circle.style.backgroundImage = 'none';
-              circle.style.backgroundColor = '#ffffff';
+              circle.style.backgroundColor = '#0f172a';
+              if (badge) badge.style.display = 'inline-flex';
               if (bannerText) {
                 bannerText.style.display = 'block';
-                bannerText.style.color = '#000000';
+                bannerText.style.color = '#ffffff';
               }
             }
           }
