@@ -1315,11 +1315,41 @@
     let lives = await sbGet('shop_lives', 'select=*&order=sort_order.asc');
     lives = lives.filter(l => l.active !== false);
 
+    let realControls = [];
+    if (window.supabaseClient) {
+      try {
+        const { data } = await window.supabaseClient.from('live_control').select('live_id, status, title, subtitle, viewers');
+        if (data) realControls = data;
+      } catch (e) {}
+    }
+
     if (!lives || !lives.length) {
-      lives = [
-        { title: '설화수 자음수 단독 특가 라이브', viewers: '1,240명 시청 중', img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85', link_url: '/shop/live_teaser.html', status: 'live' },
-        { title: '에이피뷰티 신상 세럼 사전 공개', viewers: '오후 8시 예정', img_url: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85', link_url: '/shop/live_teaser.html', status: 'upcoming' }
-      ];
+      if (realControls && realControls.length) {
+        lives = realControls.map(rc => ({
+          title: rc.subtitle || rc.title || '라이브 방송',
+          viewers: rc.status === 'ON' ? `${(rc.viewers || 0).toLocaleString()}명 시청 중` : '라이브 예정',
+          img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85',
+          link_url: `/live/?id=${rc.live_id}`,
+          status: rc.status === 'ON' ? 'live' : 'upcoming'
+        }));
+      } else {
+        lives = [
+          { title: '설화수 자음수 단독 특가 라이브', viewers: '1,240명 시청 중', img_url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85', link_url: '/shop/live_teaser.html', status: 'live' },
+          { title: '에이피뷰티 신상 세럼 사전 공개', viewers: '오후 8시 예정', img_url: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85', link_url: '/shop/live_teaser.html', status: 'upcoming' }
+        ];
+      }
+    } else {
+      lives.forEach(lv => {
+        if (lv.live_id) {
+          const match = realControls.find(rc => rc.live_id === lv.live_id);
+          if (match) {
+            lv.status = match.status === 'ON' ? 'live' : 'upcoming';
+            if (match.status === 'ON') {
+              lv.viewers = `${(match.viewers || 0).toLocaleString()}명 시청 중`;
+            }
+          }
+        }
+      });
     }
     if (sec) sec.style.display = '';
     cont.innerHTML = lives.map(lv => {

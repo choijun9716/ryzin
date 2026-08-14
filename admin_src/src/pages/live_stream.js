@@ -198,13 +198,21 @@ function renderListView(container, showView) {
   const renderList = async () => {
     if (db) {
       try {
-        const { data, error } = await db.from('live_control').select('live_id, updated_at');
+        const { data, error } = await db.from('live_control').select('live_id, updated_at, status, title, subtitle');
         if (!error && data && Array.isArray(data)) {
           const localLives = getLives();
           const deletedLives = JSON.parse(localStorage.getItem('ryzin_deleted_lives') || '[]');
           data.forEach(row => {
-            if (row.live_id && !localLives.some(l => l.id === row.live_id) && !deletedLives.includes(row.live_id)) {
-              localLives.push({ id: row.live_id, createdAt: new Date(row.updated_at).getTime() });
+            if (row.live_id && !deletedLives.includes(row.live_id)) {
+              if (!localLives.some(l => l.id === row.live_id)) {
+                localLives.push({ id: row.live_id, createdAt: new Date(row.updated_at).getTime() });
+              }
+              // DB의 개별 라이브 status('ON'/'OFF')를 해당 live_id localConfig에 정확히 반영
+              const cfg = getLiveConfig(row.live_id) || {};
+              cfg.isLive = (row.status === 'ON');
+              if (row.title) cfg.brandName = row.title;
+              if (row.subtitle) cfg.title = row.subtitle;
+              saveLiveConfig(row.live_id, cfg);
             }
           });
           saveLives(localLives);
