@@ -1685,7 +1685,10 @@ function renderLiveEditView(container, liveId, showView) {
         <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9;">
           <h3 style="margin:0; border:none; padding:0;">관리자 채팅 발송</h3>
-          <button id="btn-clear-chats" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px; color:#ef4444; border-color:#fee2e2; background:#fff5f5;">채팅 내역 초기화</button>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-download-chats" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px;">채팅 다운로드</button>
+            <button id="btn-clear-chats" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px; color:#ef4444; border-color:#fee2e2; background:#fff5f5;">채팅 내역 초기화</button>
+          </div>
         </div>
         
         <!-- 관리자 닉네임 / 컬러 설정 영역 -->
@@ -2000,6 +2003,75 @@ function renderLiveEditView(container, liveId, showView) {
     };
     document.getElementById('btn-send-chat').addEventListener('click', sendAdminChat);
     chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAdminChat(); });
+
+    // 채팅 다운로드
+    const btnDownloadChats = document.getElementById('btn-download-chats');
+    if (btnDownloadChats) {
+      btnDownloadChats.addEventListener('click', async () => {
+        if (!db) {
+          alert('DB 연결이 유효하지 않습니다.');
+          return;
+        }
+        const originalText = btnDownloadChats.textContent;
+        btnDownloadChats.disabled = true;
+        btnDownloadChats.textContent = '다운로드 중...';
+        try {
+          const { data: chats, error } = await db.from('live_chats')
+            .select('*')
+            .eq('live_id', liveId)
+            .order('created_at', { ascending: true });
+          
+          if (error) throw error;
+          if (!chats || chats.length === 0) {
+            alert('백업할 채팅 내역이 없습니다.');
+            return;
+          }
+
+          // CSV 변환 (BOM 추가로 엑셀 한글 깨짐 방지)
+          const csvContent = '\uFEFF' + [
+            ['작성시간', '닉네임', '내용'].join(','),
+            ...chats.map(c => {
+              const time = new Date(parseInt(c.created_at) || Date.now()).toLocaleString('ko-KR');
+              let nickname = c.nickname || '';
+              if (nickname.includes('|')) {
+                nickname = nickname.split('|')[0];
+              }
+              const escapeCsv = (str) => `"${str.replace(/"/g, '""')}"`;
+              return [
+                escapeCsv(time),
+                escapeCsv(nickname),
+                escapeCsv(c.content || '')
+              ].join(',');
+            })
+          ].join('\n');
+
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          
+          const now = new Date();
+          const dateStr = now.getFullYear() + 
+            String(now.getMonth() + 1).padStart(2, '0') + 
+            String(now.getDate()).padStart(2, '0') + '_' +
+            String(now.getHours()).padStart(2, '0') + 
+            String(now.getMinutes()).padStart(2, '0') + 
+            String(now.getSeconds()).padStart(2, '0');
+
+          link.href = url;
+          link.setAttribute('download', `ryzin_chats_${liveId}_${dateStr}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error('채팅 다운로드 실패:', err);
+          alert('채팅 다운로드에 실패했습니다: ' + err.message);
+        } finally {
+          btnDownloadChats.disabled = false;
+          btnDownloadChats.textContent = originalText;
+        }
+      });
+    }
 
     // 채팅 내역 초기화
     document.getElementById('btn-clear-chats').addEventListener('click', async () => {
