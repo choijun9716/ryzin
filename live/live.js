@@ -194,6 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       if (data) {
         applyLiveConfig(data);
+      } else {
+        showInvalidLiveScreen();
       }
     } catch (e) {
       console.warn("Supabase loadConfigOnce failed:", e);
@@ -210,8 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .eq('live_id', LIVE_ID)
         .maybeSingle();
 
-      if (!error && data) {
-        applyLiveConfig(data);
+      if (!error) {
+        if (data) {
+          applyLiveConfig(data);
+        } else {
+          showInvalidLiveScreen();
+        }
       }
     } catch (e) {
       console.warn("Polling fallback failed:", e);
@@ -1823,5 +1829,61 @@ if (videoEl && document.pictureInPictureEnabled && typeof videoEl.requestPicture
       console.warn('Auto Picture-in-Picture error:', err);
     }
   });
+}
+
+function showInvalidLiveScreen() {
+  if (document.getElementById('invalid-live-overlay')) return;
+
+  const video = document.getElementById('live-video');
+  if (video) video.pause();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'invalid-live-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0f172a;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+  `;
+
+  overlay.innerHTML = `
+    <svg style="width: 64px; height: 64px; margin-bottom: 24px; fill: #ef4444;" viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+    </svg>
+    <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 12px 0; color: #ffffff;">존재하지 않거나 삭제된 라이브 방송입니다</h2>
+    <p style="font-size: 14px; color: #94a3b8; margin: 0 0 24px 0; line-height: 1.5;">요청하신 라이브 방송 정보를 찾을 수 없습니다.<br>입력하신 링크를 다시 확인해 주세요.</p>
+    <button id="btn-go-home" style="
+      padding: 12px 24px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    ">메인으로 이동</button>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const btnGoHome = overlay.querySelector('#btn-go-home');
+  if (btnGoHome) {
+    btnGoHome.addEventListener('click', () => {
+      window.location.href = '/';
+    });
+  }
 }
 
