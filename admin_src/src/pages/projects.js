@@ -763,7 +763,7 @@ function renderSchemeTab(project, isSharedView = false) {
       <div class="flex-col">
         ${isSharedView ? '' : `
         <div style="display:flex; justify-content:flex-end; margin-bottom: 4px;">
-          <button class="btn btn-secondary btn-sm" id="btn-copy-scheme-url" style="font-weight:600; font-size:12.5px; padding: 6px 16px;">공유 URL 복사</button>
+          <button class="btn btn-secondary btn-sm" id="btn-copy-scheme-url" style="font-weight:600; font-size:12.5px; padding: 8px 24px; min-width: 140px;">공유 URL 복사</button>
         </div>
         `}
 
