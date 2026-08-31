@@ -869,11 +869,9 @@ function renderSchemeTab(project, isSharedView = false) {
               <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-secondary);">공유 폴더 주소 (URL)</label>
               <div style="display:flex; gap:12px; align-items:center;">
                 <input type="text" class="input" id="sch-productionDriveUrl" placeholder="https://drive.google.com/... 또는 공유 자료 링크를 입력하세요." value="${scheme.productionDriveUrl || ''}" style="flex:1; padding: 10px 12px; font-size: 13.5px;">
-                ${scheme.productionDriveUrl ? `
-                <a href="${scheme.productionDriveUrl}" target="_blank" class="btn btn-secondary" style="white-space:nowrap; padding:10px 18px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                  열기
-                </a>` : ''}
+                <a href="${scheme.productionDriveUrl ? (scheme.productionDriveUrl.startsWith('http') ? scheme.productionDriveUrl : `https://${scheme.productionDriveUrl}`) : '#'}" target="_blank" class="btn-production-drive-link" style="display: ${scheme.productionDriveUrl ? 'inline-flex' : 'none'}; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; color: var(--primary); background: #eff6ff; transition: all 0.2s; flex-shrink: 0;" title="공유 폴더 열기">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
               </div>
               <p style="font-size:12px; color:var(--text-tertiary); margin: 0; line-height: 1.4;">입력된 주소는 브랜드사와 실시간으로 상호 공유하며 직접 접속하여 제작 리소스를 다운로드할 수 있습니다.</p>
             </div>
@@ -981,6 +979,23 @@ function renderSchemeTab(project, isSharedView = false) {
         }
       });
     });
+
+    const driveUrlInput = el.querySelector('#sch-productionDriveUrl');
+    if (driveUrlInput) {
+      driveUrlInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        const linkBtn = el.querySelector('.btn-production-drive-link');
+        if (linkBtn) {
+          if (val) {
+            linkBtn.href = val.startsWith('http') ? val : `https://${val}`;
+            linkBtn.style.display = 'inline-flex';
+          } else {
+            linkBtn.href = '#';
+            linkBtn.style.display = 'none';
+          }
+        }
+      });
+    }
 
     // 이벤트 리스너 바인딩
     el.querySelector('#btn-add-evt-row').addEventListener('click', () => {
