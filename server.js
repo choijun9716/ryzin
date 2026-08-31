@@ -256,7 +256,7 @@ const server = http.createServer((req, res) => {
 
         let title = "지급명세서 — RYZIN";
         if (name && month) {
-            title = `${name} ${month}월 지급명세서`;
+            title = `${name}님 ${month}월 지급명세서 안내`;
         } else if (month) {
             title = `${month}월 지급명세서 — RYZIN`;
         }
