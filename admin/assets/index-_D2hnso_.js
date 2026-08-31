@@ -1618,7 +1618,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
 
         <div id="tab-content"></div>
       </div>
-    `;let l=t.querySelector(`#tab-content`);switch(i){case`info`:l.appendChild(Xt(n,o));break;case`scheme`:l.appendChild(Jt(n));break;case`hosts`:l.appendChild(Qt(n));break;case`design`:l.appendChild(en(n));break;case`result`:l.appendChild(rn(n));break;case`finance`:l.appendChild(an(n));break}setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/projects`)),t.querySelectorAll(`.tab`).forEach(e=>{e.addEventListener(`click`,()=>{i=e.getAttribute(`data-tab`),a()})}),t.querySelector(`#btn-delete-project`)?.addEventListener(`click`,()=>{st({title:`프로젝트 삭제`,message:`"${n.adName}" 프로젝트를 삭제하시겠습니까? 관련된 체크리스트, 쇼호스트 매칭, 성과, 정산 데이터도 모두 삭제됩니다.`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.query(`tasks`,e=>e.liveId===n.id).forEach(e=>U.delete(`tasks`,e.id)),U.query(`liveHosts`,e=>e.liveId===n.id).forEach(e=>U.delete(`liveHosts`,e.id)),U.query(`designs`,e=>e.liveId===n.id).forEach(e=>U.delete(`designs`,e.id)),U.delete(`results`,n.id),U.delete(`finances`,n.id),U.delete(`projects`,n.id),J(`프로젝트가 삭제되었습니다.`),M.navigate(`/projects`)}})})},0)}return a(),t}function Jt(e,t=!1){let n=document.createElement(`div`),r=e.scheme||{liveInfo:{mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},products:[],events:[],productionDriveUrl:``};r.liveInfo||={mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},r.products||=[],r.events||=[],r.productionDriveUrl===void 0&&(r.productionDriveUrl=``);function i(){return r.products.length===0?`<tr><td colspan="12" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-products-row">등록된 상품이 없습니다.</td></tr>`:r.products.map((e,t)=>{let n=parseFloat(e.price)||0,r=parseFloat(e.livePrice)||0,i=parseInt(e.targetQty,10)||0,a=n>0?Math.round((n-r)/n*100)+`%`:`0%`,o=r*i;return`
+    `;let l=t.querySelector(`#tab-content`);switch(i){case`info`:l.appendChild(Xt(n,o));break;case`scheme`:l.appendChild(Jt(n));break;case`hosts`:l.appendChild(Qt(n));break;case`design`:l.appendChild(en(n));break;case`result`:l.appendChild(rn(n));break;case`finance`:l.appendChild(an(n));break}setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/projects`)),t.querySelectorAll(`.tab`).forEach(e=>{e.addEventListener(`click`,()=>{i=e.getAttribute(`data-tab`),a()})}),t.querySelector(`#btn-delete-project`)?.addEventListener(`click`,()=>{st({title:`프로젝트 삭제`,message:`"${n.adName}" 프로젝트를 삭제하시겠습니까? 관련된 체크리스트, 쇼호스트 매칭, 성과, 정산 데이터도 모두 삭제됩니다.`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.query(`tasks`,e=>e.liveId===n.id).forEach(e=>U.delete(`tasks`,e.id)),U.query(`liveHosts`,e=>e.liveId===n.id).forEach(e=>U.delete(`liveHosts`,e.id)),U.query(`designs`,e=>e.liveId===n.id).forEach(e=>U.delete(`designs`,e.id)),U.delete(`results`,n.id),U.delete(`finances`,n.id),U.delete(`projects`,n.id),J(`프로젝트가 삭제되었습니다.`),M.navigate(`/projects`)}})})},0)}return a(),t}function Jt(e,t=!1){let n=document.createElement(`div`),r=e.scheme||{liveInfo:{mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},products:[],events:[],productionDriveUrl:``,sampleRequest:{deliveryDate:``,returnAddress:``,items:[]}};r.liveInfo||={mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},r.products||=[],r.events||=[],r.productionDriveUrl===void 0&&(r.productionDriveUrl=``),r.sampleRequest||={deliveryDate:``,returnAddress:``,items:[]};function i(){return r.products.length===0?`<tr><td colspan="12" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-products-row">등록된 상품이 없습니다.</td></tr>`:r.products.map((e,t)=>{let n=parseFloat(e.price)||0,r=parseFloat(e.livePrice)||0,i=parseInt(e.targetQty,10)||0,a=n>0?Math.round((n-r)/n*100)+`%`:`0%`,o=r*i;return`
         <tr class="product-row" data-idx="${t}">
           <td><input type="text" class="input prod-prodName" style="width: 160px; padding: 6px 8px; font-size: 13px;" value="${e.prodName||``}" placeholder="상품명"></td>
           <td>
@@ -1771,11 +1771,119 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           </div>
         </div>
 
+        <!-- 5. 방송 샘플 요청서 -->
+        <div class="card">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>방송 샘플 요청서</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-open-sample-modal" style="font-weight:600; font-size:12.5px; padding:6px 14px;">요청서 작성/확인</button>
+          </div>
+          <div class="card-body" style="padding: 20px;">
+            <p style="font-size:12.5px; color:var(--text-secondary); margin:0; line-height: 1.5;">
+              라이브 방송 진행을 위한 샘플 발송 내역과 회수지 정보를 관리합니다. 작성 완료 후 본 요청서를 택배 상자에 함께 부착하여 발송해 주세요.
+            </p>
+            ${r.sampleRequest&&r.sampleRequest.deliveryDate?`
+            <div style="margin-top: 12px; padding: 10px 14px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe; font-size: 12.5px; color: #1e40af; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>발송 예정일:</strong> ${r.sampleRequest.deliveryDate} | <strong>등록 제품수:</strong> ${r.sampleRequest.items?r.sampleRequest.items.length:0}개
+              </div>
+              <span style="font-size: 11px; font-weight: 600; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 9999px;">작성 완료</span>
+            </div>
+            `:`
+            <div style="margin-top: 12px; padding: 10px 14px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12.5px; color: var(--text-tertiary);">
+              아직 작성된 샘플 요청서 내역이 없습니다. 우측 상단의 버튼을 눌러 작성해 주세요.
+            </div>
+            `}
+          </div>
+        </div>
+
         <div style="display:flex; justify-content:flex-end; padding:10px 0;">
           <button class="btn btn-primary" id="btn-save-project-scheme" style="padding:12px 36px; font-weight:700; font-size:15px; box-shadow: 0 4px 12px rgba(59,130,246,0.25);">스킴 정보 저장</button>
         </div>
       </div>
-    `,t||n.querySelector(`#btn-copy-scheme-url`)?.addEventListener(`click`,()=>{let t=`${window.location.origin}${window.location.pathname}#/shared_scheme/${e.id}`;navigator.clipboard.writeText(t).then(()=>J(`공유 URL이 클립보드에 복사되었습니다.`)).catch(()=>Y(`URL 복사에 실패했습니다.`))}),n.querySelector(`#btn-add-prod-row`).addEventListener(`click`,()=>{s(),r.products.push({prodName:``,prodUrl:``,stock:``,price:``,livePrice:``,targetQty:``,feeRate:``}),o()}),n.querySelectorAll(`.btn-delete-prod-row`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);r.products.splice(t,1),o()})});let c=e=>{let t=e.replace(/[^0-9]/g,``);return t?parseInt(t,10).toLocaleString():``},l=e=>parseFloat(e.replace(/,/g,``))||0,u=e=>{let t=l(e.querySelector(`.prod-price`).value),n=l(e.querySelector(`.prod-livePrice`).value),r=parseInt(e.querySelector(`.prod-targetQty`).value,10)||0,i=t>0?Math.round((t-n)/t*100)+`%`:`0%`;e.querySelector(`.prod-discountRate`).textContent=i;let a=n*r;e.querySelector(`.prod-targetSales`).textContent=a.toLocaleString()};n.querySelectorAll(`.product-row`).forEach(e=>{let t=e.querySelector(`.prod-price`),n=e.querySelector(`.prod-livePrice`),r=t=>{t.addEventListener(`input`,t=>{let n=t.target.selectionStart,r=t.target.value.length,i=c(t.target.value);t.target.value=i;let a=i.length;t.target.setSelectionRange(n+(a-r),n+(a-r)),u(e)})};t&&r(t),n&&r(n);let i=e.querySelector(`.prod-prodUrl`);i&&i.addEventListener(`input`,t=>{let n=t.target.value.trim(),r=e.querySelector(`.btn-prod-url-link`);r&&(n?(r.href=n.startsWith(`http`)?n:`https://${n}`,r.style.display=`inline-flex`):(r.href=`#`,r.style.display=`none`))}),e.querySelectorAll(`input`).forEach(r=>{r!==t&&r!==n&&r.addEventListener(`input`,()=>{u(e)})})});let d=n.querySelector(`#sch-productionDriveUrl`);d&&d.addEventListener(`input`,e=>{let t=e.target.value.trim(),r=n.querySelector(`.btn-production-drive-link`);r&&(t?(r.href=t.startsWith(`http`)?t:`https://${t}`,r.style.display=`inline-flex`):(r.href=`#`,r.style.display=`none`))}),n.querySelector(`#btn-add-evt-row`).addEventListener(`click`,()=>{s(),r.events.push({type:``,condition:``,benefit:``,price:``,count:``,budget:``}),o()}),n.querySelectorAll(`.btn-delete-evt-row`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);r.events.splice(t,1),o()})}),n.querySelector(`#btn-save-project-scheme`).addEventListener(`click`,async()=>{s();let t=n.querySelector(`#btn-save-project-scheme`);t.disabled=!0,t.textContent=`저장 중...`;try{U.update(`projects`,e.id,{scheme:r}),J(`스킴 정보가 정상적으로 저장되었습니다.`)}catch(e){console.error(`스킴 저장 실패:`,e),Y(`스킴 저장 중 오류가 발생했습니다.`)}finally{t.disabled=!1,t.textContent=`스킴 정보 저장`}})}function s(){r.liveInfo.mainProduct=n.querySelector(`#sch-mainProduct`).value,r.liveInfo.brandIntro=n.querySelector(`#sch-brandIntro`).value,r.liveInfo.sellingPoints=n.querySelector(`#sch-sellingPoints`).value,r.liveInfo.highlight=n.querySelector(`#sch-highlight`).value,r.liveInfo.delivery=n.querySelector(`#sch-delivery`).value;let e=n.querySelectorAll(`.product-row`);r.products=Array.from(e).map(e=>{let t=e.querySelector(`.prod-price`).value.replace(/,/g,``),n=e.querySelector(`.prod-livePrice`).value.replace(/,/g,``);return{prodName:e.querySelector(`.prod-prodName`).value,prodUrl:e.querySelector(`.prod-prodUrl`).value,stock:e.querySelector(`.prod-stock`).value?parseInt(e.querySelector(`.prod-stock`).value,10):``,price:t?parseFloat(t):``,livePrice:n?parseFloat(n):``,targetQty:e.querySelector(`.prod-targetQty`).value?parseInt(e.querySelector(`.prod-targetQty`).value,10):``}});let t=n.querySelectorAll(`.event-row`);r.events=Array.from(t).map(e=>({type:e.querySelector(`.evt-type`).value,condition:e.querySelector(`.evt-cond`).value,benefit:e.querySelector(`.evt-benefit`).value,price:e.querySelector(`.evt-price`).value?parseFloat(e.querySelector(`.evt-price`).value):``,count:e.querySelector(`.evt-count`).value?parseInt(e.querySelector(`.evt-count`).value,10):``,budget:e.querySelector(`.evt-budget`).value?parseFloat(e.querySelector(`.evt-budget`).value):``})),r.productionDriveUrl=n.querySelector(`#sch-productionDriveUrl`).value.trim()}return o(),n}function Yt(e){let t=document.createElement(`div`);t.style.padding=`var(--space-8)`,t.style.maxWidth=`1200px`,t.style.margin=`0 auto`;function n(){let n=U.getById(`projects`,e.id);if(!n){t.innerHTML=`
+    `,t||n.querySelector(`#btn-copy-scheme-url`)?.addEventListener(`click`,()=>{let t=`${window.location.origin}${window.location.pathname}#/shared_scheme/${e.id}`;navigator.clipboard.writeText(t).then(()=>J(`공유 URL이 클립보드에 복사되었습니다.`)).catch(()=>Y(`URL 복사에 실패했습니다.`))}),n.querySelector(`#btn-add-prod-row`).addEventListener(`click`,()=>{s(),r.products.push({prodName:``,prodUrl:``,stock:``,price:``,livePrice:``,targetQty:``,feeRate:``}),o()}),n.querySelectorAll(`.btn-delete-prod-row`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);r.products.splice(t,1),o()})});let c=e=>{let t=e.replace(/[^0-9]/g,``);return t?parseInt(t,10).toLocaleString():``},l=e=>parseFloat(e.replace(/,/g,``))||0,u=e=>{let t=l(e.querySelector(`.prod-price`).value),n=l(e.querySelector(`.prod-livePrice`).value),r=parseInt(e.querySelector(`.prod-targetQty`).value,10)||0,i=t>0?Math.round((t-n)/t*100)+`%`:`0%`;e.querySelector(`.prod-discountRate`).textContent=i;let a=n*r;e.querySelector(`.prod-targetSales`).textContent=a.toLocaleString()};n.querySelectorAll(`.product-row`).forEach(e=>{let t=e.querySelector(`.prod-price`),n=e.querySelector(`.prod-livePrice`),r=t=>{t.addEventListener(`input`,t=>{let n=t.target.selectionStart,r=t.target.value.length,i=c(t.target.value);t.target.value=i;let a=i.length;t.target.setSelectionRange(n+(a-r),n+(a-r)),u(e)})};t&&r(t),n&&r(n);let i=e.querySelector(`.prod-prodUrl`);i&&i.addEventListener(`input`,t=>{let n=t.target.value.trim(),r=e.querySelector(`.btn-prod-url-link`);r&&(n?(r.href=n.startsWith(`http`)?n:`https://${n}`,r.style.display=`inline-flex`):(r.href=`#`,r.style.display=`none`))}),e.querySelectorAll(`input`).forEach(r=>{r!==t&&r!==n&&r.addEventListener(`input`,()=>{u(e)})})});let d=n.querySelector(`#sch-productionDriveUrl`);d&&d.addEventListener(`input`,e=>{let t=e.target.value.trim(),r=n.querySelector(`.btn-production-drive-link`);r&&(t?(r.href=t.startsWith(`http`)?t:`https://${t}`,r.style.display=`inline-flex`):(r.href=`#`,r.style.display=`none`))});function f(){let e=JSON.parse(JSON.stringify(r.sampleRequest||{deliveryDate:``,returnAddress:``,items:[]}));e.items||=[];let t=document.createElement(`div`);t.className=`flex-col`,t.style.gap=`16px`;let n=()=>e.items.length===0?`<tr><td colspan="8" style="text-align:center; padding: 20px; color: var(--text-tertiary);">등록된 제품이 없습니다. 우측 상단의 행 추가 버튼을 눌러주세요.</td></tr>`:e.items.map((e,t)=>`
+          <tr class="sample-item-row" data-idx="${t}">
+            <td><input type="text" class="input sam-product" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.product||``}" placeholder="제품명"></td>
+            <td><input type="text" class="input sam-size" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.size||``}" placeholder="규격"></td>
+            <td><input type="number" class="input sam-qty" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.qty||``}" placeholder="수량"></td>
+            <td>
+              <select class="input sam-method" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
+                <option value="상온" ${e.method===`상온`?`selected`:``}>상온</option>
+                <option value="냉장" ${e.method===`냉장`?`selected`:``}>냉장</option>
+                <option value="냉동" ${e.method===`냉동`?`selected`:``}>냉동</option>
+              </select>
+            </td>
+            <td><input type="text" class="input sam-status" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.status||`미발송`}" placeholder="발송여부"></td>
+            <td><input type="text" class="input sam-check" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.check||`검수전`}" placeholder="검수"></td>
+            <td>
+              <select class="input sam-collect" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
+                <option value="회수" ${e.collect===`회수`?`selected`:``}>회수</option>
+                <option value="미회수" ${e.collect===`미회수`?`selected`:``}>미회수</option>
+              </select>
+            </td>
+            <td style="text-align:center;"><button class="btn btn-danger btn-sm btn-delete-sample-row" data-idx="${t}" style="padding:4px 8px; font-size:11px;">삭제</button></td>
+          </tr>
+        `).join(``),i=()=>{t.querySelector(`#sample-table-body`).innerHTML=n(),t.querySelectorAll(`.btn-delete-sample-row`).forEach(t=>{t.addEventListener(`click`,()=>{a();let n=parseInt(t.getAttribute(`data-idx`),10);e.items.splice(n,1),i()})})},a=()=>{let n=t.querySelectorAll(`.sample-item-row`);e.items=Array.from(n).map(e=>({product:e.querySelector(`.sam-product`).value,size:e.querySelector(`.sam-size`).value,qty:e.querySelector(`.sam-qty`).value?parseInt(e.querySelector(`.sam-qty`).value,10):``,method:e.querySelector(`.sam-method`).value,status:e.querySelector(`.sam-status`).value,check:e.querySelector(`.sam-check`).value,collect:e.querySelector(`.sam-collect`).value}))};t.innerHTML=`
+        <div style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #b91c1c; line-height: 1.5; font-weight: 500;">
+          <div style="margin-bottom:4px;">* 신선식품은 변질 위험이 있어, 라이브 일정 D-3일전 까지 발송 요청 드립니다.</div>
+          <div>* 샘플 발송시, 본 요청서를 택배 상자에 함께 부착 하여 보내주세요.</div>
+        </div>
+        
+        <div class="card" style="border: 1px solid var(--border-color); box-shadow: none; margin: 0;">
+          <div class="card-header" style="background:#f8fafc; border-bottom:1px solid var(--border-color); padding: 10px 16px; display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="margin:0; font-size: 14px; font-weight: 700; color: var(--text-primary);">제품 요청 리스트</h4>
+            <button class="btn btn-secondary btn-sm" id="btn-add-sample-row" style="font-size:12px; padding:4px 10px;">행 추가</button>
+          </div>
+          <div class="card-body" style="padding: 0; overflow-x: auto;">
+            <table class="data-table" style="min-width: 800px; width: 100%; border-collapse: collapse; margin: 0;">
+              <thead>
+                <tr style="background: #f1f5f9; border-bottom: 1px solid var(--border-color);">
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left;">제품</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 120px;">규격</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 70px;">수량</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">취급방법</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">발송여부</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">검수</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">회수여부</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: center; width: 70px;">작업</th>
+                </tr>
+              </thead>
+              <tbody id="sample-table-body">
+                ${n()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="card" style="border: 1px solid var(--border-color); box-shadow: none; margin: 0; padding: 16px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: var(--text-primary);">기본 배송 정보</h4>
+            <div class="flex-col" style="gap: 10px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">샘플 보내주실 곳</label>
+                <input type="text" class="input" value="경기도 하남시 미사강변동로 100-1 파라곤스퀘어 2064-2호" readonly style="background:#f1f5f9; font-size:13px; padding: 8px 10px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">수신자</label>
+                <input type="text" class="input" value="채이준PD / 010-3018-9716" readonly style="background:#f1f5f9; font-size:13px; padding: 8px 10px;">
+              </div>
+            </div>
+          </div>
+          
+          <div class="card" style="border: 1px solid var(--border-color); box-shadow: none; margin: 0; padding: 16px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: var(--text-primary);">기타 발송 및 회수 정보</h4>
+            <div class="flex-col" style="gap: 10px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">발송 예정일</label>
+                <input type="text" class="input" id="sam-deliveryDate" placeholder="예: 2026-08-15 또는 협의필요" value="${e.deliveryDate||``}" style="font-size:13px; padding: 8px 10px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">회수지 주소</label>
+                <input type="text" class="input" id="sam-returnAddress" placeholder="샘플 회수를 진행할 주소를 입력해 주세요." value="${e.returnAddress||``}" style="font-size:13px; padding: 8px 10px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      `,setTimeout(()=>{i(),t.querySelector(`#btn-add-sample-row`).addEventListener(`click`,()=>{a(),e.items.push({product:``,size:``,qty:``,method:`냉장`,status:`미발송`,check:`검수전`,collect:`회수`}),i()})},0);let s=document.createElement(`div`);s.style.display=`flex`,s.style.justifyContent=`flex-end`,s.style.gap=`8px`;let c=document.createElement(`button`);c.className=`btn btn-secondary`,c.textContent=`취소`,c.addEventListener(`click`,q);let l=document.createElement(`button`);l.className=`btn btn-primary`,l.textContent=`적용`,l.addEventListener(`click`,()=>{a(),e.deliveryDate=t.querySelector(`#sam-deliveryDate`).value.trim(),e.returnAddress=t.querySelector(`#sam-returnAddress`).value.trim(),r.sampleRequest=e,q(),o()}),s.appendChild(c),s.appendChild(l),K({title:`방송 샘플 요청서 작성`,size:`lg`,content:t,footer:s})}n.querySelector(`#btn-open-sample-modal`).addEventListener(`click`,f),n.querySelector(`#btn-add-evt-row`).addEventListener(`click`,()=>{s(),r.events.push({type:``,condition:``,benefit:``,price:``,count:``,budget:``}),o()}),n.querySelectorAll(`.btn-delete-evt-row`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);r.events.splice(t,1),o()})}),n.querySelector(`#btn-save-project-scheme`).addEventListener(`click`,async()=>{s();let t=n.querySelector(`#btn-save-project-scheme`);t.disabled=!0,t.textContent=`저장 중...`;try{U.update(`projects`,e.id,{scheme:r}),J(`스킴 정보가 정상적으로 저장되었습니다.`)}catch(e){console.error(`스킴 저장 실패:`,e),Y(`스킴 저장 중 오류가 발생했습니다.`)}finally{t.disabled=!1,t.textContent=`스킴 정보 저장`}})}function s(){r.liveInfo.mainProduct=n.querySelector(`#sch-mainProduct`).value,r.liveInfo.brandIntro=n.querySelector(`#sch-brandIntro`).value,r.liveInfo.sellingPoints=n.querySelector(`#sch-sellingPoints`).value,r.liveInfo.highlight=n.querySelector(`#sch-highlight`).value,r.liveInfo.delivery=n.querySelector(`#sch-delivery`).value;let e=n.querySelectorAll(`.product-row`);r.products=Array.from(e).map(e=>{let t=e.querySelector(`.prod-price`).value.replace(/,/g,``),n=e.querySelector(`.prod-livePrice`).value.replace(/,/g,``);return{prodName:e.querySelector(`.prod-prodName`).value,prodUrl:e.querySelector(`.prod-prodUrl`).value,stock:e.querySelector(`.prod-stock`).value?parseInt(e.querySelector(`.prod-stock`).value,10):``,price:t?parseFloat(t):``,livePrice:n?parseFloat(n):``,targetQty:e.querySelector(`.prod-targetQty`).value?parseInt(e.querySelector(`.prod-targetQty`).value,10):``}});let t=n.querySelectorAll(`.event-row`);r.events=Array.from(t).map(e=>({type:e.querySelector(`.evt-type`).value,condition:e.querySelector(`.evt-cond`).value,benefit:e.querySelector(`.evt-benefit`).value,price:e.querySelector(`.evt-price`).value?parseFloat(e.querySelector(`.evt-price`).value):``,count:e.querySelector(`.evt-count`).value?parseInt(e.querySelector(`.evt-count`).value,10):``,budget:e.querySelector(`.evt-budget`).value?parseFloat(e.querySelector(`.evt-budget`).value):``})),r.productionDriveUrl=n.querySelector(`#sch-productionDriveUrl`).value.trim()}return o(),n}function Yt(e){let t=document.createElement(`div`);t.style.padding=`var(--space-8)`,t.style.maxWidth=`1200px`,t.style.margin=`0 auto`;function n(){let n=U.getById(`projects`,e.id);if(!n){t.innerHTML=`
         <div style="text-align:center; padding: 100px 20px;">
           <h2 style="color:var(--text-secondary); margin-bottom: 20px;">프로젝트 정보를 찾을 수 없습니다.</h2>
           <p style="color:var(--text-tertiary);">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>

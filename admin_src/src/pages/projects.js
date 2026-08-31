@@ -691,13 +691,15 @@ function renderSchemeTab(project, isSharedView = false) {
     liveInfo: { mainProduct: '', brandIntro: '', sellingPoints: '', highlight: '', delivery: '' },
     products: [],
     events: [],
-    productionDriveUrl: ''
+    productionDriveUrl: '',
+    sampleRequest: { deliveryDate: '', returnAddress: '', items: [] }
   };
 
   if (!scheme.liveInfo) scheme.liveInfo = { mainProduct: '', brandIntro: '', sellingPoints: '', highlight: '', delivery: '' };
   if (!scheme.products) scheme.products = [];
   if (!scheme.events) scheme.events = [];
   if (scheme.productionDriveUrl === undefined) scheme.productionDriveUrl = '';
+  if (!scheme.sampleRequest) scheme.sampleRequest = { deliveryDate: '', returnAddress: '', items: [] };
 
   function getProductRowsHtml() {
     if (scheme.products.length === 0) {
@@ -878,6 +880,31 @@ function renderSchemeTab(project, isSharedView = false) {
           </div>
         </div>
 
+        <!-- 5. 방송 샘플 요청서 -->
+        <div class="card">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>방송 샘플 요청서</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-open-sample-modal" style="font-weight:600; font-size:12.5px; padding:6px 14px;">요청서 작성/확인</button>
+          </div>
+          <div class="card-body" style="padding: 20px;">
+            <p style="font-size:12.5px; color:var(--text-secondary); margin:0; line-height: 1.5;">
+              라이브 방송 진행을 위한 샘플 발송 내역과 회수지 정보를 관리합니다. 작성 완료 후 본 요청서를 택배 상자에 함께 부착하여 발송해 주세요.
+            </p>
+            ${scheme.sampleRequest && scheme.sampleRequest.deliveryDate ? `
+            <div style="margin-top: 12px; padding: 10px 14px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe; font-size: 12.5px; color: #1e40af; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>발송 예정일:</strong> ${scheme.sampleRequest.deliveryDate} | <strong>등록 제품수:</strong> ${scheme.sampleRequest.items ? scheme.sampleRequest.items.length : 0}개
+              </div>
+              <span style="font-size: 11px; font-weight: 600; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 9999px;">작성 완료</span>
+            </div>
+            ` : `
+            <div style="margin-top: 12px; padding: 10px 14px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12.5px; color: var(--text-tertiary);">
+              아직 작성된 샘플 요청서 내역이 없습니다. 우측 상단의 버튼을 눌러 작성해 주세요.
+            </div>
+            `}
+          </div>
+        </div>
+
         <div style="display:flex; justify-content:flex-end; padding:10px 0;">
           <button class="btn btn-primary" id="btn-save-project-scheme" style="padding:12px 36px; font-weight:700; font-size:15px; box-shadow: 0 4px 12px rgba(59,130,246,0.25);">스킴 정보 저장</button>
         </div>
@@ -996,6 +1023,184 @@ function renderSchemeTab(project, isSharedView = false) {
         }
       });
     }
+
+    // 샘플 요청서 모달 제어 함수
+    function openSampleModal() {
+      const modalData = JSON.parse(JSON.stringify(scheme.sampleRequest || {
+        deliveryDate: '',
+        returnAddress: '',
+        items: []
+      }));
+
+      if (!modalData.items) modalData.items = [];
+
+      const content = document.createElement('div');
+      content.className = 'flex-col';
+      content.style.gap = '16px';
+
+      const getModalRowsHtml = () => {
+        if (modalData.items.length === 0) {
+          return `<tr><td colspan="8" style="text-align:center; padding: 20px; color: var(--text-tertiary);">등록된 제품이 없습니다. 우측 상단의 행 추가 버튼을 눌러주세요.</td></tr>`;
+        }
+        return modalData.items.map((item, idx) => `
+          <tr class="sample-item-row" data-idx="${idx}">
+            <td><input type="text" class="input sam-product" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.product || ''}" placeholder="제품명"></td>
+            <td><input type="text" class="input sam-size" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.size || ''}" placeholder="규격"></td>
+            <td><input type="number" class="input sam-qty" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.qty || ''}" placeholder="수량"></td>
+            <td>
+              <select class="input sam-method" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
+                <option value="상온" ${item.method === '상온' ? 'selected' : ''}>상온</option>
+                <option value="냉장" ${item.method === '냉장' ? 'selected' : ''}>냉장</option>
+                <option value="냉동" ${item.method === '냉동' ? 'selected' : ''}>냉동</option>
+              </select>
+            </td>
+            <td><input type="text" class="input sam-status" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.status || '미발송'}" placeholder="발송여부"></td>
+            <td><input type="text" class="input sam-check" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.check || '검수전'}" placeholder="검수"></td>
+            <td>
+              <select class="input sam-collect" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
+                <option value="회수" ${item.collect === '회수' ? 'selected' : ''}>회수</option>
+                <option value="미회수" ${item.collect === '미회수' ? 'selected' : ''}>미회수</option>
+              </select>
+            </td>
+            <td style="text-align:center;"><button class="btn btn-danger btn-sm btn-delete-sample-row" data-idx="${idx}" style="padding:4px 8px; font-size:11px;">삭제</button></td>
+          </tr>
+        `).join('');
+      };
+
+      const updateModalTable = () => {
+        content.querySelector('#sample-table-body').innerHTML = getModalRowsHtml();
+        content.querySelectorAll('.btn-delete-sample-row').forEach(btn => {
+          btn.addEventListener('click', () => {
+            collectModalRows();
+            const idx = parseInt(btn.getAttribute('data-idx'), 10);
+            modalData.items.splice(idx, 1);
+            updateModalTable();
+          });
+        });
+      };
+
+      const collectModalRows = () => {
+        const rows = content.querySelectorAll('.sample-item-row');
+        modalData.items = Array.from(rows).map(row => {
+          return {
+            product: row.querySelector('.sam-product').value,
+            size: row.querySelector('.sam-size').value,
+            qty: row.querySelector('.sam-qty').value ? parseInt(row.querySelector('.sam-qty').value, 10) : '',
+            method: row.querySelector('.sam-method').value,
+            status: row.querySelector('.sam-status').value,
+            check: row.querySelector('.sam-check').value,
+            collect: row.querySelector('.sam-collect').value
+          };
+        });
+      };
+
+      content.innerHTML = `
+        <div style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #b91c1c; line-height: 1.5; font-weight: 500;">
+          <div style="margin-bottom:4px;">* 신선식품은 변질 위험이 있어, 라이브 일정 D-3일전 까지 발송 요청 드립니다.</div>
+          <div>* 샘플 발송시, 본 요청서를 택배 상자에 함께 부착 하여 보내주세요.</div>
+        </div>
+        
+        <div class="card" style="border: 1px solid var(--border-color); box-shadow: none; margin: 0;">
+          <div class="card-header" style="background:#f8fafc; border-bottom:1px solid var(--border-color); padding: 10px 16px; display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="margin:0; font-size: 14px; font-weight: 700; color: var(--text-primary);">제품 요청 리스트</h4>
+            <button class="btn btn-secondary btn-sm" id="btn-add-sample-row" style="font-size:12px; padding:4px 10px;">행 추가</button>
+          </div>
+          <div class="card-body" style="padding: 0; overflow-x: auto;">
+            <table class="data-table" style="min-width: 800px; width: 100%; border-collapse: collapse; margin: 0;">
+              <thead>
+                <tr style="background: #f1f5f9; border-bottom: 1px solid var(--border-color);">
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left;">제품</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 120px;">규격</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 70px;">수량</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">취급방법</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">발송여부</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">검수</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">회수여부</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: center; width: 70px;">작업</th>
+                </tr>
+              </thead>
+              <tbody id="sample-table-body">
+                ${getModalRowsHtml()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="card" style="border: 1px solid var(--border-color); box-shadow: none; margin: 0; padding: 16px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: var(--text-primary);">기본 배송 정보</h4>
+            <div class="flex-col" style="gap: 10px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">샘플 보내주실 곳</label>
+                <input type="text" class="input" value="경기도 하남시 미사강변동로 100-1 파라곤스퀘어 2064-2호" readonly style="background:#f1f5f9; font-size:13px; padding: 8px 10px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">수신자</label>
+                <input type="text" class="input" value="채이준PD / 010-3018-9716" readonly style="background:#f1f5f9; font-size:13px; padding: 8px 10px;">
+              </div>
+            </div>
+          </div>
+          
+          <div class="card" style="border: 1px solid var(--border-color); box-shadow: none; margin: 0; padding: 16px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 13.5px; font-weight: 700; color: var(--text-primary);">기타 발송 및 회수 정보</h4>
+            <div class="flex-col" style="gap: 10px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">발송 예정일</label>
+                <input type="text" class="input" id="sam-deliveryDate" placeholder="예: 2026-08-15 또는 협의필요" value="${modalData.deliveryDate || ''}" style="font-size:13px; padding: 8px 10px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:4px;">회수지 주소</label>
+                <input type="text" class="input" id="sam-returnAddress" placeholder="샘플 회수를 진행할 주소를 입력해 주세요." value="${modalData.returnAddress || ''}" style="font-size:13px; padding: 8px 10px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        updateModalTable();
+        content.querySelector('#btn-add-sample-row').addEventListener('click', () => {
+          collectModalRows();
+          modalData.items.push({ product: '', size: '', qty: '', method: '냉장', status: '미발송', check: '검수전', collect: '회수' });
+          updateModalTable();
+        });
+      }, 0);
+
+      const footer = document.createElement('div');
+      footer.style.display = 'flex';
+      footer.style.justifyContent = 'flex-end';
+      footer.style.gap = '8px';
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn btn-secondary';
+      cancelBtn.textContent = '취소';
+      cancelBtn.addEventListener('click', closeModal);
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'btn btn-primary';
+      saveBtn.textContent = '적용';
+      saveBtn.addEventListener('click', () => {
+        collectModalRows();
+        modalData.deliveryDate = content.querySelector('#sam-deliveryDate').value.trim();
+        modalData.returnAddress = content.querySelector('#sam-returnAddress').value.trim();
+        
+        scheme.sampleRequest = modalData;
+        closeModal();
+        render();
+      });
+
+      footer.appendChild(cancelBtn);
+      footer.appendChild(saveBtn);
+
+      openModal({
+        title: '방송 샘플 요청서 작성',
+        size: 'lg',
+        content,
+        footer
+      });
+    }
+
+    el.querySelector('#btn-open-sample-modal').addEventListener('click', openSampleModal);
 
     // 이벤트 리스너 바인딩
     el.querySelector('#btn-add-evt-row').addEventListener('click', () => {
