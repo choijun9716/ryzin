@@ -256,7 +256,7 @@ const server = http.createServer((req, res) => {
             title = `${month}월 지급명세서 — RYZIN`;
         }
 
-        const templatePath = path.join(__dirname, 'paystmt.html');
+        const templatePath = path.join(__dirname, 'paystmt_template.html');
         fs.readFile(templatePath, 'utf8', (err, html) => {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });

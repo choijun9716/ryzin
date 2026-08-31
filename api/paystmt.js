@@ -64,7 +64,7 @@ export default function handler(req, res) {
     title = `${month}월 지급명세서 — RYZIN`;
   }
 
-  const templatePath = path.join(process.cwd(), 'paystmt.html');
+  const templatePath = path.join(process.cwd(), 'paystmt_template.html');
   let html = '';
   try {
     html = fs.readFileSync(templatePath, 'utf8');
