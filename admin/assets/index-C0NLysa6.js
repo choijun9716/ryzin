@@ -1813,7 +1813,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="page-header" style="margin-bottom: var(--space-6);">
         <div class="page-header-left">
           <div>
-            <h1 class="page-title" style="font-size: 24px;">${`[${n.brandName||(r?r.name:``)}] ${n.broadcastDate||``}]_라이브 스킴`}</h1>
+            <h1 class="page-title" style="font-size: 24px;">${`[${n.brandName||(r?r.name:``)}] 라이브 스킴 _ ${n.broadcastDate||``}`}</h1>
             <p class="page-description" style="margin-top: 4px;">브랜드사 공유 전용 기재 페이지입니다. 내용을 작성하고 저장 버튼을 눌러주세요.</p>
           </div>
         </div>

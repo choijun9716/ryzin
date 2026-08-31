@@ -1105,7 +1105,7 @@ export function renderSharedScheme(params) {
     const brand = store.getById('brands', project.brandId);
     const brandName = project.brandName || (brand ? brand.name : '');
     const broadcastDate = project.broadcastDate || '';
-    const titleText = `[${brandName}] ${broadcastDate}]_라이브 스킴`;
+    const titleText = `[${brandName}] 라이브 스킴 _ ${broadcastDate}`;
 
     container.innerHTML = `
       <div class="page-header" style="margin-bottom: var(--space-6);">
