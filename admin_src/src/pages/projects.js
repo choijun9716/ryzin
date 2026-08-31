@@ -618,6 +618,7 @@ export function renderProjectDetail(params) {
             </div>
             <span style="font-size: var(--text-sm); font-weight: var(--weight-semibold);">${progress}%</span>
           </div>
+          <button class="btn btn-primary" id="btn-copy-detail-scheme-url" style="margin-right: 8px;">스킴 URL 복사</button>
           ${isBrandPartner ? '' : '<button class="btn btn-secondary" id="btn-delete-project">삭제</button>'}
         </div>
       </div>
@@ -653,6 +654,12 @@ export function renderProjectDetail(params) {
 
     setTimeout(() => {
       container.querySelector('#breadcrumb-list')?.addEventListener('click', () => router.navigate('/projects'));
+      container.querySelector('#btn-copy-detail-scheme-url')?.addEventListener('click', () => {
+        const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_scheme/${project.id}`;
+        navigator.clipboard.writeText(shareUrl)
+          .then(() => showSuccess('공유 URL이 클립보드에 복사되었습니다.'))
+          .catch(() => showError('URL 복사에 실패했습니다.'));
+      });
       container.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
           activeTab = tab.getAttribute('data-tab');
@@ -781,16 +788,6 @@ function renderSchemeTab(project, isSharedView = false) {
         .flex-col { display: flex; flex-direction: column; gap: 14px; }
       </style>
       <div class="flex-col">
-        <!-- 스킴 공유 URL 복사 바 -->
-        ${isSharedView ? '' : `
-        <div class="card" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 20px; border-radius: 10px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom: 4px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            <span style="font-size: 13.5px; font-weight: 600; color: #1e40af;">브랜드 스킴 외부 작성 URL</span>
-          </div>
-          <button class="btn btn-secondary btn-sm" id="btn-copy-scheme-url" style="background:white; border-color:#93c5fd; color:#1e40af; font-weight:600; font-size:12.5px;">공유 URL 복사</button>
-        </div>
-        `}
 
         <!-- 1. 라이브 정보 -->
         <div class="card">
@@ -937,15 +934,7 @@ function renderSchemeTab(project, isSharedView = false) {
       </div>
     `;
 
-    // 공유 URL 복사 바인딩
-    if (!isSharedView) {
-      el.querySelector('#btn-copy-scheme-url')?.addEventListener('click', () => {
-        const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_scheme/${project.id}`;
-        navigator.clipboard.writeText(shareUrl)
-          .then(() => showSuccess('공유 URL이 클립보드에 복사되었습니다.'))
-          .catch(() => showError('URL 복사에 실패했습니다.'));
-      });
-    }
+
 
     // 상품 이벤트 리스너 바인딩
     el.querySelector('#btn-add-prod-row').addEventListener('click', () => {
