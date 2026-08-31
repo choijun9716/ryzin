@@ -707,12 +707,9 @@ function renderSchemeTab(project, isSharedView = false) {
       const price = parseFloat(prod.price) || 0;
       const livePrice = parseFloat(prod.livePrice) || 0;
       const targetQty = parseInt(prod.targetQty, 10) || 0;
-      const feeRate = parseFloat(prod.feeRate) || 0;
 
       const discountRate = price > 0 ? Math.round(((price - livePrice) / price) * 100) + '%' : '0%';
       const targetSales = livePrice * targetQty;
-      const feeTotal = Math.round(targetSales * (feeRate / 100));
-      const expectedMargin = targetSales - feeTotal;
 
       return `
         <tr class="product-row" data-idx="${idx}">
@@ -724,9 +721,6 @@ function renderSchemeTab(project, isSharedView = false) {
           <td class="prod-discountRate text-center" style="font-size: 13px; font-weight: bold; color: var(--status-error);">${discountRate}</td>
           <td><input type="number" class="input prod-targetQty" style="width: 80px; padding: 6px 8px; font-size: 13px;" value="${prod.targetQty || ''}" placeholder="목표수"></td>
           <td class="prod-targetSales text-right" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${targetSales.toLocaleString()}</td>
-          <td><input type="number" class="input prod-feeRate" style="width: 70px; padding: 6px 8px; font-size: 13px;" value="${prod.feeRate || ''}" placeholder="%"></td>
-          <td class="prod-feeTotal text-right" style="font-size: 13px; color: var(--text-secondary);">${feeTotal.toLocaleString()}</td>
-          <td class="prod-expectedMargin text-right" style="font-size: 13px; font-weight: 700; color: var(--status-success);">${expectedMargin.toLocaleString()}</td>
           <td class="text-center"><button class="btn btn-danger btn-sm btn-delete-prod-row" data-idx="${idx}">삭제</button></td>
         </tr>
       `;
@@ -819,9 +813,6 @@ function renderSchemeTab(project, isSharedView = false) {
                     <th style="width: 90px; text-align: center;">할인율</th>
                     <th style="width: 90px;">목표수량</th>
                     <th style="width: 120px; text-align: right;">목표 매출</th>
-                    <th style="width: 80px;">플랫폼 수수료</th>
-                    <th style="width: 120px; text-align: right;">수수료 총합</th>
-                    <th style="width: 130px; text-align: right;">예상 판매 마진</th>
                     <th style="width: 80px; text-align: center;">작업</th>
                   </tr>
                 </thead>
@@ -928,7 +919,6 @@ function renderSchemeTab(project, isSharedView = false) {
       const price = parseMoney(rowEl.querySelector('.prod-price').value);
       const livePrice = parseMoney(rowEl.querySelector('.prod-livePrice').value);
       const targetQty = parseInt(rowEl.querySelector('.prod-targetQty').value, 10) || 0;
-      const feeRate = parseFloat(rowEl.querySelector('.prod-feeRate').value) || 0;
 
       // 할인율
       const discountRate = price > 0 ? Math.round(((price - livePrice) / price) * 100) + '%' : '0%';
@@ -937,14 +927,6 @@ function renderSchemeTab(project, isSharedView = false) {
       // 목표 매출
       const targetSales = livePrice * targetQty;
       rowEl.querySelector('.prod-targetSales').textContent = targetSales.toLocaleString();
-
-      // 수수료 총합
-      const feeTotal = Math.round(targetSales * (feeRate / 100));
-      rowEl.querySelector('.prod-feeTotal').textContent = feeTotal.toLocaleString();
-
-      // 예상 판매 마진
-      const expectedMargin = targetSales - feeTotal;
-      rowEl.querySelector('.prod-expectedMargin').textContent = expectedMargin.toLocaleString();
     };
 
     // 각 상품 행 인풋 변경 시 실시간 자동계산 바인딩
@@ -1030,8 +1012,7 @@ function renderSchemeTab(project, isSharedView = false) {
         stock: row.querySelector('.prod-stock').value ? parseInt(row.querySelector('.prod-stock').value, 10) : '',
         price: priceRaw ? parseFloat(priceRaw) : '',
         livePrice: livePriceRaw ? parseFloat(livePriceRaw) : '',
-        targetQty: row.querySelector('.prod-targetQty').value ? parseInt(row.querySelector('.prod-targetQty').value, 10) : '',
-        feeRate: row.querySelector('.prod-feeRate').value ? parseFloat(row.querySelector('.prod-feeRate').value) : ''
+        targetQty: row.querySelector('.prod-targetQty').value ? parseInt(row.querySelector('.prod-targetQty').value, 10) : ''
       };
     });
 
