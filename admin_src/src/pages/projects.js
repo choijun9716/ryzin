@@ -684,6 +684,103 @@ export function renderProjectDetail(params) {
   return container;
 }
 
+function printSampleRequest(project, sampleRequest) {
+  const brand = store.getById('brands', project.brandId);
+  const brandName = project.brandName || (brand ? brand.name : '');
+  const broadcastDate = project.broadcastDate || '';
+  
+  const printWindow = window.open('', '_blank', 'width=800,height=900');
+  
+  const itemsHtml = sampleRequest.items && sampleRequest.items.length > 0
+    ? sampleRequest.items.map(item => `
+        <tr>
+          <td style="padding: 10px; border: 1px solid #000; font-size: 14px;">${item.product || ''}</td>
+          <td style="padding: 10px; border: 1px solid #000; font-size: 14px; text-align: center;">${item.size || ''}</td>
+          <td style="padding: 10px; border: 1px solid #000; font-size: 14px; text-align: center;">${item.qty || ''}</td>
+          <td style="padding: 10px; border: 1px solid #000; font-size: 14px; text-align: center;">${item.method || ''}</td>
+          <td style="padding: 10px; border: 1px solid #000; font-size: 14px; text-align: center;">${item.collect || ''}</td>
+        </tr>
+      `).join('')
+    : '<tr><td colspan="5" style="padding: 20px; border: 1px solid #000; text-align: center; font-size: 14px; color: #666;">등록된 제품이 없습니다.</td></tr>';
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>방송 샘플 요청서 - [${brandName}]</title>
+        <style>
+          body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; padding: 20px; color: #000; line-height: 1.5; }
+          .print-header { border: 2px solid #000; padding: 15px; text-align: center; background: #f0f0f0; margin-bottom: 20px; }
+          .print-header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 2px; }
+          .info-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+          .info-table th { padding: 10px; border: 1px solid #000; background: #f5f5f5; font-size: 14px; font-weight: 700; width: 130px; text-align: left; }
+          .info-table td { padding: 10px; border: 1px solid #000; font-size: 14px; }
+          .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+          .items-table th { padding: 10px; border: 1px solid #000; background: #e8e8e8; font-size: 14px; font-weight: 700; }
+          .notice-box { border: 1px dashed #c00; background: #fff8f8; padding: 12px; font-size: 13px; color: #c00; margin-bottom: 20px; font-weight: 600; }
+          @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="notice-box">
+          * 신선식품은 변질 위험이 있어, 라이브 일정 D-3일전 까지 발송 요청 드립니다.<br>
+          * 샘플 발송시, 본 요청서를 택배 상자에 함께 부착 하여 보내주세요.
+        </div>
+        
+        <div class="print-header">
+          <h1>방 송 샘 플 요 청 서</h1>
+        </div>
+        
+        <table class="info-table">
+          <tr>
+            <th>브랜드사</th>
+            <td>${brandName}</td>
+            <th>방송 예정일</th>
+            <td>${broadcastDate}</td>
+          </tr>
+          <tr>
+            <th>보내실 곳</th>
+            <td colspan="3"><strong>경기도 하남시 미사강변동로 100-1 파라곤스퀘어 2064-2호</strong></td>
+          </tr>
+          <tr>
+            <th>수신자</th>
+            <td colspan="3"><strong>채이준PD / 010-3018-9716</strong></td>
+          </tr>
+          <tr>
+            <th>발송 예정일</th>
+            <td>${sampleRequest.deliveryDate || '-'}</td>
+            <th>회수지 주소</th>
+            <td>${sampleRequest.returnAddress || '-'}</td>
+          </tr>
+        </table>
+        
+        <h3 style="margin-top: 30px; margin-bottom: 10px; font-size: 16px; border-bottom: 2px solid #000; padding-bottom: 6px;">샘플 제품 리스트</h3>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th style="text-align: left;">제품</th>
+              <th style="width: 120px;">규격</th>
+              <th style="width: 70px;">수량</th>
+              <th style="width: 90px;">취급방법</th>
+              <th style="width: 90px;">회수여부</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+        
+        <div class="no-print" style="margin-top: 40px; text-align: center;">
+          <button onclick="window.print();" style="padding: 12px 30px; background: #000; color: #fff; border: none; font-size: 15px; font-weight: 700; cursor: pointer; border-radius: 6px;">인쇄 / 출력하기</button>
+        </div>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
 function renderSchemeTab(project, isSharedView = false) {
   const el = document.createElement('div');
   
@@ -895,7 +992,10 @@ function renderSchemeTab(project, isSharedView = false) {
               <div>
                 <strong>발송 예정일:</strong> ${scheme.sampleRequest.deliveryDate} | <strong>등록 제품수:</strong> ${scheme.sampleRequest.items ? scheme.sampleRequest.items.length : 0}개
               </div>
-              <span style="font-size: 11px; font-weight: 600; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 9999px;">작성 완료</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-secondary btn-sm" id="btn-print-sample" style="background:white; border-color:#93c5fd; color:#1e40af; font-weight:600; font-size:12px; padding: 4px 12px;">출력하기</button>
+                <span style="font-size: 11px; font-weight: 600; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 9999px;">작성 완료</span>
+              </div>
             </div>
             ` : `
             <div style="margin-top: 12px; padding: 10px 14px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12.5px; color: var(--text-tertiary);">
@@ -1195,6 +1295,10 @@ function renderSchemeTab(project, isSharedView = false) {
     }
 
     el.querySelector('#btn-open-sample-modal').addEventListener('click', openSampleModal);
+    
+    el.querySelector('#btn-print-sample')?.addEventListener('click', () => {
+      printSampleRequest(project, scheme.sampleRequest);
+    });
 
     // 이벤트 리스너 바인딩
     el.querySelector('#btn-add-evt-row').addEventListener('click', () => {
