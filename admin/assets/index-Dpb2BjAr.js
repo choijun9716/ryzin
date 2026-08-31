@@ -1783,19 +1783,21 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <p style="color:var(--text-tertiary);">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>
         </div>
       `;return}let r=U.getById(`brands`,n.brandId),i=`[${n.brandName||(r?r.name:``)}] 라이브 스킴 _ ${n.broadcastDate||``}`,a=U.query(`liveHosts`,e=>e.liveId===n.id).map(e=>{let t=U.getById(`hosts`,e.hostId);return t?t.name:``}).filter(Boolean).join(`, `)||`-`;t.innerHTML=`
-      <div class="page-header" style="margin-bottom: var(--space-6); display: flex; justify-content: space-between; align-items: flex-start;">
-        <div class="page-header-left">
+      <div class="page-header" style="margin-bottom: 24px; padding: 24px 32px; background: #111827; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); color: #ffffff; gap: 24px; flex-wrap: wrap;">
+        <div class="page-header-left" style="flex: 1; min-width: 280px;">
           <div>
-            <h1 class="page-title" style="font-size: 24px;">${i}</h1>
-            <p class="page-description" style="margin-top: 4px;">브랜드사 공유 전용 기재 페이지입니다. 내용을 작성하고 저장 버튼을 눌러주세요.</p>
+            <h1 class="page-title" style="font-size: 22px; color: #ffffff; font-weight: 700; margin: 0; letter-spacing: -0.5px;">${i}</h1>
+            <p class="page-description" style="margin-top: 6px; margin-bottom: 0; color: #94a3b8; font-size: 13px;">브랜드사 공유 전용 기재 페이지입니다. 내용을 작성하고 저장 버튼을 눌러주세요.</p>
           </div>
         </div>
-        <div class="page-header-right" style="text-align: left; display: flex; flex-direction: column; gap: 4px; padding-top: 4px; align-items: flex-start;">
-          <div style="font-size: 13.5px; color: var(--text-secondary); font-weight: 500;">
-            <span style="color: var(--text-tertiary); margin-right: 4px;">담당 PD:</span> ${n.pd||`-`}
+        <div class="page-header-right" style="text-align: left; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; background: rgba(255,255,255,0.06); padding: 12px 18px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); min-width: 220px; flex-shrink: 0;">
+          <div style="font-size: 13px; color: #f1f5f9; font-weight: 500; display: flex; align-items: center;">
+            <span style="color: #94a3b8; margin-right: 6px; font-weight: 600; width: 60px; display: inline-block;">담당 PD</span>
+            <span style="color: #ffffff;">${n.pd||`-`}</span>
           </div>
-          <div style="font-size: 13.5px; color: var(--text-secondary); font-weight: 500;">
-            <span style="color: var(--text-tertiary); margin-right: 4px;">쇼호스트:</span> ${a}
+          <div style="font-size: 13px; color: #f1f5f9; font-weight: 500; display: flex; align-items: center;">
+            <span style="color: #94a3b8; margin-right: 6px; font-weight: 600; width: 60px; display: inline-block;">쇼호스트</span>
+            <span style="color: #ffffff;">${a}</span>
           </div>
         </div>
       </div>
