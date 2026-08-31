@@ -1040,7 +1040,7 @@ function renderSchemeTab(project, isSharedView = false) {
 
       const getModalRowsHtml = () => {
         if (modalData.items.length === 0) {
-          return `<tr><td colspan="8" style="text-align:center; padding: 20px; color: var(--text-tertiary);">등록된 제품이 없습니다. 우측 상단의 행 추가 버튼을 눌러주세요.</td></tr>`;
+          return `<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-tertiary);">등록된 제품이 없습니다. 우측 상단의 행 추가 버튼을 눌러주세요.</td></tr>`;
         }
         return modalData.items.map((item, idx) => `
           <tr class="sample-item-row" data-idx="${idx}">
@@ -1054,8 +1054,6 @@ function renderSchemeTab(project, isSharedView = false) {
                 <option value="냉동" ${item.method === '냉동' ? 'selected' : ''}>냉동</option>
               </select>
             </td>
-            <td><input type="text" class="input sam-status" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.status || '미발송'}" placeholder="발송여부"></td>
-            <td><input type="text" class="input sam-check" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.check || '검수전'}" placeholder="검수"></td>
             <td>
               <select class="input sam-collect" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
                 <option value="회수" ${item.collect === '회수' ? 'selected' : ''}>회수</option>
@@ -1087,8 +1085,6 @@ function renderSchemeTab(project, isSharedView = false) {
             size: row.querySelector('.sam-size').value,
             qty: row.querySelector('.sam-qty').value ? parseInt(row.querySelector('.sam-qty').value, 10) : '',
             method: row.querySelector('.sam-method').value,
-            status: row.querySelector('.sam-status').value,
-            check: row.querySelector('.sam-check').value,
             collect: row.querySelector('.sam-collect').value
           };
         });
@@ -1113,8 +1109,6 @@ function renderSchemeTab(project, isSharedView = false) {
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 120px;">규격</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 70px;">수량</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">취급방법</th>
-                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">발송여부</th>
-                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">검수</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">회수여부</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: center; width: 70px;">작업</th>
                 </tr>
@@ -1161,7 +1155,7 @@ function renderSchemeTab(project, isSharedView = false) {
         updateModalTable();
         content.querySelector('#btn-add-sample-row').addEventListener('click', () => {
           collectModalRows();
-          modalData.items.push({ product: '', size: '', qty: '', method: '냉장', status: '미발송', check: '검수전', collect: '회수' });
+          modalData.items.push({ product: '', size: '', qty: '', method: '냉장', collect: '회수' });
           updateModalTable();
         });
       }, 0);
