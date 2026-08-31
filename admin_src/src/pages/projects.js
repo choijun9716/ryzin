@@ -1093,7 +1093,7 @@ export function renderSharedScheme(params) {
     const pdName = project.pd || '-';
 
     container.innerHTML = `
-      <div class="page-header" style="margin-bottom: 24px; padding: 24px 32px; background: #111827; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); color: #ffffff; gap: 24px; flex-wrap: wrap;">
+      <div class="page-header" style="margin-bottom: 24px; padding: 24px 32px; background: #000000; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); color: #ffffff; gap: 24px; flex-wrap: wrap;">
         <div class="page-header-left" style="flex: 1; min-width: 280px;">
           <div>
             <h1 class="page-title" style="font-size: 22px; color: #ffffff; font-weight: 700; margin: 0; letter-spacing: -0.5px;">${titleText}</h1>

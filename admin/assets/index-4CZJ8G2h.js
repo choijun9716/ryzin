@@ -1783,7 +1783,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <p style="color:var(--text-tertiary);">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>
         </div>
       `;return}let r=U.getById(`brands`,n.brandId),i=`[${n.brandName||(r?r.name:``)}] 라이브 스킴 _ ${n.broadcastDate||``}`,a=U.query(`liveHosts`,e=>e.liveId===n.id).map(e=>{let t=U.getById(`hosts`,e.hostId);return t?t.name:``}).filter(Boolean).join(`, `)||`-`;t.innerHTML=`
-      <div class="page-header" style="margin-bottom: 24px; padding: 24px 32px; background: #111827; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); color: #ffffff; gap: 24px; flex-wrap: wrap;">
+      <div class="page-header" style="margin-bottom: 24px; padding: 24px 32px; background: #000000; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); color: #ffffff; gap: 24px; flex-wrap: wrap;">
         <div class="page-header-left" style="flex: 1; min-width: 280px;">
           <div>
             <h1 class="page-title" style="font-size: 22px; color: #ffffff; font-weight: 700; margin: 0; letter-spacing: -0.5px;">${i}</h1>
