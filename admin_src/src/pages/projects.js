@@ -715,9 +715,11 @@ function renderSchemeTab(project, isSharedView = false) {
         <tr class="product-row" data-idx="${idx}">
           <td><input type="text" class="input prod-prodName" style="width: 160px; padding: 6px 8px; font-size: 13px;" value="${prod.prodName || ''}" placeholder="상품명"></td>
           <td>
-            <div style="display:flex; align-items:center; gap:4px;">
+            <div style="display:flex; align-items:center; gap:6px;">
               <input type="text" class="input prod-prodUrl" style="width: 110px; padding: 6px 8px; font-size: 13px;" value="${prod.prodUrl || ''}" placeholder="상품 URL">
-              <a href="${prod.prodUrl ? (prod.prodUrl.startsWith('http') ? prod.prodUrl : `https://${prod.prodUrl}`) : '#'}" target="_blank" class="btn btn-secondary btn-prod-url-link" style="padding: 2px 6px; font-size: 11px; white-space: nowrap; text-decoration: none; display: ${prod.prodUrl ? 'inline-block' : 'none'};">바로가기</a>
+              <a href="${prod.prodUrl ? (prod.prodUrl.startsWith('http') ? prod.prodUrl : `https://${prod.prodUrl}`) : '#'}" target="_blank" class="btn-prod-url-link" style="display: ${prod.prodUrl ? 'inline-flex' : 'none'}; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; color: var(--primary); background: #eff6ff; transition: all 0.2s; flex-shrink: 0;" title="상품 바로가기">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>
             </div>
           </td>
           <td><input type="number" class="input prod-stock" style="width: 80px; padding: 6px 8px; font-size: 13px;" value="${prod.stock || ''}" placeholder="재고"></td>
@@ -962,7 +964,7 @@ function renderSchemeTab(project, isSharedView = false) {
           if (linkBtn) {
             if (val) {
               linkBtn.href = val.startsWith('http') ? val : `https://${val}`;
-              linkBtn.style.display = 'inline-block';
+              linkBtn.style.display = 'inline-flex';
             } else {
               linkBtn.href = '#';
               linkBtn.style.display = 'none';
