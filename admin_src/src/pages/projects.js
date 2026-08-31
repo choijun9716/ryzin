@@ -618,7 +618,6 @@ export function renderProjectDetail(params) {
             </div>
             <span style="font-size: var(--text-sm); font-weight: var(--weight-semibold);">${progress}%</span>
           </div>
-          <button class="btn btn-primary" id="btn-copy-detail-scheme-url" style="margin-right: 8px;">스킴 URL 복사</button>
           ${isBrandPartner ? '' : '<button class="btn btn-secondary" id="btn-delete-project">삭제</button>'}
         </div>
       </div>
@@ -654,12 +653,6 @@ export function renderProjectDetail(params) {
 
     setTimeout(() => {
       container.querySelector('#breadcrumb-list')?.addEventListener('click', () => router.navigate('/projects'));
-      container.querySelector('#btn-copy-detail-scheme-url')?.addEventListener('click', () => {
-        const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_scheme/${project.id}`;
-        navigator.clipboard.writeText(shareUrl)
-          .then(() => showSuccess('공유 URL이 클립보드에 복사되었습니다.'))
-          .catch(() => showError('URL 복사에 실패했습니다.'));
-      });
       container.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
           activeTab = tab.getAttribute('data-tab');
@@ -788,6 +781,11 @@ function renderSchemeTab(project, isSharedView = false) {
         .flex-col { display: flex; flex-direction: column; gap: 14px; }
       </style>
       <div class="flex-col">
+        ${isSharedView ? '' : `
+        <div style="display:flex; justify-content:flex-end; margin-bottom: 4px;">
+          <button class="btn btn-secondary btn-sm" id="btn-copy-scheme-url" style="font-weight:600; font-size:12.5px; padding: 6px 16px;">공유 URL 복사</button>
+        </div>
+        `}
 
         <!-- 1. 라이브 정보 -->
         <div class="card">
@@ -934,7 +932,15 @@ function renderSchemeTab(project, isSharedView = false) {
       </div>
     `;
 
-
+    // 공유 URL 복사 바인딩
+    if (!isSharedView) {
+      el.querySelector('#btn-copy-scheme-url')?.addEventListener('click', () => {
+        const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_scheme/${project.id}`;
+        navigator.clipboard.writeText(shareUrl)
+          .then(() => showSuccess('공유 URL이 클립보드에 복사되었습니다.'))
+          .catch(() => showError('URL 복사에 실패했습니다.'));
+      });
+    }
 
     // 상품 이벤트 리스너 바인딩
     el.querySelector('#btn-add-prod-row').addEventListener('click', () => {
