@@ -205,6 +205,73 @@ const server = http.createServer((req, res) => {
     const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
     let pathname = decodeURIComponent(parsedUrl.pathname);
     
+    if (pathname === '/paystmt.html') {
+        const dParam = parsedUrl.searchParams.get('d');
+        
+        function localDecode(s) {
+            if (!s) return null;
+            try {
+                let b = s.replace(/-/g, '+').replace(/_/g, '/');
+                while (b.length % 4) b += '=';
+                const buf = Buffer.from(b, 'base64');
+                const parsed = JSON.parse(buf.toString('utf8'));
+                if (parsed && (parsed.n !== undefined || parsed.i !== undefined)) {
+                    const paymentDate = parsed.p || '';
+                    const items = (parsed.i || []).map(row => {
+                        return { date: row[0] || '' };
+                    });
+                    return { paymentDate, items };
+                }
+                return parsed;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function localGetMonth(dateStr) {
+            if (!dateStr) return '';
+            const ymdMatch = dateStr.match(/^\d{4}[-/.](\d{1,2})[-/.]/);
+            if (ymdMatch) return parseInt(ymdMatch[1], 10);
+            const mdMatch = dateStr.match(/^(\d{1,2})[-/.]\d{1,2}/);
+            if (mdMatch) {
+                const m = parseInt(mdMatch[1], 10);
+                if (m >= 1 && m <= 12) return m;
+            }
+            const koMatch = dateStr.match(/(\d{1,2})\s*월/);
+            if (koMatch) return parseInt(koMatch[1], 10);
+            return '';
+        }
+
+        const decoded = localDecode(dParam);
+        let month = '';
+        if (decoded && decoded.items && decoded.items.length > 0) {
+            month = localGetMonth(decoded.items[0].date);
+        }
+        if (!month && decoded && decoded.paymentDate) {
+            month = localGetMonth(decoded.paymentDate);
+        }
+
+        let title = "지급명세서 — RYZIN";
+        if (month) {
+            title = `${month}월 지급명세서 — RYZIN`;
+        }
+
+        const templatePath = path.join(__dirname, 'paystmt.html');
+        fs.readFile(templatePath, 'utf8', (err, html) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+                res.end('Template not found');
+                return;
+            }
+            let resultHtml = html.replace(/<title>지급명세서 — RYZIN<\/title>/g, `<title>${title}</title>`);
+            resultHtml = resultHtml.replace(/<meta property="og:title" content="[^"]*">/g, `<meta property="og:title" content="${title}">`);
+
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(resultHtml, 'utf-8');
+        });
+        return;
+    }
+    
     // Static file serving
     let filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
     

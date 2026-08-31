@@ -40,6 +40,10 @@
   ],
   "rewrites": [
     {
+      "source": "/paystmt.html",
+      "destination": "/api/paystmt"
+    },
+    {
       "source": "/admin/(.*)",
       "destination": "/admin/index.html"
     },
