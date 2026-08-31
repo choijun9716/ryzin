@@ -714,7 +714,12 @@ function renderSchemeTab(project, isSharedView = false) {
       return `
         <tr class="product-row" data-idx="${idx}">
           <td><input type="text" class="input prod-prodName" style="width: 160px; padding: 6px 8px; font-size: 13px;" value="${prod.prodName || ''}" placeholder="상품명"></td>
-          <td><input type="text" class="input prod-prodUrl" style="width: 140px; padding: 6px 8px; font-size: 13px;" value="${prod.prodUrl || ''}" placeholder="상품 URL"></td>
+          <td>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <input type="text" class="input prod-prodUrl" style="width: 110px; padding: 6px 8px; font-size: 13px;" value="${prod.prodUrl || ''}" placeholder="상품 URL">
+              <a href="${prod.prodUrl ? (prod.prodUrl.startsWith('http') ? prod.prodUrl : `https://${prod.prodUrl}`) : '#'}" target="_blank" class="btn btn-secondary btn-prod-url-link" style="padding: 2px 6px; font-size: 11px; white-space: nowrap; text-decoration: none; display: ${prod.prodUrl ? 'inline-block' : 'none'};">바로가기</a>
+            </div>
+          </td>
           <td><input type="number" class="input prod-stock" style="width: 80px; padding: 6px 8px; font-size: 13px;" value="${prod.stock || ''}" placeholder="재고"></td>
           <td><input type="text" class="input prod-price" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.price ? parseInt(prod.price, 10).toLocaleString() : ''}" placeholder="정상가"></td>
           <td><input type="text" class="input prod-livePrice" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.livePrice ? parseInt(prod.livePrice, 10).toLocaleString() : ''}" placeholder="할인가"></td>
@@ -948,6 +953,23 @@ function renderSchemeTab(project, isSharedView = false) {
 
       if (priceInput) bindMoneyMask(priceInput);
       if (livePriceInput) bindMoneyMask(livePriceInput);
+
+      const prodUrlInput = row.querySelector('.prod-prodUrl');
+      if (prodUrlInput) {
+        prodUrlInput.addEventListener('input', (e) => {
+          const val = e.target.value.trim();
+          const linkBtn = row.querySelector('.btn-prod-url-link');
+          if (linkBtn) {
+            if (val) {
+              linkBtn.href = val.startsWith('http') ? val : `https://${val}`;
+              linkBtn.style.display = 'inline-block';
+            } else {
+              linkBtn.href = '#';
+              linkBtn.style.display = 'none';
+            }
+          }
+        });
+      }
 
       row.querySelectorAll('input').forEach(input => {
         if (input !== priceInput && input !== livePriceInput) {
