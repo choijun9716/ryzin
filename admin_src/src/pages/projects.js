@@ -729,8 +729,8 @@ function renderSchemeTab(project, isSharedView = false) {
           <td><input type="text" class="input prod-prodName" style="width: 160px; padding: 6px 8px; font-size: 13px;" value="${prod.prodName || ''}" placeholder="상품명"></td>
           <td><input type="text" class="input prod-prodUrl" style="width: 140px; padding: 6px 8px; font-size: 13px;" value="${prod.prodUrl || ''}" placeholder="상품 URL"></td>
           <td><input type="number" class="input prod-stock" style="width: 80px; padding: 6px 8px; font-size: 13px;" value="${prod.stock || ''}" placeholder="재고"></td>
-          <td><input type="number" class="input prod-price" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.price || ''}" placeholder="정상가"></td>
-          <td><input type="number" class="input prod-livePrice" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.livePrice || ''}" placeholder="할인가"></td>
+          <td><input type="text" class="input prod-price" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.price ? parseInt(prod.price, 10).toLocaleString() : ''}" placeholder="정상가"></td>
+          <td><input type="text" class="input prod-livePrice" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.livePrice ? parseInt(prod.livePrice, 10).toLocaleString() : ''}" placeholder="할인가"></td>
           <td class="prod-discountRate text-center" style="font-size: 13px; font-weight: bold; color: var(--status-error);">${discountRate}</td>
           <td><input type="number" class="input prod-targetQty" style="width: 80px; padding: 6px 8px; font-size: 13px;" value="${prod.targetQty || ''}" placeholder="목표수"></td>
           <td class="prod-targetSales text-right" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${targetSales.toLocaleString()}</td>
@@ -958,31 +958,65 @@ function renderSchemeTab(project, isSharedView = false) {
       });
     });
 
+    // 천단위 콤마 포맷터 보조 함수
+    const formatMoney = (val) => {
+      const num = val.replace(/[^0-9]/g, '');
+      return num ? parseInt(num, 10).toLocaleString() : '';
+    };
+
+    const parseMoney = (val) => {
+      return parseFloat(val.replace(/,/g, '')) || 0;
+    };
+
+    const calculateMoneyRow = (rowEl) => {
+      const price = parseMoney(rowEl.querySelector('.prod-price').value);
+      const livePrice = parseMoney(rowEl.querySelector('.prod-livePrice').value);
+      const targetQty = parseInt(rowEl.querySelector('.prod-targetQty').value, 10) || 0;
+      const feeRate = parseFloat(rowEl.querySelector('.prod-feeRate').value) || 0;
+
+      // 할인율
+      const discountRate = price > 0 ? Math.round(((price - livePrice) / price) * 100) + '%' : '0%';
+      rowEl.querySelector('.prod-discountRate').textContent = discountRate;
+
+      // 목표 매출
+      const targetSales = livePrice * targetQty;
+      rowEl.querySelector('.prod-targetSales').textContent = targetSales.toLocaleString();
+
+      // 수수료 총합
+      const feeTotal = Math.round(targetSales * (feeRate / 100));
+      rowEl.querySelector('.prod-feeTotal').textContent = feeTotal.toLocaleString();
+
+      // 예상 판매 마진
+      const expectedMargin = targetSales - feeTotal;
+      rowEl.querySelector('.prod-expectedMargin').textContent = expectedMargin.toLocaleString();
+    };
+
     // 각 상품 행 인풋 변경 시 실시간 자동계산 바인딩
     el.querySelectorAll('.product-row').forEach(row => {
-      row.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', () => {
-          const price = parseFloat(row.querySelector('.prod-price').value) || 0;
-          const livePrice = parseFloat(row.querySelector('.prod-livePrice').value) || 0;
-          const targetQty = parseInt(row.querySelector('.prod-targetQty').value, 10) || 0;
-          const feeRate = parseFloat(row.querySelector('.prod-feeRate').value) || 0;
+      const priceInput = row.querySelector('.prod-price');
+      const livePriceInput = row.querySelector('.prod-livePrice');
 
-          // 할인율
-          const discountRate = price > 0 ? Math.round(((price - livePrice) / price) * 100) + '%' : '0%';
-          row.querySelector('.prod-discountRate').textContent = discountRate;
-
-          // 목표 매출
-          const targetSales = livePrice * targetQty;
-          row.querySelector('.prod-targetSales').textContent = targetSales.toLocaleString();
-
-          // 수수료 총합
-          const feeTotal = Math.round(targetSales * (feeRate / 100));
-          row.querySelector('.prod-feeTotal').textContent = feeTotal.toLocaleString();
-
-          // 예상 판매 마진
-          const expectedMargin = targetSales - feeTotal;
-          row.querySelector('.prod-expectedMargin').textContent = expectedMargin.toLocaleString();
+      const bindMoneyMask = (input) => {
+        input.addEventListener('input', (e) => {
+          const start = e.target.selectionStart;
+          const oldLen = e.target.value.length;
+          const formatted = formatMoney(e.target.value);
+          e.target.value = formatted;
+          const newLen = formatted.length;
+          e.target.setSelectionRange(start + (newLen - oldLen), start + (newLen - oldLen));
+          calculateMoneyRow(row);
         });
+      };
+
+      if (priceInput) bindMoneyMask(priceInput);
+      if (livePriceInput) bindMoneyMask(livePriceInput);
+
+      row.querySelectorAll('input').forEach(input => {
+        if (input !== priceInput && input !== livePriceInput) {
+          input.addEventListener('input', () => {
+            calculateMoneyRow(row);
+          });
+        }
       });
     });
 
@@ -1049,12 +1083,14 @@ function renderSchemeTab(project, isSharedView = false) {
 
     const prodRows = el.querySelectorAll('.product-row');
     scheme.products = Array.from(prodRows).map(row => {
+      const priceRaw = row.querySelector('.prod-price').value.replace(/,/g, '');
+      const livePriceRaw = row.querySelector('.prod-livePrice').value.replace(/,/g, '');
       return {
         prodName: row.querySelector('.prod-prodName').value,
         prodUrl: row.querySelector('.prod-prodUrl').value,
         stock: row.querySelector('.prod-stock').value ? parseInt(row.querySelector('.prod-stock').value, 10) : '',
-        price: row.querySelector('.prod-price').value ? parseFloat(row.querySelector('.prod-price').value) : '',
-        livePrice: row.querySelector('.prod-livePrice').value ? parseFloat(row.querySelector('.prod-livePrice').value) : '',
+        price: priceRaw ? parseFloat(priceRaw) : '',
+        livePrice: livePriceRaw ? parseFloat(livePriceRaw) : '',
         targetQty: row.querySelector('.prod-targetQty').value ? parseInt(row.querySelector('.prod-targetQty').value, 10) : '',
         feeRate: row.querySelector('.prod-feeRate').value ? parseFloat(row.querySelector('.prod-feeRate').value) : ''
       };
