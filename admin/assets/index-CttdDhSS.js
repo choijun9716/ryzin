@@ -1780,12 +1780,20 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <h2 style="color:var(--text-secondary); margin-bottom: 20px;">프로젝트 정보를 찾을 수 없습니다.</h2>
           <p style="color:var(--text-tertiary);">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>
         </div>
-      `;return}let r=U.getById(`brands`,n.brandId);t.innerHTML=`
-      <div class="page-header" style="margin-bottom: var(--space-6);">
+      `;return}let r=U.getById(`brands`,n.brandId),i=`[${n.brandName||(r?r.name:``)}] 라이브 스킴 _ ${n.broadcastDate||``}`,a=U.query(`liveHosts`,e=>e.liveId===n.id).map(e=>{let t=U.getById(`hosts`,e.hostId);return t?t.name:``}).filter(Boolean).join(`, `)||`-`;t.innerHTML=`
+      <div class="page-header" style="margin-bottom: var(--space-6); display: flex; justify-content: space-between; align-items: flex-start;">
         <div class="page-header-left">
           <div>
-            <h1 class="page-title" style="font-size: 24px;">${`[${n.brandName||(r?r.name:``)}] 라이브 스킴 _ ${n.broadcastDate||``}`}</h1>
+            <h1 class="page-title" style="font-size: 24px;">${i}</h1>
             <p class="page-description" style="margin-top: 4px;">브랜드사 공유 전용 기재 페이지입니다. 내용을 작성하고 저장 버튼을 눌러주세요.</p>
+          </div>
+        </div>
+        <div class="page-header-right" style="text-align: right; display: flex; flex-direction: column; gap: 4px; padding-top: 4px;">
+          <div style="font-size: 13.5px; color: var(--text-secondary); font-weight: 500;">
+            <span style="color: var(--text-tertiary); margin-right: 4px;">담당 PD:</span> ${n.pd||`-`}
+          </div>
+          <div style="font-size: 13.5px; color: var(--text-secondary); font-weight: 500;">
+            <span style="color: var(--text-tertiary); margin-right: 4px;">쇼호스트:</span> ${a}
           </div>
         </div>
       </div>
