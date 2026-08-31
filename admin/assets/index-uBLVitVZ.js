@@ -1618,7 +1618,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
 
         <div id="tab-content"></div>
       </div>
-    `;let l=t.querySelector(`#tab-content`);switch(i){case`info`:l.appendChild(Xt(n,o));break;case`scheme`:l.appendChild(Jt(n));break;case`hosts`:l.appendChild(Qt(n));break;case`design`:l.appendChild(en(n));break;case`result`:l.appendChild(rn(n));break;case`finance`:l.appendChild(an(n));break}setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/projects`)),t.querySelectorAll(`.tab`).forEach(e=>{e.addEventListener(`click`,()=>{i=e.getAttribute(`data-tab`),a()})}),t.querySelector(`#btn-delete-project`)?.addEventListener(`click`,()=>{st({title:`프로젝트 삭제`,message:`"${n.adName}" 프로젝트를 삭제하시겠습니까? 관련된 체크리스트, 쇼호스트 매칭, 성과, 정산 데이터도 모두 삭제됩니다.`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.query(`tasks`,e=>e.liveId===n.id).forEach(e=>U.delete(`tasks`,e.id)),U.query(`liveHosts`,e=>e.liveId===n.id).forEach(e=>U.delete(`liveHosts`,e.id)),U.query(`designs`,e=>e.liveId===n.id).forEach(e=>U.delete(`designs`,e.id)),U.delete(`results`,n.id),U.delete(`finances`,n.id),U.delete(`projects`,n.id),J(`프로젝트가 삭제되었습니다.`),M.navigate(`/projects`)}})})},0)}return a(),t}function Jt(e){let t=document.createElement(`div`),n=e.scheme||{liveInfo:{mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},products:[],events:[],kickoff:{check1:!1,check2:!1,check3:!1,check4:!1,check5:!1,customs:[]}};n.liveInfo||={mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},n.products||=[],n.events||=[],n.kickoff||={check1:!1,check2:!1,check3:!1,check4:!1,check5:!1,customs:[]},n.kickoff.customs||(n.kickoff.customs=[]);function r(){return n.products.length===0?`<tr><td colspan="12" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-products-row">등록된 상품이 없습니다.</td></tr>`:n.products.map((e,t)=>{let n=parseFloat(e.price)||0,r=parseFloat(e.livePrice)||0,i=parseInt(e.targetQty,10)||0,a=parseFloat(e.feeRate)||0,o=n>0?Math.round((n-r)/n*100)+`%`:`0%`,s=r*i,c=Math.round(a/100*s),l=s-c;return`
+    `;let l=t.querySelector(`#tab-content`);switch(i){case`info`:l.appendChild(Xt(n,o));break;case`scheme`:l.appendChild(Jt(n));break;case`hosts`:l.appendChild(Qt(n));break;case`design`:l.appendChild(en(n));break;case`result`:l.appendChild(rn(n));break;case`finance`:l.appendChild(an(n));break}setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/projects`)),t.querySelectorAll(`.tab`).forEach(e=>{e.addEventListener(`click`,()=>{i=e.getAttribute(`data-tab`),a()})}),t.querySelector(`#btn-delete-project`)?.addEventListener(`click`,()=>{st({title:`프로젝트 삭제`,message:`"${n.adName}" 프로젝트를 삭제하시겠습니까? 관련된 체크리스트, 쇼호스트 매칭, 성과, 정산 데이터도 모두 삭제됩니다.`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.query(`tasks`,e=>e.liveId===n.id).forEach(e=>U.delete(`tasks`,e.id)),U.query(`liveHosts`,e=>e.liveId===n.id).forEach(e=>U.delete(`liveHosts`,e.id)),U.query(`designs`,e=>e.liveId===n.id).forEach(e=>U.delete(`designs`,e.id)),U.delete(`results`,n.id),U.delete(`finances`,n.id),U.delete(`projects`,n.id),J(`프로젝트가 삭제되었습니다.`),M.navigate(`/projects`)}})})},0)}return a(),t}function Jt(e,t=!1){let n=document.createElement(`div`),r=e.scheme||{liveInfo:{mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},products:[],events:[],kickoff:{check1:!1,check2:!1,check3:!1,check4:!1,check5:!1,customs:[]}};r.liveInfo||={mainProduct:``,brandIntro:``,sellingPoints:``,highlight:``,delivery:``},r.products||=[],r.events||=[],r.kickoff||={check1:!1,check2:!1,check3:!1,check4:!1,check5:!1,customs:[]},r.kickoff.customs||(r.kickoff.customs=[]);function i(){return r.products.length===0?`<tr><td colspan="12" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-products-row">등록된 상품이 없습니다.</td></tr>`:r.products.map((e,t)=>{let n=parseFloat(e.price)||0,r=parseFloat(e.livePrice)||0,i=parseInt(e.targetQty,10)||0,a=parseFloat(e.feeRate)||0,o=n>0?Math.round((n-r)/n*100)+`%`:`0%`,s=r*i,c=Math.round(a/100*s),l=s-c;return`
         <tr class="product-row" data-idx="${t}">
           <td><input type="text" class="input prod-prodName" style="width: 160px; padding: 6px 8px; font-size: 13px;" value="${e.prodName||``}" placeholder="상품명"></td>
           <td><input type="text" class="input prod-prodUrl" style="width: 140px; padding: 6px 8px; font-size: 13px;" value="${e.prodUrl||``}" placeholder="상품 URL"></td>
@@ -1633,7 +1633,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <td class="prod-expectedMargin text-right" style="font-size: 13px; font-weight: 700; color: var(--status-success);">${l.toLocaleString()}</td>
           <td class="text-center"><button class="btn btn-danger btn-sm btn-delete-prod-row" data-idx="${t}">삭제</button></td>
         </tr>
-      `})}function i(){return n.events.length===0?`<tr><td colspan="7" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-events-row">등록된 이벤트 혜택이 없습니다.</td></tr>`:n.events.map((e,t)=>`
+      `})}function a(){return r.events.length===0?`<tr><td colspan="7" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-events-row">등록된 이벤트 혜택이 없습니다.</td></tr>`:r.events.map((e,t)=>`
       <tr class="event-row" data-idx="${t}">
         <td><input type="text" class="input evt-type" style="padding: 6px 8px; font-size: 13px;" value="${e.type||``}" placeholder="예: 리뷰 이벤트"></td>
         <td><input type="text" class="input evt-cond" style="padding: 6px 8px; font-size: 13px;" value="${e.condition||``}" placeholder="예: 구매 확정 후"></td>
@@ -1643,7 +1643,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <td><input type="number" class="input evt-budget" style="padding: 6px 8px; font-size: 13px;" value="${e.budget||``}" placeholder="총액"></td>
         <td class="text-center"><button class="btn btn-danger btn-sm btn-delete-evt-row" data-idx="${t}">삭제</button></td>
       </tr>
-    `).join(``)}function a(){return n.kickoff.customs.map((e,t)=>`
+    `).join(``)}function o(){return r.kickoff.customs.map((e,t)=>`
       <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f1f5f9;" class="custom-kickoff-row" data-idx="${t}">
         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
           <input type="checkbox" class="custom-kickoff-check" ${e.checked?`checked`:``} style="width:16px; height:16px;">
@@ -1651,7 +1651,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </label>
         <button class="btn btn-secondary btn-sm btn-delete-custom-kickoff" data-idx="${t}" style="padding:2px 8px; font-size:11px;">삭제</button>
       </div>
-    `).join(``)}function o(){t.innerHTML=`
+    `).join(``)}function s(){n.innerHTML=`
       <style>
         .scheme-textarea { width: 100%; height: 100px; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: sans-serif; resize: vertical; line-height: 1.5; color: var(--text-primary); outline: none; transition: border-color 0.2s; }
         .scheme-textarea:focus { border-color: var(--primary); }
@@ -1660,6 +1660,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       </style>
       <div class="flex-col">
         <!-- 스킴 공유 URL 복사 바 -->
+        ${t?``:`
         <div class="card" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 20px; border-radius: 10px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom: 4px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
@@ -1667,6 +1668,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           </div>
           <button class="btn btn-secondary btn-sm" id="btn-copy-scheme-url" style="background:white; border-color:#93c5fd; color:#1e40af; font-weight:600; font-size:12.5px;">공유 URL 복사</button>
         </div>
+        `}
 
         <!-- 1. 라이브 정보 -->
         <div class="card">
@@ -1677,26 +1679,26 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             <div class="grid-2">
               <div>
                 <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">주 메인 제품</label>
-                <textarea class="scheme-textarea" id="sch-mainProduct" placeholder="핵심 판매 및 노출 대상 상품을 기재하세요.">${n.liveInfo.mainProduct||``}</textarea>
+                <textarea class="scheme-textarea" id="sch-mainProduct" placeholder="핵심 판매 및 노출 대상 상품을 기재하세요.">${r.liveInfo.mainProduct||``}</textarea>
               </div>
               <div>
                 <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">브랜드 소개</label>
-                <textarea class="scheme-textarea" id="sch-brandIntro" placeholder="브랜드에 대한 핵심 소개 문구 및 히스토리를 기재하세요.">${n.liveInfo.brandIntro||``}</textarea>
+                <textarea class="scheme-textarea" id="sch-brandIntro" placeholder="브랜드에 대한 핵심 소개 문구 및 히스토리를 기재하세요.">${r.liveInfo.brandIntro||``}</textarea>
               </div>
             </div>
             <div class="grid-2">
               <div>
                 <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">제품 소구포인트</label>
-                <textarea class="scheme-textarea" id="sch-sellingPoints" placeholder="방송 진행 시 집중적으로 강조해야 할 강점을 기재하세요.">${n.liveInfo.sellingPoints||``}</textarea>
+                <textarea class="scheme-textarea" id="sch-sellingPoints" placeholder="방송 진행 시 집중적으로 강조해야 할 강점을 기재하세요.">${r.liveInfo.sellingPoints||``}</textarea>
               </div>
               <div>
                 <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">강조 노출 사항</label>
-                <textarea class="scheme-textarea" id="sch-highlight" placeholder="라이브 화면 노출 또는 멘트 강조 권장 사항을 기재하세요.">${n.liveInfo.highlight||``}</textarea>
+                <textarea class="scheme-textarea" id="sch-highlight" placeholder="라이브 화면 노출 또는 멘트 강조 권장 사항을 기재하세요.">${r.liveInfo.highlight||``}</textarea>
               </div>
             </div>
             <div>
               <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">배송 정보</label>
-              <textarea class="scheme-textarea" id="sch-delivery" style="height:80px;" placeholder="예: 배송비 3000원 / 도서산간지역 6000원 N만원 이상 구매시 무료">${n.liveInfo.delivery||``}</textarea>
+              <textarea class="scheme-textarea" id="sch-delivery" style="height:80px;" placeholder="예: 배송비 3000원 / 도서산간지역 6000원 N만원 이상 구매시 무료">${r.liveInfo.delivery||``}</textarea>
             </div>
           </div>
         </div>
@@ -1727,7 +1729,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   </tr>
                 </thead>
                 <tbody id="prod-table-body">
-                  ${r()}
+                  ${i()}
                 </tbody>
               </table>
             </div>
@@ -1755,7 +1757,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   </tr>
                 </thead>
                 <tbody id="evt-table-body">
-                  ${i()}
+                  ${a()}
                 </tbody>
               </table>
             </div>
@@ -1772,23 +1774,23 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <div class="flex-col" style="background:#f8fafc; padding:18px; border-radius:10px; border:1px solid #e2e8f0;">
                 <h4 style="margin:0 0 10px 0; font-size:14px; color:var(--text-primary); font-weight:700;">기본 킥오프 리스트</h4>
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check1" ${n.kickoff.check1?`checked`:``} style="width:16px; height:16px;">
+                  <input type="checkbox" id="kick-check1" ${r.kickoff.check1?`checked`:``} style="width:16px; height:16px;">
                   <span style="font-size:14px;">브랜드 소개 및 히스토리 확인</span>
                 </label>
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check2" ${n.kickoff.check2?`checked`:``} style="width:16px; height:16px;">
+                  <input type="checkbox" id="kick-check2" ${r.kickoff.check2?`checked`:``} style="width:16px; height:16px;">
                   <span style="font-size:14px;">주 메인 제품 정보 및 정상가/할인가 검수</span>
                 </label>
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check3" ${n.kickoff.check3?`checked`:``} style="width:16px; height:16px;">
+                  <input type="checkbox" id="kick-check3" ${r.kickoff.check3?`checked`:``} style="width:16px; height:16px;">
                   <span style="font-size:14px;">배송비 및 배송 방식 확인</span>
                 </label>
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check4" ${n.kickoff.check4?`checked`:``} style="width:16px; height:16px;">
+                  <input type="checkbox" id="kick-check4" ${r.kickoff.check4?`checked`:``} style="width:16px; height:16px;">
                   <span style="font-size:14px;">제품 소구 포인트 및 연출 소품 협의</span>
                 </label>
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check5" ${n.kickoff.check5?`checked`:``} style="width:16px; height:16px;">
+                  <input type="checkbox" id="kick-check5" ${r.kickoff.check5?`checked`:``} style="width:16px; height:16px;">
                   <span style="font-size:14px;">방송 중 라이브 혜택 및 경품 조율 완료</span>
                 </label>
               </div>
@@ -1800,7 +1802,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   <button class="btn btn-secondary" id="btn-add-custom-kickoff" style="white-space:nowrap;">추가</button>
                 </div>
                 <div id="custom-kickoff-container" style="max-height: 180px; overflow-y: auto; display:flex; flex-direction:column; gap:4px; margin-top:8px;">
-                  ${a()}
+                  ${o()}
                 </div>
               </div>
             </div>
@@ -1811,22 +1813,22 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <button class="btn btn-primary" id="btn-save-project-scheme" style="padding:12px 36px; font-weight:700; font-size:15px; box-shadow: 0 4px 12px rgba(59,130,246,0.25);">스킴 정보 저장</button>
         </div>
       </div>
-    `,t.querySelector(`#btn-copy-scheme-url`)?.addEventListener(`click`,()=>{let t=`${window.location.origin}${window.location.pathname}#/shared_scheme/${e.id}`;navigator.clipboard.writeText(t).then(()=>J(`공유 URL이 클립보드에 복사되었습니다.`)).catch(()=>Y(`URL 복사에 실패했습니다.`))}),t.querySelector(`#btn-add-prod-row`).addEventListener(`click`,()=>{s(),n.products.push({prodName:``,prodUrl:``,stock:``,price:``,livePrice:``,targetQty:``,feeRate:``}),o()}),t.querySelectorAll(`.btn-delete-prod-row`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);n.products.splice(t,1),o()})}),t.querySelectorAll(`.product-row`).forEach(e=>{e.querySelectorAll(`input`).forEach(t=>{t.addEventListener(`input`,()=>{let t=parseFloat(e.querySelector(`.prod-price`).value)||0,n=parseFloat(e.querySelector(`.prod-livePrice`).value)||0,r=parseInt(e.querySelector(`.prod-targetQty`).value,10)||0,i=parseFloat(e.querySelector(`.prod-feeRate`).value)||0,a=t>0?Math.round((t-n)/t*100)+`%`:`0%`;e.querySelector(`.prod-discountRate`).textContent=a;let o=n*r;e.querySelector(`.prod-targetSales`).textContent=o.toLocaleString();let s=Math.round(i/100*o);e.querySelector(`.prod-feeTotal`).textContent=s.toLocaleString();let c=o-s;e.querySelector(`.prod-expectedMargin`).textContent=c.toLocaleString()})})}),t.querySelector(`#btn-add-evt-row`).addEventListener(`click`,()=>{s(),n.events.push({type:``,condition:``,benefit:``,price:``,count:``,budget:``}),o()}),t.querySelectorAll(`.btn-delete-evt-row`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);n.events.splice(t,1),o()})}),t.querySelector(`#btn-add-custom-kickoff`).addEventListener(`click`,()=>{let e=t.querySelector(`#custom-kickoff-text`),r=e.value.trim();r&&(s(),n.kickoff.customs.push({text:r,checked:!1}),e.value=``,o())}),t.querySelectorAll(`.btn-delete-custom-kickoff`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);n.kickoff.customs.splice(t,1),o()})}),t.querySelector(`#btn-save-project-scheme`).addEventListener(`click`,async()=>{s();let r=t.querySelector(`#btn-save-project-scheme`);r.disabled=!0,r.textContent=`저장 중...`;try{U.update(`projects`,e.id,{scheme:n}),J(`스킴 정보가 정상적으로 저장되었습니다.`)}catch(e){console.error(`스킴 저장 실패:`,e),Y(`스킴 저장 중 오류가 발생했습니다.`)}finally{r.disabled=!1,r.textContent=`스킴 정보 저장`}})}function s(){n.liveInfo.mainProduct=t.querySelector(`#sch-mainProduct`).value,n.liveInfo.brandIntro=t.querySelector(`#sch-brandIntro`).value,n.liveInfo.sellingPoints=t.querySelector(`#sch-sellingPoints`).value,n.liveInfo.highlight=t.querySelector(`#sch-highlight`).value,n.liveInfo.delivery=t.querySelector(`#sch-delivery`).value;let e=t.querySelectorAll(`.product-row`);n.products=Array.from(e).map(e=>({prodName:e.querySelector(`.prod-prodName`).value,prodUrl:e.querySelector(`.prod-prodUrl`).value,stock:e.querySelector(`.prod-stock`).value?parseInt(e.querySelector(`.prod-stock`).value,10):``,price:e.querySelector(`.prod-price`).value?parseFloat(e.querySelector(`.prod-price`).value):``,livePrice:e.querySelector(`.prod-livePrice`).value?parseFloat(e.querySelector(`.prod-livePrice`).value):``,targetQty:e.querySelector(`.prod-targetQty`).value?parseInt(e.querySelector(`.prod-targetQty`).value,10):``,feeRate:e.querySelector(`.prod-feeRate`).value?parseFloat(e.querySelector(`.prod-feeRate`).value):``}));let r=t.querySelectorAll(`.event-row`);n.events=Array.from(r).map(e=>({type:e.querySelector(`.evt-type`).value,condition:e.querySelector(`.evt-cond`).value,benefit:e.querySelector(`.evt-benefit`).value,price:e.querySelector(`.evt-price`).value?parseFloat(e.querySelector(`.evt-price`).value):``,count:e.querySelector(`.evt-count`).value?parseInt(e.querySelector(`.evt-count`).value,10):``,budget:e.querySelector(`.evt-budget`).value?parseFloat(e.querySelector(`.evt-budget`).value):``})),n.kickoff.check1=t.querySelector(`#kick-check1`).checked,n.kickoff.check2=t.querySelector(`#kick-check2`).checked,n.kickoff.check3=t.querySelector(`#kick-check3`).checked,n.kickoff.check4=t.querySelector(`#kick-check4`).checked,n.kickoff.check5=t.querySelector(`#kick-check5`).checked;let i=t.querySelectorAll(`.custom-kickoff-row`);n.kickoff.customs=Array.from(i).map(e=>({text:e.querySelector(`.custom-kickoff-check`).nextElementSibling.textContent,checked:e.querySelector(`.custom-kickoff-check`).checked}))}return o(),t}function Yt(e){let t=document.createElement(`div`);t.style.padding=`var(--space-8)`,t.style.maxWidth=`1200px`,t.style.margin=`0 auto`;function n(){let n=U.getById(`projects`,e.id);if(!n){t.innerHTML=`
+    `,t||n.querySelector(`#btn-copy-scheme-url`)?.addEventListener(`click`,()=>{let t=`${window.location.origin}${window.location.pathname}#/shared_scheme/${e.id}`;navigator.clipboard.writeText(t).then(()=>J(`공유 URL이 클립보드에 복사되었습니다.`)).catch(()=>Y(`URL 복사에 실패했습니다.`))}),n.querySelector(`#btn-add-prod-row`).addEventListener(`click`,()=>{c(),r.products.push({prodName:``,prodUrl:``,stock:``,price:``,livePrice:``,targetQty:``,feeRate:``}),s()}),n.querySelectorAll(`.btn-delete-prod-row`).forEach(e=>{e.addEventListener(`click`,()=>{c();let t=parseInt(e.getAttribute(`data-idx`),10);r.products.splice(t,1),s()})}),n.querySelectorAll(`.product-row`).forEach(e=>{e.querySelectorAll(`input`).forEach(t=>{t.addEventListener(`input`,()=>{let t=parseFloat(e.querySelector(`.prod-price`).value)||0,n=parseFloat(e.querySelector(`.prod-livePrice`).value)||0,r=parseInt(e.querySelector(`.prod-targetQty`).value,10)||0,i=parseFloat(e.querySelector(`.prod-feeRate`).value)||0,a=t>0?Math.round((t-n)/t*100)+`%`:`0%`;e.querySelector(`.prod-discountRate`).textContent=a;let o=n*r;e.querySelector(`.prod-targetSales`).textContent=o.toLocaleString();let s=Math.round(i/100*o);e.querySelector(`.prod-feeTotal`).textContent=s.toLocaleString();let c=o-s;e.querySelector(`.prod-expectedMargin`).textContent=c.toLocaleString()})})}),n.querySelector(`#btn-add-evt-row`).addEventListener(`click`,()=>{c(),r.events.push({type:``,condition:``,benefit:``,price:``,count:``,budget:``}),s()}),n.querySelectorAll(`.btn-delete-evt-row`).forEach(e=>{e.addEventListener(`click`,()=>{c();let t=parseInt(e.getAttribute(`data-idx`),10);r.events.splice(t,1),s()})}),n.querySelector(`#btn-add-custom-kickoff`).addEventListener(`click`,()=>{let e=n.querySelector(`#custom-kickoff-text`),t=e.value.trim();t&&(c(),r.kickoff.customs.push({text:t,checked:!1}),e.value=``,s())}),n.querySelectorAll(`.btn-delete-custom-kickoff`).forEach(e=>{e.addEventListener(`click`,()=>{c();let t=parseInt(e.getAttribute(`data-idx`),10);r.kickoff.customs.splice(t,1),s()})}),n.querySelector(`#btn-save-project-scheme`).addEventListener(`click`,async()=>{c();let t=n.querySelector(`#btn-save-project-scheme`);t.disabled=!0,t.textContent=`저장 중...`;try{U.update(`projects`,e.id,{scheme:r}),J(`스킴 정보가 정상적으로 저장되었습니다.`)}catch(e){console.error(`스킴 저장 실패:`,e),Y(`스킴 저장 중 오류가 발생했습니다.`)}finally{t.disabled=!1,t.textContent=`스킴 정보 저장`}})}function c(){r.liveInfo.mainProduct=n.querySelector(`#sch-mainProduct`).value,r.liveInfo.brandIntro=n.querySelector(`#sch-brandIntro`).value,r.liveInfo.sellingPoints=n.querySelector(`#sch-sellingPoints`).value,r.liveInfo.highlight=n.querySelector(`#sch-highlight`).value,r.liveInfo.delivery=n.querySelector(`#sch-delivery`).value;let e=n.querySelectorAll(`.product-row`);r.products=Array.from(e).map(e=>({prodName:e.querySelector(`.prod-prodName`).value,prodUrl:e.querySelector(`.prod-prodUrl`).value,stock:e.querySelector(`.prod-stock`).value?parseInt(e.querySelector(`.prod-stock`).value,10):``,price:e.querySelector(`.prod-price`).value?parseFloat(e.querySelector(`.prod-price`).value):``,livePrice:e.querySelector(`.prod-livePrice`).value?parseFloat(e.querySelector(`.prod-livePrice`).value):``,targetQty:e.querySelector(`.prod-targetQty`).value?parseInt(e.querySelector(`.prod-targetQty`).value,10):``,feeRate:e.querySelector(`.prod-feeRate`).value?parseFloat(e.querySelector(`.prod-feeRate`).value):``}));let t=n.querySelectorAll(`.event-row`);r.events=Array.from(t).map(e=>({type:e.querySelector(`.evt-type`).value,condition:e.querySelector(`.evt-cond`).value,benefit:e.querySelector(`.evt-benefit`).value,price:e.querySelector(`.evt-price`).value?parseFloat(e.querySelector(`.evt-price`).value):``,count:e.querySelector(`.evt-count`).value?parseInt(e.querySelector(`.evt-count`).value,10):``,budget:e.querySelector(`.evt-budget`).value?parseFloat(e.querySelector(`.evt-budget`).value):``})),r.kickoff.check1=n.querySelector(`#kick-check1`).checked,r.kickoff.check2=n.querySelector(`#kick-check2`).checked,r.kickoff.check3=n.querySelector(`#kick-check3`).checked,r.kickoff.check4=n.querySelector(`#kick-check4`).checked,r.kickoff.check5=n.querySelector(`#kick-check5`).checked;let i=n.querySelectorAll(`.custom-kickoff-row`);r.kickoff.customs=Array.from(i).map(e=>({text:e.querySelector(`.custom-kickoff-check`).nextElementSibling.textContent,checked:e.querySelector(`.custom-kickoff-check`).checked}))}return s(),n}function Yt(e){let t=document.createElement(`div`);t.style.padding=`var(--space-8)`,t.style.maxWidth=`1200px`,t.style.margin=`0 auto`;function n(){let n=U.getById(`projects`,e.id);if(!n){t.innerHTML=`
         <div style="text-align:center; padding: 100px 20px;">
           <h2 style="color:var(--text-secondary); margin-bottom: 20px;">프로젝트 정보를 찾을 수 없습니다.</h2>
           <p style="color:var(--text-tertiary);">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>
         </div>
-      `;return}let r=n.broadcastDate||``,i=n.adName||``;t.innerHTML=`
+      `;return}let r=U.getById(`brands`,n.brandId),i=n.brandName||(r?r.name:``),a=n.broadcastDate||``,o=n.adName||``;t.innerHTML=`
       <div class="page-header" style="margin-bottom: var(--space-6);">
         <div class="page-header-left">
           <div>
-            <h1 class="page-title" style="font-size: 24px;">${`${r?`[${r}] `:``}${i}`} 라이브 스킴 공유 관리</h1>
+            <h1 class="page-title" style="font-size: 24px;">${`${i?`[${i}] `:``}${a?`[${a}] `:``}${o}`} 라이브 스킴 공유 관리</h1>
             <p class="page-description" style="margin-top: 4px;">브랜드사 공유 전용 기재 페이지입니다. 내용을 작성하고 저장 버튼을 눌러주세요.</p>
           </div>
         </div>
       </div>
       <div id="shared-scheme-content"></div>
-    `,t.querySelector(`#shared-scheme-content`).appendChild(Jt(n))}return n(),t}function Xt(e,t){let n=document.createElement(`div`);return n.innerHTML=`
+    `,t.querySelector(`#shared-scheme-content`).appendChild(Jt(n,!0))}return n(),t}function Xt(e,t){let n=document.createElement(`div`);return n.innerHTML=`
     <div class="card">
       <div class="card-header">
         <h3>기본 정보</h3>

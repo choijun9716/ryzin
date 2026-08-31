@@ -684,7 +684,7 @@ export function renderProjectDetail(params) {
   return container;
 }
 
-function renderSchemeTab(project) {
+function renderSchemeTab(project, isSharedView = false) {
   const el = document.createElement('div');
   
   const scheme = project.scheme || {
@@ -782,6 +782,7 @@ function renderSchemeTab(project) {
       </style>
       <div class="flex-col">
         <!-- 스킴 공유 URL 복사 바 -->
+        ${isSharedView ? '' : `
         <div class="card" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 20px; border-radius: 10px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom: 4px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
@@ -789,6 +790,7 @@ function renderSchemeTab(project) {
           </div>
           <button class="btn btn-secondary btn-sm" id="btn-copy-scheme-url" style="background:white; border-color:#93c5fd; color:#1e40af; font-weight:600; font-size:12.5px;">공유 URL 복사</button>
         </div>
+        `}
 
         <!-- 1. 라이브 정보 -->
         <div class="card">
@@ -936,12 +938,14 @@ function renderSchemeTab(project) {
     `;
 
     // 공유 URL 복사 바인딩
-    el.querySelector('#btn-copy-scheme-url')?.addEventListener('click', () => {
-      const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_scheme/${project.id}`;
-      navigator.clipboard.writeText(shareUrl)
-        .then(() => showSuccess('공유 URL이 클립보드에 복사되었습니다.'))
-        .catch(() => showError('URL 복사에 실패했습니다.'));
-    });
+    if (!isSharedView) {
+      el.querySelector('#btn-copy-scheme-url')?.addEventListener('click', () => {
+        const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_scheme/${project.id}`;
+        navigator.clipboard.writeText(shareUrl)
+          .then(() => showSuccess('공유 URL이 클립보드에 복사되었습니다.'))
+          .catch(() => showError('URL 복사에 실패했습니다.'));
+      });
+    }
 
     // 상품 이벤트 리스너 바인딩
     el.querySelector('#btn-add-prod-row').addEventListener('click', () => {
@@ -1109,9 +1113,11 @@ export function renderSharedScheme(params) {
       return;
     }
 
+    const brand = store.getById('brands', project.brandId);
+    const brandName = project.brandName || (brand ? brand.name : '');
     const broadcastDate = project.broadcastDate || '';
     const adName = project.adName || '';
-    const titleText = `${broadcastDate ? `[${broadcastDate}] ` : ''}${adName}`;
+    const titleText = `${brandName ? `[${brandName}] ` : ''}${broadcastDate ? `[${broadcastDate}] ` : ''}${adName}`;
 
     container.innerHTML = `
       <div class="page-header" style="margin-bottom: var(--space-6);">
@@ -1126,7 +1132,7 @@ export function renderSharedScheme(params) {
     `;
 
     const contentDiv = container.querySelector('#shared-scheme-content');
-    contentDiv.appendChild(renderSchemeTab(project));
+    contentDiv.appendChild(renderSchemeTab(project, true));
   }
 
   render();
