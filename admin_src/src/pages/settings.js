@@ -218,20 +218,32 @@ function renderUserList(container) {
     return;
   }
 
-  tbody.innerHTML = users.map(u => `
-    <tr>
-      <td style="font-weight: var(--weight-medium);">${u.id}</td>
-      <td>${u.name}</td>
-      <td><span style="color:var(--text-tertiary);">***</span></td>
-      <td><span class="badge badge-default">${ROLES[u.role]?.label || (u.role && u.role.startsWith('live_stream:') ? `송출 관리자 (${u.role.split(':')[1]})` : u.role)}</span></td>
-      <td class="text-right">
-        <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
-          <button class="btn btn-secondary btn-sm edit-user-btn" data-id="${u.id}">수정</button>
-          <button class="btn btn-danger btn-sm delete-user-btn" data-id="${u.id}">삭제</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = users.map(u => {
+    let roleLabel = u.role;
+    if (ROLES[u.role]) {
+      roleLabel = ROLES[u.role].label;
+    } else if (u.role && u.role.startsWith('live_stream:')) {
+      roleLabel = `송출 관리자 (${u.role.split(':')[1]})`;
+    } else if (u.role && u.role.startsWith('brand:')) {
+      const bId = u.role.split(':')[1];
+      const b = store.getById('brands', bId);
+      roleLabel = b ? `파트너사 (${b.name})` : `파트너사 (${bId})`;
+    }
+    return `
+      <tr>
+        <td style="font-weight: var(--weight-medium);">${u.id}</td>
+        <td>${u.name}</td>
+        <td><span style="color:var(--text-tertiary);">***</span></td>
+        <td><span class="badge badge-default">${roleLabel}</span></td>
+        <td class="text-right">
+          <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+            <button class="btn btn-secondary btn-sm edit-user-btn" data-id="${u.id}">수정</button>
+            <button class="btn btn-danger btn-sm delete-user-btn" data-id="${u.id}">삭제</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
 
   // 수정 버튼
   tbody.querySelectorAll('.edit-user-btn').forEach(btn => {
@@ -277,6 +289,8 @@ async function openUserModal(existingUser = null) {
     lives = JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
   }
 
+  const brands = store.getAll('brands') || [];
+
   const content = document.createElement('div');
   content.className = 'form-grid';
   content.innerHTML = `
@@ -297,6 +311,7 @@ async function openUserModal(existingUser = null) {
       <select class="input" id="user-role">
         ${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${existingUser && existingUser.role === k ? 'selected' : ''}>${v.label} (${k})</option>`).join('')}
         ${lives.map(l => `<option value="live_stream:${l.id}" ${existingUser && existingUser.role === `live_stream:${l.id}` ? 'selected' : ''}>송출 관리자 (${l.id})</option>`).join('')}
+        ${brands.map(b => `<option value="brand:${b.id}" ${existingUser && existingUser.role === `brand:${b.id}` ? 'selected' : ''}>파트너사 - ${b.name} (${b.id})</option>`).join('')}
       </select>
     </div>
   `;

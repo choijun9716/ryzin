@@ -81,6 +81,7 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       like_image_url: config.likeImageUrl || '',
       banned_words: config.bannedWords || '',
       banned_users: config.bannedUsers || '',
+      scheme: config.scheme || '',
       updated_at: new Date().toISOString()
     };
     try {
@@ -170,6 +171,9 @@ function renderListView(container, showView) {
   const role = store.getCurrentRole();
   const isLiveStreamOnly = role && role.startsWith('live_stream:');
   const targetLiveId = isLiveStreamOnly ? role.split(':')[1] : null;
+  const isBrandPartner = role && role.startsWith('brand:');
+  const targetBrandId = isBrandPartner ? role.split(':')[1] : null;
+  const isRestricted = isLiveStreamOnly || isBrandPartner;
 
   const wrapper = document.createElement('div');
   wrapper.style.cssText = 'max-width:720px; margin:0 auto; padding:40px 24px; width:100%; overflow-y:auto;';
@@ -181,7 +185,7 @@ function renderListView(container, showView) {
       <h1 style="margin:0; font-size:26px; font-weight:800; color:#0f172a;">라이브 목록</h1>
       <p style="margin:6px 0 0; font-size:14px; color:#64748b;">각 라이브는 독립된 URL로 시청자에게 제공됩니다.</p>
     </div>
-    ${isLiveStreamOnly ? '' : `
+    ${isRestricted ? '' : `
     <button id="btn-create-live" class="action-btn btn-primary-solid">
       <span style="font-size:18px;">+</span> 새 라이브 생성
     </button>
@@ -224,6 +228,17 @@ function renderListView(container, showView) {
     // 특정 라이브 전용 로그인 상태인 경우, 해당 라이브 ID만 필터링
     if (isLiveStreamOnly && targetLiveId) {
       lives = lives.filter(l => l.id === targetLiveId);
+    } else if (isBrandPartner && targetBrandId) {
+      const brand = store.getById('brands', targetBrandId);
+      const targetBrandName = brand ? brand.name : '';
+      if (targetBrandName) {
+        lives = lives.filter(l => {
+          const cfg = getLiveConfig(l.id) || {};
+          return cfg.brandName === targetBrandName;
+        });
+      } else {
+        lives = [];
+      }
     }
 
     // 생성된 시간(createdAt) 순으로 정렬
@@ -267,7 +282,7 @@ function renderListView(container, showView) {
         </div>
         <div style="display:flex; gap:8px; flex-shrink:0;">
           <button class="action-btn btn-neutral btn-edit" data-id="${live.id}" style="padding:8px 16px; font-size:13px;">설정 ›</button>
-          ${isLiveStreamOnly ? '' : `
+          ${isRestricted ? '' : `
           <button class="action-btn btn-neutral btn-delete" data-id="${live.id}" style="padding:8px 12px; font-size:13px; color:#ef4444; border-color:#fee2e2;">삭제</button>
           `}
         </div>
@@ -366,6 +381,11 @@ function renderListView(container, showView) {
 //  LIVE EDIT VIEW — 개별 라이브 설정
 // ═══════════════════════════════════════════════════════════════
 function renderLiveEditView(container, liveId, showView) {
+  const role = store.getCurrentRole();
+  const isLiveStreamOnly = role && role.startsWith('live_stream:');
+  const isBrandPartner = role && role.startsWith('brand:');
+  const isRestricted = isLiveStreamOnly || isBrandPartner;
+
   const base64ToBlob = (base64Data) => {
     let contentType = 'image/png';
     let base64 = base64Data;
@@ -589,6 +609,7 @@ function renderLiveEditView(container, liveId, showView) {
           config.shareDesc = data.share_desc || '';
           config.shareImageUrl = data.share_image || '';
           config.likeImageUrl = data.like_image_url || '';
+          config.scheme = data.scheme || '';
 
           stats.viewers = data.viewers || 0;
           stats.hearts = data.hearts || 0;
@@ -695,6 +716,16 @@ function renderLiveEditView(container, liveId, showView) {
     ? `<div id="onair-timer-wrapper" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px; border:1px solid #fecaca; white-space:nowrap;"> <div style="width:6px; height:6px; background:#ef4444; border-radius:50%; box-shadow:0 0 0 2px #fee2e2;"></div> 방송 중 <span id="onair-timer-text" style="font-family:monospace; margin-left:2px; letter-spacing:0.02em;">00:00:00</span> </div>`
     : '';
 
+  const tabBtnsHtml = isRestricted
+    ? `<button class="tab-btn active" data-tab="scheme" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">스킴관리</button>`
+    : `
+      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
+      <button class="tab-btn" data-tab="scheme" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">스킴관리</button>
+      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
+      <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
+    `;
+
   topBar.innerHTML = `
     <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:4px;"><span style="font-size:14px; line-height:1;">←</span> 목록</button>
     <div style="display:flex; align-items:center; gap:10px; min-width: 200px; max-width: 580px; flex-shrink:0;">
@@ -703,10 +734,7 @@ function renderLiveEditView(container, liveId, showView) {
       ${statusBadge}
     </div>
     <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:480px; margin:0 auto;">
-      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
-      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
-      <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
-      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
+      ${tabBtnsHtml}
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
@@ -1668,6 +1696,56 @@ function renderLiveEditView(container, liveId, showView) {
           }
         })
         .catch(err => console.warn('Failed to fetch stats from Supabase', err));
+    }
+  };
+
+  const renderSchemeTab = () => {
+    contentArea.innerHTML = `
+      <div class="section-card">
+        <h3>스킴 관리</h3>
+        <p style="margin:-10px 0 20px; font-size:13px; color:#64748b; line-height:1.5;">
+          라이브 방송의 송출 정보, 이벤트 스케줄, 기획안 등 방송 관련 스킴 내용을 자유롭게 기재해 주세요. 작성한 내용은 어드민과 실시간으로 공유됩니다.
+        </p>
+        <div style="margin-bottom:18px;">
+          <label class="modern-label">스킴 내용</label>
+          <textarea class="modern-input" id="cfg-scheme" style="height:320px; font-family:monospace; resize:vertical; padding:12px; line-height:1.6;" placeholder="방송 진행 스킴 또는 메모를 입력하세요."></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button id="btn-save-scheme" class="action-btn btn-primary-solid" style="padding:10px 24px;">스킴 저장</button>
+        </div>
+      </div>
+    `;
+
+    const textarea = document.getElementById('cfg-scheme');
+    if (textarea) {
+      textarea.value = config.scheme || '';
+    }
+
+    const saveBtn = document.getElementById('btn-save-scheme');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        saveBtn.disabled = true;
+        saveBtn.textContent = '저장 중...';
+        
+        try {
+          config.scheme = textarea.value;
+          saveConfig();
+          
+          if (db) {
+            await db.from('live_control')
+              .update({ scheme: config.scheme, updated_at: new Date().toISOString() })
+              .eq('live_id', liveId);
+          }
+          
+          alert('스킴 정보가 정상적으로 저장되었습니다.');
+        } catch (err) {
+          console.error('스킴 저장 실패:', err);
+          alert('스킴 저장 중 오류가 발생했습니다.');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '스킴 저장';
+        }
+      });
     }
   };
 
@@ -3079,6 +3157,7 @@ function renderLiveEditView(container, liveId, showView) {
     contentArea.dispatchEvent(new Event('adminTabLeave'));
     tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
     if (tabName === 'config') renderConfigTab();
+    else if (tabName === 'scheme') renderSchemeTab();
     else if (tabName === 'chat') renderChatTab();
     else if (tabName === 'product') renderProductTab();
     else if (tabName === 'leads') renderLeadsTab();
@@ -3088,6 +3167,10 @@ function renderLiveEditView(container, liveId, showView) {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // 기본: 기본설정 탭
-  renderConfigTab();
+  // 기본 탭 렌더링 분기 (브랜드사면 스킴관리, 어드민이면 기본설정)
+  if (isRestricted) {
+    renderSchemeTab();
+  } else {
+    renderConfigTab();
+  }
 }

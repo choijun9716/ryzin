@@ -461,6 +461,7 @@ class DataStore {
         broadcastStatus: getBroadcastStatus(row.status),
         settleStatus: getSettleStatus(row.settle_status),
         note: row.note || '',
+        scheme: row.scheme ? (typeof row.scheme === 'string' ? JSON.parse(row.scheme) : row.scheme) : null,
         createdAt: row.broadcast_date || '2025-01-01'
       });
 
@@ -623,7 +624,8 @@ class DataStore {
             sales_revenue: f.salesRevenue || 0,
             operating_profit: f.operatingProfit || 0,
             net_margin: f.netMargin || 0,
-            note: p ? p.note : ''
+            note: p ? p.note : '',
+            scheme: p && p.scheme ? (typeof p.scheme === 'string' ? p.scheme : JSON.stringify(p.scheme)) : ''
           };
           method = 'POST';
         }

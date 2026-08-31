@@ -42,6 +42,10 @@ function getDeadlineText(broadcastDate, statusKey) {
 
 export function renderProjects() {
   const container = document.createElement('div');
+  const role = store.getCurrentRole();
+  const isBrandPartner = role && role.startsWith('brand:');
+  const targetBrandId = isBrandPartner ? role.split(':')[1] : null;
+
   const urlParams = new URLSearchParams(window.location.search);
   const initialSettleStatus = urlParams.get('settleStatus') || '';
   let searchTerm = '';
@@ -52,6 +56,9 @@ export function renderProjects() {
 
   function render() {
     let projects = store.getAll('projects');
+    if (isBrandPartner && targetBrandId) {
+      projects = projects.filter(p => p.brandId === targetBrandId);
+    }
     const brands = store.getAll('brands');
     const hosts = store.getAll('hosts');
 
@@ -215,10 +222,12 @@ export function renderProjects() {
             <button class="btn btn-sm ${currentView === 'list' ? 'btn-primary' : 'btn-secondary'}" id="btn-view-list">리스트</button>
             <button class="btn btn-sm ${currentView === 'calendar' ? 'btn-primary' : 'btn-secondary'}" id="btn-view-calendar">캘린더</button>
           </div>
+          ${isBrandPartner ? '' : `
           <button class="btn btn-primary" id="btn-new-project">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             신규 등록
           </button>
+          `}
         </div>
       </div>`;
 
@@ -555,7 +564,11 @@ function openProjectCreateModal(onSave) {
 // ===== 프로젝트 상세 페이지 =====
 export function renderProjectDetail(params) {
   const container = document.createElement('div');
-  let activeTab = 'info';
+  const role = store.getCurrentRole();
+  const isBrandPartner = role && role.startsWith('brand:');
+  const targetBrandId = isBrandPartner ? role.split(':')[1] : null;
+
+  let activeTab = isBrandPartner ? 'scheme' : 'info';
 
   function render() {
     const project = store.getById('projects', params.id);
@@ -605,17 +618,22 @@ export function renderProjectDetail(params) {
             </div>
             <span style="font-size: var(--text-sm); font-weight: var(--weight-semibold);">${progress}%</span>
           </div>
-          <button class="btn btn-secondary" id="btn-delete-project">삭제</button>
+          ${isBrandPartner ? '' : '<button class="btn btn-secondary" id="btn-delete-project">삭제</button>'}
         </div>
       </div>
       <div class="page-body">
         <!-- 탭 -->
         <div class="tabs" style="margin-bottom: var(--space-5);">
-          <div class="tab ${activeTab === 'info' ? 'active' : ''}" data-tab="info">기본정보</div>
-                    <div class="tab ${activeTab === 'hosts' ? 'active' : ''}" data-tab="hosts">쇼호스트</div>
-          <div class="tab ${activeTab === 'design' ? 'active' : ''}" data-tab="design">디자인</div>
-          <div class="tab ${activeTab === 'result' ? 'active' : ''}" data-tab="result">성과</div>
-          <div class="tab ${activeTab === 'finance' ? 'active' : ''}" data-tab="finance">정산</div>
+          ${isBrandPartner ? `
+            <div class="tab active" data-tab="scheme">스킴관리</div>
+          ` : `
+            <div class="tab ${activeTab === 'info' ? 'active' : ''}" data-tab="info">기본정보</div>
+            <div class="tab ${activeTab === 'scheme' ? 'active' : ''}" data-tab="scheme">스킴관리</div>
+            <div class="tab ${activeTab === 'hosts' ? 'active' : ''}" data-tab="hosts">쇼호스트</div>
+            <div class="tab ${activeTab === 'design' ? 'active' : ''}" data-tab="design">디자인</div>
+            <div class="tab ${activeTab === 'result' ? 'active' : ''}" data-tab="result">성과</div>
+            <div class="tab ${activeTab === 'finance' ? 'active' : ''}" data-tab="finance">정산</div>
+          `}
         </div>
 
         <div id="tab-content"></div>
@@ -626,7 +644,8 @@ export function renderProjectDetail(params) {
     const tabContent = container.querySelector('#tab-content');
     switch (activeTab) {
       case 'info': tabContent.appendChild(renderInfoTab(project, brand)); break;
-            case 'hosts': tabContent.appendChild(renderHostsTab(project)); break;
+      case 'scheme': tabContent.appendChild(renderSchemeTab(project)); break;
+      case 'hosts': tabContent.appendChild(renderHostsTab(project)); break;
       case 'design': tabContent.appendChild(renderDesignTab(project)); break;
       case 'result': tabContent.appendChild(renderResultTab(project)); break;
       case 'finance': tabContent.appendChild(renderFinanceTab(project)); break;
@@ -659,6 +678,454 @@ export function renderProjectDetail(params) {
         });
       });
     }, 0);
+  }
+
+  render();
+  return container;
+}
+
+function renderSchemeTab(project) {
+  const el = document.createElement('div');
+  
+  const scheme = project.scheme || {
+    liveInfo: { mainProduct: '', brandIntro: '', sellingPoints: '', highlight: '', delivery: '' },
+    products: [],
+    events: [],
+    kickoff: {
+      check1: false,
+      check2: false,
+      check3: false,
+      check4: false,
+      check5: false,
+      customs: []
+    }
+  };
+
+  if (!scheme.liveInfo) scheme.liveInfo = { mainProduct: '', brandIntro: '', sellingPoints: '', highlight: '', delivery: '' };
+  if (!scheme.products) scheme.products = [];
+  if (!scheme.events) scheme.events = [];
+  if (!scheme.kickoff) {
+    scheme.kickoff = { check1: false, check2: false, check3: false, check4: false, check5: false, customs: [] };
+  }
+  if (!scheme.kickoff.customs) scheme.kickoff.customs = [];
+
+  function getProductRowsHtml() {
+    if (scheme.products.length === 0) {
+      return `<tr><td colspan="12" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-products-row">등록된 상품이 없습니다.</td></tr>`;
+    }
+    return scheme.products.map((prod, idx) => {
+      const price = parseFloat(prod.price) || 0;
+      const livePrice = parseFloat(prod.livePrice) || 0;
+      const targetQty = parseInt(prod.targetQty, 10) || 0;
+      const feeRate = parseFloat(prod.feeRate) || 0;
+
+      const discountRate = price > 0 ? Math.round(((price - livePrice) / price) * 100) + '%' : '0%';
+      const targetSales = livePrice * targetQty;
+      const feeTotal = Math.round(targetSales * (feeRate / 100));
+      const expectedMargin = targetSales - feeTotal;
+
+      return `
+        <tr class="product-row" data-idx="${idx}">
+          <td><input type="text" class="input prod-prodName" style="width: 160px; padding: 6px 8px; font-size: 13px;" value="${prod.prodName || ''}" placeholder="상품명"></td>
+          <td><input type="text" class="input prod-prodUrl" style="width: 140px; padding: 6px 8px; font-size: 13px;" value="${prod.prodUrl || ''}" placeholder="상품 URL"></td>
+          <td><input type="number" class="input prod-stock" style="width: 80px; padding: 6px 8px; font-size: 13px;" value="${prod.stock || ''}" placeholder="재고"></td>
+          <td><input type="number" class="input prod-price" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.price || ''}" placeholder="정상가"></td>
+          <td><input type="number" class="input prod-livePrice" style="width: 95px; padding: 6px 8px; font-size: 13px;" value="${prod.livePrice || ''}" placeholder="할인가"></td>
+          <td class="prod-discountRate text-center" style="font-size: 13px; font-weight: bold; color: var(--status-error);">${discountRate}</td>
+          <td><input type="number" class="input prod-targetQty" style="width: 80px; padding: 6px 8px; font-size: 13px;" value="${prod.targetQty || ''}" placeholder="목표수"></td>
+          <td class="prod-targetSales text-right" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${targetSales.toLocaleString()}</td>
+          <td><input type="number" class="input prod-feeRate" style="width: 70px; padding: 6px 8px; font-size: 13px;" value="${prod.feeRate || ''}" placeholder="%"></td>
+          <td class="prod-feeTotal text-right" style="font-size: 13px; color: var(--text-secondary);">${feeTotal.toLocaleString()}</td>
+          <td class="prod-expectedMargin text-right" style="font-size: 13px; font-weight: 700; color: var(--status-success);">${expectedMargin.toLocaleString()}</td>
+          <td class="text-center"><button class="btn btn-danger btn-sm btn-delete-prod-row" data-idx="${idx}">삭제</button></td>
+        </tr>
+      `;
+    });
+  }
+
+  function getEventRowsHtml() {
+    if (scheme.events.length === 0) {
+      return `<tr><td colspan="7" class="text-center" style="padding:var(--space-4); color:var(--text-tertiary);" id="no-events-row">등록된 이벤트 혜택이 없습니다.</td></tr>`;
+    }
+    return scheme.events.map((evt, idx) => `
+      <tr class="event-row" data-idx="${idx}">
+        <td><input type="text" class="input evt-type" style="padding: 6px 8px; font-size: 13px;" value="${evt.type || ''}" placeholder="예: 리뷰 이벤트"></td>
+        <td><input type="text" class="input evt-cond" style="padding: 6px 8px; font-size: 13px;" value="${evt.condition || ''}" placeholder="예: 구매 확정 후"></td>
+        <td><input type="text" class="input evt-benefit" style="padding: 6px 8px; font-size: 13px;" value="${evt.benefit || ''}" placeholder="예: 네이버 포인트 지급"></td>
+        <td><input type="number" class="input evt-price" style="padding: 6px 8px; font-size: 13px;" value="${evt.price || ''}" placeholder="단가"></td>
+        <td><input type="number" class="input evt-count" style="padding: 6px 8px; font-size: 13px;" value="${evt.count || ''}" placeholder="명"></td>
+        <td><input type="number" class="input evt-budget" style="padding: 6px 8px; font-size: 13px;" value="${evt.budget || ''}" placeholder="총액"></td>
+        <td class="text-center"><button class="btn btn-danger btn-sm btn-delete-evt-row" data-idx="${idx}">삭제</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function getCustomKickoffHtml() {
+    return scheme.kickoff.customs.map((item, idx) => `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f1f5f9;" class="custom-kickoff-row" data-idx="${idx}">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
+          <input type="checkbox" class="custom-kickoff-check" ${item.checked ? 'checked' : ''} style="width:16px; height:16px;">
+          <span style="font-size:14px; color:var(--text-primary);">${item.text}</span>
+        </label>
+        <button class="btn btn-secondary btn-sm btn-delete-custom-kickoff" data-idx="${idx}" style="padding:2px 8px; font-size:11px;">삭제</button>
+      </div>
+    `).join('');
+  }
+
+  function render() {
+    el.innerHTML = `
+      <style>
+        .scheme-textarea { width: 100%; height: 100px; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: sans-serif; resize: vertical; line-height: 1.5; color: var(--text-primary); outline: none; transition: border-color 0.2s; }
+        .scheme-textarea:focus { border-color: var(--primary); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .flex-col { display: flex; flex-direction: column; gap: 14px; }
+      </style>
+      <div class="flex-col">
+        <!-- 스킴 공유 URL 복사 바 -->
+        <div class="card" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 20px; border-radius: 10px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom: 4px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <span style="font-size: 13.5px; font-weight: 600; color: #1e40af;">브랜드 스킴 외부 작성 URL</span>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btn-copy-scheme-url" style="background:white; border-color:#93c5fd; color:#1e40af; font-weight:600; font-size:12.5px;">공유 URL 복사</button>
+        </div>
+
+        <!-- 1. 라이브 정보 -->
+        <div class="card">
+          <div class="card-header">
+            <h3>라이브 정보</h3>
+          </div>
+          <div class="card-body flex-col" style="padding: 20px;">
+            <div class="grid-2">
+              <div>
+                <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">주 메인 제품</label>
+                <textarea class="scheme-textarea" id="sch-mainProduct" placeholder="핵심 판매 및 노출 대상 상품을 기재하세요.">${scheme.liveInfo.mainProduct || ''}</textarea>
+              </div>
+              <div>
+                <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">브랜드 소개</label>
+                <textarea class="scheme-textarea" id="sch-brandIntro" placeholder="브랜드에 대한 핵심 소개 문구 및 히스토리를 기재하세요.">${scheme.liveInfo.brandIntro || ''}</textarea>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">제품 소구포인트</label>
+                <textarea class="scheme-textarea" id="sch-sellingPoints" placeholder="방송 진행 시 집중적으로 강조해야 할 강점을 기재하세요.">${scheme.liveInfo.sellingPoints || ''}</textarea>
+              </div>
+              <div>
+                <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">강조 노출 사항</label>
+                <textarea class="scheme-textarea" id="sch-highlight" placeholder="라이브 화면 노출 또는 멘트 강조 권장 사항을 기재하세요.">${scheme.liveInfo.highlight || ''}</textarea>
+              </div>
+            </div>
+            <div>
+              <label class="required" style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">배송 정보</label>
+              <textarea class="scheme-textarea" id="sch-delivery" style="height:80px;" placeholder="예: 배송비 3000원 / 도서산간지역 6000원 N만원 이상 구매시 무료">${scheme.liveInfo.delivery || ''}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. 상품 관리 -->
+        <div class="card">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>상품 관리</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-add-prod-row">행 추가</button>
+          </div>
+          <div class="card-body" style="padding: 20px;">
+            <div class="table-scroll" style="margin: 0; border: 1px solid var(--border-color); border-radius: 8px;">
+              <table class="data-table" style="min-width: 1000px;">
+                <thead>
+                  <tr>
+                    <th style="width: 180px;">상품명</th>
+                    <th style="width: 150px;">상품 URL</th>
+                    <th style="width: 90px;">재고수량</th>
+                    <th style="width: 105px;">정상가</th>
+                    <th style="width: 105px;">라이브 할인가</th>
+                    <th style="width: 90px; text-align: center;">할인율</th>
+                    <th style="width: 90px;">목표수량</th>
+                    <th style="width: 120px; text-align: right;">목표 매출</th>
+                    <th style="width: 80px;">플랫폼 수수료</th>
+                    <th style="width: 120px; text-align: right;">수수료 총합</th>
+                    <th style="width: 130px; text-align: right;">예상 판매 마진</th>
+                    <th style="width: 80px; text-align: center;">작업</th>
+                  </tr>
+                </thead>
+                <tbody id="prod-table-body">
+                  ${getProductRowsHtml()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 이벤트 관리 -->
+        <div class="card">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>이벤트 관리</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-add-evt-row">행 추가</button>
+          </div>
+          <div class="card-body" style="padding: 20px;">
+            <div class="table-scroll" style="margin: 0; border: 1px solid var(--border-color); border-radius: 8px;">
+              <table class="data-table" style="min-width: 800px;">
+                <thead>
+                  <tr>
+                    <th>이벤트 유형</th>
+                    <th>조건</th>
+                    <th>경품 / 혜택</th>
+                    <th>단가</th>
+                    <th>당첨인원</th>
+                    <th>예산 총액</th>
+                    <th style="width:80px; text-align:center;">작업</th>
+                  </tr>
+                </thead>
+                <tbody id="evt-table-body">
+                  ${getEventRowsHtml()}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 킥오프 체크 -->
+        <div class="card">
+          <div class="card-header">
+            <h3>킥오프 체크</h3>
+          </div>
+          <div class="card-body flex-col" style="padding: 20px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+              <div class="flex-col" style="background:#f8fafc; padding:18px; border-radius:10px; border:1px solid #e2e8f0;">
+                <h4 style="margin:0 0 10px 0; font-size:14px; color:var(--text-primary); font-weight:700;">기본 킥오프 리스트</h4>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
+                  <input type="checkbox" id="kick-check1" ${scheme.kickoff.check1 ? 'checked' : ''} style="width:16px; height:16px;">
+                  <span style="font-size:14px;">브랜드 소개 및 히스토리 확인</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
+                  <input type="checkbox" id="kick-check2" ${scheme.kickoff.check2 ? 'checked' : ''} style="width:16px; height:16px;">
+                  <span style="font-size:14px;">주 메인 제품 정보 및 정상가/할인가 검수</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
+                  <input type="checkbox" id="kick-check3" ${scheme.kickoff.check3 ? 'checked' : ''} style="width:16px; height:16px;">
+                  <span style="font-size:14px;">배송비 및 배송 방식 확인</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
+                  <input type="checkbox" id="kick-check4" ${scheme.kickoff.check4 ? 'checked' : ''} style="width:16px; height:16px;">
+                  <span style="font-size:14px;">제품 소구 포인트 및 연출 소품 협의</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
+                  <input type="checkbox" id="kick-check5" ${scheme.kickoff.check5 ? 'checked' : ''} style="width:16px; height:16px;">
+                  <span style="font-size:14px;">방송 중 라이브 혜택 및 경품 조율 완료</span>
+                </label>
+              </div>
+
+              <div class="flex-col">
+                <h4 style="margin:0; font-size:14px; color:var(--text-primary); font-weight:700;">추가 체크 항목</h4>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" class="input" id="custom-kickoff-text" placeholder="체크리스트 항목 입력..." style="flex:1;">
+                  <button class="btn btn-secondary" id="btn-add-custom-kickoff" style="white-space:nowrap;">추가</button>
+                </div>
+                <div id="custom-kickoff-container" style="max-height: 180px; overflow-y: auto; display:flex; flex-direction:column; gap:4px; margin-top:8px;">
+                  ${getCustomKickoffHtml()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; padding:10px 0;">
+          <button class="btn btn-primary" id="btn-save-project-scheme" style="padding:12px 36px; font-weight:700; font-size:15px; box-shadow: 0 4px 12px rgba(59,130,246,0.25);">스킴 정보 저장</button>
+        </div>
+      </div>
+    `;
+
+    // 공유 URL 복사 바인딩
+    el.querySelector('#btn-copy-scheme-url')?.addEventListener('click', () => {
+      const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_scheme/${project.id}`;
+      navigator.clipboard.writeText(shareUrl)
+        .then(() => showSuccess('공유 URL이 클립보드에 복사되었습니다.'))
+        .catch(() => showError('URL 복사에 실패했습니다.'));
+    });
+
+    // 상품 이벤트 리스너 바인딩
+    el.querySelector('#btn-add-prod-row').addEventListener('click', () => {
+      collectCurrentData();
+      scheme.products.push({ prodName: '', prodUrl: '', stock: '', price: '', livePrice: '', targetQty: '', feeRate: '' });
+      render();
+    });
+
+    el.querySelectorAll('.btn-delete-prod-row').forEach(btn => {
+      btn.addEventListener('click', () => {
+        collectCurrentData();
+        const idx = parseInt(btn.getAttribute('data-idx'), 10);
+        scheme.products.splice(idx, 1);
+        render();
+      });
+    });
+
+    // 각 상품 행 인풋 변경 시 실시간 자동계산 바인딩
+    el.querySelectorAll('.product-row').forEach(row => {
+      row.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+          const price = parseFloat(row.querySelector('.prod-price').value) || 0;
+          const livePrice = parseFloat(row.querySelector('.prod-livePrice').value) || 0;
+          const targetQty = parseInt(row.querySelector('.prod-targetQty').value, 10) || 0;
+          const feeRate = parseFloat(row.querySelector('.prod-feeRate').value) || 0;
+
+          // 할인율
+          const discountRate = price > 0 ? Math.round(((price - livePrice) / price) * 100) + '%' : '0%';
+          row.querySelector('.prod-discountRate').textContent = discountRate;
+
+          // 목표 매출
+          const targetSales = livePrice * targetQty;
+          row.querySelector('.prod-targetSales').textContent = targetSales.toLocaleString();
+
+          // 수수료 총합
+          const feeTotal = Math.round(targetSales * (feeRate / 100));
+          row.querySelector('.prod-feeTotal').textContent = feeTotal.toLocaleString();
+
+          // 예상 판매 마진
+          const expectedMargin = targetSales - feeTotal;
+          row.querySelector('.prod-expectedMargin').textContent = expectedMargin.toLocaleString();
+        });
+      });
+    });
+
+    // 이벤트 리스너 바인딩
+    el.querySelector('#btn-add-evt-row').addEventListener('click', () => {
+      collectCurrentData();
+      scheme.events.push({ type: '', condition: '', benefit: '', price: '', count: '', budget: '' });
+      render();
+    });
+
+    el.querySelectorAll('.btn-delete-evt-row').forEach(btn => {
+      btn.addEventListener('click', () => {
+        collectCurrentData();
+        const idx = parseInt(btn.getAttribute('data-idx'), 10);
+        scheme.events.splice(idx, 1);
+        render();
+      });
+    });
+
+    el.querySelector('#btn-add-custom-kickoff').addEventListener('click', () => {
+      const input = el.querySelector('#custom-kickoff-text');
+      const val = input.value.trim();
+      if (!val) return;
+      collectCurrentData();
+      scheme.kickoff.customs.push({ text: val, checked: false });
+      input.value = '';
+      render();
+    });
+
+    el.querySelectorAll('.btn-delete-custom-kickoff').forEach(btn => {
+      btn.addEventListener('click', () => {
+        collectCurrentData();
+        const idx = parseInt(btn.getAttribute('data-idx'), 10);
+        scheme.kickoff.customs.splice(idx, 1);
+        render();
+      });
+    });
+
+    el.querySelector('#btn-save-project-scheme').addEventListener('click', async () => {
+      collectCurrentData();
+      const saveBtn = el.querySelector('#btn-save-project-scheme');
+      saveBtn.disabled = true;
+      saveBtn.textContent = '저장 중...';
+
+      try {
+        store.update('projects', project.id, { scheme });
+        showSuccess('스킴 정보가 정상적으로 저장되었습니다.');
+      } catch (err) {
+        console.error('스킴 저장 실패:', err);
+        showError('스킴 저장 중 오류가 발생했습니다.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '스킴 정보 저장';
+      }
+    });
+  }
+
+  function collectCurrentData() {
+    scheme.liveInfo.mainProduct = el.querySelector('#sch-mainProduct').value;
+    scheme.liveInfo.brandIntro = el.querySelector('#sch-brandIntro').value;
+    scheme.liveInfo.sellingPoints = el.querySelector('#sch-sellingPoints').value;
+    scheme.liveInfo.highlight = el.querySelector('#sch-highlight').value;
+    scheme.liveInfo.delivery = el.querySelector('#sch-delivery').value;
+
+    const prodRows = el.querySelectorAll('.product-row');
+    scheme.products = Array.from(prodRows).map(row => {
+      return {
+        prodName: row.querySelector('.prod-prodName').value,
+        prodUrl: row.querySelector('.prod-prodUrl').value,
+        stock: row.querySelector('.prod-stock').value ? parseInt(row.querySelector('.prod-stock').value, 10) : '',
+        price: row.querySelector('.prod-price').value ? parseFloat(row.querySelector('.prod-price').value) : '',
+        livePrice: row.querySelector('.prod-livePrice').value ? parseFloat(row.querySelector('.prod-livePrice').value) : '',
+        targetQty: row.querySelector('.prod-targetQty').value ? parseInt(row.querySelector('.prod-targetQty').value, 10) : '',
+        feeRate: row.querySelector('.prod-feeRate').value ? parseFloat(row.querySelector('.prod-feeRate').value) : ''
+      };
+    });
+
+    const rows = el.querySelectorAll('.event-row');
+    scheme.events = Array.from(rows).map(row => {
+      return {
+        type: row.querySelector('.evt-type').value,
+        condition: row.querySelector('.evt-cond').value,
+        benefit: row.querySelector('.evt-benefit').value,
+        price: row.querySelector('.evt-price').value ? parseFloat(row.querySelector('.evt-price').value) : '',
+        count: row.querySelector('.evt-count').value ? parseInt(row.querySelector('.evt-count').value, 10) : '',
+        budget: row.querySelector('.evt-budget').value ? parseFloat(row.querySelector('.evt-budget').value) : ''
+      };
+    });
+
+    scheme.kickoff.check1 = el.querySelector('#kick-check1').checked;
+    scheme.kickoff.check2 = el.querySelector('#kick-check2').checked;
+    scheme.kickoff.check3 = el.querySelector('#kick-check3').checked;
+    scheme.kickoff.check4 = el.querySelector('#kick-check4').checked;
+    scheme.kickoff.check5 = el.querySelector('#kick-check5').checked;
+
+    const customsRows = el.querySelectorAll('.custom-kickoff-row');
+    scheme.kickoff.customs = Array.from(customsRows).map(row => {
+      const text = row.querySelector('.custom-kickoff-check').nextElementSibling.textContent;
+      const checked = row.querySelector('.custom-kickoff-check').checked;
+      return { text, checked };
+    });
+  }
+
+  render();
+  return el;
+}
+
+export function renderSharedScheme(params) {
+  const container = document.createElement('div');
+  container.style.padding = 'var(--space-8)';
+  container.style.maxWidth = '1200px';
+  container.style.margin = '0 auto';
+
+  function render() {
+    const project = store.getById('projects', params.id);
+    if (!project) {
+      container.innerHTML = `
+        <div style="text-align:center; padding: 100px 20px;">
+          <h2 style="color:var(--text-secondary); margin-bottom: 20px;">프로젝트 정보를 찾을 수 없습니다.</h2>
+          <p style="color:var(--text-tertiary);">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const brand = store.getById('brands', project.brandId);
+    const brandName = project.brandName || (brand ? brand.name : '-');
+
+    container.innerHTML = `
+      <div class="page-header" style="margin-bottom: var(--space-6);">
+        <div class="page-header-left">
+          <div>
+            <h1 class="page-title" style="font-size: 24px;">${brandName} 라이브 스킴 공유 관리</h1>
+            <p class="page-description" style="margin-top: 4px;">브랜드사 공유 전용 기재 페이지입니다. 내용을 작성하고 저장 버튼을 눌러주세요.</p>
+          </div>
+        </div>
+      </div>
+      <div id="shared-scheme-content"></div>
+    `;
+
+    const contentDiv = container.querySelector('#shared-scheme-content');
+    contentDiv.appendChild(renderSchemeTab(project));
   }
 
   render();

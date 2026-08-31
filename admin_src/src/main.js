@@ -19,7 +19,7 @@ import { renderDashboard } from './pages/dashboard.js';
 import { renderLiveStream } from './pages/live_stream.js';
 import { renderHosts, renderHostDetail } from './pages/hosts.js';
 import { renderBrands, renderBrandDetail } from './pages/brands.js';
-import { renderProjects, renderProjectDetail } from './pages/projects.js';
+import { renderProjects, renderProjectDetail, renderSharedScheme } from './pages/projects.js';
 import { renderFinance } from './pages/finance.js';
 import { renderSettlement } from './pages/settlement.js';
 import { renderContracts } from './pages/contracts.js';
@@ -82,8 +82,10 @@ async function initApp() {
 
   // 라우터 권한 체크
   router.beforeEach((to) => {
+    const bypassAuth = to.startsWith('/shared_scheme/');
     const isLoggedIn = !!store.getCurrentUser();
-    if (!isLoggedIn && to !== '/login') {
+    
+    if (!bypassAuth && !isLoggedIn && to !== '/login') {
       return '/login';
     }
     if (isLoggedIn && to === '/login') {
@@ -98,7 +100,23 @@ async function initApp() {
       }
     }
 
-    if (to === '/login') {
+    // 브랜드 파트너 계정 및 송출 관리자 계정은 허용된 라우트만 접근하도록 분기하여 제한
+    if (isLoggedIn) {
+      const currentUser = store.getCurrentUser();
+      const currentRole = store.getCurrentRole();
+      if (currentRole && currentRole.startsWith('live_stream:')) {
+        if (to !== '/live_stream' && to !== '/settings' && to !== '/login') {
+          return '/live_stream';
+        }
+      }
+      if (currentRole && currentRole.startsWith('brand:')) {
+        if (to !== '/projects' && !to.startsWith('/projects/') && to !== '/settings' && to !== '/login') {
+          return '/projects';
+        }
+      }
+    }
+
+    if (to === '/login' || to.startsWith('/shared_scheme/')) {
       app.innerHTML = '';
       app.className = '';
       router.setContainer(app);
@@ -115,6 +133,7 @@ async function initApp() {
   router.register('/projects', () => renderProjects());
   router.register('/projects/new', () => renderProjects());
   router.register('/projects/:id', (params) => renderProjectDetail(params));
+  router.register('/shared_scheme/:id', (params) => renderSharedScheme(params));
   router.register('/hosts', () => renderHosts());
   router.register('/hosts/:id', (params) => renderHostDetail(params));
   router.register('/brands', () => renderBrands());

@@ -17,9 +17,13 @@ export function hasPermission(permission) {
   const role = getCurrentRole();
   if (!role) return false;
 
-  // 동적 라이브 전용 관리자 역할 처리 (live_stream:liveId)
+  // 동적 라이브 전용 관리자 역할 처리
   if (role.startsWith('live_stream:')) {
     return permission === 'live_stream' || permission === 'settings';
+  }
+  // 브랜드 파트너사 역할 처리
+  if (role.startsWith('brand:')) {
+    return permission === 'projects' || permission === 'settings';
   }
 
   const roleConfig = ROLES[role];
@@ -60,10 +64,10 @@ export function canManageFinance() {
   return role === 'admin' || role === 'accountant';
 }
 
-// 설정 권한 (대표 및 라이브 전용 관리자)
+// 설정 권한 (대표, 라이브 전용 관리자 및 브랜드 파트너사)
 export function canManageSettings() {
   const role = getCurrentRole();
-  return role === 'admin' || (role && role.startsWith('live_stream:'));
+  return role === 'admin' || (role && (role.startsWith('live_stream:') || role.startsWith('brand:')));
 }
 
 // 역할별 접근 가능 메뉴 목록
@@ -72,6 +76,12 @@ export function getAccessibleMenus() {
   if (role && role.startsWith('live_stream:')) {
     return [
       { key: 'live_stream', label: '라이브 송출 관리' },
+      { key: 'settings', label: '설정' }
+    ];
+  }
+  if (role && role.startsWith('brand:')) {
+    return [
+      { key: 'projects', label: '라이브 관리' },
       { key: 'settings', label: '설정' }
     ];
   }
