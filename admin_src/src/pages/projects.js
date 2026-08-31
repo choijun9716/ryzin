@@ -988,13 +988,13 @@ function renderSchemeTab(project, isSharedView = false) {
               라이브 방송 진행을 위한 샘플 발송 내역과 회수지 정보를 관리합니다. 작성 완료 후 본 요청서를 택배 상자에 함께 부착하여 발송해 주세요.
             </p>
             ${scheme.sampleRequest && scheme.sampleRequest.deliveryDate ? `
-            <div style="margin-top: 12px; padding: 10px 14px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe; font-size: 12.5px; color: #1e40af; display: flex; justify-content: space-between; align-items: center;">
+            <div style="margin-top: 12px; padding: 10px 14px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 12.5px; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;">
               <div>
                 <strong>발송 예정일:</strong> ${scheme.sampleRequest.deliveryDate} | <strong>등록 제품수:</strong> ${scheme.sampleRequest.items ? scheme.sampleRequest.items.length : 0}개
               </div>
               <div style="display:flex; gap:8px; align-items:center;">
-                <button class="btn btn-secondary btn-sm" id="btn-print-sample" style="background:white; border-color:#93c5fd; color:#1e40af; font-weight:600; font-size:12px; padding: 4px 12px;">출력하기</button>
-                <span style="font-size: 11px; font-weight: 600; background: #3b82f6; color: white; padding: 2px 8px; border-radius: 9999px;">작성 완료</span>
+                <button class="btn btn-secondary btn-sm" id="btn-print-sample" style="background:white; border-color:#cbd5e1; color:var(--text-primary); font-weight:600; font-size:12px; padding: 4px 12px;">출력하기</button>
+                <span style="font-size: 11px; font-weight: 600; background: #64748b; color: white; padding: 2px 8px; border-radius: 9999px;">작성 완료</span>
               </div>
             </div>
             ` : `
