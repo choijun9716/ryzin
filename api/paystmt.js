@@ -11,12 +11,13 @@ function decode(s) {
 
     // 단축 스키마 처리 (n: recipientName, b: birthDate, ph: phone, p: paymentDate, i: [[date, detail, amount], ...])
     if (parsed && (parsed.n !== undefined || parsed.i !== undefined)) {
+      const recipientName = parsed.n || '쇼호스트';
       const paymentDate = parsed.p || '';
       const items = (parsed.i || []).map(row => {
         const date = row[0] || '';
         return { date };
       });
-      return { paymentDate, items };
+      return { recipientName, paymentDate, items };
     }
 
     return parsed;
@@ -59,8 +60,12 @@ export default function handler(req, res) {
     month = getMonthFromDate(decoded.paymentDate);
   }
 
+  const name = decoded?.recipientName || decoded?.n || '';
+
   let title = "지급명세서 — RYZIN";
-  if (month) {
+  if (name && month) {
+    title = `${name} ${month}월 지급명세서`;
+  } else if (month) {
     title = `${month}월 지급명세서 — RYZIN`;
   }
 

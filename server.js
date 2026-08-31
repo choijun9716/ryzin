@@ -216,11 +216,12 @@ const server = http.createServer((req, res) => {
                 const buf = Buffer.from(b, 'base64');
                 const parsed = JSON.parse(buf.toString('utf8'));
                 if (parsed && (parsed.n !== undefined || parsed.i !== undefined)) {
+                    const recipientName = parsed.n || '쇼호스트';
                     const paymentDate = parsed.p || '';
                     const items = (parsed.i || []).map(row => {
                         return { date: row[0] || '' };
                     });
-                    return { paymentDate, items };
+                    return { recipientName, paymentDate, items };
                 }
                 return parsed;
             } catch (e) {
@@ -251,8 +252,12 @@ const server = http.createServer((req, res) => {
             month = localGetMonth(decoded.paymentDate);
         }
 
+        const name = decoded?.recipientName || decoded?.n || '';
+
         let title = "지급명세서 — RYZIN";
-        if (month) {
+        if (name && month) {
+            title = `${name} ${month}월 지급명세서`;
+        } else if (month) {
             title = `${month}월 지급명세서 — RYZIN`;
         }
 
