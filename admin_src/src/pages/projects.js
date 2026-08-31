@@ -93,10 +93,17 @@ export function renderProjects() {
     if (filters.month) {
       projects = projects.filter(p => {
         if (p.broadcastMonth === filters.month) return true;
-        if (p.broadcastDate && p.broadcastDate.startsWith(filters.month.replace('-', '.'))) return true;
-        if (p.broadcastDate && p.broadcastDate.startsWith(filters.month)) return true;
-        if (p.broadcastMonth && p.broadcastMonth.length <= 2) {
-          return parseInt(p.broadcastMonth, 10) === parseInt(filters.month.split('-')[1], 10);
+        // broadcastDate가 YYYY-MM-DD 또는 YYYY.MM.DD 형식일 때 연-월 비교
+        if (p.broadcastDate) {
+          const dateNorm = p.broadcastDate.replace(/\./g, '-');
+          if (dateNorm.substring(0, 7) === filters.month) return true;
+        }
+        // broadcastMonth가 월 숫자만 있는 경우(예: "09"), broadcastDate의 연도와 결합하여 비교
+        if (p.broadcastMonth && p.broadcastMonth.length <= 2 && p.broadcastDate) {
+          const dateNorm = p.broadcastDate.replace(/\./g, '-');
+          const yearFromDate = dateNorm.substring(0, 4);
+          const combined = yearFromDate + '-' + p.broadcastMonth.padStart(2, '0');
+          return combined === filters.month;
         }
         return false;
       });
