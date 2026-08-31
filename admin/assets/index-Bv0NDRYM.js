@@ -1684,7 +1684,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           <thead>
             <tr>
               <th style="text-align: left;">제품</th>
-              <th style="width: 120px;">규격</th>
+              <th style="width: 120px;">옵션</th>
               <th style="width: 70px;">수량</th>
               <th style="width: 90px;">취급방법</th>
               <th style="width: 90px;">회수여부</th>
@@ -1888,7 +1888,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
     `,t||n.querySelector(`#btn-copy-scheme-url`)?.addEventListener(`click`,()=>{let t=`${window.location.origin}${window.location.pathname}#/shared_scheme/${e.id}`;navigator.clipboard.writeText(t).then(()=>J(`공유 URL이 클립보드에 복사되었습니다.`)).catch(()=>Y(`URL 복사에 실패했습니다.`))}),n.querySelector(`#btn-add-prod-row`).addEventListener(`click`,()=>{s(),r.products.push({prodName:``,prodUrl:``,stock:``,price:``,livePrice:``,targetQty:``,feeRate:``}),o()}),n.querySelectorAll(`.btn-delete-prod-row`).forEach(e=>{e.addEventListener(`click`,()=>{s();let t=parseInt(e.getAttribute(`data-idx`),10);r.products.splice(t,1),o()})});let c=e=>{let t=e.replace(/[^0-9]/g,``);return t?parseInt(t,10).toLocaleString():``},l=e=>parseFloat(e.replace(/,/g,``))||0,u=e=>{let t=l(e.querySelector(`.prod-price`).value),n=l(e.querySelector(`.prod-livePrice`).value),r=parseInt(e.querySelector(`.prod-targetQty`).value,10)||0,i=t>0?Math.round((t-n)/t*100)+`%`:`0%`;e.querySelector(`.prod-discountRate`).textContent=i;let a=n*r;e.querySelector(`.prod-targetSales`).textContent=a.toLocaleString()};n.querySelectorAll(`.product-row`).forEach(e=>{let t=e.querySelector(`.prod-price`),n=e.querySelector(`.prod-livePrice`),r=t=>{t.addEventListener(`input`,t=>{let n=t.target.selectionStart,r=t.target.value.length,i=c(t.target.value);t.target.value=i;let a=i.length;t.target.setSelectionRange(n+(a-r),n+(a-r)),u(e)})};t&&r(t),n&&r(n);let i=e.querySelector(`.prod-prodUrl`);i&&i.addEventListener(`input`,t=>{let n=t.target.value.trim(),r=e.querySelector(`.btn-prod-url-link`);r&&(n?(r.href=n.startsWith(`http`)?n:`https://${n}`,r.style.display=`inline-flex`):(r.href=`#`,r.style.display=`none`))}),e.querySelectorAll(`input`).forEach(r=>{r!==t&&r!==n&&r.addEventListener(`input`,()=>{u(e)})})});let d=n.querySelector(`#sch-productionDriveUrl`);d&&d.addEventListener(`input`,e=>{let t=e.target.value.trim(),r=n.querySelector(`.btn-production-drive-link`);r&&(t?(r.href=t.startsWith(`http`)?t:`https://${t}`,r.style.display=`inline-flex`):(r.href=`#`,r.style.display=`none`))});function f(){let e=JSON.parse(JSON.stringify(r.sampleRequest||{deliveryDate:``,returnAddress:``,items:[]}));e.items||=[];let t=document.createElement(`div`);t.className=`flex-col`,t.style.gap=`16px`;let n=()=>e.items.length===0?`<tr><td colspan="6" style="text-align:center; padding: 20px; color: var(--text-tertiary);">등록된 제품이 없습니다. 우측 상단의 행 추가 버튼을 눌러주세요.</td></tr>`:e.items.map((e,t)=>`
           <tr class="sample-item-row" data-idx="${t}">
             <td><input type="text" class="input sam-product" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.product||``}" placeholder="제품명"></td>
-            <td><input type="text" class="input sam-size" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.size||``}" placeholder="규격"></td>
+            <td><input type="text" class="input sam-size" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.size||``}" placeholder="옵션"></td>
             <td><input type="number" class="input sam-qty" style="width:100%; padding:6px 8px; font-size:13px;" value="${e.qty||``}" placeholder="수량"></td>
             <td>
               <select class="input sam-method" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
@@ -1921,7 +1921,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <thead>
                 <tr style="background: #f1f5f9; border-bottom: 1px solid var(--border-color);">
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left;">제품</th>
-                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 120px;">규격</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 120px;">옵션</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 70px;">수량</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">취급방법</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">회수여부</th>

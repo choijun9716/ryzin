@@ -761,7 +761,7 @@ function printSampleRequest(project, sampleRequest) {
           <thead>
             <tr>
               <th style="text-align: left;">제품</th>
-              <th style="width: 120px;">규격</th>
+              <th style="width: 120px;">옵션</th>
               <th style="width: 70px;">수량</th>
               <th style="width: 90px;">취급방법</th>
               <th style="width: 90px;">회수여부</th>
@@ -1145,7 +1145,7 @@ function renderSchemeTab(project, isSharedView = false) {
         return modalData.items.map((item, idx) => `
           <tr class="sample-item-row" data-idx="${idx}">
             <td><input type="text" class="input sam-product" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.product || ''}" placeholder="제품명"></td>
-            <td><input type="text" class="input sam-size" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.size || ''}" placeholder="규격"></td>
+            <td><input type="text" class="input sam-size" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.size || ''}" placeholder="옵션"></td>
             <td><input type="number" class="input sam-qty" style="width:100%; padding:6px 8px; font-size:13px;" value="${item.qty || ''}" placeholder="수량"></td>
             <td>
               <select class="input sam-method" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
@@ -1206,7 +1206,7 @@ function renderSchemeTab(project, isSharedView = false) {
               <thead>
                 <tr style="background: #f1f5f9; border-bottom: 1px solid var(--border-color);">
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left;">제품</th>
-                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 120px;">규격</th>
+                  <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 120px;">옵션</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 70px;">수량</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">취급방법</th>
                   <th style="padding: 10px 8px; font-size: 12.5px; text-align: left; width: 90px;">회수여부</th>
