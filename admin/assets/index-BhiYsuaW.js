@@ -1758,7 +1758,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           </div>
           <div class="card-body" style="padding: 20px;">
             <div style="display:flex; flex-direction:column; gap:8px;">
-              <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-secondary);">구글 드라이브 / 공유 폴더 주소 (URL)</label>
+              <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-secondary);">공유 폴더 주소 (URL)</label>
               <div style="display:flex; gap:12px; align-items:center;">
                 <input type="text" class="input" id="sch-productionDriveUrl" placeholder="https://drive.google.com/... 또는 공유 자료 링크를 입력하세요." value="${r.productionDriveUrl||``}" style="flex:1; padding: 10px 12px; font-size: 13.5px;">
                 ${r.productionDriveUrl?`
@@ -1767,7 +1767,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   열기
                 </a>`:``}
               </div>
-              <p style="font-size:12px; color:var(--text-tertiary); margin: 0; line-height: 1.4;">입력된 주소는 브랜드사와 어드민 관리자가 실시간으로 상호 공유하며 직접 접속하여 제작 리소스를 다운로드할 수 있습니다.</p>
+              <p style="font-size:12px; color:var(--text-tertiary); margin: 0; line-height: 1.4;">입력된 주소는 브랜드사와 실시간으로 상호 공유하며 직접 접속하여 제작 리소스를 다운로드할 수 있습니다.</p>
             </div>
           </div>
         </div>
