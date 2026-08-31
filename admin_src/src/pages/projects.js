@@ -1273,12 +1273,22 @@ function renderSchemeTab(project, isSharedView = false) {
       const saveBtn = document.createElement('button');
       saveBtn.className = 'btn btn-primary';
       saveBtn.textContent = '적용';
-      saveBtn.addEventListener('click', () => {
+      saveBtn.addEventListener('click', async () => {
         collectModalRows();
         modalData.deliveryDate = content.querySelector('#sam-deliveryDate').value.trim();
         modalData.returnAddress = content.querySelector('#sam-returnAddress').value.trim();
         
         scheme.sampleRequest = modalData;
+        collectCurrentData();
+        
+        try {
+          store.update('projects', project.id, { scheme });
+          showSuccess('샘플 요청서가 저장되었습니다.');
+        } catch (err) {
+          console.error('샘플 요청서 저장 실패:', err);
+          showError('샘플 요청서 저장 중 오류가 발생했습니다.');
+        }
+        
         closeModal();
         render();
       });
