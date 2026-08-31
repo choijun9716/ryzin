@@ -691,23 +691,13 @@ function renderSchemeTab(project, isSharedView = false) {
     liveInfo: { mainProduct: '', brandIntro: '', sellingPoints: '', highlight: '', delivery: '' },
     products: [],
     events: [],
-    kickoff: {
-      check1: false,
-      check2: false,
-      check3: false,
-      check4: false,
-      check5: false,
-      customs: []
-    }
+    productionDriveUrl: ''
   };
 
   if (!scheme.liveInfo) scheme.liveInfo = { mainProduct: '', brandIntro: '', sellingPoints: '', highlight: '', delivery: '' };
   if (!scheme.products) scheme.products = [];
   if (!scheme.events) scheme.events = [];
-  if (!scheme.kickoff) {
-    scheme.kickoff = { check1: false, check2: false, check3: false, check4: false, check5: false, customs: [] };
-  }
-  if (!scheme.kickoff.customs) scheme.kickoff.customs = [];
+  if (scheme.productionDriveUrl === undefined) scheme.productionDriveUrl = '';
 
   function getProductRowsHtml() {
     if (scheme.products.length === 0) {
@@ -760,17 +750,7 @@ function renderSchemeTab(project, isSharedView = false) {
     `).join('');
   }
 
-  function getCustomKickoffHtml() {
-    return scheme.kickoff.customs.map((item, idx) => `
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #f1f5f9;" class="custom-kickoff-row" data-idx="${idx}">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
-          <input type="checkbox" class="custom-kickoff-check" ${item.checked ? 'checked' : ''} style="width:16px; height:16px;">
-          <span style="font-size:14px; color:var(--text-primary);">${item.text}</span>
-        </label>
-        <button class="btn btn-secondary btn-sm btn-delete-custom-kickoff" data-idx="${idx}" style="padding:2px 8px; font-size:11px;">삭제</button>
-      </div>
-    `).join('');
-  }
+
 
   function render() {
     el.innerHTML = `
@@ -881,47 +861,23 @@ function renderSchemeTab(project, isSharedView = false) {
           </div>
         </div>
 
-        <!-- 4. 킥오프 체크 -->
+        <!-- 4. 제작 자료 업로드 -->
         <div class="card">
           <div class="card-header">
-            <h3>킥오프 체크</h3>
+            <h3>제작 자료 업로드</h3>
           </div>
-          <div class="card-body flex-col" style="padding: 20px;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-              <div class="flex-col" style="background:#f8fafc; padding:18px; border-radius:10px; border:1px solid #e2e8f0;">
-                <h4 style="margin:0 0 10px 0; font-size:14px; color:var(--text-primary); font-weight:700;">기본 킥오프 리스트</h4>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check1" ${scheme.kickoff.check1 ? 'checked' : ''} style="width:16px; height:16px;">
-                  <span style="font-size:14px;">브랜드 소개 및 히스토리 확인</span>
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check2" ${scheme.kickoff.check2 ? 'checked' : ''} style="width:16px; height:16px;">
-                  <span style="font-size:14px;">주 메인 제품 정보 및 정상가/할인가 검수</span>
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check3" ${scheme.kickoff.check3 ? 'checked' : ''} style="width:16px; height:16px;">
-                  <span style="font-size:14px;">배송비 및 배송 방식 확인</span>
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check4" ${scheme.kickoff.check4 ? 'checked' : ''} style="width:16px; height:16px;">
-                  <span style="font-size:14px;">제품 소구 포인트 및 연출 소품 협의</span>
-                </label>
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 0;">
-                  <input type="checkbox" id="kick-check5" ${scheme.kickoff.check5 ? 'checked' : ''} style="width:16px; height:16px;">
-                  <span style="font-size:14px;">방송 중 라이브 혜택 및 경품 조율 완료</span>
-                </label>
+          <div class="card-body" style="padding: 20px;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-secondary);">구글 드라이브 / 공유 폴더 주소 (URL)</label>
+              <div style="display:flex; gap:12px; align-items:center;">
+                <input type="text" class="input" id="sch-productionDriveUrl" placeholder="https://drive.google.com/... 또는 공유 자료 링크를 입력하세요." value="${scheme.productionDriveUrl || ''}" style="flex:1; padding: 10px 12px; font-size: 13.5px;">
+                ${scheme.productionDriveUrl ? `
+                <a href="${scheme.productionDriveUrl}" target="_blank" class="btn btn-secondary" style="white-space:nowrap; padding:10px 18px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                  열기
+                </a>` : ''}
               </div>
-
-              <div class="flex-col">
-                <h4 style="margin:0; font-size:14px; color:var(--text-primary); font-weight:700;">추가 체크 항목</h4>
-                <div style="display:flex; gap:8px;">
-                  <input type="text" class="input" id="custom-kickoff-text" placeholder="체크리스트 항목 입력..." style="flex:1;">
-                  <button class="btn btn-secondary" id="btn-add-custom-kickoff" style="white-space:nowrap;">추가</button>
-                </div>
-                <div id="custom-kickoff-container" style="max-height: 180px; overflow-y: auto; display:flex; flex-direction:column; gap:4px; margin-top:8px;">
-                  ${getCustomKickoffHtml()}
-                </div>
-              </div>
+              <p style="font-size:12px; color:var(--text-tertiary); margin: 0; line-height: 1.4;">입력된 주소는 브랜드사와 어드민 관리자가 실시간으로 상호 공유하며 직접 접속하여 제작 리소스를 다운로드할 수 있습니다.</p>
             </div>
           </div>
         </div>
@@ -1036,24 +992,7 @@ function renderSchemeTab(project, isSharedView = false) {
       });
     });
 
-    el.querySelector('#btn-add-custom-kickoff').addEventListener('click', () => {
-      const input = el.querySelector('#custom-kickoff-text');
-      const val = input.value.trim();
-      if (!val) return;
-      collectCurrentData();
-      scheme.kickoff.customs.push({ text: val, checked: false });
-      input.value = '';
-      render();
-    });
 
-    el.querySelectorAll('.btn-delete-custom-kickoff').forEach(btn => {
-      btn.addEventListener('click', () => {
-        collectCurrentData();
-        const idx = parseInt(btn.getAttribute('data-idx'), 10);
-        scheme.kickoff.customs.splice(idx, 1);
-        render();
-      });
-    });
 
     el.querySelector('#btn-save-project-scheme').addEventListener('click', async () => {
       collectCurrentData();
@@ -1108,18 +1047,7 @@ function renderSchemeTab(project, isSharedView = false) {
       };
     });
 
-    scheme.kickoff.check1 = el.querySelector('#kick-check1').checked;
-    scheme.kickoff.check2 = el.querySelector('#kick-check2').checked;
-    scheme.kickoff.check3 = el.querySelector('#kick-check3').checked;
-    scheme.kickoff.check4 = el.querySelector('#kick-check4').checked;
-    scheme.kickoff.check5 = el.querySelector('#kick-check5').checked;
-
-    const customsRows = el.querySelectorAll('.custom-kickoff-row');
-    scheme.kickoff.customs = Array.from(customsRows).map(row => {
-      const text = row.querySelector('.custom-kickoff-check').nextElementSibling.textContent;
-      const checked = row.querySelector('.custom-kickoff-check').checked;
-      return { text, checked };
-    });
+    scheme.productionDriveUrl = el.querySelector('#sch-productionDriveUrl').value.trim();
   }
 
   render();
