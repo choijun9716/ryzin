@@ -1157,7 +1157,7 @@ function renderSchemeTab(project, isSharedView = false) {
             <td>
               <select class="input sam-collect" style="width:100%; padding:6px 8px; font-size:13px; height:32px;">
                 <option value="회수" ${item.collect === '회수' ? 'selected' : ''}>회수</option>
-                <option value="미회수" ${item.collect === '미회수' ? 'selected' : ''}>미회수</option>
+                <option value="미회수" ${(item.collect || '미회수') === '미회수' ? 'selected' : ''}>미회수</option>
               </select>
             </td>
             <td style="text-align:center;"><button class="btn btn-danger btn-sm btn-delete-sample-row" data-idx="${idx}" style="padding:4px 8px; font-size:11px;">삭제</button></td>
@@ -1255,7 +1255,7 @@ function renderSchemeTab(project, isSharedView = false) {
         updateModalTable();
         content.querySelector('#btn-add-sample-row').addEventListener('click', () => {
           collectModalRows();
-          modalData.items.push({ product: '', size: '', qty: '', method: '냉장', collect: '회수' });
+          modalData.items.push({ product: '', size: '', qty: '', method: '냉장', collect: '미회수' });
           updateModalTable();
         });
       }, 0);
