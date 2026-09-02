@@ -1975,7 +1975,7 @@ function renderCartItems() {
       <img src="${item.image}" alt="product" style="width:50px; height:50px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0;">
       <div style="flex:1;">
         <div style="font-size:14px; font-weight:600; color:#0f172a; margin-bottom:4px; word-break:keep-all;">${item.name}</div>
-        <div style="font-size:14px; font-weight:700; color:#e11d48;">${price.toLocaleString()}원</div>
+        <div style="font-size:14px; font-weight:700; color:#0f172a;">${price.toLocaleString()}원</div>
       </div>
       <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:4px;">✕</button>
     `;
