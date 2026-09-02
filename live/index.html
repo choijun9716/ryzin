@@ -349,7 +349,7 @@
           <p style="margin-bottom:18px; color:#64748b; font-size:13px;">채팅 및 주문에 사용할 닉네임을 설정해주세요.</p>
           
           <!-- 카카오톡 간편 로그인 버튼 -->
-          <button id="btn-kakao-login" type="button"
+          <button id="btn-kakao-login" type="button" onclick="loginWithKakao('chat')"
             style="width:100%; padding:12px; background:#FEE500; color:#191919; border:none; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; transition:all 0.2s; outline:none; box-shadow:0 2px 8px rgba(0,0,0,0.08);"
             onmouseover="this.style.background='#fdd835'" onmouseout="this.style.background='#FEE500'"
             onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
@@ -540,7 +540,7 @@
           </p>
 
           <!-- 카카오톡 정보 자동입력 버튼 -->
-          <button id="btn-kakao-fill-checkout" type="button"
+          <button id="btn-kakao-fill-checkout" type="button" onclick="loginWithKakao('checkout')"
             style="width:100%; padding:10px 14px; background:#FEE500; color:#191919; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:18px; transition:all 0.2s; outline:none; box-shadow:0 2px 6px rgba(0,0,0,0.06);"
             onmouseover="this.style.background='#fdd835'" onmouseout="this.style.background='#FEE500'"
             onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
