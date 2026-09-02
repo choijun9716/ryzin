@@ -3275,7 +3275,7 @@ window.cancelMyOrder = async function(mulNo, orderId, evt) {
 // ----------------------------------------------------
 let currentActiveGiveaway = null;
 
-window.__userClosedGiveawayIds = window.__userClosedGiveawayIds || {};
+window.__userClosedGiveawayTime = window.__userClosedGiveawayTime || 0;
 
 function checkAndShowGiveaway(productList) {
   if (!Array.isArray(productList)) return;
@@ -3290,16 +3290,20 @@ function checkAndShowGiveaway(productList) {
     return;
   }
 
-  // 사용자가 이미 '✕'를 눌러 닫은 상품이면 다시 열지 않음
-  if (window.__userClosedGiveawayIds[String(freeItem.id)]) {
-    giveawayCard.style.display = 'none';
-    return;
-  }
-
-  // 명시적으로 종료하지 않은 한 기본 활성화
+  // 1. [관리자 최우선] 관리자가 '종료' 버튼을 누른 경우 -> 무조건 즉시 화면에서 닫기!
   if (freeItem.isGiveawayActive === false || freeItem.isGiveawayActive === 'false') {
     giveawayCard.style.display = 'none';
     currentActiveGiveaway = null;
+    return;
+  }
+
+  // 2. [관리자 최우선] 관리자가 '시작' 버튼을 누른 시점(giveawayStartedAt)과 사용자가 닫은 시점 비교
+  const startedAt = Number(freeItem.giveawayStartedAt) || 0;
+  const closedAt = Number(window.__userClosedGiveawayTime) || 0;
+
+  // 사용자가 닫았더라도 관리자가 그 이후 새로 시작(startedAt > closedAt)했으면 사용자 닫기를 무시하고 무조건 다시 팝업!
+  if (closedAt > 0 && startedAt <= closedAt) {
+    giveawayCard.style.display = 'none';
     return;
   }
 
@@ -3357,9 +3361,8 @@ window.closeGiveawayCard = function(evt) {
     evt.stopPropagation();
     evt.preventDefault();
   }
-  if (currentActiveGiveaway && currentActiveGiveaway.id) {
-    window.__userClosedGiveawayIds[String(currentActiveGiveaway.id)] = true;
-  }
+  // 사용자가 닫은 시각을 밀리초 타임스탬프로 기록
+  window.__userClosedGiveawayTime = Date.now();
   const card = document.getElementById('giveaway-overlay-card');
   if (card) {
     card.style.animation = 'giveawayPopOut 0.25s ease-in forwards';
