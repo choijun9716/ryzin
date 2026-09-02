@@ -1879,8 +1879,9 @@ function showInvalidLiveScreen() {
 // [NEW] 장바구니 및 자체 결제 (PortOne) 연동 로직
 // ----------------------------------------------------
 let cartItems = [];
-const floatingCartBtn = document.getElementById('floating-cart-btn');
-const cartBadge = document.getElementById('cart-badge');
+const btnCart = document.getElementById('btn-cart');
+const cartCountEl = document.getElementById('cart-count');
+const cartBadgeDot = document.getElementById('cart-badge-dot');
 const cartModal = document.getElementById('cart-modal');
 const btnCloseCartModal = document.getElementById('btn-close-cart-modal');
 const cartItemsContainer = document.getElementById('cart-items-container');
@@ -1892,14 +1893,12 @@ const btnCloseCheckoutModal = document.getElementById('btn-close-checkout-modal'
 const btnSubmitPayment = document.getElementById('btn-submit-payment');
 
 function updateCartUI() {
-  if (cartItems.length > 0) {
-    if (floatingCartBtn) floatingCartBtn.style.display = 'flex';
-    if (cartBadge) cartBadge.textContent = cartItems.length;
-  } else {
-    if (floatingCartBtn) floatingCartBtn.style.display = 'none';
-    if (cartModal && cartModal.style.display !== 'none') {
-      cartModal.style.display = 'none';
-    }
+  const count = cartItems.length;
+  if (cartCountEl) {
+    cartCountEl.textContent = count.toLocaleString();
+  }
+  if (cartBadgeDot) {
+    cartBadgeDot.style.display = count > 0 ? 'block' : 'none';
   }
 }
 
@@ -1912,8 +1911,17 @@ function addToCart(product) {
   cartItems.push(product);
   updateCartUI();
   
+  // 하트 버튼과 유사한 바운스 애니메이션 효과
+  if (btnCart) {
+    btnCart.style.transition = 'transform 0.15s ease-out';
+    btnCart.style.transform = 'scale(1.25)';
+    setTimeout(() => {
+      btnCart.style.transform = 'scale(1)';
+    }, 150);
+  }
+
   const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed; bottom:150px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:12px 20px; border-radius:8px; font-size:14px; z-index:99999; animation: fadeOut 2s forwards; text-align:center; min-width:200px;';
+  toast.style.cssText = 'position:fixed; bottom:150px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.9); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; font-weight:600; z-index:99999; animation: fadeOut 2s forwards; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.3);';
   toast.innerHTML = '장바구니에 담겼습니다.';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
@@ -1931,6 +1939,31 @@ function renderCartItems() {
   cartItemsContainer.innerHTML = '';
   let total = 0;
 
+  if (cartItems.length === 0) {
+    cartItemsContainer.innerHTML = `
+      <div style="text-align:center; padding:36px 20px; color:#94a3b8;">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;">
+          <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <p style="font-size:14px; margin:0; font-weight:600; color:#64748b;">장바구니에 담긴 상품이 없습니다.</p>
+      </div>
+    `;
+    if (cartTotalPrice) cartTotalPrice.textContent = '0원';
+    if (btnCheckout) {
+      btnCheckout.disabled = true;
+      btnCheckout.style.opacity = '0.5';
+      btnCheckout.style.cursor = 'not-allowed';
+    }
+    return;
+  }
+
+  if (btnCheckout) {
+    btnCheckout.disabled = false;
+    btnCheckout.style.opacity = '1';
+    btnCheckout.style.cursor = 'pointer';
+  }
+
   cartItems.forEach((item, index) => {
     let price = 0;
     if (item.price) price = Number(item.price.toString().replace(/[^0-9]/g, ''));
@@ -1939,12 +1972,12 @@ function renderCartItems() {
     const div = document.createElement('div');
     div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f1f5f9;';
     div.innerHTML = `
-      <img src="${item.image}" alt="product" style="width:50px; height:50px; border-radius:8px; object-fit:cover;">
+      <img src="${item.image}" alt="product" style="width:50px; height:50px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0;">
       <div style="flex:1;">
         <div style="font-size:14px; font-weight:600; color:#0f172a; margin-bottom:4px; word-break:keep-all;">${item.name}</div>
         <div style="font-size:14px; font-weight:700; color:#e11d48;">${price.toLocaleString()}원</div>
       </div>
-      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
+      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:4px;">✕</button>
     `;
     cartItemsContainer.appendChild(div);
   });
@@ -1961,7 +1994,7 @@ function renderCartItems() {
   });
 }
 
-if (floatingCartBtn) floatingCartBtn.addEventListener('click', openCartModal);
+if (btnCart) btnCart.addEventListener('click', openCartModal);
 if (btnCloseCartModal) btnCloseCartModal.addEventListener('click', () => cartModal.style.display = 'none');
 
 if (btnCheckout) {

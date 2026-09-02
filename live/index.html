@@ -316,6 +316,20 @@
       <!-- 사이드 액션 버튼 (우측 하단 플로팅) -->
       <div class="side-actions">
 
+        <!-- 장바구니 버튼 (하트 위쪽에 배치, 동일 UIUX) -->
+        <button class="action-btn" id="btn-cart">
+          <span class="icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+          </span>
+          <span class="label" id="cart-count">0</span>
+          <span id="cart-badge-dot" style="display:none; position:absolute; top:2px; right:2px; width:7px; height:7px; background:#ef4444; border-radius:50%; box-shadow:0 0 4px #ef4444;"></span>
+        </button>
+
         <button class="action-btn" id="btn-like">
           <span class="icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -460,15 +474,6 @@
             문의 접수하기
           </button>
         </div>
-      </div>
-
-      <!-- 플로팅 장바구니 버튼 -->
-      <div id="floating-cart-btn" style="display:none; position:fixed; bottom:80px; right:20px; width:56px; height:56px; background:#0f172a; border-radius:50%; box-shadow:0 4px 12px rgba(0,0,0,0.25); align-items:center; justify-content:center; cursor:pointer; z-index:90000; transition:transform 0.2s;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        <span id="cart-badge" style="position:absolute; top:0; right:0; background:#ef4444; color:#fff; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px; transform:translate(20%, -20%);">0</span>
       </div>
 
       <!-- 장바구니 모달 -->
