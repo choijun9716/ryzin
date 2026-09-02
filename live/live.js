@@ -1150,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') btnSetNickname.click();
   });
 
-  // ── 카카오톡 1초 간편 로그인 연동 ──────────────────────────
+  // ── 카카오톡 1초 간편 로그인 및 회원 배송지 관리 ──────────────
   window.KAKAO_JS_KEY = '5d6e1d539a2ddc90d5bab20dff6f116b';
 
   window.initKakaoSDK = function() {
@@ -1164,23 +1164,66 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   window.initKakaoSDK();
 
-  window.loginWithKakao = function(source = 'chat') {
-    // 1. 이미 저장된 카카오 정보가 있는 경우 바로 반영
+  // 카카오 회원 UI 상태 갱신 함수
+  window.updateCheckoutMemberUI = function() {
+    const memberBadge = document.getElementById('checkout-member-badge');
+    const guestBox = document.getElementById('checkout-guest-box');
+    const memberNameEl = document.getElementById('checkout-member-name');
+    const nameInput = document.getElementById('checkout-name');
+    const phoneInput = document.getElementById('checkout-phone');
+    const addrInput = document.getElementById('checkout-address');
+
     try {
-      const savedUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null');
-      if (savedUser && savedUser.name && source === 'checkout') {
-        const nameInput = document.getElementById('checkout-name');
-        const phoneInput = document.getElementById('checkout-phone');
-        if (nameInput) nameInput.value = savedUser.name;
-        if (phoneInput && savedUser.phone) phoneInput.value = savedUser.phone;
-        alert('저장된 카카오 정보(' + savedUser.name + ')를 입력했습니다.');
+      const kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null');
+      if (kakaoUser && kakaoUser.nickname) {
+        if (memberBadge) memberBadge.style.display = 'flex';
+        if (guestBox) guestBox.style.display = 'none';
+        if (memberNameEl) memberNameEl.textContent = `카카오 회원: ${kakaoUser.nickname}님`;
+
+        // 해당 카카오 계정에 저장된 배송지 불러오기
+        const savedAddr = JSON.parse(localStorage.getItem(`ryzin_kakao_addr_${kakaoUser.id || kakaoUser.nickname}`) || 'null');
+        if (savedAddr) {
+          if (nameInput && savedAddr.name) nameInput.value = savedAddr.name;
+          if (phoneInput && savedAddr.phone) phoneInput.value = savedAddr.phone;
+          if (addrInput && savedAddr.address) addrInput.value = savedAddr.address;
+        } else {
+          if (nameInput && !nameInput.value && (kakaoUser.name || kakaoUser.nickname)) {
+            nameInput.value = kakaoUser.name || kakaoUser.nickname;
+          }
+          if (phoneInput && !phoneInput.value && kakaoUser.phone) {
+            phoneInput.value = kakaoUser.phone;
+          }
+        }
         return;
       }
     } catch(e) {}
 
-    // 2. Kakao SDK 초기화 확인
+    // 비회원 상태
+    if (memberBadge) memberBadge.style.display = 'none';
+    if (guestBox) guestBox.style.display = 'block';
+  };
+
+  // 카카오 로그아웃 함수
+  window.logoutKakao = function() {
+    localStorage.removeItem('ryzin_kakao_user');
+    localStorage.removeItem('ryzin_nickname');
+    window.userNickname = '';
+    
+    const nameInput = document.getElementById('checkout-name');
+    const phoneInput = document.getElementById('checkout-phone');
+    const addrInput = document.getElementById('checkout-address');
+    if (nameInput) nameInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+    if (addrInput) addrInput.value = '';
+
+    window.updateCheckoutMemberUI();
+    alert('카카오 계정에서 로그아웃되었습니다. (비회원 모드)');
+  };
+
+  // 카카오 로그인 실행 함수
+  window.loginWithKakao = function(source = 'chat') {
     if (typeof Kakao === 'undefined') {
-      alert('카카오 SDK를 로드 중입니다. 잠시 후 다시 시도해 주세요.');
+      alert('카카오 SDK를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
       return;
     }
 
@@ -1192,27 +1235,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 3. 카카오 로그인 실행
     try {
       Kakao.Auth.login({
         success: function(authObj) {
           Kakao.API.request({
             url: '/v2/user/me',
             success: function(res) {
+              const kakaoId = String(res.id || '');
               const kakaoAccount = res.kakao_account || {};
               const profile = kakaoAccount.profile || {};
-              const nickname = profile.nickname || kakaoAccount.name || '카카오시청자';
+              const nickname = profile.nickname || kakaoAccount.name || '카카오회원';
               let phone = kakaoAccount.phone_number || '';
-              // 국가번호 +82 10-1234-5678 -> 010-1234-5678 변환
               if (phone.startsWith('+82')) {
                 phone = '0' + phone.replace('+82', '').trim().replace(/\s+/g, '-').replace(/--/g, '-');
               }
               const name = kakaoAccount.name || profile.nickname || nickname;
 
-              // 로컬 스토리지에 캐시
+              const kakaoUserObj = { id: kakaoId, nickname, name, phone };
               localStorage.setItem('ryzin_nickname', nickname);
-              localStorage.setItem('ryzin_kakao_user', JSON.stringify({ nickname, name, phone }));
-              userNickname = nickname;
+              localStorage.setItem('ryzin_kakao_user', JSON.stringify(kakaoUserObj));
+              window.userNickname = nickname;
+
+              window.updateCheckoutMemberUI();
 
               if (source === 'chat') {
                 const nicknameModal = document.getElementById('nickname-modal');
@@ -1222,16 +1266,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const chatInput = document.getElementById('chat-input');
                 if (chatInput && !chatInput.disabled) chatInput.focus();
               } else if (source === 'checkout') {
-                const nameInput = document.getElementById('checkout-name');
-                const phoneInput = document.getElementById('checkout-phone');
-                if (nameInput) nameInput.value = name;
-                if (phoneInput && phone) phoneInput.value = phone;
-                alert('카카오 정보가 입력되었습니다! (' + name + (phone ? ', ' + phone : '') + ')');
+                const savedAddr = JSON.parse(localStorage.getItem(`ryzin_kakao_addr_${kakaoId}`) || 'null');
+                if (savedAddr && savedAddr.address) {
+                  alert(`반갑습니다, ${nickname}님! 저장된 배송 정보가 자동으로 적용되었습니다.`);
+                } else {
+                  alert(`반갑습니다, ${nickname}님! 최초 1회 배송 정보를 입력해 주시면 다음부터 자동으로 불러와집니다.`);
+                }
               }
             },
             fail: function(err) {
               console.warn('Kakao User Profile Error:', err);
-              alert('카카오 프로필 정보를 가져오지 못했습니다. 카카오 앱 설정에서 동의항목을 확인해 주세요.');
+              alert('카카오 프로필 정보를 가져오는데 실패했습니다.');
             }
           });
         },
@@ -2097,37 +2142,9 @@ if (btnCloseCartModal) btnCloseCartModal.addEventListener('click', () => cartMod
 
 // 주문서 정보 자동 채우기 헬퍼 함수
 function prefillCheckoutForm() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}');
-    const kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || '{}');
-
-    const nameInput = document.getElementById('checkout-name');
-    const phoneInput = document.getElementById('checkout-phone');
-    const addrInput = document.getElementById('checkout-address');
-
-    const nameToSet = saved.name || kakaoUser.name || kakaoUser.nickname || window.userNickname || '';
-    const phoneToSet = saved.phone || kakaoUser.phone || '';
-    const addrToSet = saved.address || '';
-
-    let hasPrefilled = false;
-    if (nameInput && !nameInput.value && nameToSet) {
-      nameInput.value = nameToSet;
-      hasPrefilled = true;
-    }
-    if (phoneInput && !phoneInput.value && phoneToSet) {
-      phoneInput.value = phoneToSet;
-      hasPrefilled = true;
-    }
-    if (addrInput && !addrInput.value && addrToSet) {
-      addrInput.value = addrToSet;
-      hasPrefilled = true;
-    }
-
-    const autoBadge = document.getElementById('checkout-auto-badge');
-    if (autoBadge) {
-      autoBadge.style.display = (hasPrefilled || (nameInput && nameInput.value)) ? 'flex' : 'none';
-    }
-  } catch(e) {}
+  if (typeof window.updateCheckoutMemberUI === 'function') {
+    window.updateCheckoutMemberUI();
+  }
 }
 
 // 주문서 정보 로컬 영구 보존 헬퍼 함수
@@ -2136,6 +2153,15 @@ function saveCheckoutForm() {
     const name = document.getElementById('checkout-name')?.value.trim() || '';
     const phone = document.getElementById('checkout-phone')?.value.trim() || '';
     const address = document.getElementById('checkout-address')?.value.trim() || '';
+
+    // 1. 카카오 회원 로그인 상태인 경우: 해당 카카오 계정에 영구 저장
+    const kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null');
+    if (kakaoUser && (kakaoUser.id || kakaoUser.nickname)) {
+      const key = `ryzin_kakao_addr_${kakaoUser.id || kakaoUser.nickname}`;
+      localStorage.setItem(key, JSON.stringify({ name, phone, address }));
+    }
+
+    // 2. 일반 로컬 스토리지 백업
     if (name || phone || address) {
       localStorage.setItem('ryzin_saved_order_info', JSON.stringify({ name, phone, address }));
     }

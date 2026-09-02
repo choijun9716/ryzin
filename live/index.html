@@ -539,25 +539,38 @@
             상품을 배송받을 주소와 연락처를 입력해 주세요.
           </p>
 
-          <!-- 자동 입력 알림 배지 -->
-          <div id="checkout-auto-badge"
-            style="display:none; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#10b981; background:#f0fdf4; padding:6px 12px; border-radius:8px; border:1px solid #bbf7d0; margin-bottom:14px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>이전 주문 정보가 자동으로 입력되었습니다</span>
+          <!-- 카카오 로그인 회원 상태 박스 (로그인 시 노출) -->
+          <div id="checkout-member-badge"
+            style="display:none; align-items:center; justify-content:space-between; background:#fef9c3; border:1px solid #fde047; padding:10px 14px; border-radius:12px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#191919">
+                <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
+              </svg>
+              <div>
+                <div id="checkout-member-name" style="font-size:13px; font-weight:700; color:#854d0e;">카카오 회원: -</div>
+                <div style="font-size:11px; color:#a16207; font-weight:500;">저장된 배송지가 자동으로 불러와졌습니다.</div>
+              </div>
+            </div>
+            <button id="btn-kakao-logout" type="button" onclick="logoutKakao()" style="background:none; border:none; color:#a16207; font-size:11px; text-decoration:underline; cursor:pointer; padding:2px 4px;">로그아웃</button>
           </div>
 
-          <!-- 카카오톡 정보 자동입력 버튼 -->
-          <button id="btn-kakao-fill-checkout" type="button" onclick="loginWithKakao('checkout')"
-            style="width:100%; padding:10px 14px; background:#FEE500; color:#191919; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:18px; transition:all 0.2s; outline:none; box-shadow:0 2px 6px rgba(0,0,0,0.06);"
-            onmouseover="this.style.background='#fdd835'" onmouseout="this.style.background='#FEE500'"
-            onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#191919">
-              <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
-            </svg>
-            <span>카카오 정보로 빠른 입력</span>
-          </button>
+          <!-- 카카오 미로그인 시: 카카오 로그인 버튼 (비회원은 건너뛰고 아래 입력) -->
+          <div id="checkout-guest-box" style="margin-bottom:16px;">
+            <button id="btn-kakao-fill-checkout" type="button" onclick="loginWithKakao('checkout')"
+              style="width:100%; padding:11px 14px; background:#FEE500; color:#191919; border:none; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s; outline:none; box-shadow:0 2px 6px rgba(0,0,0,0.06);"
+              onmouseover="this.style.background='#fdd835'" onmouseout="this.style.background='#FEE500'"
+              onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#191919">
+                <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
+              </svg>
+              <span>카카오 로그인하고 내 배송지 불러오기</span>
+            </button>
+            <div style="display:flex; align-items:center; margin-top:12px; margin-bottom:4px;">
+              <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+              <span style="padding:0 10px; font-size:11px; color:#94a3b8; font-weight:600;">또는 비회원으로 직접 입력</span>
+              <div style="flex:1; height:1px; background:#e2e8f0;"></div>
+            </div>
+          </div>
 
           <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
             <div>
