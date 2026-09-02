@@ -2331,6 +2331,32 @@ function openCartModal() {
 
 function renderCartItems() {
   if (!cartItemsContainer) return;
+  // 항상 최신 로컬스토리지에서 장바구니 데이터 복원
+  if (typeof loadCartFromStorage === 'function') {
+    cartItems = loadCartFromStorage();
+  }
+
+  // 만약 무료나눔을 담았는데 장바구니에 누락되어 있다면 자동 자가복구
+  try {
+    const myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
+    const allProds = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`) || '[]');
+    myClaimed.forEach(claimedId => {
+      const freeProd = allProds.find(p => String(p.id) === String(claimedId));
+      if (freeProd && !cartItems.some(ci => String(ci.id) === String(claimedId) || ci.name.includes(freeProd.name))) {
+        cartItems.unshift({
+          id: freeProd.id,
+          name: `[무료나눔] ${freeProd.name}`,
+          price: '0',
+          normalPrice: freeProd.normalPrice || '',
+          image: freeProd.image || '',
+          quantity: 1,
+          isFreeGiveaway: true
+        });
+        syncCartStorage();
+      }
+    });
+  } catch(e) {}
+
   cartItemsContainer.innerHTML = '';
   let total = 0;
 
@@ -3401,7 +3427,7 @@ window.claimGiveawayItem = async function() {
     }, 750);
   }
 
-  // 4. 장바구니에 0원으로 담기
+  // 4. 장바구니에 0원으로 담기 (로컬스토리지 직접 영구 보존)
   const giveawayCartItem = {
     id: freeItem.id || Date.now(),
     name: `[무료나눔] ${freeItem.name}`,
@@ -3412,16 +3438,27 @@ window.claimGiveawayItem = async function() {
     isFreeGiveaway: true
   };
 
-  // 장바구니 배열에 추가
-  if (typeof cartItems !== 'undefined') {
-    cartItems.unshift(giveawayCartItem);
-    if (typeof syncCartStorage === 'function') syncCartStorage();
+  try {
+    let currentSaved = [];
+    try { currentSaved = JSON.parse(localStorage.getItem('ryzin_live_cart_items') || '[]'); } catch(e) {}
+    if (!Array.isArray(currentSaved)) currentSaved = [];
+    
+    // 중복 없으면 최상단에 추가
+    if (!currentSaved.some(item => String(item.id) === String(giveawayCartItem.id) || item.name === giveawayCartItem.name)) {
+      currentSaved.unshift(giveawayCartItem);
+    }
+    localStorage.setItem('ryzin_live_cart_items', JSON.stringify(currentSaved));
+    cartItems = currentSaved;
     if (typeof updateCartUI === 'function') updateCartUI();
+  } catch(e) {
+    console.error('무료나눔 장바구니 저장 에러:', e);
   }
 
   // 내가 담은 기록 보존 (중복 담기 방지)
-  myClaimed.push(String(freeItem.id));
-  localStorage.setItem('ryzin_claimed_giveaways', JSON.stringify(myClaimed));
+  if (!myClaimed.includes(String(freeItem.id))) {
+    myClaimed.push(String(freeItem.id));
+    localStorage.setItem('ryzin_claimed_giveaways', JSON.stringify(myClaimed));
+  }
 
   // 5. 실시간 수량 차감 처리
   try {
