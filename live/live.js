@@ -1174,14 +1174,21 @@ document.addEventListener('DOMContentLoaded', () => {
       // 해당 계정에 저장된 배송 정보 불러오기
       try {
         const savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null');
+        // 카카오 실명 정보 우선 확인
+        let kakaoUserObj = null;
+        try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+        const preferredRealName = (kakaoUserObj && kakaoUserObj.name) ? kakaoUserObj.name : currentAcc;
+        const preferredPhone = (kakaoUserObj && kakaoUserObj.phone) ? kakaoUserObj.phone : '';
+
         if (savedAddr && (savedAddr.address || savedAddr.phone)) {
-          if (nameInput) nameInput.value = savedAddr.name || currentAcc;
-          if (phoneInput && savedAddr.phone) phoneInput.value = savedAddr.phone;
+          if (nameInput) nameInput.value = savedAddr.name || preferredRealName;
+          if (phoneInput && savedAddr.phone) phoneInput.value = savedAddr.phone || preferredPhone;
           if (addrInput && savedAddr.address) addrInput.value = savedAddr.address;
           if (memberSubEl) memberSubEl.textContent = '저장된 배송 정보가 자동으로 적용되었습니다.';
         } else {
-          if (nameInput && !nameInput.value) nameInput.value = currentAcc;
-          if (memberSubEl) memberSubEl.textContent = '배송 정보를 1회 입력하시면 다음부터 자동 저장됩니다.';
+          if (nameInput && !nameInput.value) nameInput.value = preferredRealName;
+          if (phoneInput && !phoneInput.value && preferredPhone) phoneInput.value = preferredPhone;
+          if (memberSubEl) memberSubEl.textContent = '배송 정보를 입력하시면 안전하게 자동 저장됩니다.';
         }
       } catch(e) {}
     } else {
@@ -1239,12 +1246,14 @@ document.addEventListener('DOMContentLoaded', () => {
           const kakaoId = String(res.id || '');
           const kakaoAccount = res.kakao_account || {};
           const profile = kakaoAccount.profile || {};
+          // 회원명은 카카오 닉네임이 아닌 카카오 실명(name) 최우선 적용
+          const realName = kakaoAccount.name || profile.nickname || '카카오회원';
           const nickname = profile.nickname || kakaoAccount.name || '카카오회원';
           let phone = kakaoAccount.phone_number || '';
           if (phone.startsWith('+82')) {
             phone = '0' + phone.replace('+82', '').trim().replace(/\s+/g, '-').replace(/--/g, '-');
           }
-          const name = kakaoAccount.name || profile.nickname || nickname;
+          const name = realName;
 
           userNickname = nickname;
           localStorage.setItem('ryzin_nickname', nickname);
@@ -1269,7 +1278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!existUser) {
                   clientDb.from('shop_users').insert({
                     user_code: userCode,
-                    name: name || nickname,
+                    name: realName,
                     email: userEmail,
                     points: 3000,
                     coupons_count: 1,
@@ -1281,7 +1290,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   });
                 } else {
                   clientDb.from('shop_users').update({
-                    name: name || nickname,
+                    name: realName,
                     email: userEmail,
                     default_address: userAddress
                   }).eq('id', existUser.id).then(() => {});
@@ -1301,12 +1310,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const chatInput = document.getElementById('chat-input');
             if (chatInput && !chatInput.disabled) chatInput.focus();
           } else if (source === 'checkout') {
-            const savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${nickname}`) || 'null');
-            if (savedAddr && (savedAddr.address || savedAddr.phone)) {
-              alert(`반갑습니다, ${nickname}님! 저장된 배송 정보가 자동으로 적용되었습니다.`);
-            } else {
-              alert(`반갑습니다, ${nickname}님! 배송 정보를 1회 입력하시면 다음부터 자동 저장됩니다.`);
-            }
+            // 주문정보 입력 시 번거로운 alert 모달창 삭제 (조용히 배송지/실명 자동 적용)
           }
         },
         fail: function(err) {
