@@ -1276,15 +1276,15 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             fail: function(err) {
               console.warn('Kakao User Profile Error:', err);
-              alert('카카오 프로필 정보를 가져오는데 실패했습니다.');
+              alert('카카오 프로필 정보를 가져오는데 실패했습니다: ' + (err.msg || JSON.stringify(err)));
             }
           });
         },
         fail: function(err) {
           console.warn('Kakao Login Error:', err);
-          if (err && err.error !== 'access_denied') {
-            alert('카카오 로그인 실패: ' + (err.error_description || err.msg || JSON.stringify(err)));
-          }
+          if (err && err.error === 'access_denied') return; // 사용자가 창을 닫은 경우 무시
+          const errDetail = (err && (err.error_description || err.msg || err.error)) ? String(err.error_description || err.msg || err.error) : JSON.stringify(err);
+          alert('카카오 로그인 실패:\n' + errDetail + '\n\n※ 카카오 디벨로퍼스 콘솔의 [플랫폼 > Web 사이트 도메인]에 현재 접속 주소가 등록되어 있는지 확인해 주세요.');
         }
       });
     } catch(err) {
