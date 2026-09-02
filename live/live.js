@@ -2787,7 +2787,7 @@ checkPaymentSuccessOnReturn();
 // ----------------------------------------------------
 // [NEW] 우측 상단 '내 주문' 모달 및 실시간 주문 내역 조회
 // ----------------------------------------------------
-async function openMyOrdersModal() {
+window.openMyOrdersModal = async function() {
   const modal = document.getElementById('my-orders-modal');
   const listEl = document.getElementById('my-orders-list');
   const countText = document.getElementById('my-orders-count-text');
