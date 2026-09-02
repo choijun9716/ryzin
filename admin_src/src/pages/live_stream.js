@@ -81,7 +81,6 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       like_image_url: config.likeImageUrl || '',
       banned_words: config.bannedWords || '',
       banned_users: config.bannedUsers || '',
-      scheme: config.scheme || '',
       updated_at: new Date().toISOString()
     };
     try {
@@ -609,7 +608,6 @@ function renderLiveEditView(container, liveId, showView) {
           config.shareDesc = data.share_desc || '';
           config.shareImageUrl = data.share_image || '';
           config.likeImageUrl = data.like_image_url || '';
-          config.scheme = data.scheme || '';
 
           stats.viewers = data.viewers || 0;
           stats.hearts = data.hearts || 0;
@@ -1780,12 +1778,6 @@ function renderLiveEditView(container, liveId, showView) {
         try {
           config.scheme = textarea.value;
           saveConfig();
-          
-          if (db) {
-            await db.from('live_control')
-              .update({ scheme: config.scheme, updated_at: new Date().toISOString() })
-              .eq('live_id', liveId);
-          }
           
           alert('스킴 정보가 정상적으로 저장되었습니다.');
         } catch (err) {
