@@ -2106,6 +2106,49 @@ function extractYoutubeVideoId(url) {
   return match ? match[1] : null;
 }
 
+// ── 스트리밍 소리 켜기 / 끄기 토글 제어 ──
+let isStreamMuted = true;
+
+window.toggleStreamSound = function() {
+  isStreamMuted = !isStreamMuted;
+  const video = document.getElementById('live-video');
+  const ytPlayer = document.getElementById('youtube-player');
+  const iconOff = document.getElementById('icon-sound-off');
+  const iconOn = document.getElementById('icon-sound-on');
+
+  if (iconOff && iconOn) {
+    iconOff.style.display = isStreamMuted ? 'block' : 'none';
+    iconOn.style.display = isStreamMuted ? 'none' : 'block';
+  }
+
+  if (video) {
+    video.muted = isStreamMuted;
+  }
+
+  if (ytPlayer && ytPlayer.contentWindow) {
+    const cmd = isStreamMuted ? 'mute' : 'unMute';
+    ytPlayer.contentWindow.postMessage(JSON.stringify({
+      event: 'command',
+      func: cmd
+    }), '*');
+    if (!isStreamMuted) {
+      ytPlayer.contentWindow.postMessage(JSON.stringify({
+        event: 'command',
+        func: 'setVolume',
+        args: [100]
+      }), '*');
+    }
+  }
+};
+
+// 사용자가 화면을 첫 터치/클릭할 때 자동으로 소리 켜기 시도
+document.addEventListener('click', function onFirstInteraction() {
+  if (isStreamMuted) {
+    window.toggleStreamSound();
+  }
+  document.removeEventListener('click', onFirstInteraction);
+}, { once: true });
+
 function playStreamUrl(url, isLive) {
   const video = document.getElementById('live-video');
   const ytPlayer = document.getElementById('youtube-player');
