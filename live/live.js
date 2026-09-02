@@ -3290,24 +3290,17 @@ function checkAndShowGiveaway(productList) {
     return;
   }
 
-  // 1. [관리자 최우선] 관리자가 '종료' 버튼을 누른 경우 -> 무조건 즉시 화면에서 닫기!
+  // 관리자가 명시적으로 '종료'한 경우만 닫음
   if (freeItem.isGiveawayActive === false || freeItem.isGiveawayActive === 'false') {
     giveawayCard.style.display = 'none';
     currentActiveGiveaway = null;
     return;
   }
 
-  // 2. [관리자 최우선] 관리자가 '시작' 버튼을 누른 시점(giveawayStartedAt)과 사용자가 닫은 시점 비교
-  const startedAt = Number(freeItem.giveawayStartedAt) || 0;
-  const closedAt = Number(window.__userClosedGiveawayTime) || 0;
+  // 관리자가 활성화해둔 무료나눔 상품은 화면 중앙에 무조건 즉각 노출!
+  giveawayCard.style.display = 'block';
 
-  // 사용자가 닫았더라도 관리자가 그 이후 새로 시작(startedAt > closedAt)했으면 사용자 닫기를 무시하고 무조건 다시 팝업!
-  if (closedAt > 0 && startedAt <= closedAt) {
-    giveawayCard.style.display = 'none';
-    return;
-  }
-
-  const stock = parseInt(freeItem.giveawayStock) || 3;
+  const stock = parseInt(freeItem.giveawayStock) || 5;
   const claimed = parseInt(freeItem.giveawayClaimed) || 0;
   const remaining = Math.max(0, stock - claimed);
 

@@ -2634,9 +2634,9 @@ function renderLiveEditView(container, liveId, showView) {
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
-          <div style="display:flex; gap:8px;">
-            <button id="btn-add-product" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
-            <button id="btn-save-products" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">적용</button>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:12px; color:#10b981; font-weight:700; background:#ecfdf5; padding:6px 12px; border-radius:8px; border:1px solid #a7f3d0;">실시간 자동 반영</span>
+            <button id="btn-add-product" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
           </div>
         </div>
         <div id="product-list-container">${renderProductList()}</div>
@@ -2720,7 +2720,7 @@ function renderLiveEditView(container, liveId, showView) {
       });
 
       plc.querySelectorAll('input[data-field]').forEach(input => {
-        input.addEventListener('change', (e) => {
+        const handleAutoSave = (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const field = e.target.dataset.field;
           if (e.target.type === 'checkbox') {
@@ -2729,9 +2729,13 @@ function renderLiveEditView(container, liveId, showView) {
               if (e.target.checked) {
                 products[idx].price = '0';
                 products[idx].hideByDefault = true;
+                products[idx].isGiveawayActive = true;
                 if (!products[idx].giveawayStock) products[idx].giveawayStock = 3;
+                if (products[idx].giveawayClaimed === undefined) products[idx].giveawayClaimed = 0;
+              } else {
+                products[idx].isGiveawayActive = false;
               }
-              saveProducts();
+              saveProducts(true);
               plc.innerHTML = renderProductList();
               bindProductEvents();
               return;
@@ -2742,7 +2746,7 @@ function renderLiveEditView(container, liveId, showView) {
               } else if (products[idx].url === '__LEAD_FORM__') {
                 products[idx].url = '';
               }
-              // Re-render to update the URL input disabled state
+              saveProducts(true);
               plc.innerHTML = renderProductList();
               bindProductEvents();
               return;
@@ -2767,8 +2771,10 @@ function renderLiveEditView(container, liveId, showView) {
               if (ri) ri.value = 0;
             }
           }
-          saveProducts();
-        });
+          saveProducts(true);
+        };
+        input.addEventListener('change', handleAutoSave);
+        input.addEventListener('blur', handleAutoSave);
       });
       plc.querySelectorAll('.prod-img-upload').forEach(input => {
         input.addEventListener('change', async (e) => {
@@ -2910,48 +2916,46 @@ function renderLiveEditView(container, liveId, showView) {
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
     });
-    const collectProductsFromDOM = () => {
+    // 모든 상품 변경사항 실시간 자동 저장 및 Supabase 즉시 반영 함수
+    const autoSaveAllProducts = () => {
       const plc = document.getElementById('product-list-container');
-      if (!plc) return;
-      const rows = plc.querySelectorAll('.product-row');
-      rows.forEach((row, idx) => {
-        if (!products[idx]) return;
-        const nameInput = row.querySelector('input[data-field="name"]');
-        const priceInput = row.querySelector('input[data-field="price"]');
-        const normalPriceInput = row.querySelector('input[data-field="normalPrice"]');
-        const urlInput = row.querySelector('input[data-field="url"]');
-        const isLeadForm = row.querySelector('input[data-field="isLeadForm"]');
-        const hideByDefault = row.querySelector('input[data-field="hideByDefault"]');
-        const isFreeGiveaway = row.querySelector('input[data-field="isFreeGiveaway"]');
-        const giveawayStockInput = row.querySelector('input[data-field="giveawayStock"]');
+      if (plc) {
+        const rows = plc.querySelectorAll('.product-row');
+        rows.forEach((row, idx) => {
+          if (!products[idx]) return;
+          const nameInput = row.querySelector('input[data-field="name"]');
+          const priceInput = row.querySelector('input[data-field="price"]');
+          const normalPriceInput = row.querySelector('input[data-field="normalPrice"]');
+          const urlInput = row.querySelector('input[data-field="url"]');
+          const isLeadForm = row.querySelector('input[data-field="isLeadForm"]');
+          const hideByDefault = row.querySelector('input[data-field="hideByDefault"]');
+          const isFreeGiveaway = row.querySelector('input[data-field="isFreeGiveaway"]');
+          const giveawayStockInput = row.querySelector('input[data-field="giveawayStock"]');
 
-        if (nameInput) products[idx].name = nameInput.value.trim();
-        if (normalPriceInput) products[idx].normalPrice = normalPriceInput.value.replace(/[^0-9]/g, '');
-        if (priceInput) products[idx].price = priceInput.value.replace(/[^0-9]/g, '');
-        if (urlInput) products[idx].url = urlInput.value.trim();
-        if (isLeadForm) products[idx].isLeadForm = isLeadForm.checked;
-        if (hideByDefault) products[idx].hideByDefault = hideByDefault.checked;
-        
-        if (isFreeGiveaway && isFreeGiveaway.checked) {
-          products[idx].isFreeGiveaway = true;
-          products[idx].price = '0';
-          products[idx].hideByDefault = true;
-          products[idx].isGiveawayActive = true;
-          const stock = giveawayStockInput ? parseInt(giveawayStockInput.value) : (parseInt(products[idx].giveawayStock) || 3);
-          products[idx].giveawayStock = stock > 0 ? stock : 3;
-          if (products[idx].giveawayClaimed === undefined) products[idx].giveawayClaimed = 0;
-        } else if (isFreeGiveaway && !isFreeGiveaway.checked) {
-          products[idx].isFreeGiveaway = false;
-          products[idx].isGiveawayActive = false;
-        }
-      });
-    };
-
-    document.getElementById('btn-save-products').addEventListener('click', () => {
-      collectProductsFromDOM();
+          if (nameInput) products[idx].name = nameInput.value.trim();
+          if (normalPriceInput) products[idx].normalPrice = normalPriceInput.value.replace(/[^0-9]/g, '');
+          if (priceInput) products[idx].price = priceInput.value.replace(/[^0-9]/g, '');
+          if (urlInput) products[idx].url = urlInput.value.trim();
+          if (isLeadForm) products[idx].isLeadForm = isLeadForm.checked;
+          if (hideByDefault) products[idx].hideByDefault = hideByDefault.checked;
+          
+          if (isFreeGiveaway && isFreeGiveaway.checked) {
+            products[idx].isFreeGiveaway = true;
+            products[idx].price = '0';
+            products[idx].hideByDefault = true;
+            if (products[idx].isGiveawayActive === undefined) products[idx].isGiveawayActive = true;
+            const stock = giveawayStockInput ? parseInt(giveawayStockInput.value) : (parseInt(products[idx].giveawayStock) || 3);
+            products[idx].giveawayStock = stock > 0 ? stock : 3;
+            if (products[idx].giveawayClaimed === undefined) products[idx].giveawayClaimed = 0;
+          } else if (isFreeGiveaway && !isFreeGiveaway.checked) {
+            products[idx].isFreeGiveaway = false;
+            products[idx].isGiveawayActive = false;
+          }
+        });
+      }
       saveProducts(true);
-      alert('상품 목록이 적용되었습니다!');
-    });
+    };
+    window.__autoSaveAllProducts = autoSaveAllProducts;
 
 
   };
