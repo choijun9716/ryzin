@@ -1172,22 +1172,21 @@ document.addEventListener('DOMContentLoaded', () => {
       // 해당 계정에 저장된 배송 정보 불러오기
       try {
         const savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null');
-        // 카카오 실명 정보 우선 확인
+        const generalSaved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || 'null');
         let kakaoUserObj = null;
         try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-        const preferredRealName = (kakaoUserObj && kakaoUserObj.name) ? kakaoUserObj.name : currentAcc;
-        const preferredPhone = (kakaoUserObj && kakaoUserObj.phone) ? kakaoUserObj.phone : '';
 
-        if (savedAddr && (savedAddr.address || savedAddr.phone)) {
-          if (nameInput) nameInput.value = savedAddr.name || preferredRealName;
-          if (phoneInput && savedAddr.phone) phoneInput.value = savedAddr.phone || preferredPhone;
-          if (addrInput && savedAddr.address) addrInput.value = savedAddr.address;
-          if (memberSubEl) memberSubEl.textContent = '저장된 배송 정보가 자동으로 적용되었습니다.';
-        } else {
-          if (nameInput && !nameInput.value) nameInput.value = preferredRealName;
-          if (phoneInput && !phoneInput.value && preferredPhone) phoneInput.value = preferredPhone;
-          if (memberSubEl) memberSubEl.textContent = '배송 정보를 입력하시면 안전하게 자동 저장됩니다.';
-        }
+        // 닉네임은 이름에 절대 올리지 않음 (실명이 없으면 무조건 빈칸으로 유지)
+        const savedName = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
+          : (generalSaved && generalSaved.name && generalSaved.name !== currentAcc) ? generalSaved.name
+          : (kakaoUserObj && kakaoUserObj.name && kakaoUserObj.name !== currentAcc) ? kakaoUserObj.name : '';
+
+        const savedPhone = (savedAddr && savedAddr.phone) || (generalSaved && generalSaved.phone) || (kakaoUserObj && kakaoUserObj.phone) || '';
+        const savedAddress = (savedAddr && savedAddr.address) || (generalSaved && generalSaved.address) || '';
+
+        if (nameInput) nameInput.value = savedName; // 실명이 없으면 빈칸 유지
+        if (phoneInput && savedPhone) phoneInput.value = savedPhone;
+        if (addrInput && savedAddress) addrInput.value = savedAddress;
       } catch(e) {}
     } else {
       // 비회원 상태
@@ -1244,8 +1243,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const kakaoId = String(res.id || '');
           const kakaoAccount = res.kakao_account || {};
           const profile = kakaoAccount.profile || {};
-          // 회원명은 카카오 닉네임이 아닌 카카오 실명(name) 최우선 적용
-          const realName = kakaoAccount.name || profile.nickname || '카카오회원';
+          // 회원명은 카카오 닉네임이 아닌 카카오 실명(name)만 적용하고 실명이 없으면 비워둠
+          const realName = kakaoAccount.name || '';
           const nickname = profile.nickname || kakaoAccount.name || '카카오회원';
           let phone = kakaoAccount.phone_number || '';
           if (phone.startsWith('+82')) {
@@ -2274,9 +2273,25 @@ if (btnCheckout) {
   btnCheckout.addEventListener('click', () => {
     if (cartItems.length === 0) return;
     if (cartModal) cartModal.style.display = 'none';
+
+    // 저장된 주문/배송 정보 불러오기
+    prefillCheckoutForm();
+
+    const name = document.getElementById('checkout-name')?.value.trim() || '';
+    const phone = document.getElementById('checkout-phone')?.value.trim() || '';
+    const address = document.getElementById('checkout-address')?.value.trim() || '';
+
+    // 최초 1회 입력되어 이름, 연락처, 주소가 모두 온전히 있는 경우 -> 모달창 건너뛰고 즉시 결제 직행!
+    if (name && phone && address) {
+      if (btnSubmitPayment) {
+        btnSubmitPayment.click();
+      }
+      return;
+    }
+
+    // 최초 1회이거나 필수 정보가 없는 경우에만 모달 표시
     if (checkoutModal) {
       checkoutModal.style.display = 'flex';
-      prefillCheckoutForm();
     }
   });
 }
