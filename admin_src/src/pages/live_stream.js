@@ -20,7 +20,10 @@ const getLiveStats = (liveId) => JSON.parse(localStorage.getItem(`ryzin_stats_${
 const saveLiveStats = (liveId, data) => localStorage.setItem(`ryzin_stats_${liveId}`, JSON.stringify(data));
 
 const getLiveProducts = (liveId) => JSON.parse(localStorage.getItem(`ryzin_products_${liveId}`) || '[]');
-const saveLiveProductsLocal = (liveId, data) => localStorage.setItem(`ryzin_products_${liveId}`, JSON.stringify(data));
+const saveLiveProductsLocal = (liveId, data) => {
+  localStorage.setItem(`ryzin_products_${liveId}`, JSON.stringify(data));
+  localStorage.setItem(`ryzin_live_products_${liveId}`, JSON.stringify(data));
+};
 
 const getBotConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_bot_${liveId}`) || JSON.stringify({ list: '', interval: 10, autoReplyRules: [], autoReplyActive: true }));
 const saveBotConfig = (liveId, data) => localStorage.setItem(`ryzin_bot_${liveId}`, JSON.stringify(data));
@@ -85,6 +88,18 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
     };
     try {
       const { error } = await db.from('live_control').upsert(data);
+      // 우측 미리보기 iframe에 실시간 메시지 전송
+      try {
+        const previewIframe = document.querySelector('iframe');
+        if (previewIframe && previewIframe.contentWindow) {
+          previewIframe.contentWindow.postMessage({
+            type: 'sync_preview',
+            config: config,
+            stats: stats,
+            products: products
+          }, '*');
+        }
+      } catch(e) {}
       if (error) throw error;
     } catch (e) {
       console.warn(`[${liveId}] Supabase sync failed`, e);
@@ -690,7 +705,7 @@ function renderLiveEditView(container, liveId, showView) {
     saveLiveStats(liveId, stats);
     syncToSheetDB(liveId, config, stats, products);
   };
-  const saveProducts = (force = false) => {
+  const saveProducts = (force = true) => {
     saveLiveProductsLocal(liveId, products);
     syncToSheetDB(liveId, config, stats, products, force);
   };
