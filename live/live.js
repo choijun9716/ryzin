@@ -2016,7 +2016,7 @@ if (btnSubmitPayment) {
     const address = document.getElementById('checkout-address').value.trim();
 
     if (!name || !phone || !address) {
-      alert('주문 정보를 모두 입력해 주세요.');
+      alert('주문 정보(이름, 전화번호, 배송지)를 모두 입력해 주세요.');
       return;
     }
 
@@ -2025,32 +2025,45 @@ if (btnSubmitPayment) {
       if (item.price) total += Number(item.price.toString().replace(/[^0-9]/g, ''));
     });
 
-    if (total === 0) {
+    if (total <= 0) {
       alert('결제 금액이 0원입니다.');
       return;
     }
 
-    if (typeof IMP === 'undefined') {
-      alert('결제 모듈을 불러오는 데 실패했습니다. 새로고침 후 다시 시도해주세요.');
-      return;
-    }
-
-    IMP.init('imp87201657'); // 테스트용 상점코드
-
-    const merchant_uid = 'order_' + new Date().getTime();
     const orderName = cartItems.length > 1 ? `${cartItems[0].name} 외 ${cartItems.length - 1}건` : cartItems[0].name;
 
-    IMP.request_pay({
-      pg: 'html5_inicis', // 이니시스 웹표준 결제창
-      pay_method: 'card',
-      merchant_uid: merchant_uid,
-      name: orderName,
-      amount: total,
-      buyer_name: name,
-      buyer_tel: phone,
-      buyer_addr: address,
-    }, async (rsp) => {
-      if (rsp.success) {
+    // 결제 진행 중 UI 상태 처리
+    const originalBtnHtml = btnSubmitPayment.innerHTML;
+    btnSubmitPayment.disabled = true;
+    btnSubmitPayment.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;">
+        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle>
+      </svg>
+      <span>결제창 연결 중...</span>
+    `;
+
+    try {
+      const response = await fetch('/api/payapp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          goodname: orderName,
+          price: total,
+          recvphone: phone,
+          buyerName: name,
+          address: address,
+          returnurl: window.location.href,
+          var1: LIVE_ID || 'live01',
+          var2: JSON.stringify(cartItems.map(i => ({ name: i.name, price: i.price })))
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.payurl) {
+        // Supabase DB에 주문건 임시/대기 적재
         if (db) {
           try {
             await db.from('live_orders').insert({
@@ -2060,22 +2073,32 @@ if (btnSubmitPayment) {
               customer_address: address,
               total_amount: total,
               items: cartItems,
-              payment_status: 'paid',
-              pg_provider: 'portone_inicis',
-              pg_receipt_id: rsp.imp_uid
+              payment_status: 'payapp_requested',
+              pg_provider: 'payapp',
+              pg_receipt_id: String(result.mul_no || '')
             });
           } catch(e) {
-            console.error('주문 정보 저장 실패', e);
+            console.warn('주문 정보 DB 저장 경고 (결제는 계속 진행):', e);
           }
         }
-        alert('결제가 완료되었습니다!');
+
+        // 장바구니 비우기 및 모달 닫기
         cartItems = [];
         updateCartUI();
         if (checkoutModal) checkoutModal.style.display = 'none';
+
+        // 페이앱 결제 화면으로 이동
+        window.location.href = result.payurl;
       } else {
-        alert('결제에 실패하였습니다.\\n' + rsp.error_msg);
+        alert(result.message || '페이앱 결제 요청에 실패했습니다. 다시 시도해 주세요.');
       }
-    });
+    } catch (err) {
+      console.error('PayApp Call Error:', err);
+      alert('결제 연동 중 오류가 발생했습니다: ' + err.message);
+    } finally {
+      btnSubmitPayment.disabled = false;
+      btnSubmitPayment.innerHTML = originalBtnHtml;
+    }
   });
 }
 
