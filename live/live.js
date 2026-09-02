@@ -3296,7 +3296,7 @@ function checkAndShowGiveaway(productList) {
       btnEl.style.background = '#f1f5f9';
       btnEl.style.color = '#94a3b8';
       btnEl.style.cursor = 'not-allowed';
-      btnTextEl.textContent = '이미 담기 완료 (1인 1개)';
+      btnTextEl.textContent = '이미 담기 완료';
     } else if (remaining <= 0) {
       btnEl.disabled = true;
       btnEl.style.background = '#f1f5f9';
@@ -3336,7 +3336,7 @@ window.claimGiveawayItem = async function() {
   // 1. 이미 담았는지 확인
   const myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
   if (myClaimed.includes(String(freeItem.id))) {
-    alert('무료나눔은 1인당 1개만 가져가실 수 있습니다.');
+    alert('이미 담으신 무료나눔 상품입니다.');
     return;
   }
 
