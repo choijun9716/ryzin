@@ -2348,26 +2348,7 @@ function renderCartItems() {
     cartItems = loadCartFromStorage();
   }
 
-  // 만약 무료나눔을 담았는데 장바구니에 누락되어 있다면 자동 자가복구
-  try {
-    const myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
-    const allProds = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`) || '[]');
-    myClaimed.forEach(claimedId => {
-      const freeProd = allProds.find(p => String(p.id) === String(claimedId));
-      if (freeProd && !cartItems.some(ci => String(ci.id) === String(claimedId) || ci.name.includes(freeProd.name))) {
-        cartItems.unshift({
-          id: freeProd.id,
-          name: `[무료나눔] ${freeProd.name}`,
-          price: '0',
-          normalPrice: freeProd.normalPrice || '',
-          image: freeProd.image || '',
-          quantity: 1,
-          isFreeGiveaway: true
-        });
-        syncCartStorage();
-      }
-    });
-  } catch(e) {}
+
 
   cartItemsContainer.innerHTML = '';
   let total = 0;
@@ -2462,9 +2443,28 @@ function renderCartItems() {
   cartItemsContainer.querySelectorAll('.btn-remove-cart').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
+      const removedItem = cartItems[idx];
+      if (removedItem) {
+        // 무료나눔 상품 삭제 시 담기 기록도 초기화하여 깨끗이 삭제
+        if (removedItem.isFreeGiveaway) {
+          try {
+            let myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
+            myClaimed = myClaimed.filter(id => String(id) !== String(removedItem.id));
+            localStorage.setItem('ryzin_claimed_giveaways', JSON.stringify(myClaimed));
+            localStorage.removeItem(`ryzin_claimed_time_${removedItem.id}`);
+          } catch(err) {}
+        }
+      }
       cartItems.splice(idx, 1);
+      syncCartStorage();
       updateCartUI();
       renderCartItems();
+
+      // 라이브 화면 무료나눔 카드 상태도 즉시 새로고침 없이 갱신
+      try {
+        const allProds = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`) || '[]');
+        if (typeof checkAndShowGiveaway === 'function') checkAndShowGiveaway(allProds);
+      } catch(err) {}
     });
   });
 }
