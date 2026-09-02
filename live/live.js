@@ -2170,12 +2170,15 @@ function playStreamUrl(url, isLive) {
 
     if (ytPlayer) {
       ytPlayer.style.display = 'block';
-      const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${ytId}&enablejsapi=1`;
+      const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1`;
       if (!ytPlayer.src.includes(ytId)) {
         ytPlayer.src = targetSrc;
       }
     }
-    if (isLive && overlay) overlay.classList.add('hidden');
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.style.display = 'none';
+    }
   } else {
     if (ytPlayer) {
       ytPlayer.style.display = 'none';
