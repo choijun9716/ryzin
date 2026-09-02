@@ -717,6 +717,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 롤링 배너에 노출될 수 있는 유효한 상품 목록 필터링
         const activeProducts = p.filter(item => {
+          // 무료나눔 전용 상품은 일반 상품 목록/하단 롤링 배너에서 완전 제외! (화면 중앙 이벤트 카드로만 노출)
+          if (item.isFreeGiveaway === true || item.isFreeGiveaway === 'true') {
+            return false;
+          }
+
           const isDealActive = item.dealEndTime && item.dealEndTime > now;
 
           // A. 좋아요 목표 수가 설정되어 있는 상품인 경우 -> 깜짝딜 활성 시에만 노출
@@ -909,7 +914,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             // 여러 개일 경우 수직 롤링 타이머 셋업
-            if (rollingInterval) clearInterval(rollingInterval);
+            if (typeof checkAndShowGiveaway === 'function') {
+          checkAndShowGiveaway(p);
+        }
+
+        if (rollingInterval) clearInterval(rollingInterval);
             if (activeProducts.length > 1) {
               // Clone the first card for seamless infinite loop
               const firstCardClone = track.firstElementChild.cloneNode(true);
@@ -3213,4 +3222,193 @@ window.cancelMyOrder = async function(mulNo, orderId, evt) {
       btn.textContent = '주문 결제 취소';
     }
   }
+};
+
+
+
+// ----------------------------------------------------
+// [NEW] 화면 중앙 선착순 무료나눔 이벤트 및 플라잉 담기 애니메이션
+// ----------------------------------------------------
+let currentActiveGiveaway = null;
+
+function checkAndShowGiveaway(productList) {
+  if (!Array.isArray(productList)) return;
+  const giveawayCard = document.getElementById('giveaway-overlay-card');
+  if (!giveawayCard) return;
+
+  // 무료나눔 상품 찾기
+  const freeItem = productList.find(p => p.isFreeGiveaway === true || p.isFreeGiveaway === 'true');
+  if (!freeItem) {
+    giveawayCard.style.display = 'none';
+    currentActiveGiveaway = null;
+    return;
+  }
+
+  // 비활성화 상태이거나 종료된 경우
+  if (freeItem.isGiveawayActive === false || freeItem.isGiveawayActive === 'false') {
+    giveawayCard.style.display = 'none';
+    currentActiveGiveaway = null;
+    return;
+  }
+
+  const stock = parseInt(freeItem.giveawayStock) || 0;
+  const claimed = parseInt(freeItem.giveawayClaimed) || 0;
+  const remaining = Math.max(0, stock - claimed);
+
+  currentActiveGiveaway = { ...freeItem, remainingStock: remaining };
+
+  // UI 데이터 주입
+  const titleEl = document.getElementById('giveaway-title');
+  const imgEl = document.getElementById('giveaway-img');
+  const stockEl = document.getElementById('giveaway-stock-display');
+  const btnEl = document.getElementById('btn-claim-giveaway');
+  const btnTextEl = document.getElementById('giveaway-btn-text');
+
+  if (titleEl) titleEl.textContent = freeItem.name || '무료나눔 상품';
+  if (imgEl) imgEl.src = freeItem.image || 'https://via.placeholder.com/94';
+  if (stockEl) stockEl.textContent = remaining;
+
+  // 이미 내가 담았는지 확인
+  const myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
+  const alreadyClaimed = myClaimed.includes(String(freeItem.id));
+
+  if (btnEl && btnTextEl) {
+    if (alreadyClaimed) {
+      btnEl.disabled = true;
+      btnEl.style.background = '#64748b';
+      btnEl.style.cursor = 'not-allowed';
+      btnTextEl.textContent = '이미 담기 완료 (1인 1개)';
+    } else if (remaining <= 0) {
+      btnEl.disabled = true;
+      btnEl.style.background = '#64748b';
+      btnEl.style.cursor = 'not-allowed';
+      btnTextEl.textContent = '수량 소진 (마감)';
+    } else {
+      btnEl.disabled = false;
+      btnEl.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+      btnEl.style.cursor = 'pointer';
+      btnTextEl.textContent = '선착순 무료로 담기';
+    }
+  }
+
+  // 화면 중앙에 노출
+  if (giveawayCard.style.display === 'none') {
+    giveawayCard.style.display = 'block';
+  }
+}
+
+window.closeGiveawayCard = function() {
+  const card = document.getElementById('giveaway-overlay-card');
+  if (card) {
+    card.style.animation = 'giveawayPopOut 0.3s ease-in forwards';
+    setTimeout(() => {
+      card.style.display = 'none';
+      card.style.animation = 'giveawayPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+    }, 300);
+  }
+};
+
+window.claimGiveawayItem = async function() {
+  if (!currentActiveGiveaway) return;
+  const freeItem = currentActiveGiveaway;
+
+  // 1. 이미 담았는지 확인
+  const myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
+  if (myClaimed.includes(String(freeItem.id))) {
+    alert('무료나눔은 1인당 1개만 가져가실 수 있습니다.');
+    return;
+  }
+
+  // 2. 잔여 수량 확인
+  if (freeItem.remainingStock <= 0) {
+    alert('앗! 준비된 선착순 수량이 모두 소진되었습니다.');
+    return;
+  }
+
+  const btnEl = document.getElementById('btn-claim-giveaway');
+  const btnTextEl = document.getElementById('giveaway-btn-text');
+  if (btnEl) btnEl.disabled = true;
+  if (btnTextEl) btnTextEl.textContent = '담는 중...';
+
+  // 3. 플라잉 담기 애니메이션 실행!
+  const startImg = document.getElementById('giveaway-img');
+  const cartBtn = document.getElementById('btn-cart');
+
+  if (startImg && cartBtn) {
+    const startRect = startImg.getBoundingClientRect();
+    const endRect = cartBtn.getBoundingClientRect();
+
+    const flying = document.createElement('img');
+    flying.src = startImg.src;
+    flying.className = 'flying-giveaway-item';
+    flying.style.width = startRect.width + 'px';
+    flying.style.height = startRect.height + 'px';
+    flying.style.top = startRect.top + 'px';
+    flying.style.left = startRect.left + 'px';
+    document.body.appendChild(flying);
+
+    // 다음 프레임에서 장바구니로 날아가도록 위치 이동
+    requestAnimationFrame(() => {
+      flying.style.top = (endRect.top + endRect.height / 4) + 'px';
+      flying.style.left = (endRect.left + endRect.width / 4) + 'px';
+      flying.style.width = '24px';
+      flying.style.height = '24px';
+      flying.style.opacity = '0.3';
+      flying.style.transform = 'rotate(360deg) scale(0.8)';
+    });
+
+    setTimeout(() => {
+      flying.remove();
+      // 장바구니 아이콘 바운스 효과
+      cartBtn.classList.add('cart-bouncing');
+      setTimeout(() => cartBtn.classList.remove('cart-bouncing'), 600);
+    }, 750);
+  }
+
+  // 4. 장바구니에 0원으로 담기
+  const giveawayCartItem = {
+    id: freeItem.id || Date.now(),
+    name: `[무료나눔] ${freeItem.name}`,
+    price: '0',
+    normalPrice: freeItem.normalPrice || '',
+    image: freeItem.image || '',
+    quantity: 1,
+    isFreeGiveaway: true
+  };
+
+  // 장바구니 배열에 추가
+  if (typeof cartItems !== 'undefined') {
+    cartItems.unshift(giveawayCartItem);
+    if (typeof syncCartStorage === 'function') syncCartStorage();
+    if (typeof updateCartUI === 'function') updateCartUI();
+  }
+
+  // 내가 담은 기록 보존 (중복 담기 방지)
+  myClaimed.push(String(freeItem.id));
+  localStorage.setItem('ryzin_claimed_giveaways', JSON.stringify(myClaimed));
+
+  // 5. 실시간 수량 차감 처리
+  try {
+    const allProducts = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`) || '[]');
+    const target = allProducts.find(p => String(p.id) === String(freeItem.id));
+    if (target) {
+      target.giveawayClaimed = (parseInt(target.giveawayClaimed) || 0) + 1;
+      localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(allProducts));
+      
+      // Supabase에도 비동기 동기화
+      if (db) {
+        db.from('live_control').update({
+          products: allProducts,
+          updated_at: new Date().toISOString()
+        }).eq('live_id', LIVE_ID).then(() => {});
+      }
+    }
+  } catch(e) {}
+
+  if (btnTextEl) btnTextEl.textContent = '담기 완료!';
+
+  // 6. 1.2초 후 화면 중앙 카드 부드럽게 닫기
+  setTimeout(() => {
+    window.closeGiveawayCard();
+  }, 1200);
 };

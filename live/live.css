@@ -1087,3 +1087,53 @@ video::-webkit-media-controls-overlay-play-button {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+
+/* ── 무료나눔 화면 중앙 카드 & 플라잉 담기 애니메이션 ── */
+@keyframes giveawayPopIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes giveawayPopOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+}
+
+@keyframes cartBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.5) rotate(-12deg); }
+  60% { transform: scale(0.88) rotate(6deg); }
+  85% { transform: scale(1.15) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.cart-bouncing {
+  animation: cartBounce 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.flying-giveaway-item {
+  position: fixed;
+  z-index: 999999;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.9);
+  pointer-events: none;
+  transition: all 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}

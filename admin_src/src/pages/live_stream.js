@@ -2577,6 +2577,10 @@ function renderLiveEditView(container, liveId, showView) {
             <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
             평소숨김
           </label>
+          <label style="font-size:12px; color:#dc2626; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#fef2f2; padding:8px 12px; border:1.5px solid #fca5a5; border-radius:8px;">
+            <input type="checkbox" data-idx="${idx}" data-field="isFreeGiveaway" ${p.isFreeGiveaway === true || p.isFreeGiveaway === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#ef4444;" class="chk-giveaway">
+            선착순 무료나눔
+          </label>
           <span style="font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:8px 10px; border-radius:8px; white-space:nowrap;">조회: ${clickCount.toLocaleString()}</span>
           <button class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === 0 ? 'disabled' : ''}>▲</button>
           <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
@@ -2599,6 +2603,15 @@ function renderLiveEditView(container, liveId, showView) {
               <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
               <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
               <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; background:#fef2f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
+              <span style="font-size:12px; font-weight:800; color:#dc2626;">화면 중앙 무료나눔 드롭</span>
+              <span style="font-size:12px; color:#475569; font-weight:600;">한정 수량:</span>
+              <input type="number" class="modern-input" style="width:65px; padding:6px 8px; font-size:12px;" data-idx="${idx}" data-field="giveawayStock" placeholder="수량" value="${p.giveawayStock || 3}">
+              <span style="font-size:12px; color:#475569;">개</span>
+              <button class="btn-giveaway-start" data-idx="${idx}" style="padding:6px 12px; background:#dc2626; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">화면 송출 시작</button>
+              <button class="btn-giveaway-stop" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+              ${p.isGiveawayActive ? `<span style="font-size:11.5px; font-weight:800; color:#dc2626; background:#fee2e2; padding:3px 8px; border-radius:6px;">화면 송출중 (잔여: ${Math.max(0, (parseInt(p.giveawayStock) || 0) - (parseInt(p.giveawayClaimed) || 0))}개)</span>` : ''}
             </div>
           </div>
         </details>
@@ -2703,6 +2716,17 @@ function renderLiveEditView(container, liveId, showView) {
           const field = e.target.dataset.field;
           if (e.target.type === 'checkbox') {
             products[idx][field] = e.target.checked;
+            if (field === 'isFreeGiveaway') {
+              if (e.target.checked) {
+                products[idx].price = '0';
+                products[idx].hideByDefault = true;
+                if (!products[idx].giveawayStock) products[idx].giveawayStock = 3;
+              }
+              saveProducts();
+              plc.innerHTML = renderProductList();
+              bindProductEvents();
+              return;
+            }
             if (field === 'isLeadForm') {
               if (e.target.checked) {
                 products[idx].url = '__LEAD_FORM__';
@@ -2792,6 +2816,40 @@ function renderLiveEditView(container, liveId, showView) {
           plc.innerHTML = renderProductList();
           bindProductEvents();
           syncToSheetDB(liveId, config, stats, products, true);
+        });
+      });
+      // 선착순 무료나눔 시작
+      plc.querySelectorAll('.btn-giveaway-start').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const p = products[idx];
+          if (!p) return;
+          const stock = parseInt(p.giveawayStock) || 3;
+          p.isFreeGiveaway = true;
+          p.price = '0';
+          p.hideByDefault = true;
+          p.giveawayStock = stock;
+          p.giveawayClaimed = 0;
+          p.isGiveawayActive = true;
+          saveProducts();
+          plc.innerHTML = renderProductList();
+          bindProductEvents();
+          syncToSheetDB(liveId, config, stats, products, true);
+          alert(`선착순 ${stock}개 무료나눔이 라이브 화면 중앙에 송출되었습니다!`);
+        });
+      });
+      // 선착순 무료나눔 종료
+      plc.querySelectorAll('.btn-giveaway-stop').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const p = products[idx];
+          if (!p) return;
+          p.isGiveawayActive = false;
+          saveProducts();
+          plc.innerHTML = renderProductList();
+          bindProductEvents();
+          syncToSheetDB(liveId, config, stats, products, true);
+          alert('무료나눔 화면 송출이 종료되었습니다.');
         });
       });
       plc.querySelectorAll('.btn-del-product').forEach(btn => {
