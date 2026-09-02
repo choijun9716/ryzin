@@ -24,6 +24,9 @@
   <!-- HLS.js for m3u8 playback -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
+  <!-- PortOne (Iamport) JS SDK for Payments -->
+  <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
   <link rel="stylesheet" href="live.css?v=202608121335">
   <style>
     /* Embed Mode Overrides */
@@ -455,6 +458,88 @@
             onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'"
             onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
             문의 접수하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 플로팅 장바구니 버튼 -->
+      <div id="floating-cart-btn" style="display:none; position:fixed; bottom:80px; right:20px; width:56px; height:56px; background:#0f172a; border-radius:50%; box-shadow:0 4px 12px rgba(0,0,0,0.25); align-items:center; justify-content:center; cursor:pointer; z-index:90000; transition:transform 0.2s;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span id="cart-badge" style="position:absolute; top:0; right:0; background:#ef4444; color:#fff; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px; transform:translate(20%, -20%);">0</span>
+      </div>
+
+      <!-- 장바구니 모달 -->
+      <div id="cart-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); justify-content:center; align-items:flex-end; z-index:100000; pointer-events:auto; padding-bottom: 20px;">
+        <div
+          style="background:#ffffff; width:100%; max-width:400px; border-radius:20px; padding:30px 24px; box-shadow:0 20px 40px rgba(0,0,0,0.2); position:relative; animation: modalSlideUp 0.3s ease-out; color:#0f172a; border:1px solid #e2e8f0; text-align:left; max-height: 80vh; display: flex; flex-direction: column;">
+          <button id="btn-close-cart-modal"
+            style="position:absolute; top:22px; right:22px; background:none; border:none; font-size:22px; font-weight:400; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.2s;"
+            onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">✕</button>
+          <h3 style="margin:0 0 16px 0; font-size:18px; font-weight:700; color:#0f172a;">
+            장바구니
+          </h3>
+          <div id="cart-items-container" style="flex:1; overflow-y:auto; margin-bottom: 16px; padding-right: 8px;">
+            <!-- 장바구니 아이템들이 여기에 렌더링됨 -->
+          </div>
+          <div style="border-top: 1.5px solid #e2e8f0; padding-top: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 14px; font-weight: 600; color: #475569;">총 결제 금액</span>
+            <span id="cart-total-price" style="font-size: 18px; font-weight: 800; color: #e11d48;">0원</span>
+          </div>
+          <button id="btn-checkout"
+            style="width:100%; padding:14px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(15,23,42,0.25); transition:all 0.2s; outline:none;"
+            onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'"
+            onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+            결제하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 주문서 (Checkout) 모달 -->
+      <div id="checkout-modal"
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); justify-content:center; align-items:center; z-index:100000; padding:20px; pointer-events:auto;">
+        <div
+          style="background:#ffffff; width:100%; max-width:340px; border-radius:20px; padding:30px 24px; box-shadow:0 20px 40px rgba(0,0,0,0.2); position:relative; animation: modalScaleUp 0.3s ease-out; color:#0f172a; border:1px solid #e2e8f0; text-align:left;">
+          <button id="btn-close-checkout-modal"
+            style="position:absolute; top:22px; right:22px; background:none; border:none; font-size:22px; font-weight:400; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.2s;"
+            onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">✕</button>
+          <h3 style="margin:0 0 8px 0; font-size:18px; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:6px; line-height:1.2;">
+            <span>주문 정보 입력</span>
+          </h3>
+          <p style="font-size:13px; color:#64748b; margin:0 0 24px 0; line-height:1.5; font-weight:500;">
+            상품을 배송받을 주소와 연락처를 입력해 주세요.
+          </p>
+          <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px; letter-spacing:-0.3px;">이름 (수령인)</label>
+              <input type="text" id="checkout-name" placeholder="실명을 입력해 주세요"
+                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#0f172a; background:#f8fafc; outline:none; transition:all 0.2s; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#0f172a'; this.style.boxShadow='0 0 0 3px rgba(15,23,42,0.15)'"
+                onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px; letter-spacing:-0.3px;">전화번호</label>
+              <input type="text" id="checkout-phone" placeholder="예: 010-1234-5678"
+                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#0f172a; background:#f8fafc; outline:none; transition:all 0.2s; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#0f172a'; this.style.boxShadow='0 0 0 3px rgba(15,23,42,0.15)'"
+                onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'">
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px; letter-spacing:-0.3px;">배송지 주소</label>
+              <input type="text" id="checkout-address" placeholder="상세 주소를 입력해 주세요"
+                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#0f172a; background:#f8fafc; outline:none; transition:all 0.2s; box-sizing:border-box;"
+                onfocus="this.style.borderColor='#0f172a'; this.style.boxShadow='0 0 0 3px rgba(15,23,42,0.15)'"
+                onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'">
+            </div>
+          </div>
+          <button id="btn-submit-payment"
+            style="width:100%; padding:14px; background:#e11d48; color:#ffffff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(225,29,72,0.25); transition:all 0.2s; outline:none;"
+            onmouseover="this.style.background='#be123c'" onmouseout="this.style.background='#e11d48'"
+            onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+            결제 진행하기
           </button>
         </div>
       </div>
