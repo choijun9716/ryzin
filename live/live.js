@@ -2116,7 +2116,7 @@ function extractYoutubeVideoId(url) {
 }
 
 // ── 스트리밍 소리 켜기 / 끄기 토글 제어 ──
-let isStreamMuted = true;
+let isStreamMuted = false;
 
 window.toggleStreamSound = function() {
   isStreamMuted = !isStreamMuted;
@@ -2154,13 +2154,22 @@ window.toggleStreamSound = function() {
   }
 };
 
-// 사용자가 화면을 첫 터치/클릭할 때 자동으로 소리 켜기 시도
-document.addEventListener('click', function onFirstInteraction() {
-  if (isStreamMuted) {
-    window.toggleStreamSound();
+// 사용자가 화면을 첫 터치/클릭할 때 강제 소리 ON 확실 보장
+function forceSoundOn() {
+  const video = document.getElementById('live-video');
+  const ytPlayer = document.getElementById('youtube-player');
+  if (video) {
+    video.muted = false;
+    video.volume = 1.0;
   }
-  document.removeEventListener('click', onFirstInteraction);
-}, { once: true });
+  if (ytPlayer && ytPlayer.contentWindow) {
+    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+  }
+}
+['click', 'touchstart', 'touchend'].forEach(evtType => {
+  document.addEventListener(evtType, forceSoundOn, { once: true });
+});
 
 function playStreamUrl(url, isLive) {
   const video = document.getElementById('live-video');
@@ -2180,7 +2189,16 @@ function playStreamUrl(url, isLive) {
 
     if (ytBox) ytBox.style.display = 'block';
     if (ytPlayer) {
-      const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1`;
+      const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1`;
+      // 강제 소리 ON 트리거 (300ms, 800ms, 1500ms)
+      [300, 800, 1500].forEach(delay => {
+        setTimeout(() => {
+          if (ytPlayer && ytPlayer.contentWindow) {
+            ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+            ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+          }
+        }, delay);
+      });
       if (!ytPlayer.src.includes(ytId)) {
         ytPlayer.src = targetSrc;
       }
