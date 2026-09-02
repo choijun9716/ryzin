@@ -25,6 +25,8 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <!-- Kakao JavaScript SDK (Popup Login Support) -->
   <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+  <!-- Daum / Kakao 우편번호 주소 검색 서비스 -->
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script>
     if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
       Kakao.init('95fa521ea12208ad849b0ce9bb64b19f');
@@ -607,10 +609,30 @@
             </div>
             <div>
               <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px; letter-spacing:-0.3px;">배송지 주소</label>
-              <input type="text" id="checkout-address" placeholder="상세 주소를 입력해 주세요"
-                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:14px; color:#0f172a; background:#f8fafc; outline:none; transition:all 0.2s; box-sizing:border-box;"
+              
+              <!-- 카카오 주소 검색 & 기본 주소 -->
+              <div style="display:flex; gap:8px; margin-bottom:8px;">
+                <input type="text" id="checkout-base-address" placeholder="주소 검색 버튼을 눌러주세요" readonly onclick="openPostcodeSearch()"
+                  style="flex:1; padding:12px 14px; border:1px solid #cbd5e1; border-radius:12px; font-size:13.5px; color:#0f172a; background:#f8fafc; outline:none; cursor:pointer; box-sizing:border-box;"
+                  title="클릭하여 주소 검색">
+                <button type="button" onclick="openPostcodeSearch()"
+                  style="padding:12px 14px; background:#FEE500; color:#191919; border:none; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(0,0,0,0.06); display:flex; align-items:center; gap:4px;"
+                  onmouseover="this.style.background='#fdd835'" onmouseout="this.style.background='#FEE500'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#191919" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <span>주소 검색</span>
+                </button>
+              </div>
+
+              <!-- 상세 주소 (동/호수) 입력 -->
+              <input type="text" id="checkout-detail-address" placeholder="상세 주소를 입력해 주세요 (동, 호수 등)"
+                style="width:100%; padding:12px 16px; border:1px solid #cbd5e1; border-radius:12px; font-size:13.5px; color:#0f172a; background:#ffffff; outline:none; transition:all 0.2s; box-sizing:border-box;"
                 onfocus="this.style.borderColor='#0f172a'; this.style.boxShadow='0 0 0 3px rgba(15,23,42,0.15)'"
                 onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'">
+
+              <!-- 결제 전송용 통합 주소 hidden input -->
+              <input type="hidden" id="checkout-address" value="">
             </div>
           </div>
           <button id="btn-submit-payment"

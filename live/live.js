@@ -1186,7 +1186,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (nameInput) nameInput.value = savedName; // 실명이 없으면 빈칸 유지
         if (phoneInput && savedPhone) phoneInput.value = savedPhone;
-        if (addrInput && savedAddress) addrInput.value = savedAddress;
+        if (addrInput) addrInput.value = savedAddress;
+
+        // 기본 주소와 상세 주소 인풋 분리 채움
+        const baseInput = document.getElementById('checkout-base-address');
+        const detailInput = document.getElementById('checkout-detail-address');
+        if (baseInput && savedAddress) {
+          baseInput.value = savedAddress;
+        }
       } catch(e) {}
     } else {
       // 비회원 상태
@@ -2245,10 +2252,70 @@ function prefillCheckoutForm() {
 }
 
 // 주문서 정보 로컬 영구 보존 헬퍼 함수
+// ── 카카오/다음 공식 주소 검색 API 연동 ──
+window.openPostcodeSearch = function() {
+  if (typeof daum === 'undefined' || !daum.Postcode) {
+    alert('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+    return;
+  }
+
+  new daum.Postcode({
+    oncomplete: function(data) {
+      // 도로명 주소 또는 지번 주소 선택 결과
+      let fullAddr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+      let extraAddr = '';
+
+      if (data.userSelectedType === 'R') {
+        if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+          extraAddr += data.bname;
+        }
+        if (data.buildingName !== '' && data.apartment === 'Y') {
+          extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+        }
+        if (extraAddr !== '') {
+          fullAddr += ' (' + extraAddr + ')';
+        }
+      }
+
+      const baseInput = document.getElementById('checkout-base-address');
+      const detailInput = document.getElementById('checkout-detail-address');
+      const hiddenInput = document.getElementById('checkout-address');
+
+      if (baseInput) baseInput.value = fullAddr;
+      if (hiddenInput) hiddenInput.value = fullAddr + (detailInput && detailInput.value.trim() ? ' ' + detailInput.value.trim() : '');
+
+      // 주소 입력 후 즉시 로컬 저장 및 장바구니 갱신
+      if (typeof saveCheckoutForm === 'function') saveCheckoutForm();
+      if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+
+      // 상세 주소 입력칸으로 포커스 이동
+      if (detailInput) {
+        detailInput.focus();
+      }
+    }
+  }).open();
+};
+
+function updateFullAddressFromInputs() {
+  const baseInput = document.getElementById('checkout-base-address');
+  const detailInput = document.getElementById('checkout-detail-address');
+  const hiddenInput = document.getElementById('checkout-address');
+
+  const base = baseInput ? baseInput.value.trim() : '';
+  const detail = detailInput ? detailInput.value.trim() : '';
+  const full = (base + (detail ? ' ' + detail : '')).trim();
+
+  if (hiddenInput) {
+    hiddenInput.value = full;
+  }
+  return full;
+}
+
 function saveCheckoutForm() {
   try {
     const name = document.getElementById('checkout-name')?.value.trim() || '';
     const phone = document.getElementById('checkout-phone')?.value.trim() || '';
+    if (typeof updateFullAddressFromInputs === 'function') updateFullAddressFromInputs();
     const address = document.getElementById('checkout-address')?.value.trim() || '';
 
     const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
@@ -2267,6 +2334,17 @@ function saveCheckoutForm() {
 }
 
 // 입력 필드 실시간 저장 리스너 부착
+['checkout-detail-address'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', () => {
+      if (typeof updateFullAddressFromInputs === 'function') updateFullAddressFromInputs();
+      if (typeof saveCheckoutForm === 'function') saveCheckoutForm();
+      if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+    });
+  }
+});
+
 ['checkout-name', 'checkout-phone', 'checkout-address'].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
@@ -2334,6 +2412,7 @@ if (btnCheckout) {
 
     const name = document.getElementById('checkout-name')?.value.trim() || '';
     const phone = document.getElementById('checkout-phone')?.value.trim() || '';
+    if (typeof updateFullAddressFromInputs === 'function') updateFullAddressFromInputs();
     const address = document.getElementById('checkout-address')?.value.trim() || '';
 
     // 최초 1회 입력되어 이름, 연락처, 주소가 모두 온전히 있는 경우 -> 모달창 건너뛰고 즉시 결제 직행!
