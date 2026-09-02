@@ -2898,9 +2898,9 @@ window.openMyOrdersModal = async function() {
     
     let badgeHtml = '';
     if (isCancelled) {
-      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:6px;">🔴 결제승인취소</span>';
+      badgeHtml = '<span style="font-size:10.5px; font-weight:700; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:6px;">결제취소</span>';
     } else if (isPaid) {
-      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#dcfce7; color:#166534; padding:3px 8px; border-radius:6px;">🟢 결제완료</span>';
+      badgeHtml = '<span style="font-size:10.5px; font-weight:700; background:#dcfce7; color:#166534; padding:3px 8px; border-radius:6px;">결제완료</span>';
     }
 
     const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
