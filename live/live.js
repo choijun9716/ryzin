@@ -2667,11 +2667,16 @@ if (btnSubmitPayment) {
           created_at: new Date().toISOString()
         };
 
-        // 로컬 스토리지 즉시 캐시 백업
+        // 로컬 스토리지 즉시 캐시 백업 및 내 주문 히스토리 저장
         try {
           const localOrders = JSON.parse(localStorage.getItem(`ryzin_live_orders_${LIVE_ID || 'live01'}`) || '[]');
           localOrders.unshift(orderData);
           localStorage.setItem(`ryzin_live_orders_${LIVE_ID || 'live01'}`, JSON.stringify(localOrders));
+
+          // 내 주문 전용 로컬 히스토리 누적 보존
+          const myOrders = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');
+          myOrders.unshift(orderData);
+          localStorage.setItem('ryzin_my_orders_history', JSON.stringify(myOrders));
         } catch(e) {}
 
         // Supabase DB에 주문건 적재 시도 (live_winners 기반 무설정 즉시 연동 + live_orders)
@@ -2748,6 +2753,15 @@ function checkPaymentSuccessOnReturn() {
         completeModal.style.display = 'flex';
       }
 
+      // 내 주문 히스토리 최신 주문 'paid'로 갱신
+      try {
+        const myOrders = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');
+        if (myOrders.length > 0) {
+          myOrders[0].payment_status = 'paid';
+          localStorage.setItem('ryzin_my_orders_history', JSON.stringify(myOrders));
+        }
+      } catch(e) {}
+
       // URL에서 pay_success, mul_no 파라미터 제거 (새로고침 시 중복 팝업 방지)
       url.searchParams.delete('pay_success');
       url.searchParams.delete('mul_no');
@@ -2768,3 +2782,164 @@ if (btnClosePaymentComplete) {
 checkPaymentSuccessOnReturn();
 
 
+
+
+// ----------------------------------------------------
+// [NEW] 우측 상단 '내 주문' 모달 및 실시간 주문 내역 조회
+// ----------------------------------------------------
+async function openMyOrdersModal() {
+  const modal = document.getElementById('my-orders-modal');
+  const listEl = document.getElementById('my-orders-list');
+  const countText = document.getElementById('my-orders-count-text');
+  if (!modal || !listEl) return;
+
+  modal.style.display = 'flex';
+  listEl.innerHTML = `
+    <div style="text-align:center; padding:40px 20px; color:#94a3b8;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom:8px;">
+        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle>
+      </svg>
+      <div style="font-size:13px; font-weight:600;">주문 내역을 불러오는 중...</div>
+    </div>
+  `;
+
+  let orders = [];
+
+  // 1. 로컬스토리지 내 주문 히스토리 수집
+  try {
+    const local = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');
+    if (Array.isArray(local)) orders = [...local];
+  } catch(e) {}
+
+  // 2. 고객 전화번호 확인
+  const savedInfo = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}');
+  const phone = (savedInfo.phone || '').replace(/[^0-9]/g, '');
+
+  // 3. Supabase live_orders 테이블과 통합 조회
+  if (db && phone) {
+    try {
+      const { data: dbOrders } = await db
+        .from('live_orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (dbOrders && dbOrders.length > 0) {
+        dbOrders.forEach(dbo => {
+          const dboPhone = (dbo.customer_phone || '').replace(/[^0-9]/g, '');
+          if (dboPhone === phone && !orders.some(o => (o.pg_receipt_id && o.pg_receipt_id === dbo.pg_receipt_id) || o.id === dbo.id)) {
+            orders.push(dbo);
+          }
+        });
+      }
+    } catch(err) {
+      console.warn('DB 내 주문 조회 에러:', err);
+    }
+  }
+
+  // 4. 페이앱 실시간 상태 동기화 (mul_no가 있는 주문들)
+  const mulNos = orders.map(o => o.pg_receipt_id).filter(Boolean);
+  if (mulNos.length > 0) {
+    try {
+      const checkRes = await fetch('/api/payapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cmd: 'check_orders', mul_nos: mulNos })
+      });
+      const checkJson = await checkRes.json();
+      if (checkJson.success && checkJson.results) {
+        orders.forEach(o => {
+          if (o.pg_receipt_id && checkJson.results[o.pg_receipt_id]) {
+            o.payment_status = checkJson.results[o.pg_receipt_id].status;
+          }
+        });
+        // 최신 상태 로컬 저장 동기화
+        try {
+          localStorage.setItem('ryzin_my_orders_history', JSON.stringify(orders));
+        } catch(e) {}
+      }
+    } catch(e) {
+      console.warn('페이앱 실시간 상태 조회 실패:', e);
+    }
+  }
+
+  // 최신순 정렬
+  orders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+  if (countText) {
+    countText.textContent = `총 ${orders.length}건의 주문 내역이 있습니다.`;
+  }
+
+  if (orders.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align:center; padding:48px 20px; color:#94a3b8;">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <p style="font-size:14px; font-weight:700; color:#475569; margin:0 0 4px 0;">주문 내역이 없습니다</p>
+        <p style="font-size:12px; color:#94a3b8; margin:0;">라이브 특가 상품을 주문해 보세요!</p>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = orders.map(ord => {
+    const isPaid = ord.payment_status === 'paid' || ord.payment_status === '결제완료';
+    const isCancelled = ord.payment_status === 'cancelled' || ord.payment_status === '결제취소';
+    
+    let badgeHtml = '';
+    if (isCancelled) {
+      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#fee2e2; color:#b91c1c; padding:3px 7px; border-radius:6px;">🔴 결제취소</span>';
+    } else if (isPaid) {
+      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#dcfce7; color:#166534; padding:3px 7px; border-radius:6px;">🟢 결제완료</span>';
+    } else {
+      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#fef3c7; color:#92400e; padding:3px 7px; border-radius:6px;">⏳ 결제대기</span>';
+    }
+
+    const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
+    const totalStr = (ord.total_amount || 0).toLocaleString();
+
+    // 상품 요약
+    let itemsSummary = '';
+    if (Array.isArray(ord.items) && ord.items.length > 0) {
+      const first = ord.items[0];
+      const count = ord.items.length;
+      itemsSummary = count > 1 ? `${first.name} 외 ${count - 1}건` : first.name;
+    } else {
+      itemsSummary = ord.goodname || '라이브 상품';
+    }
+
+    return `
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:13px 14px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:11.5px; color:#64748b; font-weight:600;">${dateStr}</span>
+          ${badgeHtml}
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <div style="font-size:13.5px; font-weight:800; color:#0f172a; line-height:1.3; word-break:break-word;">${itemsSummary}</div>
+          <div style="font-size:14.5px; font-weight:800; color:${isCancelled ? '#94a3b8' : '#0f172a'}; text-decoration:${isCancelled ? 'line-through' : 'none'}; flex-shrink:0;">${totalStr}원</div>
+        </div>
+        <div style="font-size:11.5px; color:#64748b; border-top:1px dashed #e2e8f0; padding-top:6px; display:flex; flex-direction:column; gap:2px;">
+          <div><span style="color:#94a3b8; font-weight:600;">수령인:</span> ${ord.customer_name || '-'} (${ord.customer_phone || '-'})</div>
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><span style="color:#94a3b8; font-weight:600;">배송지:</span> ${ord.customer_address || '-'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 상단 내 주문 버튼 이벤트 연결
+const btnOpenMyOrders = document.getElementById('btn-open-my-orders');
+if (btnOpenMyOrders) {
+  btnOpenMyOrders.addEventListener('click', openMyOrdersModal);
+}
+
+const btnCloseMyOrders = document.getElementById('btn-close-my-orders');
+if (btnCloseMyOrders) {
+  btnCloseMyOrders.addEventListener('click', () => {
+    const modal = document.getElementById('my-orders-modal');
+    if (modal) modal.style.display = 'none';
+  });
+}
