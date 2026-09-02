@@ -1205,19 +1205,7 @@ async function renderUsersPanel(panel, wrapper) {
   } catch(e) { users = []; }
 
   if (!users.length) {
-    users = [
-      {
-        id: 'u-fallback-1',
-        user_code: 'USER-CHAEJUN',
-        name: '채이준',
-        email: 'chaejun@ryzin.com',
-        points: 2500,
-        coupons_count: 3,
-        membership_active: true,
-        default_address: '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2',
-        created_at: '2026-07-22'
-      }
-    ];
+    users = [];
   }
 
   panel.innerHTML = `
@@ -1246,7 +1234,7 @@ async function renderUsersPanel(panel, wrapper) {
         <tbody id="user-table-body">
           ${users.map(u => `
             <tr>
-              <td><span class="sm-rank-badge" style="background:#1e293b;">${esc(u.user_code || 'USER-0000')}</span></td>
+              <td>${(u.user_code && u.user_code.startsWith('KAKAO-')) ? `<span class="sm-rank-badge" style="background:#FEE500; color:#191919; font-weight:800; border:1px solid #eab308;">카카오</span>` : `<span class="sm-rank-badge" style="background:#1e293b;">${esc(u.user_code || 'USER-0000')}</span>`}</td>
               <td style="font-weight:800; color:#0f172a;">${esc(u.name)}</td>
               <td style="font-weight:600; color:#64748b;">${esc(u.email)}</td>
               <td style="font-weight:800; color:#2563eb;">${(u.points || 0).toLocaleString()}P</td>

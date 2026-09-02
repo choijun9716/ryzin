@@ -1250,6 +1250,45 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('ryzin_nickname', nickname);
           localStorage.setItem('ryzin_kakao_user', JSON.stringify({ id: kakaoId, nickname, name, phone }));
 
+          // ── Supabase shop_users 테이블에 카카오 회원 자동 등록/동기화 ──
+          const clientDb = db || window.supabaseClient;
+          if (clientDb) {
+            const userCode = 'KAKAO-' + kakaoId;
+            const userEmail = kakaoAccount.email || (phone ? (phone + '@kakao.user') : ('kakao_' + kakaoId + '@ryzin.com'));
+            const userAddress = phone ? ('연락처: ' + phone) : '카카오 간편가입';
+
+            clientDb.from('shop_users')
+              .select('id')
+              .eq('user_code', userCode)
+              .maybeSingle()
+              .then(({ data: existUser, error: selectErr }) => {
+                if (selectErr) {
+                  console.warn('shop_users 조회 오류:', selectErr);
+                  return;
+                }
+                if (!existUser) {
+                  clientDb.from('shop_users').insert({
+                    user_code: userCode,
+                    name: name || nickname,
+                    email: userEmail,
+                    points: 3000,
+                    coupons_count: 1,
+                    membership_active: true,
+                    default_address: userAddress
+                  }).then(({ error: insertErr }) => {
+                    if (insertErr) console.warn('shop_users 신규 등록 오류:', insertErr);
+                    else console.log('카카오 회원 신규 등록 완료:', userCode);
+                  });
+                } else {
+                  clientDb.from('shop_users').update({
+                    name: name || nickname,
+                    email: userEmail,
+                    default_address: userAddress
+                  }).eq('id', existUser.id).then(() => {});
+                }
+              }).catch(err => console.warn('shop_users 연동 예외:', err));
+          }
+
           if (typeof window.updateCheckoutMemberUI === 'function') {
             window.updateCheckoutMemberUI();
           }

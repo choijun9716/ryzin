@@ -4286,7 +4286,7 @@ Minimum version required to store current data is: `+c+`.
           <input class="sm-input mag-imgurl" type="text" value="${Q(t.img_url||``)}" placeholder="이미지 URL">
         </div>
       </div>
-    `;let i=r.querySelector(`.mag-uploader`),a=r.querySelector(`.mag-imgurl`);_a(i,a,e=>{r.querySelector(`.mag-thumb`).src=e}),r.querySelector(`.mag-save`).addEventListener(`click`,async()=>{await da.update(t.id,{category:r.querySelector(`.mag-cat`).value.trim(),title:r.querySelector(`.mag-title`).value.trim(),desc:r.querySelector(`.mag-desc`).value.trim(),link_url:r.querySelector(`.mag-link`).value.trim(),is_feature:r.querySelector(`.mag-isfeat`).checked,img_url:a.value.trim()}),Z(`매거진 저장 완료`),await Aa(e)}),r.querySelector(`.mag-del`).addEventListener(`click`,async()=>{confirm(`이 매거진 항목을 삭제합니까?`)&&(await da.delete(t.id),Z(`삭제되었습니다.`),await Aa(e))}),n.appendChild(r)})}async function ja(e,t){let n=[];try{n=await fa.getAll()}catch{n=[]}n.length||(n=[{id:`u-fallback-1`,user_code:`USER-CHAEJUN`,name:`채이준`,email:`chaejun@ryzin.com`,points:2500,coupons_count:3,membership_active:!0,default_address:`경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2`,created_at:`2026-07-22`}]),e.innerHTML=`
+    `;let i=r.querySelector(`.mag-uploader`),a=r.querySelector(`.mag-imgurl`);_a(i,a,e=>{r.querySelector(`.mag-thumb`).src=e}),r.querySelector(`.mag-save`).addEventListener(`click`,async()=>{await da.update(t.id,{category:r.querySelector(`.mag-cat`).value.trim(),title:r.querySelector(`.mag-title`).value.trim(),desc:r.querySelector(`.mag-desc`).value.trim(),link_url:r.querySelector(`.mag-link`).value.trim(),is_feature:r.querySelector(`.mag-isfeat`).checked,img_url:a.value.trim()}),Z(`매거진 저장 완료`),await Aa(e)}),r.querySelector(`.mag-del`).addEventListener(`click`,async()=>{confirm(`이 매거진 항목을 삭제합니까?`)&&(await da.delete(t.id),Z(`삭제되었습니다.`),await Aa(e))}),n.appendChild(r)})}async function ja(e,t){let n=[];try{n=await fa.getAll()}catch{n=[]}n.length||(n=[]),e.innerHTML=`
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
       <div>
         <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 회원 리스트 (${n.length}명)</h2>
@@ -4312,7 +4312,7 @@ Minimum version required to store current data is: `+c+`.
         <tbody id="user-table-body">
           ${n.map(e=>`
             <tr>
-              <td><span class="sm-rank-badge" style="background:#1e293b;">${Q(e.user_code||`USER-0000`)}</span></td>
+              <td>${e.user_code&&e.user_code.startsWith(`KAKAO-`)?`<span class="sm-rank-badge" style="background:#FEE500; color:#191919; font-weight:800; border:1px solid #eab308;">카카오</span>`:`<span class="sm-rank-badge" style="background:#1e293b;">${Q(e.user_code||`USER-0000`)}</span>`}</td>
               <td style="font-weight:800; color:#0f172a;">${Q(e.name)}</td>
               <td style="font-weight:600; color:#64748b;">${Q(e.email)}</td>
               <td style="font-weight:800; color:#2563eb;">${(e.points||0).toLocaleString()}P</td>
