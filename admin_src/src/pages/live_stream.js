@@ -1489,10 +1489,11 @@ function renderLiveEditView(container, liveId, showView) {
     }
 
     document.getElementById('btn-toggle-live').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
       // 라이브 시작 전 스트리밍 URL 필수 확인
       const currentStreamUrl = document.getElementById('cfg-stream').value.trim();
       if (!config.isLive && !currentStreamUrl) {
-        alert('⚠️ 스트리밍 URL을 먼저 입력해주세요.\n설정을 저장한 후 라이브를 시작할 수 있습니다.');
+        alert('스트리밍 URL을 먼저 입력해주세요.\n설정을 저장한 후 라이브를 시작할 수 있습니다.');
         document.getElementById('cfg-stream').focus();
         document.getElementById('cfg-stream').style.borderColor = '#ef4444';
         document.getElementById('cfg-stream').style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
@@ -1512,9 +1513,58 @@ function renderLiveEditView(container, liveId, showView) {
           startTextEl.value = localISO;
         }
       }
-      e.target.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
-      e.target.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
-      e.target.style.cssText = 'flex:1; justify-content:center; padding:14px; font-size:15px;';
+      btn.textContent = config.isLive ? '라이브 종료' : '라이브 시작';
+      btn.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
+      btn.style.cssText = 'flex:1; justify-content:center; padding:14px; font-size:15px;';
+
+      // 헤더 상태 배지 업데이트
+      const badgeContainer = topBar.querySelector('div:nth-child(2)');
+      if (badgeContainer) {
+        const oldBadge = badgeContainer.querySelector('span:last-child');
+        if (oldBadge && (oldBadge.textContent.includes('라이브 중') || oldBadge.textContent.includes('송출 대기'))) {
+          if (config.isLive) {
+            oldBadge.innerHTML = '<span style="width:5px; height:5px; background:#ef4444; border-radius:50%; display:inline-block;"></span>라이브 중';
+            oldBadge.style.cssText = 'font-size:10px; font-weight:800; color:#ef4444; background:#fee2e2; border:1px solid #fecaca; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center; gap:4px;';
+          } else {
+            oldBadge.innerHTML = '송출 대기';
+            oldBadge.style.cssText = 'font-size:10px; font-weight:800; color:#64748b; background:#f1f5f9; border:1px solid #e2e8f0; padding:2px 6px; border-radius:4px; white-space:nowrap; height:16px; display:inline-flex; align-items:center;';
+          }
+        }
+      }
+
+      // ON AIR 타이머 시작/정지
+      if (config.isLive) {
+        // 타이머 시작
+        const timerWrapper = document.getElementById('onair-timer-wrapper');
+        if (!timerWrapper) {
+          // 타이머 요소가 없으면 topBar에 추가
+          const timerDiv = document.createElement('div');
+          timerDiv.id = 'onair-timer-wrapper';
+          timerDiv.style.cssText = 'display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#ef4444; background:#fef2f2; padding:4px 10px; border-radius:6px; border:1px solid #fecaca; white-space:nowrap;';
+          timerDiv.innerHTML = '<div style="width:6px; height:6px; background:#ef4444; border-radius:50%; box-shadow:0 0 0 2px #fee2e2;"></div> 방송 중 <span id="onair-timer-text" style="font-family:monospace; margin-left:2px; letter-spacing:0.02em;">00:00:00</span>';
+          topBar.appendChild(timerDiv);
+        }
+        const baseTime = new Date(config.liveStartTime).getTime();
+        cleanUpOnAirTimer();
+        const timerText = document.getElementById('onair-timer-text');
+        if (timerText) {
+          const updateTimer = () => {
+            const elapsed = Date.now() - baseTime;
+            const h = Math.floor(elapsed / 3600000);
+            const m = Math.floor((elapsed % 3600000) / 60000);
+            const s = Math.floor((elapsed % 60000) / 1000);
+            timerText.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+          };
+          updateTimer();
+          onAirTimerInterval = setInterval(updateTimer, 1000);
+        }
+      } else {
+        // 타이머 정지 및 제거
+        cleanUpOnAirTimer();
+        const timerWrapper = document.getElementById('onair-timer-wrapper');
+        if (timerWrapper) timerWrapper.remove();
+      }
+
       saveConfig();
       syncToSheetDB(liveId, config, stats, products, true);
     });
