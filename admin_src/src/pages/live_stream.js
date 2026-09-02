@@ -719,20 +719,21 @@ function renderLiveEditView(container, liveId, showView) {
   const tabBtnsHtml = isRestricted
     ? `<button class="tab-btn active" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>`
     : `
-      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
-      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
-      <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
-      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
+      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
+      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
+      <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상품 관리</button>
+      <button class="tab-btn" data-tab="orders" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">주문 관리</button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상담 DB</button>
     `;
 
   topBar.innerHTML = `
     <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:4px;"><span style="font-size:14px; line-height:1;">←</span> 목록</button>
-    <div style="display:flex; align-items:center; gap:10px; min-width: 200px; max-width: 580px; flex-shrink:0;">
+    <div style="display:flex; align-items:center; gap:10px; min-width: 180px; max-width: 480px; flex-shrink:0;">
       <span style="font-size:12px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-family:monospace; line-height:1; flex-shrink:0;">${liveId}</span>
-      <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; line-height:1.2;" title="${config.brandName || ''}">${config.brandName || ''}</span>
+      <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; line-height:1.2;" title="${config.brandName || ''}">${config.brandName || ''}</span>
       ${statusBadge}
     </div>
-    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:480px; margin:0 auto;">
+    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:540px; margin:0 auto;">
       ${tabBtnsHtml}
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
@@ -2943,6 +2944,231 @@ function renderLiveEditView(container, liveId, showView) {
     document.getElementById('btn-download-csv-leads').addEventListener('click', downloadCsv);
   };
 
+  // ── 주문 관리 (결제 내역) 탭 렌더링 ──────────────────────────────────
+  const renderOrdersTab = () => {
+    contentArea.innerHTML = `
+      <div class="section-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">
+              주문 관리 (결제 내역)
+            </h2>
+            <span id="orders-count-badge" style="font-size:12px; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 8px; border-radius:12px; border:1px solid #dbeafe;">0건</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-download-csv-orders" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none;">CSV 다운로드</button>
+            <button id="btn-refresh-orders" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+          </div>
+        </div>
+
+        <!-- 핵심 요약 카드 -->
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-bottom:20px;">
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
+            <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">총 주문 건수</div>
+            <div id="stat-orders-count" style="font-size:22px; font-weight:800; color:#0f172a;">0건</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
+            <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">총 결제 금액</div>
+            <div id="stat-orders-total" style="font-size:22px; font-weight:800; color:#0f172a;">0원</div>
+          </div>
+        </div>
+
+        <!-- 검색 필터 -->
+        <div style="margin-bottom:16px; display:flex; gap:10px; align-items:center;">
+          <input type="text" id="order-search-input" placeholder="주문자명, 전화번호, 상품명 검색" class="modern-input" style="max-width:320px; font-size:13px; padding:8px 12px;">
+        </div>
+
+        <div id="orders-list-container">
+          <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">주문 내역을 불러오는 중...</div>
+        </div>
+      </div>
+    `;
+
+    let currentOrders = [];
+
+    const loadOrders = async () => {
+      try {
+        let dbList = [];
+        if (db) {
+          try {
+            const { data, error } = await db.from('live_orders')
+              .select('*')
+              .eq('live_id', liveId)
+              .order('created_at', { ascending: false });
+            if (!error && Array.isArray(data)) {
+              dbList = data;
+            }
+          } catch(e) {
+            console.warn('Supabase live_orders query failed:', e);
+          }
+        }
+
+        // 로컬 스토리지 캐시 병합
+        let localList = [];
+        try {
+          localList = JSON.parse(localStorage.getItem(`ryzin_live_orders_${liveId}`) || '[]');
+        } catch(e) {}
+
+        // 중복 제거 및 병합
+        const mergedMap = new Map();
+        [...dbList, ...localList].forEach(ord => {
+          const key = ord.pg_receipt_id || ord.id || (ord.created_at + ord.customer_phone);
+          if (!mergedMap.has(key)) {
+            mergedMap.set(key, ord);
+          }
+        });
+
+        currentOrders = Array.from(mergedMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+        renderOrdersTable();
+      } catch (err) {
+        console.warn('Failed to load orders', err);
+        const container = document.getElementById('orders-list-container');
+        if (container) container.innerHTML = `<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">주문 내역을 불러오는 데 실패했습니다.</div>`;
+      }
+    };
+
+    const renderOrdersTable = () => {
+      const container = document.getElementById('orders-list-container');
+      const btnCsv = document.getElementById('btn-download-csv-orders');
+      const countBadge = document.getElementById('orders-count-badge');
+      const statCount = document.getElementById('stat-orders-count');
+      const statTotal = document.getElementById('stat-orders-total');
+      const searchInput = document.getElementById('order-search-input');
+      const keyword = (searchInput ? searchInput.value : '').trim().toLowerCase();
+
+      let filtered = currentOrders;
+      if (keyword) {
+        filtered = currentOrders.filter(ord => {
+          const nameMatch = (ord.customer_name || '').toLowerCase().includes(keyword);
+          const phoneMatch = (ord.customer_phone || '').includes(keyword);
+          const addrMatch = (ord.customer_address || '').toLowerCase().includes(keyword);
+          let itemsStr = '';
+          if (Array.isArray(ord.items)) {
+            itemsStr = ord.items.map(i => i.name).join(' ');
+          } else if (typeof ord.items === 'string') {
+            itemsStr = ord.items;
+          }
+          const itemMatch = itemsStr.toLowerCase().includes(keyword);
+          return nameMatch || phoneMatch || addrMatch || itemMatch;
+        });
+      }
+
+      // 통계 업데이트
+      const totalAmountSum = currentOrders.reduce((sum, ord) => sum + (Number(ord.total_amount) || 0), 0);
+      if (statCount) statCount.textContent = `${currentOrders.length.toLocaleString()}건`;
+      if (statTotal) statTotal.textContent = `${totalAmountSum.toLocaleString()}원`;
+      if (countBadge) countBadge.textContent = `${filtered.length}건`;
+
+      if (btnCsv) {
+        btnCsv.style.display = currentOrders.length > 0 ? 'block' : 'none';
+      }
+
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">주문 내역이 없습니다.</div>`;
+        return;
+      }
+
+      let html = `
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px; min-width:800px;">
+            <thead style="background:#f1f5f9; color:#475569;">
+              <tr>
+                <th style="padding:10px 12px; font-weight:700;">주문일시</th>
+                <th style="padding:10px 12px; font-weight:700;">주문 상품</th>
+                <th style="padding:10px 12px; font-weight:700; text-align:right;">결제금액</th>
+                <th style="padding:10px 12px; font-weight:700;">주문자</th>
+                <th style="padding:10px 12px; font-weight:700;">연락처</th>
+                <th style="padding:10px 12px; font-weight:700;">배송지 주소</th>
+                <th style="padding:10px 12px; font-weight:700; text-align:center;">상태</th>
+                <th style="padding:10px 12px; font-weight:700; text-align:center;">결제번호</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      filtered.forEach(ord => {
+        const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR') : '-';
+        let itemsSummary = '상품 정보 없음';
+        if (Array.isArray(ord.items) && ord.items.length > 0) {
+          itemsSummary = ord.items.length > 1 ? `${ord.items[0].name} 외 ${ord.items.length - 1}건` : ord.items[0].name;
+        } else if (typeof ord.items === 'string') {
+          try {
+            const parsed = JSON.parse(ord.items);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              itemsSummary = parsed.length > 1 ? `${parsed[0].name} 외 ${parsed.length - 1}건` : parsed[0].name;
+            }
+          } catch(e) {
+            itemsSummary = ord.items;
+          }
+        }
+
+        const price = Number(ord.total_amount) || 0;
+        const statusText = ord.payment_status === 'paid' ? '결제완료' : '페이앱';
+        const statusBadge = `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">${statusText}</span>`;
+
+        html += `
+          <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding:12px; color:#64748b; white-space:nowrap; font-size:12px;">${dateStr}</td>
+            <td style="padding:12px; font-weight:700; color:#0f172a; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${itemsSummary}">${itemsSummary}</td>
+            <td style="padding:12px; font-weight:800; color:#0f172a; text-align:right; font-family:monospace;">${price.toLocaleString()}원</td>
+            <td style="padding:12px; font-weight:700; color:#0f172a;">${ord.customer_name || '-'}</td>
+            <td style="padding:12px; font-family:monospace; color:#3b82f6;">${ord.customer_phone || '-'}</td>
+            <td style="padding:12px; color:#475569; max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ord.customer_address || ''}">${ord.customer_address || '-'}</td>
+            <td style="padding:12px; text-align:center;">${statusBadge}</td>
+            <td style="padding:12px; font-family:monospace; font-size:11px; color:#64748b; text-align:center;">${ord.pg_receipt_id || '-'}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
+    };
+
+    const downloadCsv = () => {
+      if (currentOrders.length === 0) return;
+      let csv = '주문일시,대표상품명,결제금액,주문자이름,연락처,배송지주소,결제상태,결제요청번호\n';
+      currentOrders.forEach(ord => {
+        const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR').replace(/,/g, '') : '';
+        let itemsSummary = '';
+        if (Array.isArray(ord.items) && ord.items.length > 0) {
+          itemsSummary = ord.items.length > 1 ? `${ord.items[0].name} 외 ${ord.items.length - 1}건` : ord.items[0].name;
+        } else if (typeof ord.items === 'string') {
+          itemsSummary = ord.items;
+        }
+        itemsSummary = itemsSummary.replace(/,/g, ' ');
+        const amount = Number(ord.total_amount) || 0;
+        const name = (ord.customer_name || '').replace(/,/g, ' ');
+        const phone = (ord.customer_phone || '').replace(/,/g, ' ');
+        const addr = (ord.customer_address || '').replace(/,/g, ' ');
+        const status = ord.payment_status || 'payapp';
+        const receipt = ord.pg_receipt_id || '';
+
+        csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${addr},${status},${receipt}\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `주문내역_${liveId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    loadOrders();
+    document.getElementById('btn-refresh-orders').addEventListener('click', loadOrders);
+    document.getElementById('btn-download-csv-orders').addEventListener('click', downloadCsv);
+    const searchInput = document.getElementById('order-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', renderOrdersTable);
+    }
+  };
+
   // ── 탭 전환 로직 ──────────────────────────────────────────
   const btnBack = layout.querySelector('#btn-back');
   if (btnBack) {
@@ -3158,9 +3384,9 @@ function renderLiveEditView(container, liveId, showView) {
     contentArea.dispatchEvent(new Event('adminTabLeave'));
     tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
     if (tabName === 'config') renderConfigTab();
-
     else if (tabName === 'chat') renderChatTab();
     else if (tabName === 'product') renderProductTab();
+    else if (tabName === 'orders') renderOrdersTab();
     else if (tabName === 'leads') renderLeadsTab();
   };
 

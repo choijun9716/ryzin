@@ -2067,19 +2067,40 @@ if (btnSubmitPayment) {
       const result = await response.json();
 
       if (result.success && result.payurl) {
-        // Supabase DB에 주문건 임시/대기 적재
+        const orderData = {
+          id: 'ord_' + Date.now(),
+          live_id: LIVE_ID || 'live01',
+          customer_name: name,
+          customer_phone: phone,
+          customer_address: address,
+          total_amount: total,
+          items: cartItems,
+          payment_status: 'payapp_requested',
+          pg_provider: 'payapp',
+          pg_receipt_id: String(result.mul_no || ''),
+          created_at: new Date().toISOString()
+        };
+
+        // 로컬 스토리지 즉시 캐시 백업
+        try {
+          const localOrders = JSON.parse(localStorage.getItem(`ryzin_live_orders_${LIVE_ID || 'live01'}`) || '[]');
+          localOrders.unshift(orderData);
+          localStorage.setItem(`ryzin_live_orders_${LIVE_ID || 'live01'}`, JSON.stringify(localOrders));
+        } catch(e) {}
+
+        // Supabase DB에 주문건 적재 시도
         if (db) {
           try {
             await db.from('live_orders').insert({
-              live_id: LIVE_ID || 'live01',
-              customer_name: name,
-              customer_phone: phone,
-              customer_address: address,
-              total_amount: total,
-              items: cartItems,
-              payment_status: 'payapp_requested',
-              pg_provider: 'payapp',
-              pg_receipt_id: String(result.mul_no || '')
+              live_id: orderData.live_id,
+              customer_name: orderData.customer_name,
+              customer_phone: orderData.customer_phone,
+              customer_address: orderData.customer_address,
+              total_amount: orderData.total_amount,
+              items: orderData.items,
+              payment_status: orderData.payment_status,
+              pg_provider: orderData.pg_provider,
+              pg_receipt_id: orderData.pg_receipt_id
             });
           } catch(e) {
             console.warn('주문 정보 DB 저장 경고 (결제는 계속 진행):', e);
