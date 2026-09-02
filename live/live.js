@@ -2155,6 +2155,7 @@ document.addEventListener('click', function onFirstInteraction() {
 
 function playStreamUrl(url, isLive) {
   const video = document.getElementById('live-video');
+  const ytBox = document.getElementById('youtube-box');
   const ytPlayer = document.getElementById('youtube-player');
   const overlay = document.getElementById('thumbnail-overlay');
   if (!video) return;
@@ -2168,8 +2169,8 @@ function playStreamUrl(url, isLive) {
     video.pause();
     video.style.display = 'none';
 
+    if (ytBox) ytBox.style.display = 'block';
     if (ytPlayer) {
-      ytPlayer.style.display = 'block';
       const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1`;
       if (!ytPlayer.src.includes(ytId)) {
         ytPlayer.src = targetSrc;
@@ -2180,8 +2181,8 @@ function playStreamUrl(url, isLive) {
       overlay.style.display = 'none';
     }
   } else {
+    if (ytBox) ytBox.style.display = 'none';
     if (ytPlayer) {
-      ytPlayer.style.display = 'none';
       ytPlayer.src = '';
     }
     video.style.display = 'block';

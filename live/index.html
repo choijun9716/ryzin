@@ -255,10 +255,13 @@
         })();
       </script>
       <video id="live-video" autoplay muted playsinline webkit-playsinline="true" x5-playsinline="true" controlslist="nodownload nofullscreen noremoteplayback" disablepictureinpicture="true" disableremoteplayback="true" style="pointer-events:none; width:100%; height:100%; object-fit:cover;"></video>
-      <iframe id="youtube-player"
-        style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none; z-index:1; object-fit:contain;"
-        allow="autoplay; encrypted-media; picture-in-picture"
-        allowfullscreen></iframe>
+      <!-- 유튜브 상하단 제어바(재생/아이콘) 완전 클리핑 래퍼 -->
+      <div id="youtube-box" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; z-index:1; pointer-events:none;">
+        <iframe id="youtube-player"
+          style="position:absolute; top:-50px; left:-5%; width:110%; height:calc(100% + 100px); border:none; pointer-events:none;"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
 
       <!-- 썸네일 오버레이 (어드민에서 방송 시작 시 숨김 처리됨) -->
       <div id="thumbnail-overlay" class="thumbnail-overlay" style="display:none;">
