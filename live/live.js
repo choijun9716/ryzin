@@ -3249,6 +3249,8 @@ window.cancelMyOrder = async function(mulNo, orderId, evt) {
 // ----------------------------------------------------
 let currentActiveGiveaway = null;
 
+window.__userClosedGiveawayIds = window.__userClosedGiveawayIds || {};
+
 function checkAndShowGiveaway(productList) {
   if (!Array.isArray(productList)) return;
   const giveawayCard = document.getElementById('giveaway-overlay-card');
@@ -3259,6 +3261,12 @@ function checkAndShowGiveaway(productList) {
   if (!freeItem) {
     giveawayCard.style.display = 'none';
     currentActiveGiveaway = null;
+    return;
+  }
+
+  // 사용자가 이미 '✕'를 눌러 닫은 상품이면 다시 열지 않음
+  if (window.__userClosedGiveawayIds[String(freeItem.id)]) {
+    giveawayCard.style.display = 'none';
     return;
   }
 
@@ -3318,14 +3326,21 @@ function checkAndShowGiveaway(productList) {
   }
 }
 
-window.closeGiveawayCard = function() {
+window.closeGiveawayCard = function(evt) {
+  if (evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
+  if (currentActiveGiveaway && currentActiveGiveaway.id) {
+    window.__userClosedGiveawayIds[String(currentActiveGiveaway.id)] = true;
+  }
   const card = document.getElementById('giveaway-overlay-card');
   if (card) {
-    card.style.animation = 'giveawayPopOut 0.3s ease-in forwards';
+    card.style.animation = 'giveawayPopOut 0.25s ease-in forwards';
     setTimeout(() => {
       card.style.display = 'none';
       card.style.animation = 'giveawayPopIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-    }, 300);
+    }, 250);
   }
 };
 
