@@ -1212,7 +1212,7 @@ async function renderUsersPanel(panel, wrapper) {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
       <div>
         <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 4px 0;">전체 회원 리스트 (${users.length}명)</h2>
-        <p style="font-size:12px; color:#64748b; margin:0;">가입된 회원 데이터, 보유 포인트, 쿠폰 수, 멤버십 활성화 여부, 기본 배송지를 관리합니다.</p>
+        <p style="font-size:12px; color:#64748b; margin:0;">회원의 실명, 연락처, 배송지 주소를 통합 관리합니다.</p>
       </div>
       <button id="add-user-btn" class="sm-action-btn sm-btn-primary">+ 새 회원 등록 모달</button>
     </div>
@@ -1221,35 +1221,57 @@ async function renderUsersPanel(panel, wrapper) {
       <table class="sm-table">
         <thead>
           <tr>
-            <th style="width:120px;">유저 코드</th>
-            <th style="width:90px;">회원명</th>
-            <th>이메일</th>
-            <th style="width:100px;">보유 포인트</th>
-            <th style="width:80px;">쿠폰 수</th>
-            <th style="width:90px;">멤버십</th>
-            <th>기본 배송지 주소</th>
-            <th style="width:110px; text-align:center;">관리</th>
+            <th style="width:90px;">구분</th>
+            <th style="width:110px; font-weight:800;">이름</th>
+            <th style="width:130px; font-weight:800;">연락처</th>
+            <th style="font-weight:800;">배송지 주소</th>
+            <th style="width:90px; text-align:right;">포인트</th>
+            <th style="width:110px; text-align:center;">가입/등록일</th>
+            <th style="width:80px; text-align:center;">관리</th>
           </tr>
         </thead>
         <tbody id="user-table-body">
-          ${users.map(u => `
+          ${users.length === 0 ? `
             <tr>
-              <td>${(u.user_code && u.user_code.startsWith('KAKAO-')) ? `<span class="sm-rank-badge" style="background:#FEE500; color:#191919; font-weight:800; border:1px solid #eab308;">카카오</span>` : `<span class="sm-rank-badge" style="background:#1e293b;">${esc(u.user_code || 'USER-0000')}</span>`}</td>
-              <td style="font-weight:800; color:#0f172a;">${esc(u.name)}</td>
-              <td style="font-weight:600; color:#64748b;">${esc(u.email)}</td>
-              <td style="font-weight:800; color:#2563eb;">${(u.points || 0).toLocaleString()}P</td>
-              <td style="font-weight:700;">${u.coupons_count || 0}장</td>
-              <td>
-                <span style="font-size:11px; font-weight:800; padding:3px 8px; border-radius:4px; ${u.membership_active ? 'background:#dbeafe; color:#1e40af;' : 'background:#f1f5f9; color:#64748b;'}">
-                  ${u.membership_active ? '멤버십 회원' : '일반 회원'}
-                </span>
-              </td>
-              <td style="font-size:12px; color:#475569; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(u.default_address || '-')}</td>
-              <td style="text-align:center;">
-                <button class="sm-action-btn sm-btn-primary user-edit-btn" data-id="${u.id}" style="padding:4px 8px; font-size:11px;">수정</button>
-              </td>
+              <td colspan="7" style="text-align:center; padding:32px; color:#94a3b8; font-size:13px;">등록된 회원 정보가 없습니다.</td>
             </tr>
-          `).join('')}
+          ` : users.map(u => {
+            const isKakao = u.user_code && u.user_code.startsWith('KAKAO-');
+            const displayName = u.name || (isKakao ? '카카오 회원' : '미입력');
+            
+            // 연락처 추출
+            let displayPhone = u.phone || '';
+            if (!displayPhone && u.email && (u.email.startsWith('01') || u.email.includes('-') || u.email.includes('@kakao.user'))) {
+              displayPhone = u.email.replace('@kakao.user', '');
+            }
+            if (!displayPhone && u.default_address) {
+              const match = u.default_address.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);
+              if (match) displayPhone = match[0];
+            }
+            if (!displayPhone) displayPhone = (u.email && !u.email.includes('kakao.com')) ? u.email : '-';
+
+            // 주소 정리
+            let displayAddress = u.default_address || '-';
+            if (displayAddress.startsWith('연락처:')) {
+              displayAddress = '주소 미입력 (주문 시 자동 등록)';
+            }
+
+            const regDate = u.created_at ? new Date(u.created_at).toLocaleDateString('ko-KR') : '-';
+
+            return `
+              <tr>
+                <td>${isKakao ? `<span class="sm-rank-badge" style="background:#FEE500; color:#191919; font-weight:800; border:1px solid #eab308; font-size:10px;">카카오</span>` : `<span class="sm-rank-badge" style="background:#1e293b; font-size:10px;">일반</span>`}</td>
+                <td style="font-weight:800; color:#0f172a; font-size:13px;">${esc(displayName)}</td>
+                <td style="font-weight:700; color:#2563eb; font-family:monospace; font-size:12.5px;">${esc(displayPhone)}</td>
+                <td style="font-size:12.5px; color:#334155; font-weight:500;">${esc(displayAddress)}</td>
+                <td style="font-weight:700; color:#059669; text-align:right; font-family:monospace;">${(u.points || 0).toLocaleString()}P</td>
+                <td style="font-size:11px; color:#64748b; text-align:center;">${regDate}</td>
+                <td style="text-align:center;">
+                  <button class="sm-action-btn sm-btn-primary user-edit-btn" data-id="${u.id}" style="padding:4px 8px; font-size:11px;">수정</button>
+                </td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
       </table>
     </div>

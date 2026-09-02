@@ -1260,8 +1260,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const clientDb = db || window.supabaseClient;
           if (clientDb) {
             const userCode = 'KAKAO-' + kakaoId;
-            const userEmail = kakaoAccount.email || (phone ? (phone + '@kakao.user') : ('kakao_' + kakaoId + '@ryzin.com'));
-            const userAddress = phone ? ('연락처: ' + phone) : '카카오 간편가입';
+            const userEmail = phone || kakaoAccount.email || ('kakao_' + kakaoId + '@ryzin.com');
+            const userAddress = '카카오 회원가입 (주소 미입력)';
 
             clientDb.from('shop_users')
               .select('id')
@@ -2322,6 +2322,43 @@ if (btnSubmitPayment) {
 
     // 주문 정보 영구 저장
     saveCheckoutForm();
+
+    // ── Supabase shop_users 테이블에 실명, 연락처, 배송지 주소 실시간 동기화 ──
+    try {
+      const clientDb = db || window.supabaseClient;
+      if (clientDb) {
+        let kakaoUserObj = null;
+        try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+        const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+        const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+        const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : ('USER-' + phone.replace(/[^0-9]/g, '')));
+
+        if (userCode) {
+          clientDb.from('shop_users')
+            .select('id')
+            .eq('user_code', userCode)
+            .maybeSingle()
+            .then(({ data: existUser }) => {
+              const userPayload = {
+                name: name,
+                email: phone,
+                default_address: address,
+                membership_active: true
+              };
+              if (existUser) {
+                clientDb.from('shop_users').update(userPayload).eq('id', existUser.id).then(() => {});
+              } else {
+                clientDb.from('shop_users').insert({
+                  user_code: userCode,
+                  ...userPayload,
+                  points: 3000,
+                  coupons_count: 1
+                }).then(() => {});
+              }
+            }).catch(e => console.warn('shop_users checkout sync error:', e));
+        }
+      }
+    } catch(syncErr) {}
 
     let total = 0;
     cartItems.forEach(item => {
