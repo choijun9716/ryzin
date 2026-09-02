@@ -1262,7 +1262,7 @@ async function renderUsersPanel(panel, wrapper) {
               <tr>
                 <td>${isKakao ? `<span class="sm-rank-badge" style="background:#FEE500; color:#191919; font-weight:800; border:1px solid #eab308; font-size:10px;">카카오</span>` : `<span class="sm-rank-badge" style="background:#1e293b; font-size:10px;">일반</span>`}</td>
                 <td style="font-weight:800; color:#0f172a; font-size:13px;">${esc(displayName)}</td>
-                <td style="font-weight:700; color:#2563eb; font-family:monospace; font-size:12.5px;">${esc(displayPhone)}</td>
+                <td style="font-weight:700; color:#2563eb; font-size:12.5px;">${esc(displayPhone)}</td>
                 <td style="font-size:12.5px; color:#334155; font-weight:500;">${esc(displayAddress)}</td>
                 <td style="font-weight:700; color:#059669; text-align:right; font-family:monospace;">${(u.points || 0).toLocaleString()}P</td>
                 <td style="font-size:11px; color:#64748b; text-align:center;">${regDate}</td>
