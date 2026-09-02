@@ -3043,12 +3043,22 @@ function renderLiveEditView(container, liveId, showView) {
           localList = JSON.parse(localStorage.getItem(`ryzin_live_orders_${liveId}`) || '[]');
         } catch(e) {}
 
-        // 중복 제거 및 병합
+        // 중복 제거 및 병합 (취소/환불 상태가 나중에 업데이트된 경우 덮어쓰기)
         const mergedMap = new Map();
         [...dbList, ...localList].forEach(ord => {
           const key = (ord.pg_receipt_id && ord.pg_receipt_id !== 'undefined' ? ord.pg_receipt_id : null) || ord.id || (ord.created_at + '_' + ord.customer_phone);
-          if (!mergedMap.has(key)) {
+          const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
+          const existing = mergedMap.get(key);
+          if (!existing) {
+            // 새로운 키 — 그냥 삽입
             mergedMap.set(key, ord);
+          } else {
+            // 이미 있는 키 — 취소/환불 상태가 들어오면 덮어씀 (취소 우선)
+            const incomingIsCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
+            const existingIsCancelled = cancelStatuses.includes((existing.payment_status || '').toLowerCase());
+            if (incomingIsCancelled && !existingIsCancelled) {
+              mergedMap.set(key, ord);
+            }
           }
         });
 
@@ -3140,8 +3150,16 @@ function renderLiveEditView(container, liveId, showView) {
         }
 
         const price = Number(ord.total_amount) || 0;
-        const statusText = ord.payment_status === 'paid' ? '결제완료' : '페이앱';
-        const statusBadge = `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">${statusText}</span>`;
+        const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
+        const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
+        const statusText = isCancelled ? '취소/환불'
+          : ord.payment_status === 'paid' ? '결제완료'
+          : '페이앱';
+        const statusBadge = isCancelled
+          ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca;">${statusText}</span>`
+          : ord.payment_status === 'paid'
+            ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">${statusText}</span>`
+            : `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">${statusText}</span>`;
 
         html += `
           <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
