@@ -1,7 +1,7 @@
 const https = require('https');
 const querystring = require('querystring');
 
-const PAYAPP_USERID = process.env.PAYAPP_USERID || 'choijun9716';
+const PAYAPP_USERID = process.env.PAYAPP_USERID || 'choijun';
 const PAYAPP_LINKKEY = process.env.PAYAPP_LINKKEY || 'HKLGmqloJDacD/xSfNFAp+1DPJnCCRVaOgT+oqg6zaM=';
 const PAYAPP_LINKVAL = process.env.PAYAPP_LINKVAL || 'HKLGmqloJDacD/xSfNFApxwEhfqPpIdErCc7aBp4klk=';
 
