@@ -1205,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ── 카카오 1초 간편 로그인 연동 ──────────────────────────
-  window.KAKAO_JS_KEY = '5d6e1d539a2ddc90d5bab20dff6f116b';
+  window.KAKAO_JS_KEY = '95fa521ea12208ad849b0ce9bb64b19f';
 
   window.initKakaoSDK = function() {
     if (typeof Kakao !== 'undefined' && !Kakao.isInitialized() && window.KAKAO_JS_KEY) {
