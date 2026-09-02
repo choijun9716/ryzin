@@ -2863,6 +2863,12 @@ window.openMyOrdersModal = async function() {
     }
   }
 
+  // 결제 대기(미결제 건) 완전 제외 (오직 결제완료 및 결제취소 건만 노출)
+  orders = orders.filter(o => {
+    const st = o.payment_status;
+    return st === 'paid' || st === '결제완료' || st === 'cancelled' || st === '결제취소';
+  });
+
   // 최신순 정렬
   orders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
@@ -2885,45 +2891,95 @@ window.openMyOrdersModal = async function() {
     return;
   }
 
-  listEl.innerHTML = orders.map(ord => {
+  listEl.innerHTML = orders.map((ord, idx) => {
     const isPaid = ord.payment_status === 'paid' || ord.payment_status === '결제완료';
     const isCancelled = ord.payment_status === 'cancelled' || ord.payment_status === '결제취소';
+    const mulNo = ord.pg_receipt_id || '';
     
     let badgeHtml = '';
     if (isCancelled) {
-      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#fee2e2; color:#b91c1c; padding:3px 7px; border-radius:6px;">🔴 결제취소</span>';
+      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:6px;">🔴 결제승인취소</span>';
     } else if (isPaid) {
-      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#dcfce7; color:#166534; padding:3px 7px; border-radius:6px;">🟢 결제완료</span>';
-    } else {
-      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#fef3c7; color:#92400e; padding:3px 7px; border-radius:6px;">⏳ 결제대기</span>';
+      badgeHtml = '<span style="font-size:10.5px; font-weight:800; background:#dcfce7; color:#166534; padding:3px 8px; border-radius:6px;">🟢 결제완료</span>';
     }
 
     const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
     const totalStr = (ord.total_amount || 0).toLocaleString();
 
-    // 상품 요약
-    let itemsSummary = '';
+    // 상품 목록 파싱
+    let itemsList = [];
     if (Array.isArray(ord.items) && ord.items.length > 0) {
-      const first = ord.items[0];
-      const count = ord.items.length;
-      itemsSummary = count > 1 ? `${first.name} 외 ${count - 1}건` : first.name;
-    } else {
-      itemsSummary = ord.goodname || '라이브 상품';
+      itemsList = ord.items;
+    } else if (typeof ord.items === 'string') {
+      try { itemsList = JSON.parse(ord.items); } catch(e) {}
     }
 
+    let itemsSummary = '';
+    if (itemsList.length > 0) {
+      const first = itemsList[0];
+      itemsSummary = itemsList.length > 1 ? `${first.name} 외 ${itemsList.length - 1}건` : first.name;
+    } else {
+      itemsSummary = ord.goodname || '라이브 주문 상품';
+    }
+
+    // 상세 개별 품목 HTML
+    const itemsDetailHtml = itemsList.length > 0 ? itemsList.map(item => {
+      const unitPrice = item.price ? Number(item.price.toString().replace(/[^0-9]/g, '')) : 0;
+      const qty = item.quantity || 1;
+      const subTotal = (unitPrice * qty).toLocaleString();
+      const imgTag = item.image ? `<img src="${item.image}" alt="thumb" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">` : '';
+      return `
+        <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;">
+          ${imgTag}
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:12px; font-weight:700; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
+            <div style="font-size:11px; color:#64748b;">${unitPrice.toLocaleString()}원 × ${qty}개</div>
+          </div>
+          <div style="font-size:12px; font-weight:800; color:#0f172a; flex-shrink:0;">${subTotal}원</div>
+        </div>
+      `;
+    }).join('') : `<div style="font-size:12px; color:#64748b; padding:4px 0;">${itemsSummary}</div>`;
+
     return `
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:13px 14px; display:flex; flex-direction:column; gap:8px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11.5px; color:#64748b; font-weight:600;">${dateStr}</span>
-          ${badgeHtml}
+      <div class="my-order-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+        <!-- 카드 헤더 (클릭 시 아코디언 토글) -->
+        <div onclick="toggleOrderDetail(${idx})" style="padding:12px 14px; background:#f8fafc; cursor:pointer; display:flex; flex-direction:column; gap:6px; border-bottom:1px solid #f1f5f9;" title="클릭하여 상세 상품 확인">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11.5px; color:#64748b; font-weight:600;">${dateStr}</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              ${badgeHtml}
+              <span id="order-arrow-${idx}" style="font-size:11px; color:#94a3b8; font-weight:800; transition:transform 0.2s;">▼</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div style="font-size:13.5px; font-weight:800; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${itemsSummary}</div>
+            <div style="font-size:14.5px; font-weight:800; color:${isCancelled ? '#94a3b8' : '#0f172a'}; text-decoration:${isCancelled ? 'line-through' : 'none'}; flex-shrink:0;">${totalStr}원</div>
+          </div>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-          <div style="font-size:13.5px; font-weight:800; color:#0f172a; line-height:1.3; word-break:break-word;">${itemsSummary}</div>
-          <div style="font-size:14.5px; font-weight:800; color:${isCancelled ? '#94a3b8' : '#0f172a'}; text-decoration:${isCancelled ? 'line-through' : 'none'}; flex-shrink:0;">${totalStr}원</div>
-        </div>
-        <div style="font-size:11.5px; color:#64748b; border-top:1px dashed #e2e8f0; padding-top:6px; display:flex; flex-direction:column; gap:2px;">
-          <div><span style="color:#94a3b8; font-weight:600;">수령인:</span> ${ord.customer_name || '-'} (${ord.customer_phone || '-'})</div>
-          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><span style="color:#94a3b8; font-weight:600;">배송지:</span> ${ord.customer_address || '-'}</div>
+
+        <!-- 상세 상품 및 배송지 아코디언 영역 -->
+        <div id="order-detail-${idx}" style="display:none; padding:12px 14px; background:#ffffff; flex-direction:column; gap:8px;">
+          <div style="font-size:11.5px; font-weight:800; color:#475569; margin-bottom:2px;">주문 상세 상품</div>
+          <div style="display:flex; flex-direction:column; margin-bottom:6px;">
+            ${itemsDetailHtml}
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:9px 11px; font-size:11.5px; color:#475569; display:flex; flex-direction:column; gap:3px;">
+            <div><span style="color:#94a3b8; font-weight:700;">수령인:</span> ${ord.customer_name || '-'} (${ord.customer_phone || '-'})</div>
+            <div style="word-break:break-all;"><span style="color:#94a3b8; font-weight:700;">배송지:</span> ${ord.customer_address || '-'}</div>
+            ${mulNo ? `<div style="font-size:10.5px; color:#94a3b8; margin-top:2px;">결제승인번호: ${mulNo}</div>` : ''}
+          </div>
+
+          <!-- 고객 직접 결제 취소 버튼 (결제완료 건만 노출) -->
+          ${(isPaid && mulNo) ? `
+            <div style="margin-top:4px; display:flex; justify-content:flex-end;">
+              <button type="button" onclick="cancelMyOrder('${mulNo}', '${ord.id || ''}', event)"
+                style="padding:6px 12px; background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer; transition:all 0.15s; outline:none;"
+                onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
+                주문 결제 취소
+              </button>
+            </div>
+          ` : ''}
         </div>
       </div>
     `;
@@ -2943,3 +2999,81 @@ if (btnCloseMyOrders) {
     if (modal) modal.style.display = 'none';
   });
 }
+
+
+
+// 주문 상세 상품 아코디언 토글
+window.toggleOrderDetail = function(idx) {
+  const detailEl = document.getElementById(`order-detail-${idx}`);
+  const arrowEl = document.getElementById(`order-arrow-${idx}`);
+  if (!detailEl) return;
+  const isHidden = detailEl.style.display === 'none';
+  detailEl.style.display = isHidden ? 'flex' : 'none';
+  if (arrowEl) {
+    arrowEl.textContent = isHidden ? '▲' : '▼';
+  }
+};
+
+// 고객 직접 주문 취소 처리 함수
+window.cancelMyOrder = async function(mulNo, orderId, evt) {
+  if (evt) evt.stopPropagation();
+  if (!mulNo) {
+    alert('결제 번호를 찾을 수 없어 취소할 수 없습니다.');
+    return;
+  }
+
+  if (!confirm('정말 주문 결제를 취소하시겠습니까?\n확인 시 즉시 카드 승인이 취소됩니다.')) {
+    return;
+  }
+
+  const btn = evt ? evt.target : null;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '취소 처리 중...';
+  }
+
+  try {
+    const res = await fetch('/api/payapp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cmd: 'cancel',
+        mul_no: String(mulNo),
+        cancelmemo: '고객 직접 주문 취소'
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert('결제가 정상적으로 취소되었습니다.');
+
+      // 1. 로컬스토리지 내 주문 상태를 'cancelled'로 즉시 갱신
+      try {
+        const myOrders = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');
+        myOrders.forEach(o => {
+          if (String(o.pg_receipt_id) === String(mulNo) || o.id === orderId) {
+            o.payment_status = 'cancelled';
+          }
+        });
+        localStorage.setItem('ryzin_my_orders_history', JSON.stringify(myOrders));
+      } catch(e) {}
+
+      // 2. 모달 다시 불러와서 최신 상태 반영
+      if (typeof openMyOrdersModal === 'function') {
+        openMyOrdersModal();
+      }
+    } else {
+      alert(data.message || '결제 취소에 실패했습니다. 관리자에게 문의해 주세요.');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '주문 결제 취소';
+      }
+    }
+  } catch(err) {
+    alert('취소 통신 중 오류가 발생했습니다: ' + err.message);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = '주문 결제 취소';
+    }
+  }
+};

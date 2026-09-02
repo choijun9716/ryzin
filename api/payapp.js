@@ -119,7 +119,34 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, results });
     }
 
-    // ── 2. 기존 결제 요청 (payrequest) ──
+    // ── 2. 결제 취소 요청 (paycancel / cancel) ──
+    if (cmd === 'paycancel' || cmd === 'cancel') {
+      const mul_no = String(body.mul_no || '');
+      if (!mul_no) {
+        return res.status(400).json({ success: false, message: '취소할 mul_no(결제번호)가 필요합니다.' });
+      }
+
+      const cancelmemo = body.cancelmemo || '고객 직접 주문 취소 요청';
+      const cancelRes = await requestPayApp({
+        cmd: 'paycancel',
+        userid: PAYAPP_USERID,
+        linkkey: PAYAPP_LINKKEY,
+        mul_no: mul_no,
+        cancelmemo: cancelmemo
+      });
+
+      if (cancelRes.state === '1') {
+        return res.status(200).json({ success: true, message: '결제가 정상적으로 취소되었습니다.', raw: cancelRes });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: cancelRes.errorMessage || '결제 취소에 실패했습니다. (이미 취소되었거나 취소 불가 상태)',
+          raw: cancelRes
+        });
+      }
+    }
+
+    // ── 3. 기존 결제 요청 (payrequest) ──
     const {
       goodname,
       price,
