@@ -506,23 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (c.streamUrl && (window.__lastStreamUrl !== c.streamUrl || window.__lastIsLive !== c.isLive)) {
           window.__lastStreamUrl = c.streamUrl;
           window.__lastIsLive = c.isLive;
-
-          if (c.isLive) {
-            if (overlay) overlay.classList.add('hidden');
-            if (window.hlsInstance) {
-              window.hlsInstance.loadSource(c.streamUrl);
-              window.hlsInstance.attachMedia(video);
-              window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
-                video.play().catch(e => console.warn(e));
-              });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-              video.src = c.streamUrl;
-              video.play().catch(e => console.warn(e));
-            }
-          } else {
-            if (overlay) overlay.classList.remove('hidden');
-            video.pause();
-          }
+          playStreamUrl(c.streamUrl, c.isLive);
         }
         const titleEl = document.querySelector('.broadcast-title');
         if (titleEl) titleEl.textContent = c.title;
@@ -991,27 +975,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   // ===========================================
 
-  // 1. 비디오 HLS 스트리밍 설정
+  // 1. 비디오 스트리밍 설정 (HLS 및 YouTube 라이브 자동 지원)
   const video = document.getElementById('live-video');
-  const m3u8Url = 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
+  const savedConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+  const initialStreamUrl = savedConfig.streamUrl || 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
 
   if (Hls.isSupported()) {
-    window.hlsInstance = new Hls({
-      // 옵션: 실시간 라이브에 맞게 튜닝 가능
-      lowLatencyMode: true
-    });
-    window.hlsInstance.loadSource(m3u8Url);
-    window.hlsInstance.attachMedia(video);
-    window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
-      video.play().catch(e => console.warn("자동 재생이 브라우저 정책에 의해 차단되었습니다.", e));
-    });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    // Safari 등 네이티브 지원 브라우저
-    video.src = m3u8Url;
-    video.addEventListener('loadedmetadata', function () {
-      video.play().catch(e => console.warn("자동 재생 차단됨", e));
-    });
+    window.hlsInstance = new Hls({ lowLatencyMode: true });
   }
+
+  playStreamUrl(initialStreamUrl, savedConfig.isLive !== false);
 
 
 
@@ -2126,6 +2099,62 @@ function showInvalidLiveScreen() {
 // [NEW] 장바구니 및 자체 결제 (PortOne) 연동 로직
 // ----------------------------------------------------
 // 장바구니 로컬스토리지 영구 보존 및 동기화
+// ── 유튜브 스트리밍 자동 감지 및 재생 헬퍼 ──
+function extractYoutubeVideoId(url) {
+  if (!url || typeof url !== 'string') return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|live\/|shorts\/))([\w-]{11})/i);
+  return match ? match[1] : null;
+}
+
+function playStreamUrl(url, isLive) {
+  const video = document.getElementById('live-video');
+  const ytPlayer = document.getElementById('youtube-player');
+  const overlay = document.getElementById('thumbnail-overlay');
+  if (!video) return;
+
+  const ytId = extractYoutubeVideoId(url);
+
+  if (ytId) {
+    if (window.hlsInstance) {
+      try { window.hlsInstance.stopLoad(); } catch(e) {}
+    }
+    video.pause();
+    video.style.display = 'none';
+
+    if (ytPlayer) {
+      ytPlayer.style.display = 'block';
+      const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${ytId}&enablejsapi=1`;
+      if (!ytPlayer.src.includes(ytId)) {
+        ytPlayer.src = targetSrc;
+      }
+    }
+    if (isLive && overlay) overlay.classList.add('hidden');
+  } else {
+    if (ytPlayer) {
+      ytPlayer.style.display = 'none';
+      ytPlayer.src = '';
+    }
+    video.style.display = 'block';
+
+    if (isLive) {
+      if (overlay) overlay.classList.add('hidden');
+      if (window.hlsInstance) {
+        window.hlsInstance.loadSource(url);
+        window.hlsInstance.attachMedia(video);
+        window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play().catch(e => console.warn(e));
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.play().catch(e => console.warn(e));
+      }
+    } else {
+      if (overlay) overlay.classList.remove('hidden');
+      video.pause();
+    }
+  }
+}
+
 let cartItems = [];
 function loadCartFromStorage() {
   try {

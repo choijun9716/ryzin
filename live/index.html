@@ -244,6 +244,10 @@
     <!-- 비디오 영역 -->
     <div class="video-wrapper">
       <video id="live-video" autoplay muted playsinline autopictureinpicture="true"></video>
+      <iframe id="youtube-player"
+        style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none; z-index:1; transform:scale(1.35); transform-origin:center center;"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen></iframe>
 
       <!-- 썸네일 오버레이 (어드민에서 방송 시작 시 숨김 처리됨) -->
       <div id="thumbnail-overlay" class="thumbnail-overlay">
