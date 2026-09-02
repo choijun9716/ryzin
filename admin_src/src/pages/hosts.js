@@ -27,6 +27,57 @@ export function renderHosts() {
       return { ...h, stats };
     });
 
+    const tbodyHtml = hostsWithStats.length > 0 ? hostsWithStats.map(h => `
+      <tr class="clickable" data-id="${h.id}">
+        <td><a href="javascript:void(0)" class="host-link" data-id="${h.id}">${h.name}</a></td>
+        <td>${h.phone || '-'}</td>
+        <td class="text-right">${formatNumber(h.stats.totalBroadcasts)}회</td>
+        <td class="text-right">${formatNumber(h.stats.monthBroadcasts)}회</td>
+        <td class="text-right">${formatCurrency(h.stats.totalSettlement)}</td>
+        <td>${formatDate(h.stats.lastBroadcastDate)}</td>
+        <td class="text-right">${formatCurrency(h.stats.avgRevenue)}</td>
+        <td class="text-right">${formatROI(h.stats.avgROI)}</td>
+        <td class="col-actions">
+          <button class="btn btn-ghost btn-icon btn-sm btn-edit-host" data-id="${h.id}" data-tooltip="수정">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </td>
+      </tr>
+    `).join('') : `
+      <tr><td colspan="9" class="text-center" style="padding: var(--space-10); color: var(--text-tertiary);">등록된 쇼호스트가 없습니다.</td></tr>
+    `;
+
+    function bindTableEvents() {
+      container.querySelectorAll('.host-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          router.navigate(`/hosts/${link.getAttribute('data-id')}`);
+        });
+      });
+
+      container.querySelectorAll('.btn-edit-host').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openHostModal(btn.getAttribute('data-id'));
+        });
+      });
+
+      container.querySelectorAll('tr.clickable').forEach(tr => {
+        tr.addEventListener('click', () => {
+          router.navigate(`/hosts/${tr.getAttribute('data-id')}`);
+        });
+      });
+    }
+
+    const existingTbody = container.querySelector('.data-table tbody');
+    if (existingTbody) {
+      existingTbody.innerHTML = tbodyHtml;
+      const countEl = container.querySelector('.table-count strong');
+      if (countEl) countEl.textContent = hostsWithStats.length;
+      bindTableEvents();
+      return;
+    }
+
     container.innerHTML = `
       <div class="page-header">
         <div class="page-header-left">
@@ -69,25 +120,7 @@ export function renderHosts() {
                 </tr>
               </thead>
               <tbody>
-                ${hostsWithStats.length > 0 ? hostsWithStats.map(h => `
-                  <tr class="clickable" data-id="${h.id}">
-                    <td><a href="javascript:void(0)" class="host-link" data-id="${h.id}">${h.name}</a></td>
-                    <td>${h.phone || '-'}</td>
-                    <td class="text-right">${formatNumber(h.stats.totalBroadcasts)}회</td>
-                    <td class="text-right">${formatNumber(h.stats.monthBroadcasts)}회</td>
-                    <td class="text-right">${formatCurrency(h.stats.totalSettlement)}</td>
-                    <td>${formatDate(h.stats.lastBroadcastDate)}</td>
-                    <td class="text-right">${formatCurrency(h.stats.avgRevenue)}</td>
-                    <td class="text-right">${formatROI(h.stats.avgROI)}</td>
-                    <td class="col-actions">
-                      <button class="btn btn-ghost btn-icon btn-sm btn-edit-host" data-id="${h.id}" data-tooltip="수정">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                      </button>
-                    </td>
-                  </tr>
-                `).join('') : `
-                  <tr><td colspan="9" class="text-center" style="padding: var(--space-10); color: var(--text-tertiary);">등록된 쇼호스트가 없습니다.</td></tr>
-                `}
+                ${tbodyHtml}
               </tbody>
             </table>
           </div>
@@ -95,42 +128,18 @@ export function renderHosts() {
       </div>
     `;
 
-    // 이벤트 바인딩
+    // 초기 이벤트 바인딩
     setTimeout(() => {
       container.querySelector('#host-search')?.addEventListener('input', (e) => {
         searchTerm = e.target.value;
         render();
-        const input = document.getElementById('host-search');
-        if (input) {
-          input.focus();
-          const len = input.value.length;
-          input.setSelectionRange(len, len);
-        }
       });
 
       container.querySelector('#btn-add-host')?.addEventListener('click', () => {
         openHostModal();
       });
 
-      container.querySelectorAll('.host-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          router.navigate(`/hosts/${link.getAttribute('data-id')}`);
-        });
-      });
-
-      container.querySelectorAll('.btn-edit-host').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openHostModal(btn.getAttribute('data-id'));
-        });
-      });
-
-      container.querySelectorAll('tr.clickable').forEach(tr => {
-        tr.addEventListener('click', () => {
-          router.navigate(`/hosts/${tr.getAttribute('data-id')}`);
-        });
-      });
+      bindTableEvents();
     }, 0);
   }
 
