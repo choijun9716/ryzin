@@ -2123,40 +2123,38 @@ function renderCartItems() {
     const itemTotal = unitPrice * qty;
     total += itemTotal;
 
+    const isMin = qty <= 1;
+
     const div = document.createElement('div');
-    div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f1f5f9;';
+    div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f8fafc;';
     div.innerHTML = `
-      <img src="${item.image}" alt="product" style="width:54px; height:54px; border-radius:10px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">
+      <img src="${item.image}" alt="product" style="width:46px; height:46px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">
       <div style="flex:1; min-width:0;">
-        <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
-          <!-- 수량 조절 버튼 -->
-          <div style="display:inline-flex; align-items:center; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:2px;">
-            <button class="btn-qty-minus" data-index="${index}" style="width:24px; height:24px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; font-weight:800; font-size:13px; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; transition:background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">-</button>
-            <span style="font-size:13px; font-weight:800; color:#0f172a; min-width:28px; text-align:center;">${qty}</span>
-            <button class="btn-qty-plus" data-index="${index}" style="width:24px; height:24px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; font-weight:800; font-size:13px; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; transition:background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">+</button>
+        <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+          <!-- 미니멀 수량 조절 버튼 -->
+          <div style="display:inline-flex; align-items:center; background:#f1f5f9; border-radius:6px; padding:1px;">
+            <button class="btn-qty-minus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:${isMin ? 'not-allowed' : 'pointer'}; opacity:${isMin ? '0.35' : '1'}; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;" ${isMin ? 'disabled' : ''}>-</button>
+            <span style="font-size:12px; font-weight:700; color:#0f172a; min-width:24px; text-align:center;">${qty}</span>
+            <button class="btn-qty-plus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;">+</button>
           </div>
           <!-- 상품별 소계 금액 -->
-          <div style="font-size:14px; font-weight:800; color:#0f172a;">${itemTotal.toLocaleString()}원</div>
+          <div style="font-size:13px; font-weight:800; color:#0f172a;">${itemTotal.toLocaleString()}원</div>
         </div>
       </div>
-      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:6px; margin-left:4px;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
+      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#cbd5e1; font-size:16px; cursor:pointer; padding:4px; margin-left:2px; transition:color 0.15s;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">✕</button>
     `;
     cartItemsContainer.appendChild(div);
   });
 
   if (cartTotalPrice) cartTotalPrice.textContent = `${total.toLocaleString()}원`;
 
-  // 수량 감소
+  // 수량 감소 (최소 1 유지, 삭제는 우측 X 버튼으로만 가능)
   cartItemsContainer.querySelectorAll('.btn-qty-minus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
-      if (cartItems[idx]) {
-        if ((cartItems[idx].quantity || 1) > 1) {
-          cartItems[idx].quantity -= 1;
-        } else {
-          cartItems.splice(idx, 1);
-        }
+      if (cartItems[idx] && (cartItems[idx].quantity || 1) > 1) {
+        cartItems[idx].quantity -= 1;
         updateCartUI();
         renderCartItems();
       }
@@ -2175,7 +2173,7 @@ function renderCartItems() {
     });
   });
 
-  // 삭제 버튼
+  // 삭제 버튼 (명시적 삭제)
   cartItemsContainer.querySelectorAll('.btn-remove-cart').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
