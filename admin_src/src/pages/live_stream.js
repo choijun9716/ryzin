@@ -2006,12 +2006,17 @@ function renderLiveEditView(container, liveId, showView) {
 
         if (error) throw error;
 
-        if (!list || list.length === 0) {
+        const filteredWinners = (list || []).filter(item => {
+          if (!item.nickname) return true;
+          return !item.nickname.startsWith('{"type":"order"') && !item.nickname.startsWith('{"type": "order"');
+        });
+
+        if (filteredWinners.length === 0) {
           tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">당첨자 제출 목록이 없습니다.</td></tr>`;
           return;
         }
 
-        tableBody.innerHTML = list.map(item => {
+        tableBody.innerHTML = filteredWinners.map(item => {
           const dateStr = new Date(item.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           return `
             <tr style="border-bottom:1px solid #f1f5f9;">
@@ -2991,19 +2996,48 @@ function renderLiveEditView(container, liveId, showView) {
         let dbList = [];
         if (db) {
           try {
-            const { data, error } = await db.from('live_orders')
+            // 1. live_orders 전용 테이블 조회
+            const { data: ordData } = await db.from('live_orders')
               .select('*')
               .eq('live_id', liveId)
               .order('created_at', { ascending: false });
-            if (!error && Array.isArray(data)) {
-              dbList = data;
+            if (Array.isArray(ordData)) {
+              dbList.push(...ordData);
             }
-          } catch(e) {
-            console.warn('Supabase live_orders query failed:', e);
-          }
+          } catch(e) {}
+
+          try {
+            // 2. live_winners 백업 저장소 조회 및 주문 변환
+            const { data: winData } = await db.from('live_winners')
+              .select('*')
+              .eq('live_id', liveId)
+              .order('created_at', { ascending: false });
+            if (Array.isArray(winData)) {
+              winData.forEach(w => {
+                if (w.nickname && (w.nickname.startsWith('{"type":"order"') || w.nickname.startsWith('{"type": "order"'))) {
+                  try {
+                    const meta = JSON.parse(w.nickname);
+                    dbList.push({
+                      id: w.id,
+                      live_id: w.live_id,
+                      customer_name: w.name,
+                      customer_phone: w.phone,
+                      customer_address: w.address,
+                      total_amount: meta.total || 0,
+                      items: meta.items || [{ name: meta.goodname || '상품', price: meta.total || 0 }],
+                      payment_status: meta.status || 'payapp_requested',
+                      pg_provider: meta.pg_provider || 'payapp',
+                      pg_receipt_id: meta.mul_no || '',
+                      created_at: w.created_at
+                    });
+                  } catch(err) {}
+                }
+              });
+            }
+          } catch(e) {}
         }
 
-        // 로컬 스토리지 캐시 병합
+        // 3. 로컬 스토리지 캐시 병합
         let localList = [];
         try {
           localList = JSON.parse(localStorage.getItem(`ryzin_live_orders_${liveId}`) || '[]');
@@ -3012,7 +3046,7 @@ function renderLiveEditView(container, liveId, showView) {
         // 중복 제거 및 병합
         const mergedMap = new Map();
         [...dbList, ...localList].forEach(ord => {
-          const key = ord.pg_receipt_id || ord.id || (ord.created_at + ord.customer_phone);
+          const key = (ord.pg_receipt_id && ord.pg_receipt_id !== 'undefined' ? ord.pg_receipt_id : null) || ord.id || (ord.created_at + '_' + ord.customer_phone);
           if (!mergedMap.has(key)) {
             mergedMap.set(key, ord);
           }

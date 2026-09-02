@@ -2088,8 +2088,30 @@ if (btnSubmitPayment) {
           localStorage.setItem(`ryzin_live_orders_${LIVE_ID || 'live01'}`, JSON.stringify(localOrders));
         } catch(e) {}
 
-        // Supabase DB에 주문건 적재 시도
+        // Supabase DB에 주문건 적재 시도 (live_winners 기반 무설정 즉시 연동 + live_orders)
         if (db) {
+          try {
+            const orderMeta = JSON.stringify({
+              type: 'order',
+              goodname: orderName,
+              total: total,
+              items: cartItems,
+              mul_no: String(result.mul_no || ''),
+              status: 'payapp_requested',
+              pg_provider: 'payapp'
+            });
+
+            await db.from('live_winners').insert({
+              live_id: orderData.live_id,
+              nickname: orderMeta,
+              name: orderData.customer_name,
+              phone: orderData.customer_phone,
+              address: orderData.customer_address
+            });
+          } catch(e) {
+            console.warn('live_winners 백업 적재 실패:', e);
+          }
+
           try {
             await db.from('live_orders').insert({
               live_id: orderData.live_id,
@@ -2103,7 +2125,7 @@ if (btnSubmitPayment) {
               pg_receipt_id: orderData.pg_receipt_id
             });
           } catch(e) {
-            console.warn('주문 정보 DB 저장 경고 (결제는 계속 진행):', e);
+            console.warn('live_orders 전용 테이블 적재 생략:', e);
           }
         }
 
