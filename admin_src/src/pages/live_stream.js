@@ -715,10 +715,9 @@ function renderLiveEditView(container, liveId, showView) {
     : '';
 
   const tabBtnsHtml = isRestricted
-    ? `<button class="tab-btn active" data-tab="scheme" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">스킴관리</button>`
+    ? `<button class="tab-btn active" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>`
     : `
       <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
-      <button class="tab-btn" data-tab="scheme" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">스킴관리</button>
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품 관리</button>
       <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
@@ -1747,49 +1746,7 @@ function renderLiveEditView(container, liveId, showView) {
     }
   };
 
-  const renderSchemeTab = () => {
-    contentArea.innerHTML = `
-      <div class="section-card">
-        <h3>스킴 관리</h3>
-        <p style="margin:-10px 0 20px; font-size:13px; color:#64748b; line-height:1.5;">
-          라이브 방송의 송출 정보, 이벤트 스케줄, 기획안 등 방송 관련 스킴 내용을 자유롭게 기재해 주세요. 작성한 내용은 어드민과 실시간으로 공유됩니다.
-        </p>
-        <div style="margin-bottom:18px;">
-          <label class="modern-label">스킴 내용</label>
-          <textarea class="modern-input" id="cfg-scheme" style="height:320px; font-family:monospace; resize:vertical; padding:12px; line-height:1.6;" placeholder="방송 진행 스킴 또는 메모를 입력하세요."></textarea>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-          <button id="btn-save-scheme" class="action-btn btn-primary-solid" style="padding:10px 24px;">스킴 저장</button>
-        </div>
-      </div>
-    `;
 
-    const textarea = document.getElementById('cfg-scheme');
-    if (textarea) {
-      textarea.value = config.scheme || '';
-    }
-
-    const saveBtn = document.getElementById('btn-save-scheme');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', async () => {
-        saveBtn.disabled = true;
-        saveBtn.textContent = '저장 중...';
-        
-        try {
-          config.scheme = textarea.value;
-          saveConfig();
-          
-          alert('스킴 정보가 정상적으로 저장되었습니다.');
-        } catch (err) {
-          console.error('스킴 저장 실패:', err);
-          alert('스킴 저장 중 오류가 발생했습니다.');
-        } finally {
-          saveBtn.disabled = false;
-          saveBtn.textContent = '스킴 저장';
-        }
-      });
-    }
-  };
 
   const renderChatTab = () => {
     contentArea.innerHTML = `
@@ -3199,7 +3156,7 @@ function renderLiveEditView(container, liveId, showView) {
     contentArea.dispatchEvent(new Event('adminTabLeave'));
     tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
     if (tabName === 'config') renderConfigTab();
-    else if (tabName === 'scheme') renderSchemeTab();
+
     else if (tabName === 'chat') renderChatTab();
     else if (tabName === 'product') renderProductTab();
     else if (tabName === 'leads') renderLeadsTab();
@@ -3209,9 +3166,9 @@ function renderLiveEditView(container, liveId, showView) {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // 기본 탭 렌더링 분기 (브랜드사면 스킴관리, 어드민이면 기본설정)
+  // 기본 탭 렌더링 분기
   if (isRestricted) {
-    renderSchemeTab();
+    renderChatTab();
   } else {
     renderConfigTab();
   }
