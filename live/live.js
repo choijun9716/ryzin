@@ -711,6 +711,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const p = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
       if (p && Array.isArray(p)) {
+        // 일반 상품 목록 유무와 무관하게 무료나눔 상태 즉시 검사 & 동기화
+        if (typeof checkAndShowGiveaway === 'function') {
+          checkAndShowGiveaway(p);
+        }
         const modalProductsList = document.getElementById('modal-products-list');
         modalProductsList.innerHTML = '';
         const now = Date.now();
@@ -1735,6 +1739,14 @@ document.head.appendChild(style);
 
 // 깜짝딜 및 소통왕 당첨 실시간 동기화 1초 주기 감시 엔진
 setInterval(() => {
+  // 0. [NEW] 선착순 무료나눔 실시간 시작/종료 1초 즉시 동기화 감시
+  try {
+    const p = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
+    if (p && Array.isArray(p) && typeof checkAndShowGiveaway === 'function') {
+      checkAndShowGiveaway(p);
+    }
+  } catch (e) {}
+
   // 1. 깜짝딜 타이머 로직
   try {
     const p = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
