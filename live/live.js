@@ -2043,6 +2043,10 @@ if (btnSubmitPayment) {
     `;
 
     try {
+      const returnUrlObj = new URL(window.location.href);
+      returnUrlObj.searchParams.set('pay_success', '1');
+      const returnUrl = returnUrlObj.toString();
+
       const response = await fetch('/api/payapp', {
         method: 'POST',
         headers: {
@@ -2054,7 +2058,7 @@ if (btnSubmitPayment) {
           recvphone: phone,
           buyerName: name,
           address: address,
-          returnurl: window.location.href,
+          returnurl: returnUrl,
           var1: LIVE_ID || 'live01',
           var2: JSON.stringify(cartItems.map(i => ({ name: i.name, price: i.price })))
         })
@@ -2101,4 +2105,36 @@ if (btnSubmitPayment) {
     }
   });
 }
+
+// ----------------------------------------------------
+// [NEW] 결제 완료 복귀 처리 (pay_success 파라미터 감지)
+// ----------------------------------------------------
+function checkPaymentSuccessOnReturn() {
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('pay_success') === '1') {
+      const completeModal = document.getElementById('payment-complete-modal');
+      if (completeModal) {
+        completeModal.style.display = 'flex';
+      }
+
+      // URL에서 pay_success, mul_no 파라미터 제거 (새로고침 시 중복 팝업 방지)
+      url.searchParams.delete('pay_success');
+      url.searchParams.delete('mul_no');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : '') + url.hash);
+    }
+  } catch (e) {}
+}
+
+const btnClosePaymentComplete = document.getElementById('btn-close-payment-complete');
+if (btnClosePaymentComplete) {
+  btnClosePaymentComplete.addEventListener('click', () => {
+    const completeModal = document.getElementById('payment-complete-modal');
+    if (completeModal) completeModal.style.display = 'none';
+  });
+}
+
+// 페이지 로드 시 결제 복귀 확인 실행
+checkPaymentSuccessOnReturn();
+
 
