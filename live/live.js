@@ -2120,6 +2120,10 @@ window.toggleStreamSound = function() {
     iconOff.style.display = isStreamMuted ? 'block' : 'none';
     iconOn.style.display = isStreamMuted ? 'none' : 'block';
   }
+  const textStatus = document.getElementById('text-sound-status');
+  if (textStatus) {
+    textStatus.textContent = isStreamMuted ? '소리 켜기' : '소리 끄기';
+  }
 
   if (video) {
     video.muted = isStreamMuted;
