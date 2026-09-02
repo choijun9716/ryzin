@@ -2126,6 +2126,9 @@ function openCartModal() {
   if (cartModal) {
     cartModal.style.display = 'flex';
     renderCartItems();
+    if (typeof updateCartShippingPreview === 'function') {
+      updateCartShippingPreview();
+    }
   }
 }
 
@@ -2192,6 +2195,9 @@ function renderCartItems() {
   });
 
   if (cartTotalPrice) cartTotalPrice.textContent = `${total.toLocaleString()}원`;
+  if (typeof updateCartShippingPreview === 'function') {
+    updateCartShippingPreview();
+  }
 
   // 수량 감소 (최소 1 유지, 삭제는 우측 X 버튼으로만 가능)
   cartItemsContainer.querySelectorAll('.btn-qty-minus').forEach(btn => {
@@ -2268,6 +2274,55 @@ function saveCheckoutForm() {
     el.addEventListener('change', saveCheckoutForm);
   }
 });
+
+// ── 장바구니 하단 배송지 프리뷰 갱신 및 주소 변경 연동 ──
+function updateCartShippingPreview() {
+  const nameEl = document.getElementById('cart-shipping-name');
+  const phoneEl = document.getElementById('cart-shipping-phone');
+  const addrEl = document.getElementById('cart-shipping-address');
+  const btnChange = document.getElementById('btn-change-shipping');
+  if (!nameEl || !addrEl) return;
+
+  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+  let savedAddr = null;
+  try { savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null'); } catch(e) {}
+  let generalSaved = null;
+  try { generalSaved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || 'null'); } catch(e) {}
+  let kakaoUserObj = null;
+  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+
+  const name = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
+    : (generalSaved && generalSaved.name && generalSaved.name !== currentAcc) ? generalSaved.name
+    : (kakaoUserObj && kakaoUserObj.name && kakaoUserObj.name !== currentAcc) ? kakaoUserObj.name : '';
+
+  const phone = (savedAddr && savedAddr.phone) || (generalSaved && generalSaved.phone) || (kakaoUserObj && kakaoUserObj.phone) || '';
+  const address = (savedAddr && savedAddr.address) || (generalSaved && generalSaved.address) || '';
+
+  if (address) {
+    nameEl.textContent = name ? `${name}님` : '수령인 미입력';
+    phoneEl.textContent = phone ? phone : '';
+    addrEl.textContent = address;
+    addrEl.title = address;
+    if (btnChange) btnChange.textContent = '주소 변경';
+  } else {
+    nameEl.textContent = '배송지 미등록';
+    phoneEl.textContent = '';
+    addrEl.textContent = '주문 시 최초 1회 배송지를 입력합니다.';
+    addrEl.title = '';
+    if (btnChange) btnChange.textContent = '주소 입력';
+  }
+}
+
+const btnChangeShipping = document.getElementById('btn-change-shipping');
+if (btnChangeShipping) {
+  btnChangeShipping.addEventListener('click', () => {
+    if (cartModal) cartModal.style.display = 'none';
+    if (checkoutModal) {
+      checkoutModal.style.display = 'flex';
+      prefillCheckoutForm();
+    }
+  });
+}
 
 if (btnCheckout) {
   btnCheckout.addEventListener('click', () => {

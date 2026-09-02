@@ -518,6 +518,30 @@
             <span style="font-size: 14px; font-weight: 600; color: #475569;">총 결제 금액</span>
             <span id="cart-total-price" style="font-size: 18px; font-weight: 800; color: #0f172a;">0원</span>
           </div>
+          <!-- 장바구니 하단 배송지 확인 및 주소 변경 박스 -->
+          <div id="cart-shipping-preview" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <div style="display:flex; align-items:flex-start; gap:8px; min-width:0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <div style="min-width:0;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                  <span id="cart-shipping-name" style="font-size:12px; font-weight:700; color:#0f172a;">배송지 정보</span>
+                  <span id="cart-shipping-phone" style="font-size:11px; color:#64748b; font-family:monospace;"></span>
+                </div>
+                <div id="cart-shipping-address" style="font-size:11.5px; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">
+                  등록된 배송 정보 확인 중...
+                </div>
+              </div>
+            </div>
+            <button id="btn-change-shipping" type="button"
+              style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-size:11px; font-weight:700; padding:5px 8px; border-radius:6px; cursor:pointer; flex-shrink:0; transition:all 0.15s; outline:none; white-space:nowrap;"
+              onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+              주소 변경
+            </button>
+          </div>
+
           <button id="btn-checkout"
             style="width:100%; padding:14px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(15,23,42,0.25); transition:all 0.2s; outline:none; display:flex; align-items:center; justify-content:center; gap:8px;"
             onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'"
