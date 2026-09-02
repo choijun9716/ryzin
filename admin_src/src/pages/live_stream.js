@@ -688,9 +688,9 @@ function renderLiveEditView(container, liveId, showView) {
     saveLiveStats(liveId, stats);
     syncToSheetDB(liveId, config, stats, products);
   };
-  const saveProducts = () => {
+  const saveProducts = (force = false) => {
     saveLiveProductsLocal(liveId, products);
-    syncToSheetDB(liveId, config, stats, products);
+    syncToSheetDB(liveId, config, stats, products, force);
   };
   const saveBotCfg = () => saveBotConfig(liveId, botCfg);
 
@@ -2831,11 +2831,11 @@ function renderLiveEditView(container, liveId, showView) {
       });
       plc.querySelectorAll('.btn-del-product').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          const idx = parseInt(e.target.dataset.idx);
+          const idx = parseInt(e.currentTarget.dataset.idx);
           const prodName = products[idx]?.name || '이 상품';
           if (confirm(`정말 "${prodName}" 상품을 삭제하시겠습니까?`)) {
             products.splice(idx, 1);
-            saveProducts();
+            saveProducts(true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
           }
@@ -2843,12 +2843,12 @@ function renderLiveEditView(container, liveId, showView) {
       });
       plc.querySelectorAll('.btn-move-up').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          const idx = parseInt(e.target.dataset.idx);
+          const idx = parseInt(e.currentTarget.dataset.idx);
           if (idx > 0) {
             const temp = products[idx - 1];
             products[idx - 1] = products[idx];
             products[idx] = temp;
-            saveProducts();
+            saveProducts(true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
           }
@@ -2856,12 +2856,12 @@ function renderLiveEditView(container, liveId, showView) {
       });
       plc.querySelectorAll('.btn-move-down').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          const idx = parseInt(e.target.dataset.idx);
+          const idx = parseInt(e.currentTarget.dataset.idx);
           if (idx < products.length - 1) {
             const temp = products[idx + 1];
             products[idx + 1] = products[idx];
             products[idx] = temp;
-            saveProducts();
+            saveProducts(true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
           }
@@ -2872,7 +2872,7 @@ function renderLiveEditView(container, liveId, showView) {
 
     document.getElementById('btn-add-product').addEventListener('click', () => {
       products.push({ id: Date.now(), name: '새 상품', price: '', normalPrice: '', discountRate: 0, image: 'https://via.placeholder.com/72', url: '#' });
-      saveProducts();
+      saveProducts(true);
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
     });
