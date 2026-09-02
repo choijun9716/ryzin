@@ -1163,11 +1163,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const addrInput = document.getElementById('checkout-address');
 
     const currentAcc = (userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+    const avatarEl = document.getElementById('checkout-member-avatar');
 
     if (currentAcc) {
       if (memberBadge) memberBadge.style.display = 'flex';
       if (guestBox) guestBox.style.display = 'none';
-      if (memberNameEl) memberNameEl.textContent = `로그인 계정: ${currentAcc}님`;
+      if (memberNameEl) memberNameEl.textContent = `${currentAcc}님`;
+      if (avatarEl) avatarEl.textContent = currentAcc.charAt(0).toUpperCase();
 
       // 해당 계정에 저장된 배송 정보 불러오기
       try {
