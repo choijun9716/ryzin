@@ -11,11 +11,27 @@
   <!-- Supabase Integration -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase_config.js"></script>
-  <script type="module" crossorigin src="./assets/index-CqxLXose.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CzZYLzX1.css">
+  <script type="module" crossorigin src="./assets/index-DWXQtUCh.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-zReJbUCL.css">
 </head>
 
 <body>
+  <!-- 모바일 안내 오버레이 -->
+  <div id="mobile-notice" style="display:none; position:fixed; inset:0; z-index:99999; background:#fff; flex-direction:column; align-items:center; justify-content:center; padding:32px; text-align:center;">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:24px;">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>
+    <h2 style="margin:0 0 12px 0; font-size:20px; font-weight:700; color:#1e293b; letter-spacing:-0.5px;">PC 버전에 최적화된 페이지입니다</h2>
+    <p style="margin:0; font-size:14px; color:#64748b; line-height:1.6; max-width:320px;">
+      원활한 이용을 위해 데스크톱 환경에서<br>접속해 주시기 바랍니다.
+    </p>
+  </div>
+  <style>
+    @media (max-width: 768px) {
+      #mobile-notice { display:flex !important; }
+      #app { display:none !important; }
+    }
+  </style>
   <div id="app"></div>
 </body>
 
