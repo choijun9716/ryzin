@@ -2334,6 +2334,32 @@ function saveCheckoutForm() {
 }
 
 // 입력 필드 실시간 저장 리스너 부착
+// ── 전화번호 자동 하이픈(-) 포맷팅 함수 ──
+function autoFormatPhoneNumber(val) {
+  if (!val) return '';
+  const clean = val.replace(/[^0-9]/g, '');
+  if (clean.length < 4) return clean;
+  if (clean.startsWith('02')) {
+    if (clean.length < 6) return clean.replace(/(\d{2})(\d+)/, '$1-$2');
+    if (clean.length < 10) return clean.replace(/(\d{2})(\d{3,4})(\d+)/, '$1-$2-$3');
+    return clean.slice(0, 10).replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+  }
+  if (clean.length < 7) return clean.replace(/(\d{3})(\d+)/, '$1-$2');
+  if (clean.length < 11) return clean.replace(/(\d{3})(\d{3,4})(\d+)/, '$1-$2-$3');
+  return clean.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+}
+
+// 전화번호 입력창 실시간 하이픈 바인딩
+['checkout-phone', 'lead-phone'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', (e) => {
+      const formatted = autoFormatPhoneNumber(e.target.value);
+      e.target.value = formatted;
+    });
+  }
+});
+
 ['checkout-detail-address'].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
