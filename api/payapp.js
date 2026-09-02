@@ -56,6 +56,8 @@ export default async function handler(req, res) {
       reqaddr: '0',
       smsuse: 'n',
       returnurl: returnurl || '',
+      redirecturl: returnurl || '',
+      skip_cstpage: 'y', // 결제승인 후 매출전표 페이지 없이 즉시 returnurl로 이동
       var1: var1 || '',
       var2: var2 || '',
       checkretry: 'y'
