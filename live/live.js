@@ -1150,6 +1150,107 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') btnSetNickname.click();
   });
 
+  // ── 카카오톡 1초 간편 로그인 연동 ──────────────────────────
+  window.KAKAO_JS_KEY = window.KAKAO_JS_KEY || '';
+
+  const initKakaoSDK = () => {
+    if (typeof Kakao !== 'undefined' && !Kakao.isInitialized() && window.KAKAO_JS_KEY) {
+      try {
+        Kakao.init(window.KAKAO_JS_KEY);
+      } catch (e) {
+        console.warn('Kakao SDK Init Warn:', e);
+      }
+    }
+  };
+  initKakaoSDK();
+
+  window.loginWithKakao = function(source = 'chat') {
+    if (typeof Kakao === 'undefined') {
+      alert('카카오 SDK를 로드하는 중입니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    if (!Kakao.isInitialized()) {
+      if (!window.KAKAO_JS_KEY) {
+        const inputKey = prompt('카카오 JavaScript 키를 입력해 주세요 (최초 1회 설정):', '');
+        if (inputKey && inputKey.trim()) {
+          window.KAKAO_JS_KEY = inputKey.trim();
+          localStorage.setItem('ryzin_kakao_js_key', window.KAKAO_JS_KEY);
+          try {
+            Kakao.init(window.KAKAO_JS_KEY);
+          } catch(e) {
+            alert('카카오 키가 올바르지 않습니다.');
+            return;
+          }
+        } else {
+          return;
+        }
+      } else {
+        try {
+          Kakao.init(window.KAKAO_JS_KEY);
+        } catch(e) {}
+      }
+    }
+
+    Kakao.Auth.login({
+      scope: 'profile_nickname,phone_number',
+      success: function(authObj) {
+        Kakao.API.request({
+          url: '/v2/user/me',
+          success: function(res) {
+            const kakaoAccount = res.kakao_account || {};
+            const profile = kakaoAccount.profile || {};
+            const nickname = profile.nickname || '카카오시청자';
+            let phone = kakaoAccount.phone_number || '';
+            // 국가번호 +82 10-1234-5678 -> 010-1234-5678 변환
+            if (phone.startsWith('+82')) {
+              phone = '0' + phone.replace('+82', '').trim().replace(/\s+/g, '-').replace(/--/g, '-');
+            }
+            const name = kakaoAccount.name || profile.nickname || nickname;
+
+            // 로컬 스토리지에 캐시
+            localStorage.setItem('ryzin_nickname', nickname);
+            localStorage.setItem('ryzin_kakao_user', JSON.stringify({ nickname, name, phone }));
+            userNickname = nickname;
+
+            if (source === 'chat') {
+              if (nicknameModal) nicknameModal.style.display = 'none';
+              if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
+              addMessage(nickname, '채팅에 입장했습니다.', false);
+              setTimeout(() => {
+                if (chatInput && !chatInput.disabled) chatInput.focus();
+              }, 100);
+            } else if (source === 'checkout') {
+              const nameInput = document.getElementById('checkout-name');
+              const phoneInput = document.getElementById('checkout-phone');
+              if (nameInput && name) nameInput.value = name;
+              if (phoneInput && phone) phoneInput.value = phone;
+            }
+          },
+          fail: function(err) {
+            console.warn('Kakao User Profile Error:', err);
+            alert('카카오 프로필 정보를 가져오는데 실패했습니다.');
+          }
+        });
+      },
+      fail: function(err) {
+        console.warn('Kakao Login Error:', err);
+      }
+    });
+  };
+
+  // 로컬에 저장된 카카오 키 복원
+  const savedKakaoKey = localStorage.getItem('ryzin_kakao_js_key');
+  if (savedKakaoKey) {
+    window.KAKAO_JS_KEY = savedKakaoKey;
+    initKakaoSDK();
+  }
+
+  const btnKakaoLogin = document.getElementById('btn-kakao-login');
+  if (btnKakaoLogin) {
+    btnKakaoLogin.addEventListener('click', () => loginWithKakao('chat'));
+  }
+
 
   // 닉네임에서 이름 색상 및 말풍선 배경색 분리 헬퍼 함수
   function parseNick(rawNick) {
@@ -2001,7 +2102,26 @@ if (btnCheckout) {
   btnCheckout.addEventListener('click', () => {
     if (cartItems.length === 0) return;
     if (cartModal) cartModal.style.display = 'none';
-    if (checkoutModal) checkoutModal.style.display = 'flex';
+    if (checkoutModal) {
+      checkoutModal.style.display = 'flex';
+      // 기존 카카오 로그인 정보가 있다면 자동 입력
+      try {
+        const savedKakao = JSON.parse(localStorage.getItem('ryzin_kakao_user') || '{}');
+        const nameInput = document.getElementById('checkout-name');
+        const phoneInput = document.getElementById('checkout-phone');
+        if (nameInput && !nameInput.value && savedKakao.name) nameInput.value = savedKakao.name;
+        if (phoneInput && !phoneInput.value && savedKakao.phone) phoneInput.value = savedKakao.phone;
+      } catch(e) {}
+    }
+  });
+}
+
+const btnKakaoFillCheckout = document.getElementById('btn-kakao-fill-checkout');
+if (btnKakaoFillCheckout) {
+  btnKakaoFillCheckout.addEventListener('click', () => {
+    if (typeof window.loginWithKakao === 'function') {
+      window.loginWithKakao('checkout');
+    }
   });
 }
 
