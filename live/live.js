@@ -2095,20 +2095,69 @@ function renderCartItems() {
 if (btnCart) btnCart.addEventListener('click', openCartModal);
 if (btnCloseCartModal) btnCloseCartModal.addEventListener('click', () => cartModal.style.display = 'none');
 
+// 주문서 정보 자동 채우기 헬퍼 함수
+function prefillCheckoutForm() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}');
+    const kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || '{}');
+
+    const nameInput = document.getElementById('checkout-name');
+    const phoneInput = document.getElementById('checkout-phone');
+    const addrInput = document.getElementById('checkout-address');
+
+    const nameToSet = saved.name || kakaoUser.name || kakaoUser.nickname || window.userNickname || '';
+    const phoneToSet = saved.phone || kakaoUser.phone || '';
+    const addrToSet = saved.address || '';
+
+    let hasPrefilled = false;
+    if (nameInput && !nameInput.value && nameToSet) {
+      nameInput.value = nameToSet;
+      hasPrefilled = true;
+    }
+    if (phoneInput && !phoneInput.value && phoneToSet) {
+      phoneInput.value = phoneToSet;
+      hasPrefilled = true;
+    }
+    if (addrInput && !addrInput.value && addrToSet) {
+      addrInput.value = addrToSet;
+      hasPrefilled = true;
+    }
+
+    const autoBadge = document.getElementById('checkout-auto-badge');
+    if (autoBadge) {
+      autoBadge.style.display = (hasPrefilled || (nameInput && nameInput.value)) ? 'flex' : 'none';
+    }
+  } catch(e) {}
+}
+
+// 주문서 정보 로컬 영구 보존 헬퍼 함수
+function saveCheckoutForm() {
+  try {
+    const name = document.getElementById('checkout-name')?.value.trim() || '';
+    const phone = document.getElementById('checkout-phone')?.value.trim() || '';
+    const address = document.getElementById('checkout-address')?.value.trim() || '';
+    if (name || phone || address) {
+      localStorage.setItem('ryzin_saved_order_info', JSON.stringify({ name, phone, address }));
+    }
+  } catch(e) {}
+}
+
+// 입력 필드 실시간 저장 리스너 부착
+['checkout-name', 'checkout-phone', 'checkout-address'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', saveCheckoutForm);
+    el.addEventListener('change', saveCheckoutForm);
+  }
+});
+
 if (btnCheckout) {
   btnCheckout.addEventListener('click', () => {
     if (cartItems.length === 0) return;
     if (cartModal) cartModal.style.display = 'none';
     if (checkoutModal) {
       checkoutModal.style.display = 'flex';
-      // 기존 카카오 로그인 정보가 있다면 자동 입력
-      try {
-        const savedKakao = JSON.parse(localStorage.getItem('ryzin_kakao_user') || '{}');
-        const nameInput = document.getElementById('checkout-name');
-        const phoneInput = document.getElementById('checkout-phone');
-        if (nameInput && !nameInput.value && savedKakao.name) nameInput.value = savedKakao.name;
-        if (phoneInput && !phoneInput.value && savedKakao.phone) phoneInput.value = savedKakao.phone;
-      } catch(e) {}
+      prefillCheckoutForm();
     }
   });
 }
@@ -2136,6 +2185,9 @@ if (btnSubmitPayment) {
       alert('주문 정보(이름, 전화번호, 배송지)를 모두 입력해 주세요.');
       return;
     }
+
+    // 주문 정보 영구 저장
+    saveCheckoutForm();
 
     let total = 0;
     cartItems.forEach(item => {

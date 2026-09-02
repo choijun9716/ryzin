@@ -539,6 +539,15 @@
             상품을 배송받을 주소와 연락처를 입력해 주세요.
           </p>
 
+          <!-- 자동 입력 알림 배지 -->
+          <div id="checkout-auto-badge"
+            style="display:none; align-items:center; gap:6px; font-size:12px; font-weight:600; color:#10b981; background:#f0fdf4; padding:6px 12px; border-radius:8px; border:1px solid #bbf7d0; margin-bottom:14px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>이전 주문 정보가 자동으로 입력되었습니다</span>
+          </div>
+
           <!-- 카카오톡 정보 자동입력 버튼 -->
           <button id="btn-kakao-fill-checkout" type="button" onclick="loginWithKakao('checkout')"
             style="width:100%; padding:10px 14px; background:#FEE500; color:#191919; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:18px; transition:all 0.2s; outline:none; box-shadow:0 2px 6px rgba(0,0,0,0.06);"
