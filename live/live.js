@@ -1340,6 +1340,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (typeof updateCartUI === 'function') updateCartUI();
           if (typeof renderCartItems === 'function') renderCartItems();
+
+          // 장바구니 클릭으로 로그인한 경우 로그인 후 장바구니 모달 자동 열기
+          if (window.__openCartAfterLogin) {
+            window.__openCartAfterLogin = false;
+            if (typeof openCartModal === 'function') {
+              openCartModal();
+            }
+          }
         },
         fail: function(err) {
           console.warn('Kakao User Profile Error:', err);
@@ -2145,22 +2153,6 @@ function updateCartUI() {
 }
 
 function addToCart(product) {
-  // 카카오 로그인 여부 체크 (미로그인 시 카카오 1초 시작하기 모달 오픈)
-  let kakaoUserObj = null;
-  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
-
-  if (!kakaoUserObj && !currentAcc) {
-    const modal = document.getElementById('nickname-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      window.__pendingCartItem = product;
-    } else if (typeof window.loginWithKakao === 'function') {
-      window.loginWithKakao('cart');
-    }
-    return;
-  }
-
   const exists = cartItems.find(item => item.name === product.name);
   if (exists) {
     exists.quantity = (exists.quantity || 1) + 1;
@@ -2189,6 +2181,22 @@ function addToCart(product) {
 }
 
 function openCartModal() {
+  // 장바구니 클릭 시 로그인 체크 (미로그인 시 카카오 1초 시작하기 팝업)
+  let kakaoUserObj = null;
+  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+
+  if (!kakaoUserObj && !currentAcc) {
+    const modal = document.getElementById('nickname-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+      window.__openCartAfterLogin = true; // 로그인 완료 후 장바구니 자동 오픈 플래그
+    } else if (typeof window.loginWithKakao === 'function') {
+      window.loginWithKakao('cart');
+    }
+    return;
+  }
+
   if (cartModal) {
     cartModal.style.display = 'flex';
     renderCartItems();
