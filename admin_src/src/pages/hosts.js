@@ -9,6 +9,8 @@ import { router } from '../router.js';
 export function renderHosts() {
   const container = document.createElement('div');
   let searchTerm = '';
+  let sortColumn = null;
+  let sortDirection = 'desc';
 
   function render() {
     let hosts = store.getAll('hosts');
@@ -22,10 +24,39 @@ export function renderHosts() {
     }
 
     // 각 호스트 통계 계산
-    const hostsWithStats = hosts.map(h => {
+    let hostsWithStats = hosts.map(h => {
       const stats = store.getHostStats(h.id);
       return { ...h, stats };
     });
+
+    if (sortColumn) {
+      hostsWithStats.sort((a, b) => {
+        let valA = a.stats[sortColumn] || 0;
+        let valB = b.stats[sortColumn] || 0;
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    const sortIcon = (col) => {
+      if (sortColumn !== col) return '<span style="color:#cbd5e1; font-size:10px; margin-left:4px;">↕</span>';
+      return sortDirection === 'asc' ? '<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▲</span>' : '<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▼</span>';
+    };
+
+    const theadHtml = `
+      <tr>
+        <th>이름</th>
+        <th>전화번호</th>
+        <th class="text-right sortable" data-sort="totalBroadcasts" style="cursor:pointer; user-select:none;">총 방송 ${sortIcon('totalBroadcasts')}</th>
+        <th class="text-right">이번달</th>
+        <th class="text-right">누적 정산</th>
+        <th>최근 방송일</th>
+        <th class="text-right sortable" data-sort="avgRevenue" style="cursor:pointer; user-select:none;">평균 매출 ${sortIcon('avgRevenue')}</th>
+        <th class="text-right sortable" data-sort="avgROI" style="cursor:pointer; user-select:none;">평균 ROI ${sortIcon('avgROI')}</th>
+        <th class="col-actions"></th>
+      </tr>
+    `;
 
     const tbodyHtml = hostsWithStats.length > 0 ? hostsWithStats.map(h => `
       <tr class="clickable" data-id="${h.id}">
@@ -67,10 +98,25 @@ export function renderHosts() {
           router.navigate(`/hosts/${tr.getAttribute('data-id')}`);
         });
       });
+
+      container.querySelectorAll('.sortable').forEach(th => {
+        th.addEventListener('click', (e) => {
+          const col = th.getAttribute('data-sort');
+          if (sortColumn === col) {
+            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+          } else {
+            sortColumn = col;
+            sortDirection = 'desc';
+          }
+          render();
+        });
+      });
     }
 
     const existingTbody = container.querySelector('.data-table tbody');
-    if (existingTbody) {
+    const existingThead = container.querySelector('.data-table thead');
+    if (existingTbody && existingThead) {
+      existingThead.innerHTML = theadHtml;
       existingTbody.innerHTML = tbodyHtml;
       const countEl = container.querySelector('.table-count strong');
       if (countEl) countEl.textContent = hostsWithStats.length;
@@ -107,17 +153,7 @@ export function renderHosts() {
           <div class="table-scroll">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>이름</th>
-                  <th>전화번호</th>
-                  <th class="text-right">총 방송</th>
-                  <th class="text-right">이번달</th>
-                  <th class="text-right">누적 정산</th>
-                  <th>최근 방송일</th>
-                  <th class="text-right">평균 매출</th>
-                  <th class="text-right">평균 ROI</th>
-                  <th class="col-actions"></th>
-                </tr>
+                ${theadHtml}
               </thead>
               <tbody>
                 ${tbodyHtml}
