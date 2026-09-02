@@ -2581,6 +2581,13 @@ function renderLiveEditView(container, liveId, showView) {
             <input type="checkbox" data-idx="${idx}" data-field="isFreeGiveaway" ${p.isFreeGiveaway === true || p.isFreeGiveaway === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#ef4444;" class="chk-giveaway">
             선착순 무료나눔
           </label>
+          ${(p.isFreeGiveaway === true || p.isFreeGiveaway === 'true') ? `
+            <div style="display:flex; align-items:center; gap:4px; background:#fff1f2; padding:4px 8px; border-radius:8px; border:1px solid #fecdd3; white-space:nowrap;">
+              <span style="font-size:11.5px; font-weight:700; color:#dc2626;">한정수량:</span>
+              <input type="number" class="modern-input" style="width:55px; padding:4px 6px; font-size:12px; font-weight:700; text-align:center;" data-idx="${idx}" data-field="giveawayStock" value="${p.giveawayStock || 3}">
+              <span style="font-size:11.5px; color:#dc2626; font-weight:600;">개</span>
+            </div>
+          ` : ''}
           <span style="font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:8px 10px; border-radius:8px; white-space:nowrap;">조회: ${clickCount.toLocaleString()}</span>
           <button class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === 0 ? 'disabled' : ''}>▲</button>
           <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
@@ -2899,8 +2906,46 @@ function renderLiveEditView(container, liveId, showView) {
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
     });
+    const collectProductsFromDOM = () => {
+      const plc = document.getElementById('product-list-container');
+      if (!plc) return;
+      const rows = plc.querySelectorAll('.product-row');
+      rows.forEach((row, idx) => {
+        if (!products[idx]) return;
+        const nameInput = row.querySelector('input[data-field="name"]');
+        const priceInput = row.querySelector('input[data-field="price"]');
+        const normalPriceInput = row.querySelector('input[data-field="normalPrice"]');
+        const urlInput = row.querySelector('input[data-field="url"]');
+        const isLeadForm = row.querySelector('input[data-field="isLeadForm"]');
+        const hideByDefault = row.querySelector('input[data-field="hideByDefault"]');
+        const isFreeGiveaway = row.querySelector('input[data-field="isFreeGiveaway"]');
+        const giveawayStockInput = row.querySelector('input[data-field="giveawayStock"]');
+
+        if (nameInput) products[idx].name = nameInput.value.trim();
+        if (normalPriceInput) products[idx].normalPrice = normalPriceInput.value.replace(/[^0-9]/g, '');
+        if (priceInput) products[idx].price = priceInput.value.replace(/[^0-9]/g, '');
+        if (urlInput) products[idx].url = urlInput.value.trim();
+        if (isLeadForm) products[idx].isLeadForm = isLeadForm.checked;
+        if (hideByDefault) products[idx].hideByDefault = hideByDefault.checked;
+        
+        if (isFreeGiveaway && isFreeGiveaway.checked) {
+          products[idx].isFreeGiveaway = true;
+          products[idx].price = '0';
+          products[idx].hideByDefault = true;
+          products[idx].isGiveawayActive = true;
+          const stock = giveawayStockInput ? parseInt(giveawayStockInput.value) : (parseInt(products[idx].giveawayStock) || 3);
+          products[idx].giveawayStock = stock > 0 ? stock : 3;
+          if (products[idx].giveawayClaimed === undefined) products[idx].giveawayClaimed = 0;
+        } else if (isFreeGiveaway && !isFreeGiveaway.checked) {
+          products[idx].isFreeGiveaway = false;
+          products[idx].isGiveawayActive = false;
+        }
+      });
+    };
+
     document.getElementById('btn-save-products').addEventListener('click', () => {
-      syncToSheetDB(liveId, config, stats, products, true);
+      collectProductsFromDOM();
+      saveProducts(true);
       alert('상품 목록이 적용되었습니다!');
     });
 

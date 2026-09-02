@@ -3244,18 +3244,18 @@ function checkAndShowGiveaway(productList) {
     return;
   }
 
-  // 비활성화 상태이거나 종료된 경우
+  // 명시적으로 종료하지 않은 한 기본 활성화
   if (freeItem.isGiveawayActive === false || freeItem.isGiveawayActive === 'false') {
     giveawayCard.style.display = 'none';
     currentActiveGiveaway = null;
     return;
   }
 
-  const stock = parseInt(freeItem.giveawayStock) || 0;
+  const stock = parseInt(freeItem.giveawayStock) || 3;
   const claimed = parseInt(freeItem.giveawayClaimed) || 0;
   const remaining = Math.max(0, stock - claimed);
 
-  currentActiveGiveaway = { ...freeItem, remainingStock: remaining };
+  currentActiveGiveaway = { ...freeItem, remainingStock: remaining, giveawayStock: stock };
 
   // UI 데이터 주입
   const titleEl = document.getElementById('giveaway-title');
