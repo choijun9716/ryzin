@@ -3064,7 +3064,51 @@ function renderLiveEditView(container, liveId, showView) {
 
         currentOrders = Array.from(mergedMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
+        // 1차 렌더링 (DB 및 캐시 데이터 기준)
         renderOrdersTable();
+
+        // 4. 페이앱(PayApp) 서버와 실시간 결제/취소 상태 동기화
+        const receiptIds = currentOrders
+          .map(ord => ord.pg_receipt_id)
+          .filter(id => id && id !== 'undefined' && id !== '-');
+
+        if (receiptIds.length > 0) {
+          try {
+            const syncRes = await fetch('/api/payapp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                cmd: 'check_orders',
+                mul_nos: receiptIds
+              })
+            });
+            if (syncRes.ok) {
+              const syncData = await syncRes.json();
+              if (syncData.success && syncData.results) {
+                let hasChanged = false;
+                currentOrders.forEach(ord => {
+                  const info = syncData.results[ord.pg_receipt_id];
+                  if (info && info.status && info.status !== 'unknown') {
+                    if (ord.payment_status !== info.status || ord.status_detail !== info.usingstatestr) {
+                      ord.payment_status = info.status;
+                      ord.status_detail = info.usingstatestr;
+                      hasChanged = true;
+                    }
+                  }
+                });
+
+                if (hasChanged) {
+                  try {
+                    localStorage.setItem(`ryzin_live_orders_${liveId}`, JSON.stringify(currentOrders));
+                  } catch(e) {}
+                  renderOrdersTable();
+                }
+              }
+            }
+          } catch(syncErr) {
+            console.warn('PayApp 실시간 상태 동기화 중 오류 (일반 조회 계속 유지):', syncErr);
+          }
+        }
       } catch (err) {
         console.warn('Failed to load orders', err);
         const container = document.getElementById('orders-list-container');
@@ -3098,8 +3142,14 @@ function renderLiveEditView(container, liveId, showView) {
         });
       }
 
-      // 통계 업데이트
-      const totalAmountSum = currentOrders.reduce((sum, ord) => sum + (Number(ord.total_amount) || 0), 0);
+      // 통계 업데이트 (취소/환불 건은 총 결제 금액에서 제외)
+      const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
+      const totalAmountSum = currentOrders.reduce((sum, ord) => {
+        const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
+        if (isCancelled) return sum;
+        return sum + (Number(ord.total_amount) || 0);
+      }, 0);
+
       if (statCount) statCount.textContent = `${currentOrders.length.toLocaleString()}건`;
       if (statTotal) statTotal.textContent = `${totalAmountSum.toLocaleString()}원`;
       if (countBadge) countBadge.textContent = `${filtered.length}건`;
@@ -3150,22 +3200,26 @@ function renderLiveEditView(container, liveId, showView) {
         }
 
         const price = Number(ord.total_amount) || 0;
-        const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
         const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
-        const statusText = isCancelled ? '취소/환불'
+        const statusText = isCancelled ? (ord.status_detail || '결제승인취소')
           : ord.payment_status === 'paid' ? '결제완료'
-          : '페이앱';
+          : (ord.status_detail || '결제요청');
+
         const statusBadge = isCancelled
           ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca;">${statusText}</span>`
           : ord.payment_status === 'paid'
             ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">${statusText}</span>`
             : `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">${statusText}</span>`;
 
+        const priceStyle = isCancelled
+          ? 'padding:12px; font-weight:700; color:#94a3b8; text-align:right; font-family:monospace; text-decoration:line-through;'
+          : 'padding:12px; font-weight:800; color:#0f172a; text-align:right; font-family:monospace;';
+
         html += `
-          <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+          <tr style="border-bottom:1px solid #e2e8f0; ${isCancelled ? 'background:#fafafa;' : ''} transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='${isCancelled ? '#fafafa' : 'transparent'}'">
             <td style="padding:12px; color:#64748b; white-space:nowrap; font-size:12px;">${dateStr}</td>
             <td style="padding:12px; font-weight:700; color:#0f172a; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${itemsSummary}">${itemsSummary}</td>
-            <td style="padding:12px; font-weight:800; color:#0f172a; text-align:right; font-family:monospace;">${price.toLocaleString()}원</td>
+            <td style="${priceStyle}">${price.toLocaleString()}원</td>
             <td style="padding:12px; font-weight:700; color:#0f172a;">${ord.customer_name || '-'}</td>
             <td style="padding:12px; font-family:monospace; color:#3b82f6;">${ord.customer_phone || '-'}</td>
             <td style="padding:12px; color:#475569; max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ord.customer_address || ''}">${ord.customer_address || '-'}</td>
@@ -3174,6 +3228,8 @@ function renderLiveEditView(container, liveId, showView) {
           </tr>
         `;
       });
+
+
 
       html += `</tbody></table></div>`;
       container.innerHTML = html;
@@ -3195,7 +3251,10 @@ function renderLiveEditView(container, liveId, showView) {
         const name = (ord.customer_name || '').replace(/,/g, ' ');
         const phone = (ord.customer_phone || '').replace(/,/g, ' ');
         const addr = (ord.customer_address || '').replace(/,/g, ' ');
-        const status = ord.payment_status || 'payapp';
+        const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
+        const status = isCancelled ? (ord.status_detail || '결제취소')
+          : ord.payment_status === 'paid' ? '결제완료'
+          : (ord.status_detail || '결제요청');
         const receipt = ord.pg_receipt_id || '';
 
         csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${addr},${status},${receipt}\n`;
