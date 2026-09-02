@@ -14,10 +14,16 @@ const getLives = () => JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
 const saveLives = (list) => localStorage.setItem('ryzin_lives', JSON.stringify(list));
 
 const getLiveConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_config_${liveId}`) || 'null');
-const saveLiveConfig = (liveId, data) => localStorage.setItem(`ryzin_config_${liveId}`, JSON.stringify(data));
+const saveLiveConfig = (liveId, data) => {
+  localStorage.setItem(`ryzin_config_${liveId}`, JSON.stringify(data));
+  localStorage.setItem(`ryzin_live_config_${liveId}`, JSON.stringify(data));
+};
 
 const getLiveStats = (liveId) => JSON.parse(localStorage.getItem(`ryzin_stats_${liveId}`) || JSON.stringify({ viewers: 0, hearts: 0, cumViewers: 0 }));
-const saveLiveStats = (liveId, data) => localStorage.setItem(`ryzin_stats_${liveId}`, JSON.stringify(data));
+const saveLiveStats = (liveId, data) => {
+  localStorage.setItem(`ryzin_stats_${liveId}`, JSON.stringify(data));
+  localStorage.setItem(`ryzin_live_stats_${liveId}`, JSON.stringify(data));
+};
 
 const getLiveProducts = (liveId) => JSON.parse(localStorage.getItem(`ryzin_products_${liveId}`) || '[]');
 const saveLiveProductsLocal = (liveId, data) => {
