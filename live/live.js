@@ -1237,6 +1237,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   window.initKakaoSDK();
+  if (typeof restoreUserAddressFromDB === 'function') {
+    restoreUserAddressFromDB();
+  }
   if (typeof updateCartUI === 'function') {
     updateCartUI();
   }
@@ -2325,6 +2328,44 @@ if (btnCart) btnCart.addEventListener('click', openCartModal);
 if (btnCloseCartModal) btnCloseCartModal.addEventListener('click', () => cartModal.style.display = 'none');
 
 // 주문서 정보 자동 채우기 헬퍼 함수
+// ── Supabase shop_users에서 사용자 배송지 및 정보 자동 복원 ──
+async function restoreUserAddressFromDB() {
+  try {
+    let kakaoUserObj = null;
+    try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+    const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+    const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : null);
+
+    if (db && userCode) {
+      const { data: user } = await db
+        .from('shop_users')
+        .select('*')
+        .eq('user_code', userCode)
+        .maybeSingle();
+
+      if (user) {
+        const name = user.name || '';
+        let phone = user.email || '';
+        let address = user.default_address || '';
+        if (address.includes('카카오') || address.includes('주소 미입력')) address = '';
+
+        if (address || phone || name) {
+          const info = { name, phone, address };
+          localStorage.setItem('ryzin_saved_order_info', JSON.stringify(info));
+          if (currentAcc) {
+            localStorage.setItem(`ryzin_account_addr_${currentAcc}`, JSON.stringify(info));
+          }
+          if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+          if (typeof prefillCheckoutForm === 'function') prefillCheckoutForm();
+        }
+      }
+    }
+  } catch(err) {
+    console.warn('사용자 배송 정보 복원 에러:', err);
+  }
+}
+
 function prefillCheckoutForm() {
   if (typeof window.updateCheckoutMemberUI === 'function') {
     window.updateCheckoutMemberUI();
@@ -2747,9 +2788,12 @@ if (btnSubmitPayment) {
 function checkPaymentSuccessOnReturn() {
   try {
     const url = new URL(window.location.href);
-    if (url.searchParams.get('pay_success') === '1') {
+    const hasPaySuccess = url.searchParams.get('pay_success') === '1';
+    const mulNo = url.searchParams.get('mul_no');
+
+    if (hasPaySuccess || mulNo) {
       const completeModal = document.getElementById('payment-complete-modal');
-      if (completeModal) {
+      if (completeModal && hasPaySuccess) {
         completeModal.style.display = 'flex';
       }
 
@@ -2757,12 +2801,17 @@ function checkPaymentSuccessOnReturn() {
       try {
         const myOrders = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');
         if (myOrders.length > 0) {
-          myOrders[0].payment_status = 'paid';
+          if (mulNo) {
+            const found = myOrders.find(o => String(o.pg_receipt_id) === String(mulNo));
+            if (found) found.payment_status = 'paid';
+            else myOrders[0].payment_status = 'paid';
+          } else {
+            myOrders[0].payment_status = 'paid';
+          }
           localStorage.setItem('ryzin_my_orders_history', JSON.stringify(myOrders));
         }
       } catch(e) {}
 
-      // URL에서 pay_success, mul_no 파라미터 제거 (새로고침 시 중복 팝업 방지)
       url.searchParams.delete('pay_success');
       url.searchParams.delete('mul_no');
       window.history.replaceState({}, '', url.pathname + (url.search ? url.search : '') + url.hash);
@@ -2811,23 +2860,31 @@ window.openMyOrdersModal = async function() {
     if (Array.isArray(local)) orders = [...local];
   } catch(e) {}
 
-  // 2. 고객 전화번호 확인
-  const savedInfo = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}');
-  const phone = (savedInfo.phone || '').replace(/[^0-9]/g, '');
+  // 2. 고객 정보 확인 (전화번호, 이름, 카카오유저)
+  let savedInfo = {};
+  try { savedInfo = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
+  let kakaoUserObj = null;
+  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+  
+  const phone = (savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '').replace(/[^0-9]/g, '');
+  const userName = (savedInfo.name || (kakaoUserObj && kakaoUserObj.name) || '').trim();
 
   // 3. Supabase live_orders 테이블과 통합 조회
-  if (db && phone) {
+  if (db) {
     try {
       const { data: dbOrders } = await db
         .from('live_orders')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (dbOrders && dbOrders.length > 0) {
         dbOrders.forEach(dbo => {
           const dboPhone = (dbo.customer_phone || '').replace(/[^0-9]/g, '');
-          if (dboPhone === phone && !orders.some(o => (o.pg_receipt_id && o.pg_receipt_id === dbo.pg_receipt_id) || o.id === dbo.id)) {
+          const isMyPhone = phone && dboPhone && (dboPhone === phone || dboPhone.endsWith(phone.slice(-8)));
+          const isMyName = userName && dbo.customer_name && dbo.customer_name === userName;
+
+          if ((isMyPhone || isMyName) && !orders.some(o => (o.pg_receipt_id && o.pg_receipt_id === dbo.pg_receipt_id) || o.id === dbo.id)) {
             orders.push(dbo);
           }
         });
