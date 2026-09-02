@@ -1237,6 +1237,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       Kakao.Auth.login({
+        throughTalk: false,
+        persistAccessToken: true,
         success: function(authObj) {
           Kakao.API.request({
             url: '/v2/user/me',

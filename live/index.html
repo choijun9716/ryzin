@@ -25,6 +25,11 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <!-- Kakao JavaScript SDK (Popup Login Support) -->
   <script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+  <script>
+    if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+      Kakao.init('5d6e1d539a2ddc90d5bab20dff6f116b');
+    }
+  </script>
 
   <link rel="stylesheet" href="live.css?v=202608121335">
   <style>
