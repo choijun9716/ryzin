@@ -1226,7 +1226,7 @@ async function renderUsersPanel(panel, wrapper) {
             <th style="width:130px; font-weight:800;">연락처</th>
             <th style="font-weight:800;">배송지 주소</th>
             <th style="width:90px; text-align:right;">포인트</th>
-            <th style="width:110px; text-align:center;">가입/등록일</th>
+            <th style="width:145px; text-align:center; font-weight:800;">가입일시</th>
             <th style="width:80px; text-align:center;">관리</th>
           </tr>
         </thead>
@@ -1256,7 +1256,7 @@ async function renderUsersPanel(panel, wrapper) {
               displayAddress = '주소 미입력 (주문 시 자동 등록)';
             }
 
-            const regDate = u.created_at ? new Date(u.created_at).toLocaleDateString('ko-KR') : '-';
+            const regDate = u.created_at ? new Date(u.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '-';
 
             return `
               <tr>
