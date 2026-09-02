@@ -3050,10 +3050,8 @@ function renderLiveEditView(container, liveId, showView) {
           const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
           const existing = mergedMap.get(key);
           if (!existing) {
-            // 새로운 키 — 그냥 삽입
             mergedMap.set(key, ord);
           } else {
-            // 이미 있는 키 — 취소/환불 상태가 들어오면 덮어씀 (취소 우선)
             const incomingIsCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
             const existingIsCancelled = cancelStatuses.includes((existing.payment_status || '').toLowerCase());
             if (incomingIsCancelled && !existingIsCancelled) {
@@ -3064,10 +3062,10 @@ function renderLiveEditView(container, liveId, showView) {
 
         currentOrders = Array.from(mergedMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-        // 1차 렌더링 (DB 및 캐시 데이터 기준)
+        // 1차 렌더링
         renderOrdersTable();
 
-        // 4. 페이앱(PayApp) 서버와 실시간 결제/취소 상태 동기화
+        // 4. 페이앱(PayApp) 본사 서버와 실시간 결제/취소 상태 동기화
         const receiptIds = currentOrders
           .map(ord => ord.pg_receipt_id)
           .filter(id => id && id !== 'undefined' && id !== '-');
@@ -3116,6 +3114,17 @@ function renderLiveEditView(container, liveId, showView) {
       }
     };
 
+    const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
+
+    // ── 결제요청(미결제)은 완전히 제외하고 결제완료(paid) 및 취소(cancelled) 건만 반환 ──
+    const getPaidAndCancelledOrders = () => {
+      return currentOrders.filter(ord => {
+        const isPaid = (ord.payment_status || '').toLowerCase() === 'paid';
+        const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
+        return isPaid || isCancelled;
+      });
+    };
+
     const renderOrdersTable = () => {
       const container = document.getElementById('orders-list-container');
       const btnCsv = document.getElementById('btn-download-csv-orders');
@@ -3125,9 +3134,12 @@ function renderLiveEditView(container, liveId, showView) {
       const searchInput = document.getElementById('order-search-input');
       const keyword = (searchInput ? searchInput.value : '').trim().toLowerCase();
 
-      let filtered = currentOrders;
+      // 결제요청은 제외하고 '결제완료' 및 '취소' 건만 필터
+      const targetOrders = getPaidAndCancelledOrders();
+
+      let filtered = targetOrders;
       if (keyword) {
-        filtered = currentOrders.filter(ord => {
+        filtered = targetOrders.filter(ord => {
           const nameMatch = (ord.customer_name || '').toLowerCase().includes(keyword);
           const phoneMatch = (ord.customer_phone || '').includes(keyword);
           const addrMatch = (ord.customer_address || '').toLowerCase().includes(keyword);
@@ -3142,26 +3154,29 @@ function renderLiveEditView(container, liveId, showView) {
         });
       }
 
-      // 통계 업데이트 (취소/환불 건은 총 결제 금액에서 제외)
-      const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
-      const totalAmountSum = currentOrders.reduce((sum, ord) => {
-        const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
-        if (isCancelled) return sum;
-        return sum + (Number(ord.total_amount) || 0);
-      }, 0);
+      // 통계 계산: 순수 결제완료 건의 금액만 합산 (취소 건은 금액 제외)
+      const paidOrders = targetOrders.filter(ord => (ord.payment_status || '').toLowerCase() === 'paid');
+      const cancelledOrders = targetOrders.filter(ord => cancelStatuses.includes((ord.payment_status || '').toLowerCase()));
+      const totalAmountSum = paidOrders.reduce((sum, ord) => sum + (Number(ord.total_amount) || 0), 0);
 
-      if (statCount) statCount.textContent = `${currentOrders.length.toLocaleString()}건`;
+      if (statCount) {
+        if (cancelledOrders.length > 0) {
+          statCount.innerHTML = `${targetOrders.length.toLocaleString()}건 <span style="font-size:12px; color:#64748b; font-weight:600;">(완료 ${paidOrders.length} / 취소 ${cancelledOrders.length})</span>`;
+        } else {
+          statCount.textContent = `${targetOrders.length.toLocaleString()}건`;
+        }
+      }
       if (statTotal) statTotal.textContent = `${totalAmountSum.toLocaleString()}원`;
       if (countBadge) countBadge.textContent = `${filtered.length}건`;
 
       if (btnCsv) {
-        btnCsv.style.display = currentOrders.length > 0 ? 'block' : 'none';
+        btnCsv.style.display = targetOrders.length > 0 ? 'block' : 'none';
       }
 
       if (!container) return;
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">주문 내역이 없습니다.</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">결제 완료 또는 취소된 주문 내역이 없습니다.</div>`;
         return;
       }
 
@@ -3201,15 +3216,11 @@ function renderLiveEditView(container, liveId, showView) {
 
         const price = Number(ord.total_amount) || 0;
         const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
-        const statusText = isCancelled ? (ord.status_detail || '결제승인취소')
-          : ord.payment_status === 'paid' ? '결제완료'
-          : (ord.status_detail || '결제요청');
+        const statusText = isCancelled ? (ord.status_detail || '결제승인취소') : '결제완료';
 
         const statusBadge = isCancelled
           ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca;">${statusText}</span>`
-          : ord.payment_status === 'paid'
-            ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">${statusText}</span>`
-            : `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">${statusText}</span>`;
+          : `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">${statusText}</span>`;
 
         const priceStyle = isCancelled
           ? 'padding:12px; font-weight:700; color:#94a3b8; text-align:right; font-family:monospace; text-decoration:line-through;'
@@ -3229,16 +3240,15 @@ function renderLiveEditView(container, liveId, showView) {
         `;
       });
 
-
-
       html += `</tbody></table></div>`;
       container.innerHTML = html;
     };
 
     const downloadCsv = () => {
-      if (currentOrders.length === 0) return;
+      const targetOrders = getPaidAndCancelledOrders();
+      if (targetOrders.length === 0) return;
       let csv = '주문일시,대표상품명,결제금액,주문자이름,연락처,배송지주소,결제상태,결제요청번호\n';
-      currentOrders.forEach(ord => {
+      targetOrders.forEach(ord => {
         const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR').replace(/,/g, '') : '';
         let itemsSummary = '';
         if (Array.isArray(ord.items) && ord.items.length > 0) {
@@ -3252,9 +3262,7 @@ function renderLiveEditView(container, liveId, showView) {
         const phone = (ord.customer_phone || '').replace(/,/g, ' ');
         const addr = (ord.customer_address || '').replace(/,/g, ' ');
         const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
-        const status = isCancelled ? (ord.status_detail || '결제취소')
-          : ord.payment_status === 'paid' ? '결제완료'
-          : (ord.status_detail || '결제요청');
+        const status = isCancelled ? (ord.status_detail || '결제취소') : '결제완료';
         const receipt = ord.pg_receipt_id || '';
 
         csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${addr},${status},${receipt}\n`;
