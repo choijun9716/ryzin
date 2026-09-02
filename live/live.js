@@ -767,7 +767,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const current = Number(currentPriceStr);
             priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:15px;">${current.toLocaleString()}원</span><span class="live-benefit-tag" style="background:#fff1f2; border:1.5px solid #ffe4e6; color:#f43f5e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
           }
-          el.innerHTML = `<img src="${item.image}" alt="product" class="product-image"><div class="product-info"><div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div><div class="product-price">${priceHtml}</div></div>`;
+          el.innerHTML = `
+            <img src="${item.image}" alt="product" class="product-image">
+            <div class="product-info" style="flex:1; min-width:0;">
+              <div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
+              <div class="product-price">${priceHtml}</div>
+            </div>
+            <button type="button" class="btn-card-add-cart" style="background:#0f172a; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; flex-shrink:0; align-self:center; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(15,23,42,0.15);" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              <span>담기</span>
+            </button>
+          `;
           el.addEventListener('click', async (e) => {
             const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
             if (!currentConfig.isLive) {
@@ -854,12 +867,19 @@ document.addEventListener('DOMContentLoaded', () => {
                   <img src="${item.image}" alt="product">
                   <span class="banner-badge">특가</span>
                 </div>
-                <div class="banner-info-box">
+                <div class="banner-info-box" style="flex:1; min-width:0; margin:0 8px;">
                   <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
                   <div class="banner-price-row">
                     <span class="banner-price">${current.toLocaleString()}원</span>
                   </div>
                 </div>
+                <button type="button" class="btn-banner-add-cart" style="background:#0f172a; color:#ffffff; border:none; border-radius:8px; padding:6px 11px; font-size:11.5px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; flex-shrink:0; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(15,23,42,0.15); margin-right:4px;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                  </svg>
+                  <span>담기</span>
+                </button>
               `;
               
               card.addEventListener('click', async (e) => {
