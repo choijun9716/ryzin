@@ -1204,6 +1204,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // ── 카카오 1초 간편 로그인 연동 ──────────────────────────
+  window.KAKAO_JS_KEY = '5d6e1d539a2ddc90d5bab20dff6f116b';
+
+  window.initKakaoSDK = function() {
+    if (typeof Kakao !== 'undefined' && !Kakao.isInitialized() && window.KAKAO_JS_KEY) {
+      try {
+        Kakao.init(window.KAKAO_JS_KEY);
+      } catch (e) {
+        console.warn('Kakao SDK Init:', e);
+      }
+    }
+  };
+  window.initKakaoSDK();
+
+  window.loginWithKakao = function(source = 'chat') {
+    if (typeof Kakao === 'undefined') {
+      alert('카카오 SDK를 로딩 중입니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    if (!Kakao.isInitialized()) {
+      try {
+        Kakao.init(window.KAKAO_JS_KEY);
+      } catch (e) {
+        console.warn('Kakao init error:', e);
+      }
+    }
+
+    try {
+      Kakao.Auth.login({
+        throughTalk: false,
+        persistAccessToken: true,
+        success: function(authObj) {
+          Kakao.API.request({
+            url: '/v2/user/me',
+            success: function(res) {
+              const kakaoId = String(res.id || '');
+              const kakaoAccount = res.kakao_account || {};
+              const profile = kakaoAccount.profile || {};
+              const nickname = profile.nickname || kakaoAccount.name || '카카오회원';
+              let phone = kakaoAccount.phone_number || '';
+              if (phone.startsWith('+82')) {
+                phone = '0' + phone.replace('+82', '').trim().replace(/\s+/g, '-').replace(/--/g, '-');
+              }
+              const name = kakaoAccount.name || profile.nickname || nickname;
+
+              userNickname = nickname;
+              localStorage.setItem('ryzin_nickname', nickname);
+              localStorage.setItem('ryzin_kakao_user', JSON.stringify({ id: kakaoId, nickname, name, phone }));
+
+              if (typeof window.updateCheckoutMemberUI === 'function') {
+                window.updateCheckoutMemberUI();
+              }
+
+              if (source === 'chat') {
+                const nicknameModal = document.getElementById('nickname-modal');
+                if (nicknameModal) nicknameModal.style.display = 'none';
+                if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
+                if (typeof addMessage === 'function') addMessage(nickname, '채팅에 입장했습니다.', false);
+                const chatInput = document.getElementById('chat-input');
+                if (chatInput && !chatInput.disabled) chatInput.focus();
+              } else if (source === 'checkout') {
+                const savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${nickname}`) || 'null');
+                if (savedAddr && (savedAddr.address || savedAddr.phone)) {
+                  alert(`반갑습니다, ${nickname}님! 저장된 배송 정보가 자동으로 적용되었습니다.`);
+                } else {
+                  alert(`반갑습니다, ${nickname}님! 배송 정보를 1회 입력하시면 다음부터 자동 저장됩니다.`);
+                }
+              }
+            },
+            fail: function(err) {
+              console.warn('Kakao User Profile Error:', err);
+              alert('카카오 프로필 정보를 가져오지 못했습니다: ' + (err.msg || JSON.stringify(err)));
+            }
+          });
+        },
+        fail: function(err) {
+          console.warn('Kakao Login Error:', err);
+          if (err && err.error === 'access_denied') return;
+          const errDetail = (err && (err.error_description || err.msg || err.error)) ? String(err.error_description || err.msg || err.error) : JSON.stringify(err);
+          alert('카카오 로그인 실패:\n' + errDetail + '\n\n※ 카카오 디벨로퍼스 콘솔의 [플랫폼 > Web 사이트 도메인]에 현재 접속 주소가 등록되어 있는지 확인해 주세요.');
+        }
+      });
+    } catch(err) {
+      console.error('Kakao login exception:', err);
+      alert('카카오 로그인 호출 중 오류가 발생했습니다: ' + err.message);
+    }
+  };
+
   // 주문서에서 로그인 모달 열기
   window.openLoginFromCheckout = function() {
     window.switchAccount();
