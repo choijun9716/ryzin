@@ -3293,17 +3293,20 @@ function checkAndShowGiveaway(productList) {
   if (btnEl && btnTextEl) {
     if (alreadyClaimed) {
       btnEl.disabled = true;
-      btnEl.style.background = '#64748b';
+      btnEl.style.background = '#f1f5f9';
+      btnEl.style.color = '#94a3b8';
       btnEl.style.cursor = 'not-allowed';
       btnTextEl.textContent = '이미 담기 완료 (1인 1개)';
     } else if (remaining <= 0) {
       btnEl.disabled = true;
-      btnEl.style.background = '#64748b';
+      btnEl.style.background = '#f1f5f9';
+      btnEl.style.color = '#94a3b8';
       btnEl.style.cursor = 'not-allowed';
       btnTextEl.textContent = '수량 소진 (마감)';
     } else {
       btnEl.disabled = false;
-      btnEl.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+      btnEl.style.background = '#0f172a';
+      btnEl.style.color = '#ffffff';
       btnEl.style.cursor = 'pointer';
       btnTextEl.textContent = '선착순 무료로 담기';
     }

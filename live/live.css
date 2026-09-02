@@ -1133,7 +1133,7 @@ video::-webkit-media-controls-overlay-play-button {
   z-index: 999999;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.9);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), 0 0 15px rgba(255, 255, 255, 0.9); border: 2px solid #ffffff;
   pointer-events: none;
   transition: all 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
