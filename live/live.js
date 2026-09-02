@@ -2041,7 +2041,7 @@ const btnCloseCheckoutModal = document.getElementById('btn-close-checkout-modal'
 const btnSubmitPayment = document.getElementById('btn-submit-payment');
 
 function updateCartUI() {
-  const count = cartItems.length;
+  const count = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
   if (cartCountEl) {
     cartCountEl.textContent = count.toLocaleString();
   }
@@ -2053,10 +2053,13 @@ function updateCartUI() {
 function addToCart(product) {
   const exists = cartItems.find(item => item.name === product.name);
   if (exists) {
-    alert('이미 장바구니에 있는 상품입니다.');
-    return;
+    exists.quantity = (exists.quantity || 1) + 1;
+  } else {
+    cartItems.push({
+      ...product,
+      quantity: 1
+    });
   }
-  cartItems.push(product);
   updateCartUI();
   
   // 하트 버튼과 유사한 바운스 애니메이션 효과
@@ -2070,7 +2073,7 @@ function addToCart(product) {
 
   const toast = document.createElement('div');
   toast.style.cssText = 'position:fixed; bottom:150px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.9); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; font-weight:600; z-index:99999; animation: fadeOut 2s forwards; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.3);';
-  toast.innerHTML = '장바구니에 담겼습니다.';
+  toast.innerHTML = exists ? `장바구니 수량이 추가되었습니다. (총 ${exists.quantity}개)` : '장바구니에 담겼습니다.';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
 }
@@ -2113,28 +2116,69 @@ function renderCartItems() {
   }
 
   cartItems.forEach((item, index) => {
-    let price = 0;
-    if (item.price) price = Number(item.price.toString().replace(/[^0-9]/g, ''));
-    total += price;
+    const qty = Math.max(1, item.quantity || 1);
+    item.quantity = qty;
+    let unitPrice = 0;
+    if (item.price) unitPrice = Number(item.price.toString().replace(/[^0-9]/g, ''));
+    const itemTotal = unitPrice * qty;
+    total += itemTotal;
 
     const div = document.createElement('div');
-    div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f1f5f9;';
+    div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f1f5f9;';
     div.innerHTML = `
-      <img src="${item.image}" alt="product" style="width:50px; height:50px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0;">
-      <div style="flex:1;">
-        <div style="font-size:14px; font-weight:600; color:#0f172a; margin-bottom:4px; word-break:keep-all;">${item.name}</div>
-        <div style="font-size:14px; font-weight:700; color:#0f172a;">${price.toLocaleString()}원</div>
+      <img src="${item.image}" alt="product" style="width:54px; height:54px; border-radius:10px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+          <!-- 수량 조절 버튼 -->
+          <div style="display:inline-flex; align-items:center; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:2px;">
+            <button class="btn-qty-minus" data-index="${index}" style="width:24px; height:24px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; font-weight:800; font-size:13px; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; transition:background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">-</button>
+            <span style="font-size:13px; font-weight:800; color:#0f172a; min-width:28px; text-align:center;">${qty}</span>
+            <button class="btn-qty-plus" data-index="${index}" style="width:24px; height:24px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; font-weight:800; font-size:13px; color:#334155; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; transition:background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">+</button>
+          </div>
+          <!-- 상품별 소계 금액 -->
+          <div style="font-size:14px; font-weight:800; color:#0f172a;">${itemTotal.toLocaleString()}원</div>
+        </div>
       </div>
-      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:4px;">✕</button>
+      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:6px; margin-left:4px;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">✕</button>
     `;
     cartItemsContainer.appendChild(div);
   });
 
   if (cartTotalPrice) cartTotalPrice.textContent = `${total.toLocaleString()}원`;
 
+  // 수량 감소
+  cartItemsContainer.querySelectorAll('.btn-qty-minus').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(e.currentTarget.dataset.index, 10);
+      if (cartItems[idx]) {
+        if ((cartItems[idx].quantity || 1) > 1) {
+          cartItems[idx].quantity -= 1;
+        } else {
+          cartItems.splice(idx, 1);
+        }
+        updateCartUI();
+        renderCartItems();
+      }
+    });
+  });
+
+  // 수량 증가
+  cartItemsContainer.querySelectorAll('.btn-qty-plus').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(e.currentTarget.dataset.index, 10);
+      if (cartItems[idx]) {
+        cartItems[idx].quantity = (cartItems[idx].quantity || 1) + 1;
+        updateCartUI();
+        renderCartItems();
+      }
+    });
+  });
+
+  // 삭제 버튼
   cartItemsContainer.querySelectorAll('.btn-remove-cart').forEach(btn => {
     btn.addEventListener('click', (e) => {
-      const idx = e.currentTarget.dataset.index;
+      const idx = parseInt(e.currentTarget.dataset.index, 10);
       cartItems.splice(idx, 1);
       updateCartUI();
       renderCartItems();
@@ -2223,7 +2267,9 @@ if (btnSubmitPayment) {
 
     let total = 0;
     cartItems.forEach(item => {
-      if (item.price) total += Number(item.price.toString().replace(/[^0-9]/g, ''));
+      const qty = item.quantity || 1;
+      const unit = item.price ? Number(item.price.toString().replace(/[^0-9]/g, '')) : 0;
+      total += unit * qty;
     });
 
     if (total <= 0) {
@@ -2231,7 +2277,11 @@ if (btnSubmitPayment) {
       return;
     }
 
-    const orderName = cartItems.length > 1 ? `${cartItems[0].name} 외 ${cartItems.length - 1}건` : cartItems[0].name;
+    const firstItem = cartItems[0];
+    const firstItemQtyStr = (firstItem.quantity && firstItem.quantity > 1) ? ` (${firstItem.quantity}개)` : '';
+    const orderName = cartItems.length > 1 
+      ? `${firstItem.name}${firstItemQtyStr} 외 ${cartItems.length - 1}건` 
+      : `${firstItem.name}${firstItemQtyStr}`;
 
     // 결제 진행 중 UI 상태 처리
     const originalBtnHtml = btnSubmitPayment.innerHTML;
