@@ -1131,25 +1131,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnSetNickname.addEventListener('click', () => {
-    const n = nicknameInput.value.trim();
-    if (n) {
-      userNickname = n;
-      localStorage.setItem('ryzin_nickname', n);
-      nicknameModal.style.display = 'none';
-      if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
-      if (typeof window.updateCheckoutMemberUI === 'function') window.updateCheckoutMemberUI();
-      setTimeout(() => {
-        if (chatInput && !chatInput.disabled) {
-          chatInput.focus();
-        }
-      }, 100);
-    }
-  });
-
-  nicknameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') btnSetNickname.click();
-  });
+  if (btnSetNickname && nicknameInput) {
+    btnSetNickname.addEventListener('click', () => {
+      const n = nicknameInput.value.trim();
+      if (n) {
+        userNickname = n;
+        localStorage.setItem('ryzin_nickname', n);
+        nicknameModal.style.display = 'none';
+        if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
+        if (typeof window.updateCheckoutMemberUI === 'function') window.updateCheckoutMemberUI();
+      }
+    });
+    nicknameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') btnSetNickname.click();
+    });
+  }
 
   // ── 아이디 / 닉네임 기반 간편 계정 및 배송지 자동 연동 ──────────────
   // 주문서 화면의 회원/비회원 상태 UI 갱신
@@ -1306,15 +1302,25 @@ document.addEventListener('DOMContentLoaded', () => {
             window.updateCheckoutMemberUI();
           }
 
+          const nicknameModal = document.getElementById('nickname-modal');
+          if (nicknameModal) nicknameModal.style.display = 'none';
+
           if (source === 'chat') {
-            const nicknameModal = document.getElementById('nickname-modal');
-            if (nicknameModal) nicknameModal.style.display = 'none';
             if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
             if (typeof addMessage === 'function') addMessage(nickname, '채팅에 입장했습니다.', false);
             const chatInput = document.getElementById('chat-input');
             if (chatInput && !chatInput.disabled) chatInput.focus();
           } else if (source === 'checkout') {
-            // 주문정보 입력 시 번거로운 alert 모달창 삭제 (조용히 배송지/실명 자동 적용)
+            // 주문정보 입력 시 번거로운 alert 모달창 삭제
+          }
+
+          // 장바구니 담기 대기 상품이 있었다면 자동 담기
+          if (window.__pendingCartItem) {
+            const p = window.__pendingCartItem;
+            window.__pendingCartItem = null;
+            if (typeof addToCart === 'function') {
+              addToCart(p);
+            }
           }
         },
         fail: function(err) {
@@ -2102,6 +2108,22 @@ function updateCartUI() {
 }
 
 function addToCart(product) {
+  // 카카오 로그인 여부 체크 (미로그인 시 카카오 1초 시작하기 모달 오픈)
+  let kakaoUserObj = null;
+  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+
+  if (!kakaoUserObj && !currentAcc) {
+    const modal = document.getElementById('nickname-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+      window.__pendingCartItem = product;
+    } else if (typeof window.loginWithKakao === 'function') {
+      window.loginWithKakao('cart');
+    }
+    return;
+  }
+
   const exists = cartItems.find(item => item.name === product.name);
   if (exists) {
     exists.quantity = (exists.quantity || 1) + 1;
