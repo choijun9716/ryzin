@@ -3317,9 +3317,21 @@ function checkAndShowGiveaway(productList) {
   if (imgEl) imgEl.src = freeItem.image || 'https://via.placeholder.com/94';
   if (stockEl) stockEl.textContent = remaining;
 
-  // 이미 내가 담았는지 확인
-  const myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
-  const alreadyClaimed = myClaimed.includes(String(freeItem.id));
+  // 현재 장바구니에 실제로 들어있는지 확인
+  let currentSavedCart = [];
+  try { currentSavedCart = JSON.parse(localStorage.getItem('ryzin_live_cart_items') || '[]'); } catch(e) {}
+  const inCart = currentSavedCart.some(item => 
+    String(item.id) === String(freeItem.id) || 
+    (item.isFreeGiveaway && item.name.includes(freeItem.name))
+  );
+
+  // 관리자가 새로 시작한 회차인지 확인
+  const startedAt = Number(freeItem.giveawayStartedAt) || 0;
+  const lastClaimedTime = Number(localStorage.getItem(`ryzin_claimed_time_${freeItem.id}`)) || 0;
+  const isNewRound = startedAt > 0 && startedAt > lastClaimedTime;
+
+  // 장바구니에 실제로 들어있고, 새로운 회차가 아닐 때만 이미 담기 완료로 표시!
+  const alreadyClaimed = inCart && !isNewRound;
 
   if (btnEl && btnTextEl) {
     if (alreadyClaimed) {
@@ -3370,10 +3382,20 @@ window.claimGiveawayItem = async function() {
   if (!currentActiveGiveaway) return;
   const freeItem = currentActiveGiveaway;
 
-  // 1. 이미 담았는지 확인
-  const myClaimed = JSON.parse(localStorage.getItem('ryzin_claimed_giveaways') || '[]');
-  if (myClaimed.includes(String(freeItem.id))) {
-    alert('이미 담으신 무료나눔 상품입니다.');
+  // 1. 현재 장바구니 실존 여부 및 신규 회차 검사
+  let currentSavedCart = [];
+  try { currentSavedCart = JSON.parse(localStorage.getItem('ryzin_live_cart_items') || '[]'); } catch(e) {}
+  const inCart = currentSavedCart.some(item => 
+    String(item.id) === String(freeItem.id) || 
+    (item.isFreeGiveaway && item.name.includes(freeItem.name))
+  );
+
+  const startedAt = Number(freeItem.giveawayStartedAt) || 0;
+  const lastClaimedTime = Number(localStorage.getItem(`ryzin_claimed_time_${freeItem.id}`)) || 0;
+  const isNewRound = startedAt > 0 && startedAt > lastClaimedTime;
+
+  if (inCart && !isNewRound) {
+    alert('이미 장바구니에 담으신 무료나눔 상품입니다.');
     return;
   }
 
@@ -3450,11 +3472,8 @@ window.claimGiveawayItem = async function() {
     console.error('무료나눔 장바구니 저장 에러:', e);
   }
 
-  // 내가 담은 기록 보존 (중복 담기 방지)
-  if (!myClaimed.includes(String(freeItem.id))) {
-    myClaimed.push(String(freeItem.id));
-    localStorage.setItem('ryzin_claimed_giveaways', JSON.stringify(myClaimed));
-  }
+  // 내가 담은 기록 및 시간 보존
+  localStorage.setItem(`ryzin_claimed_time_${freeItem.id}`, Date.now().toString());
 
   // 5. 실시간 수량 차감 처리
   try {
