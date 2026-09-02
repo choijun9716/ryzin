@@ -272,23 +272,23 @@
       <!-- 상단 방송 정보 -->
       <!-- 상단 우측 버튼 그룹 (소리 토글 + 내 주문) -->
       <div style="position:absolute; top:14px; right:14px; z-index:9999; display:flex; align-items:center; gap:7px; pointer-events:auto !important;">
-        <!-- 소리 켜기/끄기 토글 버튼 -->
+        <!-- 소리 켜기/끄기 토글 버튼 (아이콘 전용) -->
         <button id="btn-sound-toggle" type="button" onclick="toggleStreamSound()"
-          style="background:rgba(15,23,42,0.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1.5px solid rgba(255,255,255,0.3); color:#ffffff; padding:6px 11px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s; outline:none; box-shadow:0 4px 12px rgba(0,0,0,0.3);"
+          style="background:rgba(15,23,42,0.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1.5px solid rgba(255,255,255,0.3); color:#ffffff; padding:6px 9px; border-radius:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; outline:none; box-shadow:0 4px 12px rgba(0,0,0,0.3); height:29px; min-width:32px; box-sizing:border-box;"
           onmouseover="this.style.background='rgba(15,23,42,0.88)'; this.style.borderColor='rgba(255,255,255,0.45)'"
           onmouseout="this.style.background='rgba(15,23,42,0.72)'; this.style.borderColor='rgba(255,255,255,0.3)'"
           onmousedown="this.style.transform='scale(0.96)'"
-          onmouseup="this.style.transform='scale(1)'">
-          <svg id="icon-sound-off" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          onmouseup="this.style.transform='scale(1)'"
+          title="소리 켜기/끄기">
+          <svg id="icon-sound-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="1" y1="1" x2="23" y2="23"></line>
             <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
             <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
           </svg>
-          <svg id="icon-sound-on" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <svg id="icon-sound-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
           </svg>
-          <span id="text-sound-status">소리 켜기</span>
         </button>
 
         <!-- 내 주문 버튼 -->
