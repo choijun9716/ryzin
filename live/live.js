@@ -1166,10 +1166,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarEl = document.getElementById('checkout-member-avatar');
 
     if (currentAcc) {
-      if (memberBadge) memberBadge.style.display = 'flex';
+      if (memberBadge) memberBadge.style.display = 'none'; // 로그인됨/계정변경 박스 완전 숨김
       if (guestBox) guestBox.style.display = 'none';
-      if (memberNameEl) memberNameEl.textContent = `${currentAcc}님`;
-      if (avatarEl) avatarEl.textContent = currentAcc.charAt(0).toUpperCase();
 
       // 해당 계정에 저장된 배송 정보 불러오기
       try {
