@@ -1278,28 +1278,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     try {
-      // 1. 카카오톡 앱 직접 실행 로그인 (모바일/PC 카카오톡 앱 연동)
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
       Kakao.Auth.login({
-        throughTalk: true,
+        throughTalk: isMobile,
         persistAccessToken: true,
         success: handleKakaoSuccess,
         fail: function(err) {
-          console.warn('Kakao App Login Error, trying fallback web login:', err);
-          if (err && err.error === 'access_denied') return; // 사용자가 취소한 경우
-
-          // 2. 카카오톡 앱이 없거나 실행 불가 시 웹 팝업으로 자동 전환
-          try {
-            Kakao.Auth.login({
-              throughTalk: false,
-              persistAccessToken: true,
-              success: handleKakaoSuccess,
-              fail: function(fallbackErr) {
-                if (fallbackErr && fallbackErr.error === 'access_denied') return;
-                const errDetail = (fallbackErr && (fallbackErr.error_description || fallbackErr.msg || fallbackErr.error)) ? String(fallbackErr.error_description || fallbackErr.msg || fallbackErr.error) : JSON.stringify(fallbackErr);
-                alert('카카오 로그인 실패:\n' + errDetail + '\n\n※ 카카오 디벨로퍼스 콘솔의 [플랫폼 > Web 사이트 도메인]에 현재 접속 주소가 등록되어 있는지 확인해 주세요.');
-              }
-            });
-          } catch(e) {}
+          console.warn('Kakao Login Error:', err);
+          if (err && err.error === 'access_denied') return; // 사용자가 창을 닫은 경우
+          const errDetail = (err && (err.error_description || err.msg || err.error)) ? String(err.error_description || err.msg || err.error) : JSON.stringify(err);
+          alert('카카오 로그인 실패:\n' + errDetail + '\n\n※ 카카오 디벨로퍼스 콘솔의 [플랫폼 > Web 사이트 도메인]에 현재 접속 주소가 등록되어 있는지 확인해 주세요.');
         }
       });
     } catch(err) {
