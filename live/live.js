@@ -1224,8 +1224,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   window.initKakaoSDK();
+  if (typeof updateCartUI === 'function') {
+    updateCartUI();
+  }
 
   window.loginWithKakao = function(source = 'chat') {
+    if (typeof syncCartStorage === 'function') syncCartStorage();
     if (typeof Kakao === 'undefined') {
       alert('카카오 SDK를 로딩 중입니다. 잠시 후 다시 시도해 주세요.');
       return;
@@ -1314,14 +1318,28 @@ document.addEventListener('DOMContentLoaded', () => {
             // 주문정보 입력 시 번거로운 alert 모달창 삭제
           }
 
-          // 장바구니 담기 대기 상품이 있었다면 자동 담기
+          // 비회원 시 담아둔 장바구니 복원 및 보존
+          try {
+            const storedCart = loadCartFromStorage();
+            if (storedCart.length > 0) {
+              cartItems = storedCart;
+            }
+          } catch(e) {}
+
+          // 장바구니 담기 대기 상품이 있었다면 자동 합산
           if (window.__pendingCartItem) {
             const p = window.__pendingCartItem;
             window.__pendingCartItem = null;
-            if (typeof addToCart === 'function') {
-              addToCart(p);
+            const exists = cartItems.find(item => item.name === p.name);
+            if (exists) {
+              exists.quantity = (exists.quantity || 1) + 1;
+            } else {
+              cartItems.push({ ...p, quantity: 1 });
             }
           }
+
+          if (typeof updateCartUI === 'function') updateCartUI();
+          if (typeof renderCartItems === 'function') renderCartItems();
         },
         fail: function(err) {
           console.warn('Kakao User Profile Error:', err);
@@ -2083,7 +2101,25 @@ function showInvalidLiveScreen() {
 // ----------------------------------------------------
 // [NEW] 장바구니 및 자체 결제 (PortOne) 연동 로직
 // ----------------------------------------------------
+// 장바구니 로컬스토리지 영구 보존 및 동기화
 let cartItems = [];
+function loadCartFromStorage() {
+  try {
+    const savedCart = localStorage.getItem('ryzin_live_cart_items');
+    if (savedCart) {
+      const parsed = JSON.parse(savedCart);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch(e) {}
+  return [];
+}
+cartItems = loadCartFromStorage();
+
+function syncCartStorage() {
+  try {
+    localStorage.setItem('ryzin_live_cart_items', JSON.stringify(cartItems));
+  } catch(e) {}
+}
 const btnCart = document.getElementById('btn-cart');
 const cartCountEl = document.getElementById('cart-count');
 const cartBadgeDot = document.getElementById('cart-badge-dot');
@@ -2098,6 +2134,7 @@ const btnCloseCheckoutModal = document.getElementById('btn-close-checkout-modal'
 const btnSubmitPayment = document.getElementById('btn-submit-payment');
 
 function updateCartUI() {
+  syncCartStorage();
   const count = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
   if (cartCountEl) {
     cartCountEl.textContent = count.toLocaleString();
@@ -2659,6 +2696,7 @@ if (btnSubmitPayment) {
 
         // 장바구니 비우기 및 모달 닫기
         cartItems = [];
+        syncCartStorage();
         updateCartUI();
         if (checkoutModal) checkoutModal.style.display = 'none';
 
