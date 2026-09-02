@@ -2299,7 +2299,7 @@ function updateCartShippingPreview() {
   const address = (savedAddr && savedAddr.address) || (generalSaved && generalSaved.address) || '';
 
   if (address) {
-    nameEl.textContent = name ? `${name}님` : '수령인 미입력';
+    nameEl.textContent = name ? name : '수령인 미입력';
     phoneEl.textContent = phone ? phone : '';
     addrEl.textContent = address;
     addrEl.title = address;
