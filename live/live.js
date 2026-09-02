@@ -1151,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── 카카오톡 1초 간편 로그인 연동 ──────────────────────────
-  window.KAKAO_JS_KEY = window.KAKAO_JS_KEY || '';
+  window.KAKAO_JS_KEY = window.KAKAO_JS_KEY || '5d6e1d539a2ddc90d5bab20dff6f116b';
 
   const initKakaoSDK = () => {
     if (typeof Kakao !== 'undefined' && !Kakao.isInitialized() && window.KAKAO_JS_KEY) {
