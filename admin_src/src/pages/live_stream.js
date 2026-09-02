@@ -296,7 +296,7 @@ function renderListView(container, showView) {
       });
     });
     listContainer.querySelectorAll('.btn-delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const id = btn.dataset.id;
         if (confirm(`${id} 라이브를 삭제하시겠습니까? 관련 데이터가 모두 삭제됩니다.`)) {
@@ -315,10 +315,12 @@ function renderListView(container, showView) {
           }
           
           if (db) {
-            Promise.all([
-              db.from('live_control').delete().eq('live_id', id),
-              db.from('live_chats').delete().eq('live_id', id)
-            ]).catch(err => console.warn('Supabase delete failed', err));
+            try {
+              await db.from('live_chats').delete().eq('live_id', id);
+              await db.from('live_control').delete().eq('live_id', id);
+            } catch(err) {
+              console.warn('Supabase delete failed', err);
+            }
           }
 
           renderList();
