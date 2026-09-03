@@ -7,6 +7,92 @@ function extractYouTubeId(url) {
 let db = null;
 let LIVE_ID = 'live01';
 
+
+// ── [무정전 자동 재생 가드 엔진] 어떤 일이 있어도 영상 재생 유지 ──
+window.resumeAllMedia = function() {
+  try {
+    // 1. 일반 HTML5 비디오 (HLS/MP4)
+    const video = document.getElementById('live-video');
+    if (video && video.style.display !== 'none') {
+      if (video.paused) {
+        const p = video.play();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      }
+    }
+
+    // 2. 라이브 송출 유튜브 플레이어
+    const ytPlayer = document.getElementById('youtube-player');
+    const ytBox = document.getElementById('youtube-box');
+    if (ytPlayer && ytPlayer.contentWindow && ytBox && ytBox.style.display !== 'none') {
+      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+    }
+
+    // 3. 예비 썸네일 유튜브 플레이어
+    const standbyOverlay = document.getElementById('standby-overlay');
+    const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
+    if (standbyIfr && standbyIfr.contentWindow && standbyOverlay && standbyOverlay.style.display !== 'none') {
+      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+    }
+  } catch (e) {}
+};
+
+// 상세페이지 갔다 오거나 탭/창 전환 복귀 시 무조건 즉시 재생
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && typeof window.resumeAllMedia === 'function') {
+    window.resumeAllMedia();
+    setTimeout(window.resumeAllMedia, 300);
+    setTimeout(window.resumeAllMedia, 800);
+  }
+});
+
+window.addEventListener('focus', () => {
+  if (typeof window.resumeAllMedia === 'function') {
+    window.resumeAllMedia();
+    setTimeout(window.resumeAllMedia, 300);
+  }
+});
+
+window.addEventListener('pageshow', (e) => {
+  if (typeof window.resumeAllMedia === 'function') {
+    window.resumeAllMedia();
+    setTimeout(window.resumeAllMedia, 300);
+    setTimeout(window.resumeAllMedia, 800);
+  }
+});
+
+window.addEventListener('popstate', () => {
+  if (typeof window.resumeAllMedia === 'function') {
+    window.resumeAllMedia();
+  }
+});
+
+// 화면 터치나 클릭 시에도 멈춤 상태 자동 회복
+['click', 'touchstart'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    if (typeof window.resumeAllMedia === 'function') {
+      window.resumeAllMedia();
+    }
+  }, { passive: true });
+});
+
+// 1초 주기 헬스체크: 화면이 보이고 있는데 영상이 멈춰있다면 스스로 즉각 강제 재개
+if (!window.__mediaKeepAliveTimer) {
+  window.__mediaKeepAliveTimer = setInterval(() => {
+    if (!document.hidden && typeof window.resumeAllMedia === 'function') {
+      const video = document.getElementById('live-video');
+      if (video && video.style.display !== 'none' && video.paused && video.readyState >= 2) {
+        video.play().catch(() => {});
+      }
+      const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
+      const standbyOverlay = document.getElementById('standby-overlay');
+      if (standbyIfr && standbyOverlay && standbyOverlay.style.display !== 'none') {
+        standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+      }
+    }
+  }, 1200);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // === Supabase 및 localStorage 연동 로직 (어드민 제어) ===
   db = window.supabaseClient;
@@ -504,13 +590,27 @@ document.addEventListener('DOMContentLoaded', () => {
           const ytId = extractYouTubeId(rawUrl);
 
           if (ytId) {
-            // [유튜브 영상 모드] 반복재생(loop=1&playlist=ID) 및 컨트롤러 완전 숨김(controls=0)
+            // [유튜브 영상 모드] 무한 반복 시 블랙 깜빡임 완전 제거 백플레이트 기법
+            const ytThumbUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+            if (standbyOverlay) {
+              standbyOverlay.style.backgroundImage = `url(${ytThumbUrl}), url(https://img.youtube.com/vi/${ytId}/hqdefault.jpg)`;
+              standbyOverlay.style.backgroundSize = 'cover';
+              standbyOverlay.style.backgroundPosition = 'center';
+            }
             if (standbyImg) {
-              standbyImg.style.display = 'none';
-              standbyImg.src = '';
+              standbyImg.src = ytThumbUrl;
+              standbyImg.style.display = 'block';
+              standbyImg.style.position = 'absolute';
+              standbyImg.style.top = '0';
+              standbyImg.style.left = '0';
+              standbyImg.style.width = '100%';
+              standbyImg.style.height = '100%';
+              standbyImg.style.objectFit = 'cover';
+              standbyImg.style.zIndex = '1';
             }
             if (standbyYtWrap) {
               standbyYtWrap.style.display = 'block';
+              standbyYtWrap.style.zIndex = '2';
               const curIframe = standbyYtWrap.querySelector('iframe');
               if (!curIframe || curIframe.getAttribute('data-yt-id') !== ytId) {
                 standbyYtWrap.innerHTML = `
@@ -532,6 +632,20 @@ document.addEventListener('DOMContentLoaded', () => {
                       ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
                     }
                   }, delay);
+                });
+
+                // 유튜브 반복 시 블랙 현상 방지: 영상 종료(Ended:0) 감지 즉시 처음으로 seekTo(0) 및 재생
+                window.addEventListener('message', function ytStandbyLoopHandler(e) {
+                  try {
+                    const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                    if (data && (data.event === 'onStateChange' && data.info === 0)) {
+                      const ifr = standbyYtWrap.querySelector('iframe');
+                      if (ifr && ifr.contentWindow) {
+                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }), '*');
+                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                      }
+                    }
+                  } catch (err) {}
                 });
               }
             }
@@ -1199,6 +1313,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const closeProductModal = () => {
     if (productModal) productModal.classList.add('hidden');
+    if (typeof window.resumeAllMedia === 'function') window.resumeAllMedia();
     // 모달이 완전히 화면 밖으로 퇴장(슬라이드 다운 300ms)한 뒤 시간차를 두고 상품 배너 복구
     setTimeout(() => {
       if (productModal && productModal.classList.contains('hidden')) {
@@ -4358,4 +4473,8 @@ window.openProductDetailModal = function(item) {
 window.closeProductDetailModal = function() {
   const modal = document.getElementById('product-detail-modal');
   if (modal) modal.style.display = 'none';
+  if (typeof window.resumeAllMedia === 'function') {
+    window.resumeAllMedia();
+    setTimeout(window.resumeAllMedia, 200);
+  }
 };
