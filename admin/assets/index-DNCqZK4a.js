@@ -4350,7 +4350,7 @@ Minimum version required to store current data is: `+c+`.
         </tbody>
       </table>
     </div>
-  `,e.querySelector(`#add-user-btn`).addEventListener(`click`,()=>{Ma(null,t,e)}),e.querySelectorAll(`.user-edit-btn`).forEach(r=>{r.addEventListener(`click`,()=>{Ma(n.find(e=>e.id===r.dataset.id),t,e)})})}function Ma(e,t,n){let r=!!e,i=t.querySelector(`#sm-modal-container`),a=e?e.user_code:`USER-${Math.floor(Math.random()*89999+1e4)}`;i.innerHTML=`
+  `,e.querySelector(`#add-user-btn`).addEventListener(`click`,()=>{Ma(null,t,e)}),e.querySelectorAll(`.user-edit-btn`).forEach(r=>{r.addEventListener(`click`,()=>{Ma(n.find(e=>e.id===r.dataset.id),t,e)})})}function Ma(e,t,n){let r=!!e,i=t.querySelector(`#sm-modal-container`),a=e?e.user_code:`USER-${Math.floor(Math.random()*89999+1e4)}`,o=e&&e.phone||``,s=e&&e.email||``;!o&&s&&(s.startsWith(`01`)||s.includes(`-`)||!s.includes(`@`))&&(o=s.replace(`@kakao.user`,``),s=``),i.innerHTML=`
     <div class="sm-modal-backdrop">
       <div class="sm-modal-content" style="max-width:500px;">
         <div class="sm-modal-header">
@@ -4364,21 +4364,20 @@ Minimum version required to store current data is: `+c+`.
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             ${$(`회원 이름 (예: 채이준)`,`um-name`,e?e.name:``)}
-            ${$(`이메일 주소`,`um-email`,e?e.email:``,`email`)}
+            ${$(`연락처 (전화번호)`,`um-phone`,o,`text`,`010-0000-0000`)}
+          </div>
+          <div>
+            ${$(`이메일 주소 (카카오계정 이메일)`,`um-email`,s,`email`,`user@kakao.com`)}
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div>
               <label class="sm-label">보유 포인트 (P)</label>
-              <input class="sm-input" id="um-points" type="number" value="${e?e.points||0:2500}" style="font-weight:800; color:#FF8730;">
+              <input class="sm-input" id="um-points" type="number" value="${e?e.points||0:3e3}" style="font-weight:800; color:#FF8730;">
             </div>
             <div>
               <label class="sm-label">보유 쿠폰 수 (장)</label>
-              <input class="sm-input" id="um-coupons" type="number" value="${e?e.coupons_count||0:3}" style="font-weight:800;">
+              <input class="sm-input" id="um-coupons" type="number" value="${e?e.coupons_count||0:1}" style="font-weight:800;">
             </div>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
-            <input type="checkbox" id="um-mem" ${e&&e.membership_active?`checked`:r?``:`checked`} style="width:16px; height:16px; cursor:pointer;">
-            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">라이진 멤버십 활성화 (월 8만원 절약 혜택)</label>
           </div>
           ${$(`기본 배송지 주소`,`um-addr`,e?e.default_address:`경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2`)}
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
@@ -4388,7 +4387,7 @@ Minimum version required to store current data is: `+c+`.
         </form>
       </div>
     </div>
-  `;let o=()=>{i.innerHTML=``};i.querySelector(`#u-close-btn`).addEventListener(`click`,o),i.querySelector(`#u-cancel-btn`).addEventListener(`click`,o),i.querySelector(`#u-modal-form`).addEventListener(`submit`,async a=>{a.preventDefault();let s={user_code:i.querySelector(`#um-code`).value.trim(),name:i.querySelector(`#um-name`).value.trim(),email:i.querySelector(`#um-email`).value.trim(),points:parseInt(i.querySelector(`#um-points`).value)||0,coupons_count:parseInt(i.querySelector(`#um-coupons`).value)||0,membership_active:i.querySelector(`#um-mem`).checked,default_address:i.querySelector(`#um-addr`).value.trim()};try{r&&e&&e.id&&!String(e.id).startsWith(`u-fallback`)?await fa.update(e.id,s):await fa.insert(s),Z(`회원 정보 저장이 완료되었습니다.`)}catch{Z(`회원 정보 저장 완료`)}o(),await ja(n,t)})}function Na(){let e=document.createElement(`div`),t=`list`;function n(e){if(!e)return`-`;try{let t=new Date(e);return isNaN(t.getTime())?e:`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,`0`)}-${String(t.getDate()).padStart(2,`0`)} ${String(t.getHours()).padStart(2,`0`)}:${String(t.getMinutes()).padStart(2,`0`)}`}catch{return e}}function r(){e.innerHTML=`
+  `;let c=()=>{i.innerHTML=``};i.querySelector(`#u-close-btn`).addEventListener(`click`,c),i.querySelector(`#u-cancel-btn`).addEventListener(`click`,c),i.querySelector(`#u-modal-form`).addEventListener(`submit`,async a=>{a.preventDefault();let o=i.querySelector(`#um-email`).value.trim(),s=i.querySelector(`#um-phone`).value.trim(),l=o||s||``,u={user_code:i.querySelector(`#um-code`).value.trim(),name:i.querySelector(`#um-name`).value.trim(),email:l,points:parseInt(i.querySelector(`#um-points`).value)||0,coupons_count:parseInt(i.querySelector(`#um-coupons`).value)||0,default_address:i.querySelector(`#um-addr`).value.trim()};try{r&&e&&e.id&&!String(e.id).startsWith(`u-fallback`)?await fa.update(e.id,u):await fa.insert(u),Z(`회원 정보 저장이 완료되었습니다.`)}catch{Z(`회원 정보 저장 완료`)}c(),await ja(n,t)})}function Na(){let e=document.createElement(`div`),t=`list`;function n(e){if(!e)return`-`;try{let t=new Date(e);return isNaN(t.getTime())?e:`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,`0`)}-${String(t.getDate()).padStart(2,`0`)} ${String(t.getHours()).padStart(2,`0`)}:${String(t.getMinutes()).padStart(2,`0`)}`}catch{return e}}function r(){e.innerHTML=`
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title">원데이 클래스 관리</h1>

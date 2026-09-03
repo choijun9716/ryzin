@@ -1292,14 +1292,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const name = realName;
 
           userNickname = nickname;
+          const email = kakaoAccount.email || '';
           localStorage.setItem('ryzin_nickname', nickname);
-          localStorage.setItem('ryzin_kakao_user', JSON.stringify({ id: kakaoId, nickname, name, phone }));
+          localStorage.setItem('ryzin_kakao_user', JSON.stringify({ id: kakaoId, nickname, name, phone, email }));
 
           // ── Supabase shop_users 테이블에 카카오 회원 자동 등록/동기화 ──
           const clientDb = db || window.supabaseClient;
           if (clientDb) {
             const userCode = 'KAKAO-' + kakaoId;
-            const userEmail = phone || kakaoAccount.email || ('kakao_' + kakaoId + '@ryzin.com');
+            const userEmail = kakaoAccount.email || phone || ('kakao_' + kakaoId + '@ryzin.com');
             const userAddress = '카카오 회원가입 (주소 미입력)';
 
             clientDb.from('shop_users')
@@ -2810,15 +2811,20 @@ if (btnSubmitPayment) {
 
         if (userCode) {
           clientDb.from('shop_users')
-            .select('id')
+            .select('id, email')
             .eq('user_code', userCode)
             .maybeSingle()
             .then(({ data: existUser }) => {
+              let finalEmail = phone;
+              if (existUser && existUser.email && existUser.email.includes('@')) {
+                finalEmail = existUser.email;
+              } else if (kakaoUserObj && kakaoUserObj.email && kakaoUserObj.email.includes('@')) {
+                finalEmail = kakaoUserObj.email;
+              }
               const userPayload = {
                 name: name,
-                email: phone,
-                default_address: address,
-                membership_active: true
+                email: finalEmail,
+                default_address: address
               };
               if (existUser) {
                 clientDb.from('shop_users').update(userPayload).eq('id', existUser.id).then(() => {});

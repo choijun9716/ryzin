@@ -1294,6 +1294,14 @@ function openUserModal(userObj, wrapper, panel) {
   const modalContainer = wrapper.querySelector('#sm-modal-container');
   const userCode = userObj ? userObj.user_code : `USER-${Math.floor(Math.random()*89999 + 10000)}`;
 
+  // 연락처와 이메일 분리 초기화
+  let initPhone = userObj ? (userObj.phone || '') : '';
+  let initEmail = userObj ? (userObj.email || '') : '';
+  if (!initPhone && initEmail && (initEmail.startsWith('01') || initEmail.includes('-') || !initEmail.includes('@'))) {
+    initPhone = initEmail.replace('@kakao.user', '');
+    initEmail = '';
+  }
+
   modalContainer.innerHTML = `
     <div class="sm-modal-backdrop">
       <div class="sm-modal-content" style="max-width:500px;">
@@ -1308,21 +1316,20 @@ function openUserModal(userObj, wrapper, panel) {
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             ${formField('회원 이름 (예: 채이준)','um-name', userObj ? userObj.name : '')}
-            ${formField('이메일 주소','um-email', userObj ? userObj.email : '', 'email')}
+            ${formField('연락처 (전화번호)','um-phone', initPhone, 'text', '010-0000-0000')}
+          </div>
+          <div>
+            ${formField('이메일 주소 (카카오계정 이메일)','um-email', initEmail, 'email', 'user@kakao.com')}
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div>
               <label class="sm-label">보유 포인트 (P)</label>
-              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 2500}" style="font-weight:800; color:#FF8730;">
+              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 3000}" style="font-weight:800; color:#FF8730;">
             </div>
             <div>
               <label class="sm-label">보유 쿠폰 수 (장)</label>
-              <input class="sm-input" id="um-coupons" type="number" value="${userObj ? (userObj.coupons_count || 0) : 3}" style="font-weight:800;">
+              <input class="sm-input" id="um-coupons" type="number" value="${userObj ? (userObj.coupons_count || 0) : 1}" style="font-weight:800;">
             </div>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; margin:4px 0;">
-            <input type="checkbox" id="um-mem" ${(userObj && userObj.membership_active) ? 'checked' : (isEdit ? '' : 'checked')} style="width:16px; height:16px; cursor:pointer;">
-            <label for="um-mem" style="font-size:13px; font-weight:800; color:#0f172a; cursor:pointer;">라이진 멤버십 활성화 (월 8만원 절약 혜택)</label>
           </div>
           ${formField('기본 배송지 주소','um-addr', userObj ? userObj.default_address : '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2')}
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
@@ -1340,13 +1347,16 @@ function openUserModal(userObj, wrapper, panel) {
 
   modalContainer.querySelector('#u-modal-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const inputEmail = modalContainer.querySelector('#um-email').value.trim();
+    const inputPhone = modalContainer.querySelector('#um-phone').value.trim();
+    const finalEmail = inputEmail || (inputPhone ? inputPhone : '');
+
     const payload = {
       user_code: modalContainer.querySelector('#um-code').value.trim(),
       name: modalContainer.querySelector('#um-name').value.trim(),
-      email: modalContainer.querySelector('#um-email').value.trim(),
+      email: finalEmail,
       points: parseInt(modalContainer.querySelector('#um-points').value) || 0,
       coupons_count: parseInt(modalContainer.querySelector('#um-coupons').value) || 0,
-      membership_active: modalContainer.querySelector('#um-mem').checked,
       default_address: modalContainer.querySelector('#um-addr').value.trim(),
     };
 
