@@ -1199,14 +1199,14 @@ Minimum version required to store current data is: `+c+`.
           <div style="text-align:center; padding:50px 20px; color:#94a3b8; font-size:13.5px;">
             조회된 주문 내역이 없습니다.
           </div>
-        `;return}let u=``;r.forEach((e,t)=>{let n=(e.payment_status||`payapp_requested`).toLowerCase(),r=n===`paid`,i=c.includes(n),a=``;a=r?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #d1fae5;">결제완료</span>`:i?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fef2f2; color:#ef4444; border:1px solid #fee2e2;">취소/환불</span>`:`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">결제대기</span>`;let o=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`,{month:`2-digit`,day:`2-digit`,hour:`2-digit`,minute:`2-digit`}):`-`,l=s(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),d=e.customer_name||e.buyer_name||`(미입력)`;u+=`
+        `;return}let u=``;r.forEach((e,t)=>{let n=(e.payment_status||`payapp_requested`).toLowerCase(),r=n===`paid`,i=c.includes(n),a=``;a=r?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #d1fae5;">결제완료</span>`:i?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fef2f2; color:#ef4444; border:1px solid #fee2e2;">취소/환불</span>`:`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">결제대기</span>`;let o=`-`;if(e.created_at){let t=new Date(e.created_at);if(isNaN(t.getTime())){let n=Number(e.created_at);isNaN(n)||(t=new Date(n))}o=isNaN(t.getTime())?String(e.created_at):`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,`0`)}.${String(t.getDate()).padStart(2,`0`)} ${String(t.getHours()).padStart(2,`0`)}:${String(t.getMinutes()).padStart(2,`0`)}`}let l=s(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),d=e.customer_name||e.buyer_name||`(미입력)`;u+=`
           <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <!-- 1. 상태 -->
             <td style="padding:12px 14px; text-align:center;">${a}</td>
             <!-- 2. 영수증번호 -->
             <td style="padding:12px 14px; color:#64748b; font-size:11.5px; font-family:monospace;">${e.pg_receipt_id||e.receipt_id||e.order_number||`-`}</td>
-            <!-- 3. 주문일시 -->
-            <td style="padding:12px 14px; color:#64748b; font-family:monospace; font-size:12px;">${o}</td>
+            <!-- 3. 주문일시 (똑바른 날짜 표기) -->
+            <td style="padding:12px 14px; color:#334155; font-family:monospace; font-size:12px; font-weight:600; white-space:nowrap;">${o}</td>
             <!-- 4. 주문자 (클릭 시 모달) -->
             <td style="padding:12px 14px;">
               <button type="button" class="btn-customer-detail" data-order-idx="${t}"
@@ -1221,10 +1221,14 @@ Minimum version required to store current data is: `+c+`.
                 </svg>
               </button>
             </td>
-            <!-- 5. 주문 상품 -->
-            <td style="padding:12px 14px; font-weight:700; color:#0f172a; max-width:300px; line-height:1.4;">${l}</td>
-            <!-- 6. 결제금액 -->
-            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${i?`#94a3b8; text-decoration:line-through;`:r?`#0f172a;`:`#d97706;`}">
+            <!-- 5. 주문 상품 (길면 ... 말줄임표 처리) -->
+            <td style="padding:12px 14px; max-width:260px;">
+              <div style="font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${l.replace(/"/g,`&quot;`)}">
+                ${l}
+              </div>
+            </td>
+            <!-- 6. 결제금액 (검은색 굵게 표기) -->
+            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${i?`#94a3b8; text-decoration:line-through;`:`#000000;`}">
               ${(parseInt(e.total_amount)||0).toLocaleString()}원
             </td>
           </tr>
@@ -1246,7 +1250,7 @@ Minimum version required to store current data is: `+c+`.
             </tbody>
           </table>
         </div>
-      `,e.querySelectorAll(`.btn-customer-detail`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=parseInt(e.dataset.orderIdx);r[n]&&m(r[n])})})},m=e=>{document.getElementById(`customer-detail-modal`)?.remove();let t=e.customer_name||e.buyer_name||`(미입력)`,n=e.customer_phone||e.buyer_phone||`(미입력)`,r=e.customer_address||e.shipping_address||`(미입력)`,i=(e.payment_status||`payapp_requested`).toLowerCase(),a=i===`paid`,o=c.includes(i),l=a?`결제완료`:o?`취소/환불`:`결제대기`,u=a?`#ecfdf5`:o?`#fef2f2`:`#fffbeb`,d=a?`#059669`:o?`#ef4444`:`#d97706`,f=s(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),p=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`):`-`,m=document.createElement(`div`);m.id=`customer-detail-modal`,m.style.cssText=`position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); padding:16px;`,m.innerHTML=`
+      `,e.querySelectorAll(`.btn-customer-detail`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=parseInt(e.dataset.orderIdx);r[n]&&m(r[n])})})},m=e=>{document.getElementById(`customer-detail-modal`)?.remove();let t=e.customer_name||e.buyer_name||`(미입력)`,n=e.customer_phone||e.buyer_phone||`(미입력)`,r=e.customer_address||e.shipping_address||`(미입력)`,i=(e.payment_status||`payapp_requested`).toLowerCase(),a=i===`paid`,o=c.includes(i),l=a?`결제완료`:o?`취소/환불`:`결제대기`,u=a?`#ecfdf5`:o?`#fef2f2`:`#fffbeb`,d=a?`#059669`:o?`#ef4444`:`#d97706`,f=s(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),p=`-`;if(e.created_at){let t=new Date(e.created_at);if(isNaN(t.getTime())){let n=Number(e.created_at);isNaN(n)||(t=new Date(n))}p=isNaN(t.getTime())?String(e.created_at):`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,`0`)}.${String(t.getDate()).padStart(2,`0`)} ${String(t.getHours()).padStart(2,`0`)}:${String(t.getMinutes()).padStart(2,`0`)}`}let m=document.createElement(`div`);m.id=`customer-detail-modal`,m.style.cssText=`position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); padding:16px;`,m.innerHTML=`
         <div style="background:#ffffff; border-radius:14px; width:440px; max-width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0; animation:orderModalIn 0.16s ease-out;">
           <!-- 모달 헤더 -->
           <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1.5px solid #f1f5f9; background:#ffffff;">
@@ -1301,7 +1305,7 @@ Minimum version required to store current data is: `+c+`.
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
                 <span style="color:#64748b;">결제 금액</span>
-                <span style="font-weight:800; color:#2563eb; font-size:13.5px;">${(parseInt(e.total_amount)||0).toLocaleString()}원</span>
+                <span style="font-weight:800; color:#000000; font-size:14px;">${(parseInt(e.total_amount)||0).toLocaleString()}원</span>
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
                 <span style="color:#64748b;">영수증 번호</span>
@@ -1309,7 +1313,7 @@ Minimum version required to store current data is: `+c+`.
               </div>
               <div style="display:flex; justify-content:space-between; font-size:12px;">
                 <span style="color:#64748b;">주문 일시</span>
-                <span style="color:#64748b; font-family:monospace;">${p}</span>
+                <span style="color:#334155; font-family:monospace; font-weight:600;">${p}</span>
               </div>
             </div>
           </div>

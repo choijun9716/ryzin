@@ -3906,7 +3906,26 @@ function renderLiveEditView(container, liveId, showView) {
           statusBadge = '<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">결제대기</span>';
         }
 
-        const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+        // 똑바른 날짜 포맷 (YYYY.MM.DD HH:mm)
+        let dateStr = '-';
+        if (ord.created_at) {
+          let d = new Date(ord.created_at);
+          if (isNaN(d.getTime())) {
+            const num = Number(ord.created_at);
+            if (!isNaN(num)) d = new Date(num);
+          }
+          if (!isNaN(d.getTime())) {
+            const Y = d.getFullYear();
+            const M = String(d.getMonth() + 1).padStart(2, '0');
+            const D = String(d.getDate()).padStart(2, '0');
+            const h = String(d.getHours()).padStart(2, '0');
+            const m = String(d.getMinutes()).padStart(2, '0');
+            dateStr = `${Y}.${M}.${D} ${h}:${m}`;
+          } else {
+            dateStr = String(ord.created_at);
+          }
+        }
+
         const items = parseItems(ord);
         const itemsText = items.map(it => `${it.name || it.goodname} (${it.quantity || 1}개)`).join(', ');
         const customerName = ord.customer_name || ord.buyer_name || '(미입력)';
@@ -3917,8 +3936,8 @@ function renderLiveEditView(container, liveId, showView) {
             <td style="padding:12px 14px; text-align:center;">${statusBadge}</td>
             <!-- 2. 영수증번호 -->
             <td style="padding:12px 14px; color:#64748b; font-size:11.5px; font-family:monospace;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
-            <!-- 3. 주문일시 -->
-            <td style="padding:12px 14px; color:#64748b; font-family:monospace; font-size:12px;">${dateStr}</td>
+            <!-- 3. 주문일시 (똑바른 날짜 표기) -->
+            <td style="padding:12px 14px; color:#334155; font-family:monospace; font-size:12px; font-weight:600; white-space:nowrap;">${dateStr}</td>
             <!-- 4. 주문자 (클릭 시 모달) -->
             <td style="padding:12px 14px;">
               <button type="button" class="btn-customer-detail" data-order-idx="${idx}"
@@ -3933,10 +3952,14 @@ function renderLiveEditView(container, liveId, showView) {
                 </svg>
               </button>
             </td>
-            <!-- 5. 주문 상품 -->
-            <td style="padding:12px 14px; font-weight:700; color:#0f172a; max-width:300px; line-height:1.4;">${itemsText}</td>
-            <!-- 6. 결제금액 -->
-            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : isPaid ? '#0f172a;' : '#d97706;'}">
+            <!-- 5. 주문 상품 (길면 ... 말줄임표 처리) -->
+            <td style="padding:12px 14px; max-width:260px;">
+              <div style="font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${itemsText.replace(/"/g, '&quot;')}">
+                ${itemsText}
+              </div>
+            </td>
+            <!-- 6. 결제금액 (검은색 굵게 표기) -->
+            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : '#000000;'}">
               ${(parseInt(ord.total_amount) || 0).toLocaleString()}원
             </td>
           </tr>
@@ -3990,7 +4013,25 @@ function renderLiveEditView(container, liveId, showView) {
       const statusColor = isPaid ? '#059669' : isCancel ? '#ef4444' : '#d97706';
       const items = parseItems(ord);
       const itemsText = items.map(it => `${it.name || it.goodname} (${it.quantity || 1}개)`).join(', ');
-      const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR') : '-';
+      
+      let dateStr = '-';
+      if (ord.created_at) {
+        let d = new Date(ord.created_at);
+        if (isNaN(d.getTime())) {
+          const num = Number(ord.created_at);
+          if (!isNaN(num)) d = new Date(num);
+        }
+        if (!isNaN(d.getTime())) {
+          const Y = d.getFullYear();
+          const M = String(d.getMonth() + 1).padStart(2, '0');
+          const D = String(d.getDate()).padStart(2, '0');
+          const h = String(d.getHours()).padStart(2, '0');
+          const m = String(d.getMinutes()).padStart(2, '0');
+          dateStr = `${Y}.${M}.${D} ${h}:${m}`;
+        } else {
+          dateStr = String(ord.created_at);
+        }
+      }
 
       const modalEl = document.createElement('div');
       modalEl.id = 'customer-detail-modal';
@@ -4051,7 +4092,7 @@ function renderLiveEditView(container, liveId, showView) {
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
                 <span style="color:#64748b;">결제 금액</span>
-                <span style="font-weight:800; color:#2563eb; font-size:13.5px;">${(parseInt(ord.total_amount) || 0).toLocaleString()}원</span>
+                <span style="font-weight:800; color:#000000; font-size:14px;">${(parseInt(ord.total_amount) || 0).toLocaleString()}원</span>
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
                 <span style="color:#64748b;">영수증 번호</span>
@@ -4059,7 +4100,7 @@ function renderLiveEditView(container, liveId, showView) {
               </div>
               <div style="display:flex; justify-content:space-between; font-size:12px;">
                 <span style="color:#64748b;">주문 일시</span>
-                <span style="color:#64748b; font-family:monospace;">${dateStr}</span>
+                <span style="color:#334155; font-family:monospace; font-weight:600;">${dateStr}</span>
               </div>
             </div>
           </div>
