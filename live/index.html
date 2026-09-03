@@ -1056,34 +1056,160 @@
         </div>
       </div>
 
-      <!-- [NEW] 이용약관 모달 (여백 확장 & 모노크롬 미니멀) -->
+      <!-- [NEW] 이용약관 모달 (라이진커넥트 공식 이용약관 전문 수록) -->
       <div id="my-terms-modal"
         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); justify-content:center; align-items:center; z-index:100001; padding:20px; pointer-events:auto;">
         <div
-          style="background:#ffffff; width:100%; max-width:350px; max-height:85vh; border-radius:24px; padding:28px 24px 22px 24px; box-shadow:0 20px 48px rgba(0,0,0,0.14); position:relative; animation: modalScaleUp 0.25s ease-out; color:#0f172a; border:1px solid #e2e8f0; display:flex; flex-direction:column; text-align:left;">
+          style="background:#ffffff; width:100%; max-width:380px; max-height:85vh; border-radius:24px; padding:26px 22px 20px 22px; box-shadow:0 20px 48px rgba(0,0,0,0.14); position:relative; animation: modalScaleUp 0.25s ease-out; color:#0f172a; border:1px solid #e2e8f0; display:flex; flex-direction:column; text-align:left;">
           <button type="button" onclick="document.getElementById('my-terms-modal').style.display='none'; document.getElementById('my-menu-modal').style.display='flex';"
-            style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:19px; color:#94a3b8; cursor:pointer; outline:none;">✕</button>
-          <h3 style="margin:0 0 16px 0; font-size:17px; font-weight:700; color:#0f172a;">이용약관</h3>
+            style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:19px; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.15s;"
+            onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
 
-          <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:14px; padding-right:4px;">
-            <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
-              <div style="font-size:13px; font-weight:600; color:#0f172a; margin-bottom:5px;">전자상거래 이용약관</div>
-              <p style="font-size:11.5px; color:#64748b; line-height:1.55; margin:0;">전자상거래 등에서의 소비자보호에 관한 법률 및 관계 법령을 준수하며, 소비자의 권익 보호를 최우선으로 합니다.</p>
-            </div>
-            <div style="border-bottom:1px solid #f1f5f9; padding-bottom:12px;">
-              <div style="font-size:13px; font-weight:600; color:#0f172a; margin-bottom:5px;">개인정보 처리방침</div>
-              <p style="font-size:11.5px; color:#64748b; line-height:1.55; margin:0;">수집된 개인정보는 결제 및 배송 목적으로만 사용되며, 관련 법령에 따라 안전하게 보관 후 파기됩니다.</p>
-            </div>
+          <div style="margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #f1f5f9;">
+            <h3 style="margin:0 0 4px 0; font-size:16.5px; font-weight:800; color:#0f172a;">라이진커넥트 이용약관</h3>
+            <span style="font-size:11px; color:#64748b; font-weight:500;">시행일자: 2026년 9월 1일</span>
+          </div>
+
+          <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-right:6px; font-size:12px; color:#475569; line-height:1.65;">
+            
             <div>
-              <div style="font-size:13px; font-weight:600; color:#0f172a; margin-bottom:5px;">교환 및 환불 안내</div>
-              <p style="font-size:11.5px; color:#64748b; line-height:1.55; margin:0;">청약철회는 상품 수령 후 7일 이내 가능하며, 상품 불량 또는 오배송 시 당사 부담으로 신속히 교환/환불됩니다.</p>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제1조 (목적)</div>
+              <p style="margin:0;">본 약관은 라이진(이하 “회사”)이 운영하는 라이진커넥트(LYZIN CONNECT, 이하 “서비스”)의 이용과 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
             </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제2조 (정의)</div>
+              <p style="margin:0 0 4px 0;">본 약관에서 사용하는 용어의 정의는 다음과 같습니다.</p>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div>1. “서비스”란 회사가 제공하는 라이브커머스 영상 송출, 상품정보 제공, 상품 구매 연결 및 이에 부수하는 서비스를 말합니다.</div>
+                <div>2. “이용자”란 본 서비스를 이용하는 모든 고객을 말합니다.</div>
+                <div>3. “브랜드사” 또는 “판매자”란 본 서비스를 통해 상품 또는 서비스를 판매하거나 상품정보를 제공하는 사업자를 말합니다.</div>
+                <div>4. “자사몰”이란 브랜드사가 직접 운영하는 온라인 쇼핑몰을 말합니다.</div>
+                <div>5. “라이브 콘텐츠”란 회사 또는 브랜드사가 제작·제공하는 실시간 또는 녹화 영상 및 관련 콘텐츠를 말합니다.</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제3조 (서비스의 내용)</div>
+              <p style="margin:0 0 4px 0;">회사는 다음과 같은 서비스를 제공할 수 있습니다.</p>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div>1. 라이브커머스 영상 송출</div>
+                <div>2. 상품정보 및 상품 이미지 등의 노출</div>
+                <div>3. 브랜드사 자사몰로의 상품 구매 연결</div>
+                <div>4. 라이브 방송 관련 채팅 및 부가 기능</div>
+                <div>5. 라이브 방송의 조회, 클릭 등 통계정보 제공</div>
+                <div>6. 기타 회사가 정하는 부가 서비스</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제4조 (상품 거래의 당사자)</div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <div>1. 본 서비스에 노출되는 상품의 판매 및 거래에 관한 당사자는 해당 상품을 판매하는 브랜드사입니다.</div>
+                <div>2. 회사는 원칙적으로 상품의 제조, 판매, 주문, 결제, 배송, 교환 및 환불의 당사자가 아닙니다.</div>
+                <div>3. 이용자는 상품의 주문 및 결제를 해당 브랜드사의 자사몰에서 진행하며, 상품의 거래와 관련한 구체적인 조건은 해당 브랜드사의 판매정책 및 이용약관에 따릅니다.</div>
+                <div>4. 상품의 품질, 안전성, 재고, 가격, 배송, 교환, 환불 및 상품 자체와 관련하여 발생하는 책임은 해당 판매자에게 있습니다.</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제5조 (상품정보)</div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <div>1. 상품명, 가격, 원산지, 성분, 규격, 효능·효과, 인증정보, 배송조건 등 상품에 관한 정보는 원칙적으로 브랜드사가 제공한 정보를 기준으로 합니다.</div>
+                <div>2. 브랜드사는 회사에 제공하는 상품정보가 사실과 일치하고 관련 법령을 준수하도록 관리하여야 합니다.</div>
+                <div>3. 회사는 상품정보에 오류 또는 법령 위반이 있다고 판단하는 경우 해당 상품의 노출을 제한하거나 삭제할 수 있습니다.</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제6조 (광고 및 라이브 콘텐츠)</div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <div>1. 브랜드사는 회사에 제공하는 광고자료 및 방송 관련 자료가 관련 법령을 준수하도록 하여야 합니다.</div>
+                <div>2. 브랜드사는 허위·과장 또는 소비자를 오인하게 할 우려가 있는 표현을 제공하여서는 안 됩니다.</div>
+                <div>3. 회사는 관련 법령 또는 회사의 운영기준에 위반되는 콘텐츠에 대하여 수정, 삭제 또는 송출 중단을 요청하거나 필요한 조치를 취할 수 있습니다.</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제7조 (주문·결제·배송·교환 및 환불)</div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <div>1. 이용자의 주문 및 결제는 해당 브랜드사의 자사몰에서 이루어집니다.</div>
+                <div>2. 상품의 배송, 교환, 환불 및 상품 관련 고객상담은 해당 브랜드사가 책임지고 처리합니다.</div>
+                <div>3. 회사는 상품 거래 과정에서 발생하는 분쟁의 해결을 위해 필요한 범위에서 판매자와 이용자 간의 연락 및 사실 확인을 지원할 수 있습니다.</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제8조 (서비스의 변경 및 중단)</div>
+              <p style="margin:0 0 4px 0;">회사는 다음 각 호의 사유가 발생한 경우 서비스의 전부 또는 일부를 변경하거나 일시적으로 중단할 수 있습니다.</p>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div>1. 서버 또는 통신망의 장애</div>
+                <div>2. 클라우드, CDN, 외부 플랫폼 등 제3자 서비스의 장애</div>
+                <div>3. 시스템 점검 또는 유지보수</div>
+                <div>4. 천재지변 및 기타 불가항력적 사유</div>
+                <div>5. 기타 회사가 서비스를 정상적으로 제공하기 어렵다고 판단하는 경우</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제9조 (이용자의 금지행위)</div>
+              <p style="margin:0 0 4px 0;">이용자는 다음 각 호의 행위를 하여서는 안 됩니다.</p>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <div>1. 타인의 개인정보를 무단으로 수집·이용하는 행위</div>
+                <div>2. 회사 또는 제3자의 지식재산권을 침해하는 행위</div>
+                <div>3. 허위정보를 등록하거나 타인을 기망하는 행위</div>
+                <div>4. 서비스의 정상적인 운영을 방해하는 행위</div>
+                <div>5. 관련 법령에 위반되는 행위</div>
+                <div>6. 기타 회사가 부적절하다고 판단하는 행위</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제10조 (지식재산권)</div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <div>1. 서비스 및 회사가 제작한 라이브 콘텐츠, 디자인, 프로그램, 로고 등에 관한 지식재산권은 회사 또는 정당한 권리자에게 귀속됩니다.</div>
+                <div>2. 브랜드사가 제공하는 상품 이미지, 영상, 로고 및 기타 자료에 대한 권리는 해당 권리자에게 귀속됩니다.</div>
+                <div>3. 브랜드사는 회사가 서비스를 제공하기 위해 필요한 범위에서 해당 자료를 사용할 수 있는 적법한 권리를 보유하고 있음을 보증합니다.</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제11조 (개인정보 보호)</div>
+              <p style="margin:0;">회사는 이용자의 개인정보를 관련 법령 및 회사의 개인정보처리방침에 따라 처리합니다.</p>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제12조 (책임의 범위)</div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <div>1. 회사는 관련 법령에서 정하는 범위 내에서 서비스 제공자로서의 책임을 부담합니다.</div>
+                <div>2. 상품의 제조, 품질, 판매, 배송, 교환, 환불 및 상품정보에 관한 책임은 해당 판매자에게 있습니다.</div>
+                <div>3. 회사의 고의 또는 중대한 과실로 인하여 발생한 손해에 대해서는 관련 법령에 따라 책임을 부담합니다.</div>
+                <div>4. 천재지변, 통신망 장애, 외부 서비스 장애 등 회사가 합리적으로 통제하기 어려운 사유로 발생한 서비스 장애에 대해서는 관련 법령이 허용하는 범위에서 책임을 제한할 수 있습니다.</div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제13조 (분쟁의 해결)</div>
+              <p style="margin:0;">서비스 이용과 관련하여 회사와 이용자 사이에 분쟁이 발생한 경우 회사와 이용자는 상호 협의를 통해 해결하도록 노력합니다.</p>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">제14조 (약관의 변경)</div>
+              <p style="margin:0;">회사는 관련 법령을 위반하지 않는 범위에서 본 약관을 변경할 수 있으며, 변경사항은 서비스 내 공지 등을 통해 이용자에게 안내합니다.</p>
+            </div>
+
+            <div style="padding-top:10px; border-top:1px solid #f1f5f9;">
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">부칙</div>
+              <p style="margin:0;">본 약관은 공지한 시행일로부터 적용됩니다.</p>
+            </div>
+
           </div>
 
           <div style="margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
             <button type="button" onclick="document.getElementById('my-terms-modal').style.display='none'; document.getElementById('my-menu-modal').style.display='flex';"
-              style="width:100%; padding:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;">
-              닫기
+              style="width:100%; padding:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;"
+              onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+              확인
             </button>
           </div>
         </div>
