@@ -957,11 +957,11 @@ document.addEventListener('DOMContentLoaded', () => {
       viewCountEl.style.display = 'flex';
 
       if (!isLive) {
-        // 대기 화면일 때는 "N명 대기중" 노출
-        const viewers = s ? (parseInt(s.viewers) || 0) : 0;
-        viewCountEl.textContent = viewers.toLocaleString() + '명 대기중';
+        // 대기 화면일 때도 총 시청자수(누적시청자수 + 실시간) 노출
+        const total = s ? ((parseInt(s.cumViewers) || 0) + (parseInt(s.viewers) || 0)) : 0;
+        viewCountEl.textContent = total.toLocaleString() + '명 대기중';
       } else if (s) {
-        // 라이브 중일 때는 [누적시청자수 + 실시간시청자수] 가산하여 노출
+        // 라이브 중일 때도 [누적시청자수 + 실시간시청자수] 가산하여 노출
         const total = (parseInt(s.cumViewers) || 0) + (parseInt(s.viewers) || 0);
         viewCountEl.textContent = total.toLocaleString() + '명 시청중';
       }
