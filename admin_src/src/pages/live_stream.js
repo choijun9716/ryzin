@@ -982,34 +982,32 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
       </div>
 
-      <!-- [NEW] 웹 푸시 알림 발송 설정 (위젯 설정 바로 아래) -->
+      <!-- 웹 푸시 알림 발송 설정 (위젯 설정 톤앤매너 일치) -->
       <div style="width:100%; border-top:1.5px solid #e2e8f0; padding-top:16px; margin-top:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <div style="font-size:13px; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:6px;">
-            <span>🔔</span> 웹 푸시 알림 발송
-          </div>
-          <div id="push-subscriber-badge" style="font-size:11px; font-weight:800; color:#2563eb; background:#eff6ff; padding:3px 8px; border-radius:12px; border:1px solid #bfdbfe;">
-            신청자: 조회 중...
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="font-size:13px; font-weight:700; color:#64748b; letter-spacing:0.05em;">웹 푸시 알림 설정</div>
+          <div id="push-subscriber-badge" style="font-size:11px; font-weight:700; color:#64748b; background:#f1f5f9; padding:2px 8px; border-radius:6px; font-family:monospace; line-height:1.3;">
+            신청자 0명
           </div>
         </div>
 
-        <div style="margin-bottom:8px;">
-          <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:4px;">알림 제목</label>
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px; letter-spacing:0.05em;">알림 제목</label>
           <input type="text" id="push-title-input" class="modern-input" style="padding:6px 10px; font-size:12px; height:32px;" value="${config.brandName || 'RYZIN'} 라이브 방송이 시작되었습니다!" placeholder="알림 제목">
         </div>
 
         <div style="margin-bottom:10px;">
-          <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:4px;">알림 내용</label>
-          <textarea id="push-body-input" class="modern-input" rows="2" style="padding:6px 10px; font-size:12px; resize:vertical;" placeholder="알림 내용">지금 접속하셔서 라이브 단독 특가 혜택을 놓치지 마세요!</textarea>
+          <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px; letter-spacing:0.05em;">알림 내용</label>
+          <textarea id="push-body-input" class="modern-input" rows="2" style="padding:6px 10px; font-size:12px; resize:vertical; line-height:1.5;" placeholder="알림 내용">지금 접속하셔서 라이브 단독 특가 혜택을 놓치지 마세요!</textarea>
         </div>
 
         <div style="display:flex; gap:6px; align-items:center;">
-          <button id="btn-send-push-now" class="action-btn btn-primary-solid" style="flex:1; padding:8px 10px; font-size:12px; font-weight:800; border-radius:8px; justify-content:center; display:flex; align-items:center; gap:6px;">
-            <span>🚀</span> 방송 알림 전체 발송
+          <button id="btn-send-push-now" class="action-btn btn-primary-solid" style="flex:1; padding:6px 10px; font-size:12px; font-weight:700; height:32px; justify-content:center;">
+            방송 알림 전체 발송
           </button>
-          <button id="btn-refresh-push-sub" class="action-btn btn-neutral" style="padding:8px 10px; font-size:11px; font-weight:700;" title="신청자 수 새로고침">새로고침</button>
+          <button id="btn-refresh-push-sub" class="action-btn btn-neutral" style="padding:6px 10px; font-size:11px; font-weight:700; height:32px; justify-content:center;">새로고침</button>
         </div>
-        <div id="push-status-text" style="font-size:10px; color:#64748b; margin-top:6px; min-height:15px; word-break:break-all;"></div>
+        <div id="push-status-text" style="font-size:10px; color:#94a3b8; margin-top:6px; min-height:14px; word-break:break-all;"></div>
       </div>
     </div>
   `;
@@ -1058,10 +1056,10 @@ function renderLiveEditView(container, liveId, showView) {
         .eq('live_id', liveId)
         .eq('name', '__WEB_PUSH__');
       if (!error && pushBadge) {
-        pushBadge.textContent = `신청자: ${count || 0}명`;
+        pushBadge.textContent = `신청자 ${count || 0}명`;
       }
     } catch (e) {
-      if (pushBadge) pushBadge.textContent = '신청자: 0명';
+      if (pushBadge) pushBadge.textContent = '신청자 0명';
     }
   };
 
