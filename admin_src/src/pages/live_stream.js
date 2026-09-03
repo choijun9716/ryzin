@@ -34,6 +34,12 @@ const saveLiveProductsLocal = (liveId, data) => {
 const getBotConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_bot_${liveId}`) || JSON.stringify({ list: '', interval: 10, autoReplyRules: [], autoReplyActive: true }));
 const saveBotConfig = (liveId, data) => localStorage.setItem(`ryzin_bot_${liveId}`, JSON.stringify(data));
 
+function extractYouTubeId(url) {
+  if (!url || typeof url !== 'string') return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/|watch\?.+&v=))([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
 function nextLiveId() {
   const lives = getLives();
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -1153,18 +1159,23 @@ function renderLiveEditView(container, liveId, showView) {
           </div>
           <div class="file-upload-wrapper">
             <div style="width:40px; height:71px; border-radius:8px; overflow:hidden; border:2px solid #e2e8f0; flex-shrink:0; position:relative; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
-              <img id="standby-image-preview" src="${config.standbyImageUrl || ''}" style="width:100%; height:100%; object-fit:cover; display:${config.standbyImageUrl ? 'block' : 'none'};">
+              <img id="standby-image-preview" src="${(() => {
+                const ytId = extractYouTubeId(config.standbyImageUrl || '');
+                return ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : (config.standbyImageUrl || '');
+              })()}" style="width:100%; height:100%; object-fit:cover; display:${config.standbyImageUrl ? 'block' : 'none'};">
               <span id="standby-image-placeholder" style="font-size:11px; font-weight:700; color:#94a3b8; display:${config.standbyImageUrl ? 'none' : 'block'};">예비</span>
+              <span id="standby-yt-badge" style="position:absolute; bottom:3px; left:3px; background:#ef4444; color:#fff; font-size:8px; font-weight:800; padding:1px 3px; border-radius:3px; display:${extractYouTubeId(config.standbyImageUrl || '') ? 'block' : 'none'};">YT</span>
             </div>
             <div>
               <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                <label class="modern-label" style="margin:0;">예비 썸네일</label>
+                <label class="modern-label" style="margin:0;">예비 썸네일 (반복영상/이미지)</label>
                 <input type="checkbox" id="cfg-useStandbyImage" style="width:15px; height:15px; accent-color:#3b82f6; cursor:pointer;" ${config.useStandbyImage ? 'checked' : ''} title="예비 썸네일 송출 ON/OFF">
                 <span id="cfg-useStandbyImage-label" style="font-size:11px; font-weight:700; color:${config.useStandbyImage ? '#2563eb' : '#94a3b8'};">${config.useStandbyImage ? 'ON' : 'OFF'}</span>
               </div>
-              <div style="display:flex; gap:4px;">
-                <label class="file-upload-btn" style="margin:0; padding:6px 12px; font-size:12px;" for="cfg-standbyImageFile">업로드</label>
-                <button id="btn-clear-standby-image" class="action-btn btn-neutral" style="padding:4px 6px; font-size:11px; height:28px; border-color:#fee2e2; background:#fff5f5; color:#ef4444; display:${config.standbyImageUrl ? 'block' : 'none'};">삭제</button>
+              <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                <label class="file-upload-btn" style="margin:0; padding:5px 9px; font-size:11px;" for="cfg-standbyImageFile">이미지</label>
+                <button type="button" id="btn-standby-youtube" class="action-btn btn-neutral" style="padding:4px 8px; font-size:11px; height:28px; border-color:#e2e8f0; background:#fff; color:#2563eb; font-weight:700;">유튜브 URL</button>
+                <button type="button" id="btn-clear-standby-image" class="action-btn btn-neutral" style="padding:4px 6px; font-size:11px; height:28px; border-color:#fee2e2; background:#fff5f5; color:#ef4444; display:${config.standbyImageUrl ? 'block' : 'none'};">삭제</button>
               </div>
               <input type="file" id="cfg-standbyImageFile" accept="image/*" style="display:none;">
             </div>
@@ -1696,6 +1707,31 @@ function renderLiveEditView(container, liveId, showView) {
       const clearBtn = document.getElementById('btn-clear-standby-image');
       if (clearBtn) clearBtn.style.display = 'block';
     });
+
+    const btnStandbyYt = document.getElementById('btn-standby-youtube');
+    if (btnStandbyYt) {
+      btnStandbyYt.addEventListener('click', () => {
+        const curYt = extractYouTubeId(config.standbyImageUrl || '') ? config.standbyImageUrl : '';
+        const url = prompt('예비 썸네일로 무한 반복 재생할 유튜브 주소를 입력해주세요:\n(예: https://youtu.be/... 또는 https://www.youtube.com/watch?v=...)', curYt);
+        if (url === null) return;
+        const trimmed = url.trim();
+        if (!trimmed) {
+          alert('유튜브 영상 주소를 입력해주세요.');
+          return;
+        }
+        const ytId = extractYouTubeId(trimmed);
+        if (!ytId) {
+          alert('올바른 유튜브 주소 형식이 아닙니다.\n(예: https://youtu.be/xxxx 또는 https://www.youtube.com/watch?v=xxxx)');
+          return;
+        }
+        config.standbyImageUrl = trimmed;
+        config.useStandbyImage = true;
+        saveConfig();
+        syncToSheetDB(liveId, config, stats, products, true);
+        renderConfigTab();
+        alert('유튜브 영상이 예비 썸네일(컨트롤러 숨김/반복재생)로 등록되었습니다.');
+      });
+    }
 
     const btnClearStandby = document.getElementById('btn-clear-standby-image');
     if (btnClearStandby) {

@@ -1,4 +1,9 @@
 // === Global Supabase & State Variables ===
+function extractYouTubeId(url) {
+  if (!url || typeof url !== 'string') return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/|watch\?.+&v=))([\w-]{11})/);
+  return m ? m[1] : null;
+}
 let db = null;
 let LIVE_ID = 'live01';
 
@@ -492,13 +497,57 @@ document.addEventListener('DOMContentLoaded', () => {
         const standbyOverlay = document.getElementById('standby-overlay');
         const standbyImg = document.getElementById('standby-img');
 
-        // ── 방송 진행 중 예비 썸네일 오버레이 제어 (ON 설정 시 표시) ──
+        // ── 방송 진행 중 예비 썸네일 오버레이 제어 (유튜브 반복재생 및 컨트롤러 숨김 지원) ──
+        const standbyYtWrap = document.getElementById('standby-youtube-wrap');
         if (c.useStandbyImage && c.standbyImageUrl && c.standbyImageUrl.trim()) {
-          if (standbyOverlay && standbyImg) {
-            standbyImg.src = c.standbyImageUrl.trim();
+          const rawUrl = c.standbyImageUrl.trim();
+          const ytId = extractYouTubeId(rawUrl);
+
+          if (ytId) {
+            // [유튜브 영상 모드] 반복재생(loop=1&playlist=ID) 및 컨트롤러 완전 숨김(controls=0)
+            if (standbyImg) {
+              standbyImg.style.display = 'none';
+              standbyImg.src = '';
+            }
+            if (standbyYtWrap) {
+              standbyYtWrap.style.display = 'block';
+              const curIframe = standbyYtWrap.querySelector('iframe');
+              if (!curIframe || curIframe.getAttribute('data-yt-id') !== ytId) {
+                standbyYtWrap.innerHTML = `
+                  <iframe
+                    data-yt-id="${ytId}"
+                    src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&playsinline=1&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&fs=0"
+                    allow="autoplay; encrypted-media"
+                    style="position:absolute; top:50%; left:50%; width:100vw; height:100vh; min-width:177.78vh; min-height:56.25vw; transform:translate(-50%, -50%); border:none; pointer-events:none;"
+                  ></iframe>
+                `;
+              }
+            }
+          } else {
+            // [일반 이미지 모드]
+            if (standbyYtWrap) {
+              standbyYtWrap.innerHTML = '';
+              standbyYtWrap.style.display = 'none';
+            }
+            if (standbyImg) {
+              standbyImg.src = rawUrl;
+              standbyImg.style.display = 'block';
+            }
+          }
+
+          if (standbyOverlay) {
             standbyOverlay.style.display = 'flex';
           }
         } else {
+          // 예비 썸네일 OFF 시 리소스 정리
+          if (standbyYtWrap) {
+            standbyYtWrap.innerHTML = '';
+            standbyYtWrap.style.display = 'none';
+          }
+          if (standbyImg) {
+            standbyImg.style.display = 'none';
+            standbyImg.src = '';
+          }
           if (standbyOverlay) {
             standbyOverlay.style.display = 'none';
           }
