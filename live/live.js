@@ -3661,14 +3661,14 @@ window.openMyMenuModal = function() {
           </div>
         </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:9px 12px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px; padding:12px 14px; margin-top:12px;">
         <div style="text-align:center; border-right:1px solid #e2e8f0;">
-          <div style="font-size:10.5px; font-weight:500; color:#64748b; margin-bottom:1px;">포인트</div>
-          <div style="font-size:13.5px; font-weight:700; color:#0f172a; font-family:monospace;">3,000P</div>
+          <div style="font-size:11px; font-weight:500; color:#64748b; margin-bottom:3px;">보유 포인트</div>
+          <div style="font-size:15px; font-weight:700; color:#0f172a;">3,000P</div>
         </div>
         <div style="text-align:center;">
-          <div style="font-size:10.5px; font-weight:500; color:#64748b; margin-bottom:1px;">쿠폰</div>
-          <div style="font-size:13.5px; font-weight:700; color:#0f172a; font-family:monospace;">1장</div>
+          <div style="font-size:11px; font-weight:500; color:#64748b; margin-bottom:3px;">할인 쿠폰</div>
+          <div style="font-size:15px; font-weight:700; color:#0f172a;">1장</div>
         </div>
       </div>
     `;
