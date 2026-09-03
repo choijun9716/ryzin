@@ -3622,3 +3622,243 @@ window.claimGiveawayItem = async function() {
     window.closeGiveawayCard();
   }, 1200);
 };
+
+
+// ====================================================
+// [NEW] 상단 MY 메뉴 모달 및 7대 항목 제어 엔진
+// (내정보 확인 / 내 주문목록 / 공지사항 / 고객센터 / 이용약관 / 버전 / 로그아웃)
+// ====================================================
+
+window.openMyMenuModal = function() {
+  const modal = document.getElementById('my-menu-modal');
+  const profileBox = document.getElementById('my-menu-profile-box');
+  const logoutRow = document.getElementById('my-menu-logout-row');
+  if (!modal || !profileBox) return;
+
+  let kakaoUserObj = null;
+  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+  const currentNick = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+  const isLogged = Boolean(kakaoUserObj || currentNick);
+
+  if (isLogged) {
+    const displayName = (kakaoUserObj && kakaoUserObj.name) || currentNick || '회원';
+    const displayEmail = (kakaoUserObj && kakaoUserObj.email) || (kakaoUserObj && kakaoUserObj.phone) || '';
+
+    profileBox.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:40px; height:40px; border-radius:12px; background:#FEE500; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#191919">
+              <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
+            </svg>
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:15px; font-weight:800; color:#0f172a;">${displayName}님</span>
+              <span style="background:#fef08a; color:#854d0e; font-size:10.5px; font-weight:700; padding:2px 6px; border-radius:4px;">카카오회원</span>
+            </div>
+            <div style="font-size:12px; color:#64748b; margin-top:2px;">${displayEmail}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px;">
+        <div style="text-align:center; border-right:1px solid #e2e8f0;">
+          <div style="font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px;">보유 포인트</div>
+          <div style="font-size:14px; font-weight:800; color:#059669;">3,000P</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px;">할인 쿠폰</div>
+          <div style="font-size:14px; font-weight:800; color:#2563eb;">1장</div>
+        </div>
+      </div>
+    `;
+    if (logoutRow) logoutRow.style.display = 'block';
+  } else {
+    profileBox.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:4px;">로그인이 필요합니다</div>
+        <div style="font-size:12px; color:#64748b; line-height:1.4;">카카오 1초 로그인으로 주문 내역과 적립 혜택을 확인하세요.</div>
+      </div>
+      <button type="button" onclick="closeMyMenuModal(); loginWithKakao('checkout');"
+        style="width:100%; padding:11px; background:#FEE500; color:#191919; border:none; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.06); outline:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#191919">
+          <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
+        </svg>
+        <span>카카오 1초 간편 로그인</span>
+      </button>
+    `;
+    if (logoutRow) logoutRow.style.display = 'none';
+  }
+
+  modal.style.display = 'flex';
+};
+
+window.closeMyMenuModal = function() {
+  const modal = document.getElementById('my-menu-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.openMyOrdersFromMenu = function() {
+  closeMyMenuModal();
+  if (typeof window.openMyOrdersModal === 'function') {
+    window.openMyOrdersModal();
+  }
+};
+
+window.openMyProfileModal = function() {
+  closeMyMenuModal();
+  const pModal = document.getElementById('my-profile-modal');
+  if (!pModal) return;
+
+  // 기존 사용자 정보 불러오기
+  let savedInfo = {};
+  try { savedInfo = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
+  let kakaoUserObj = null;
+  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+  let savedAddr = null;
+  try { savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null'); } catch(e) {}
+
+  const name = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
+    : (savedInfo.name && savedInfo.name !== currentAcc) ? savedInfo.name
+    : (kakaoUserObj && kakaoUserObj.name && kakaoUserObj.name !== currentAcc) ? kakaoUserObj.name : '';
+
+  const phone = (savedAddr && savedAddr.phone) || savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '';
+  const email = (kakaoUserObj && kakaoUserObj.email) || '';
+  const fullAddr = (savedAddr && savedAddr.address) || savedInfo.address || '';
+
+  const nameInput = document.getElementById('my-p-name');
+  const phoneInput = document.getElementById('my-p-phone');
+  const emailInput = document.getElementById('my-p-email');
+  const baseAddrInput = document.getElementById('my-p-base-addr');
+  const detailAddrInput = document.getElementById('my-p-detail-addr');
+
+  if (nameInput) nameInput.value = name;
+  if (phoneInput) phoneInput.value = phone;
+  if (emailInput) emailInput.value = email || '카카오 계정 연동 이메일';
+
+  if (fullAddr && (baseAddrInput || detailAddrInput)) {
+    let base = fullAddr;
+    let detail = '';
+    const match = fullAddr.match(/^(.*?[동리로길]\s*[0-9\-번지]+(?:\s*\([^\)]+\))?)(.*)$/);
+    if (match) {
+      base = match[1].trim();
+      detail = match[2].trim();
+    }
+    if (baseAddrInput) baseAddrInput.value = base;
+    if (detailAddrInput) detailAddrInput.value = detail;
+  } else {
+    if (baseAddrInput) baseAddrInput.value = '';
+    if (detailAddrInput) detailAddrInput.value = '';
+  }
+
+  pModal.style.display = 'flex';
+};
+
+window.openMyPostcodeSearch = function() {
+  if (typeof daum === 'undefined' || !daum.Postcode) {
+    alert('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+    return;
+  }
+  new daum.Postcode({
+    oncomplete: function(data) {
+      let addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+      let extraAddr = '';
+      if (data.userSelectedType === 'R') {
+        if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
+        if (data.buildingName !== '' && data.apartment === 'Y') {
+          extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+        }
+        if (extraAddr !== '') extraAddr = ' (' + extraAddr + ')';
+      }
+      const baseInput = document.getElementById('my-p-base-addr');
+      if (baseInput) baseInput.value = addr + extraAddr;
+      const detailInput = document.getElementById('my-p-detail-addr');
+      if (detailInput) detailInput.focus();
+    }
+  }).open();
+};
+
+window.saveMyProfileInfo = function() {
+  const name = document.getElementById('my-p-name')?.value.trim() || '';
+  const phone = document.getElementById('my-p-phone')?.value.trim() || '';
+  const baseAddr = document.getElementById('my-p-base-addr')?.value.trim() || '';
+  const detailAddr = document.getElementById('my-p-detail-addr')?.value.trim() || '';
+  const address = (baseAddr + ' ' + detailAddr).trim();
+
+  if (!name) {
+    alert('회원 이름을 입력해 주세요.');
+    return;
+  }
+  if (!phone) {
+    alert('연락처(전화번호)를 입력해 주세요.');
+    return;
+  }
+
+  // 로컬 영구 저장
+  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+  if (currentAcc) {
+    localStorage.setItem(`ryzin_account_addr_${currentAcc}`, JSON.stringify({ name, phone, address }));
+  }
+  localStorage.setItem('ryzin_saved_order_info', JSON.stringify({ name, phone, address }));
+
+  // Supabase shop_users 동기화
+  try {
+    const clientDb = db || window.supabaseClient;
+    let kakaoUserObj = null;
+    try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+    const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : ('USER-' + phone.replace(/[^0-9]/g, '')));
+
+    if (clientDb && userCode) {
+      clientDb.from('shop_users').update({
+        name: name,
+        default_address: address
+      }).eq('user_code', userCode).then(() => {});
+    }
+  } catch(e) {}
+
+  if (typeof updateCartShippingPreview === 'function') {
+    updateCartShippingPreview();
+  }
+
+  document.getElementById('my-profile-modal').style.display = 'none';
+  alert('회원 정보가 성공적으로 저장되었습니다.');
+  openMyMenuModal();
+};
+
+window.openMyNoticeModal = function() {
+  closeMyMenuModal();
+  const m = document.getElementById('my-notice-modal');
+  if (m) m.style.display = 'flex';
+};
+
+window.openMyCsModal = function() {
+  closeMyMenuModal();
+  const m = document.getElementById('my-cs-modal');
+  if (m) m.style.display = 'flex';
+};
+
+window.openMyTermsModal = function() {
+  closeMyMenuModal();
+  const m = document.getElementById('my-terms-modal');
+  if (m) m.style.display = 'flex';
+};
+
+window.handleMyLogout = function() {
+  if (!confirm('로그아웃 하시겠습니까?')) return;
+
+  try {
+    if (typeof Kakao !== 'undefined' && Kakao.Auth && Kakao.Auth.getAccessToken()) {
+      Kakao.Auth.logout();
+    }
+  } catch(e) {}
+
+  localStorage.removeItem('ryzin_kakao_user');
+  localStorage.removeItem('ryzin_nickname');
+  window.userNickname = '';
+
+  closeMyMenuModal();
+  if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+  alert('로그아웃되었습니다.');
+};
