@@ -430,6 +430,7 @@ export function renderHostDetail(params) {
         </div>
       </div>
 
+      ${isPD ? '' : `
       <!-- 방송 이력 -->
       <div class="card">
         <div class="card-header"><h3>방송 이력</h3></div>
@@ -451,15 +452,16 @@ export function renderHostDetail(params) {
                   <td>${formatDate(h.project.broadcastDate)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${h.project.id}">${h.brand ? h.brand.name : '-'}</a></td>
                   <td>${{main: '메인', sub: '서브', guest: '게스트'}[h.matching.role] || '-'}</td>
-                  <td class="text-right">${isPD ? '**' : formatCurrency(h.matching.fee)}</td>
+                  <td class="text-right">${formatCurrency(h.matching.fee)}</td>
                   <td><span class="badge ${h.matching.settleStatus === 'done' ? 'badge-success' : 'badge-default'}">${{pending:'대기', processing:'진행중', done:'완료'}[h.matching.settleStatus] || '-'}</span></td>
-                  <td>${isPD ? '**' : (h.result ? formatCurrency(h.result.liveRevenue) : '-')}</td>
+                  <td>${h.result ? formatCurrency(h.result.liveRevenue) : '-'}</td>
                 </tr>
               `).join('') : '<tr><td colspan="6" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">방송 이력이 없습니다.</td></tr>'}
             </tbody>
           </table>
         </div>
       </div>
+      `}
     </div>
   `;
 

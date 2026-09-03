@@ -1320,6 +1320,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
       </div>
 
+      ${t?``:`
       <!-- 방송 이력 -->
       <div class="card">
         <div class="card-header"><h3>방송 이력</h3></div>
@@ -1341,15 +1342,16 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                   <td>${G(e.project.broadcastDate)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${e.project.id}">${e.brand?e.brand.name:`-`}</a></td>
                   <td>${{main:`메인`,sub:`서브`,guest:`게스트`}[e.matching.role]||`-`}</td>
-                  <td class="text-right">${t?`**`:W(e.matching.fee)}</td>
+                  <td class="text-right">${W(e.matching.fee)}</td>
                   <td><span class="badge ${e.matching.settleStatus===`done`?`badge-success`:`badge-default`}">${{pending:`대기`,processing:`진행중`,done:`완료`}[e.matching.settleStatus]||`-`}</span></td>
-                  <td>${t?`**`:e.result?W(e.result.liveRevenue):`-`}</td>
+                  <td>${e.result?W(e.result.liveRevenue):`-`}</td>
                 </tr>
               `).join(``):`<tr><td colspan="6" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">방송 이력이 없습니다.</td></tr>`}
             </tbody>
           </table>
         </div>
       </div>
+      `}
     </div>
   `,setTimeout(()=>{let e=n.querySelector(`.ssn-toggle`);if(e&&e.dataset.ssn&&!t){let t=!0;e.addEventListener(`click`,()=>{t=!t,e.textContent=t?nt(e.dataset.ssn):e.dataset.ssn})}n.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/hosts`)),n.querySelector(`#btn-edit-host`)?.addEventListener(`click`,()=>Lt(r.id)),n.querySelector(`#btn-edit-memo`)?.addEventListener(`click`,()=>Bt(r)),n.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),M.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),n}function zt(e,t){return`
     <div>
