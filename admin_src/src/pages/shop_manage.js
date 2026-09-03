@@ -1369,6 +1369,14 @@ function openUserModal(userObj, wrapper, panel) {
         await userDB.insert(payload);
       }
       toast('회원 정보 저장이 완료되었습니다.');
+      try {
+        localStorage.setItem('ryzin_user_benefits_sync', Date.now().toString());
+        // 우측 미리보기 또는 라이브 창에 즉시 postMessage 전파
+        const previewIframe = document.getElementById('live-preview-iframe') || document.querySelector('iframe');
+        if (previewIframe && previewIframe.contentWindow) {
+          previewIframe.contentWindow.postMessage({ type: 'sync_user_benefits', points: payload.points, coupons: payload.coupons_count }, '*');
+        }
+      } catch(e) {}
     } catch(err) {
       toast('회원 정보 저장 완료');
     }

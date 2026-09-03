@@ -566,21 +566,20 @@
           </div>
           <!-- [NEW] 쿠폰 및 포인트 사용 섹션 (미니멀 모노톤) -->
           <div id="cart-benefits-section" style="border-top:1px solid #f1f5f9; padding:12px 0 6px 0; margin-bottom:10px; display:flex; flex-direction:column; gap:10px;">
-            <!-- 쿠폰 선택 -->
+            <!-- 쿠폰 선택 (초기 기본값: 보유 쿠폰 없음 0장) -->
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <span style="font-size:12.5px; font-weight:600; color:#475569;">할인 쿠폰</span>
-              <select id="cart-coupon-select" onchange="calculateCartBenefits()"
-                style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; color:#0f172a; outline:none; background:#ffffff; cursor:pointer;">
-                <option value="0">쿠폰 선택 안함</option>
-                <option value="2000">라이브 특별할인 2,000원 쿠폰</option>
+              <select id="cart-coupon-select" onchange="calculateCartBenefits()" disabled
+                style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; color:#94a3b8; outline:none; background:#f8fafc; cursor:not-allowed;">
+                <option value="0">보유 쿠폰 없음 (0장)</option>
               </select>
             </div>
 
-            <!-- 포인트 사용 -->
+            <!-- 포인트 사용 (초기 기본값: 0P) -->
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                 <span style="font-size:12.5px; font-weight:600; color:#475569;">포인트 사용</span>
-                <span style="font-size:11.5px; color:#64748b;">보유 <strong id="cart-available-points" style="color:#0f172a; font-weight:700;">3,000</strong>P</span>
+                <span style="font-size:11.5px; color:#64748b;">보유 <strong id="cart-available-points" style="color:#0f172a; font-weight:700;">0</strong>P</span>
               </div>
               <div style="display:flex; gap:6px;">
                 <input type="number" id="cart-points-input" placeholder="0" min="0" value="0" oninput="calculateCartBenefits()"

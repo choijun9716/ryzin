@@ -985,9 +985,15 @@ document.addEventListener('DOMContentLoaded', () => {
   loadLiveConfig();
   loadLiveStats();
   loadLiveProducts();
+  if (typeof fetchUserBenefitsFromDB === 'function') {
+    fetchUserBenefitsFromDB();
+  }
 
   // 어드민 iframe에서 postMessage로 실시간 데이터 쏘는 것 수신
   window.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'sync_user_benefits') {
+      if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
+    }
     if (e.data && e.data.type === 'sync_preview') {
       if (e.data.config) localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(e.data.config));
       if (e.data.stats) localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(e.data.stats));
@@ -3962,39 +3968,75 @@ window.getUserAvailableBenefits = function() {
   return { points: Math.max(0, points), coupons: Math.max(0, coupons) };
 };
 
-// Supabase shop_users에서 관리자가 부여한 실제 포인트와 쿠폰 실시간 동기화
+// Supabase shop_users에서 관리자가 부여한 실제 포인트와 쿠폰 100% 다이렉트 동기화
 window.fetchUserBenefitsFromDB = async function() {
   try {
-    const clientDb = db || window.supabaseClient;
-    if (!clientDb) return;
-
     let kakaoUserObj = null;
     try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-    const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+    const kakaoId = kakaoUserObj ? String(kakaoUserObj.id) : '';
+    const kakaoEmail = kakaoUserObj ? (kakaoUserObj.email || '') : '';
     const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
     let savedInfo = {};
     try { savedInfo = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
     const phone = (savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '').replace(/[^0-9]/g, '');
+    const userName = (savedInfo.name || (kakaoUserObj && kakaoUserObj.name) || currentAcc || '').trim();
 
-    const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : (phone ? ('USER-' + phone) : null));
-    if (!userCode) return;
+    if (!kakaoId && !kakaoEmail && !currentAcc && !phone && !userName) {
+      localStorage.setItem('ryzin_user_points', '0');
+      localStorage.setItem('ryzin_user_coupons', '0');
+      return;
+    }
 
-    const { data: userRow } = await clientDb
-      .from('shop_users')
-      .select('points, coupons_count')
-      .eq('user_code', userCode)
-      .maybeSingle();
+    const SUPA_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
+    const SUPA_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
 
-    if (userRow) {
-      const dbPoints = Number(userRow.points) || 0;
-      const dbCoupons = Number(userRow.coupons_count) || 0;
+    // 1단계: user_code로 정확한 매칭 시도
+    let matchedUser = null;
+    const candidates = [];
+    if (kakaoId) candidates.push(`user_code.eq.KAKAO-${kakaoId}`);
+    if (currentAcc) candidates.push(`user_code.eq.USER-${currentAcc}`);
+    if (phone) candidates.push(`user_code.eq.USER-${phone}`);
+
+    const res = await fetch(`${SUPA_URL}/rest/v1/shop_users?select=id,user_code,name,email,points,coupons_count&limit=100`, {
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (res.ok) {
+      const allUsers = await res.json();
+      if (Array.isArray(allUsers) && allUsers.length > 0) {
+        matchedUser = allUsers.find(u => {
+          if (kakaoId && u.user_code && u.user_code.includes(kakaoId)) return true;
+          if (kakaoEmail && u.email && u.email === kakaoEmail) return true;
+          if (phone && ((u.email && u.email.includes(phone)) || (u.default_address && u.default_address.includes(phone)))) return true;
+          if (userName && u.name && u.name === userName) return true;
+          if (currentAcc && ((u.name && u.name === currentAcc) || (u.user_code && u.user_code.includes(currentAcc)))) return true;
+          return false;
+        });
+      }
+    }
+
+    if (matchedUser) {
+      const dbPoints = Math.max(0, parseInt(matchedUser.points) || 0);
+      const dbCoupons = Math.max(0, parseInt(matchedUser.coupons_count) || 0);
       localStorage.setItem('ryzin_user_points', dbPoints.toString());
       localStorage.setItem('ryzin_user_coupons', dbCoupons.toString());
+    } else {
+      // DB에 없는 미등록 회원이면 기본 0 고정
+      localStorage.setItem('ryzin_user_points', '0');
+      localStorage.setItem('ryzin_user_coupons', '0');
+    }
 
-      // 장바구니 열려있을 시 UI 실시간 재계산
-      if (typeof calculateCartBenefits === 'function') {
-        calculateCartBenefits();
-      }
+    // 장바구니 및 MY 메뉴 UI 실시간 반영
+    if (typeof calculateCartBenefits === 'function') {
+      calculateCartBenefits();
+    }
+    const myPointsEl = document.getElementById('my-menu-profile-box');
+    if (myPointsEl && document.getElementById('my-menu-modal')?.style.display === 'flex') {
+      openMyMenuModal();
     }
   } catch(e) {
     console.warn('fetchUserBenefitsFromDB error:', e);
@@ -4101,3 +4143,10 @@ window.applyAllPoints = function() {
   pointsInput.value = toUse;
   calculateCartBenefits();
 };
+
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'ryzin_user_benefits_sync' || (e.key && e.key.includes('user_points'))) {
+    if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
+  }
+});
