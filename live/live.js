@@ -677,7 +677,7 @@ document.addEventListener('DOMContentLoaded', () => {
       contentEl.textContent = (c.noticeNoteContent && c.noticeNoteContent.trim()) ? c.noticeNoteContent.trim() : defaultContent;
     }
     if (hintEl) {
-      hintEl.textContent = '클릭하여 펼치기';
+      hintEl.textContent = '클릭해 펼치기';
     }
   };
 
