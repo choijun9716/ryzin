@@ -1,3 +1,4 @@
+import { showSuccess, showError } from '../components/toast.js';
 import QRCode from 'qrcode';
 // ============================================================
 //  RYZIN LIVE STREAM ADMIN — 멀티 라이브 관리 시스템
@@ -60,6 +61,7 @@ function nextLiveId() {
 let syncTimers = {};
 
 const db = window.supabaseClient;
+const getSupabase = () => db || window.supabaseClient;
 
 function syncToSheetDB(liveId, config, stats, products, force = false) {
   // 데이터 로드가 완료되지 않았다면 임시 데이터로 원격 DB를 덮어쓰는 사고 방지
@@ -1606,7 +1608,7 @@ function renderLiveEditView(container, liveId, showView) {
     }
 
     // +추가 버튼: Supabase에서 현재 시청자수를 조회 후 입력값만큼 더해서 UPDATE
-    document.getElementById('btn-add-viewers').addEventListener('click', async () => {
+    document.getElementById('btn-add-viewers')?.addEventListener('click', async () => {
       const addVal = parseInt(document.getElementById('cfg-viewers-add').value) || 0;
       if (addVal === 0) {
         alert('추가할 시청자 수를 입력해주세요.');
@@ -2440,8 +2442,8 @@ function renderLiveEditView(container, liveId, showView) {
     // 채팅 봇
     const botListEl = document.getElementById('bot-chat-list');
     const botIntervalEl = document.getElementById('bot-interval');
-    botListEl.addEventListener('input', () => { botCfg.list = botListEl.value; saveBotCfg(); });
-    botIntervalEl.addEventListener('input', () => { botCfg.interval = parseInt(botIntervalEl.value) || 10; saveBotCfg(); });
+    botListEl?.addEventListener('input', () => { botCfg.list = botListEl.value; saveBotCfg(); });
+    botIntervalEl?.addEventListener('input', () => { botCfg.interval = parseInt(botIntervalEl.value) || 10; saveBotCfg(); });
 
     // 초기 버튼 렌더링 상태 동기화
     const syncBotBtnState = () => {
@@ -2463,7 +2465,7 @@ function renderLiveEditView(container, liveId, showView) {
     };
     syncBotBtnState();
 
-    document.getElementById('btn-toggle-bot').addEventListener('click', () => {
+    document.getElementById('btn-toggle-bot')?.addEventListener('click', () => {
       botActive = !botActive;
       if (botActive) {
         botLines = botListEl.value.split('\n').map(l => l.trim()).filter(l => l.includes('|'));
