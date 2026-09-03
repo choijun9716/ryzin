@@ -84,7 +84,8 @@ export function renderLogin() {
         margin-bottom: 8px;
       }
       .login-logo img {
-        height: 48px;
+        height: 38px;
+        max-width: 220px;
         object-fit: contain;
       }
       .login-subtitle {
