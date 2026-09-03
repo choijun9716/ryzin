@@ -782,7 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const npNum = Number((item.normalPrice || '').toString().replace(/[^0-9]/g, ''));
 
           if (pNum > 0) {
-            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:15px;">${pNum.toLocaleString()}원</span>`;
+            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#b91c1c; font-size:14.5px;">${pNum.toLocaleString()}원</span>`;
             if (npNum > pNum) {
               priceHtml += `<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through; margin-left:5px;">${npNum.toLocaleString()}원</span>`;
             }
@@ -4239,7 +4239,7 @@ window.openProductDetailModal = function(item) {
     const npNum = Number((item.normalPrice || '').toString().replace(/[^0-9]/g, ''));
 
     if (pNum > 0) {
-      let pHtml = `<span style="font-size:18px; font-weight:800; color:#e50914;">${pNum.toLocaleString()}원</span>`;
+      let pHtml = `<span style="font-size:17px; font-weight:800; color:#b91c1c;">${pNum.toLocaleString()}원</span>`;
       if (npNum > pNum) {
         pHtml += `<span style="font-size:13px; color:#94a3b8; text-decoration:line-through; margin-left:6px;">${npNum.toLocaleString()}원</span>`;
       }
