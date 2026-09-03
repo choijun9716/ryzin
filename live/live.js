@@ -786,7 +786,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (npNum > pNum) {
               priceHtml += `<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through; margin-left:5px;">${npNum.toLocaleString()}원</span>`;
             }
-            priceHtml += `<span class="live-benefit-tag" style="background:#fff1f2; border:1.5px solid #ffe4e6; color:#f43f5e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
           } else if (item.price === '0' || item.price === 0) {
             priceHtml = `<span class="discounted-price" style="font-weight:800; color:#16a34a; font-size:15px;">무료나눔</span>`;
           } else {
@@ -4227,7 +4226,6 @@ window.openProductDetailModal = function(item) {
       if (npNum > pNum) {
         pHtml += `<span style="font-size:13px; color:#94a3b8; text-decoration:line-through; margin-left:6px;">${npNum.toLocaleString()}원</span>`;
       }
-      pHtml += `<span style="background:#fff1f2; border:1px solid #ffe4e6; color:#f43f5e; font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; margin-left:8px;">라이브 혜택가</span>`;
       priceEl.innerHTML = pHtml;
     } else if (item.price === '0' || item.price === 0) {
       priceEl.innerHTML = `<span style="font-size:18px; font-weight:800; color:#16a34a;">무료나눔</span>`;
