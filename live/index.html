@@ -567,99 +567,113 @@
         </div>
       </div>
 
-      <!-- 장바구니 모달 (위로 시원하게 확장) -->
+      <!-- 장바구니 모달 (하단 결제 버튼 절대 잘림 없는 완벽한 스티키 레이아웃) -->
       <div id="cart-modal"
-        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); justify-content:center; align-items:flex-end; z-index:100000; pointer-events:auto; padding-bottom: 12px;">
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); justify-content:center; align-items:flex-end; z-index:100000; pointer-events:auto; padding-bottom:10px;">
         <div
-          style="background:#ffffff; width:100%; max-width:400px; border-radius:24px 24px 20px 20px; padding:24px 22px 18px 22px; box-shadow:0 20px 48px rgba(0,0,0,0.25); position:relative; animation: modalSlideUp 0.28s ease-out; color:#0f172a; border:1px solid #e2e8f0; text-align:left; max-height: 88vh; display: flex; flex-direction: column;">
-          <button id="btn-close-cart-modal"
-            style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:22px; font-weight:400; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.2s;"
-            onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">✕</button>
-          <h3 style="margin:0 0 14px 0; font-size:18px; font-weight:800; color:#0f172a;">
-            장바구니
-          </h3>
-          <!-- 담긴 상품 리스트 (최소 200px ~ 최대 38vh 확보로 위로 넉넉하게 확장) -->
-          <div id="cart-items-container" style="flex:1 1 auto; min-height:190px; max-height:36vh; overflow-y:auto; margin-bottom: 10px; padding-right: 6px;">
-            <!-- 장바구니 아이템들이 여기에 렌더링됨 -->
-          </div>
-          <!-- [NEW] 쿠폰 및 포인트 사용 섹션 (미니멀 모노톤) -->
-          <div id="cart-benefits-section" style="border-top:1px solid #f1f5f9; padding:12px 0 6px 0; margin-bottom:10px; display:flex; flex-direction:column; gap:10px;">
-            <!-- 쿠폰 선택 (초기 기본값: 보유 쿠폰 없음 0장) -->
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:12.5px; font-weight:600; color:#475569;">할인 쿠폰</span>
-              <select id="cart-coupon-select" onchange="calculateCartBenefits()" disabled
-                style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; color:#94a3b8; outline:none; background:#f8fafc; cursor:not-allowed;">
-                <option value="0">보유 쿠폰 없음 (0장)</option>
-              </select>
-            </div>
-
-            <!-- 포인트 사용 (초기 기본값: 0P) -->
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span style="font-size:12.5px; font-weight:600; color:#475569;">포인트 사용</span>
-                <span style="font-size:11.5px; color:#64748b;">보유 <strong id="cart-available-points" style="color:#0f172a; font-weight:700;">0</strong>P</span>
-              </div>
-              <div style="display:flex; gap:6px;">
-                <input type="number" id="cart-points-input" placeholder="0" min="0" value="0" oninput="calculateCartBenefits()"
-                  style="flex:1; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; box-sizing:border-box; outline:none; text-align:right;">
-                <button type="button" onclick="applyAllPoints()"
-                  style="padding:0 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; color:#475569; cursor:pointer; flex-shrink:0;"
-                  onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-                  전액 사용
-                </button>
-              </div>
-            </div>
+          style="background:#ffffff; width:100%; max-width:400px; border-radius:24px 24px 18px 18px; padding:22px 20px 16px 20px; box-shadow:0 20px 48px rgba(0,0,0,0.25); position:relative; animation: modalSlideUp 0.28s ease-out; color:#0f172a; border:1px solid #e2e8f0; text-align:left; max-height:90vh; display:flex; flex-direction:column; box-sizing:border-box;">
+          
+          <!-- 1. 고정 상단 헤더 -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-shrink:0;">
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">장바구니</h3>
+            <button id="btn-close-cart-modal" type="button"
+              style="background:none; border:none; font-size:20px; font-weight:400; color:#94a3b8; cursor:pointer; outline:none; padding:4px;"
+              onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">✕</button>
           </div>
 
-          <!-- 금액 요약 블록 -->
-          <div style="border-top:1px solid #f1f5f9; padding-top:10px; margin-bottom:14px; display:flex; flex-direction:column; gap:5px;">
-            <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b;">
-              <span>주문 금액</span>
-              <span id="cart-subtotal-price" style="font-weight:600; color:#0f172a;">0원</span>
+          <!-- 2. 중앙 스크롤 바디 (상품 여러 개 담겨도 자연스럽게 내부 스크롤) -->
+          <div style="flex:1 1 auto; overflow-y:auto; padding-right:4px; margin-bottom:12px; display:flex; flex-direction:column; gap:12px; min-height:0;">
+            
+            <!-- 담긴 상품 리스트 -->
+            <div id="cart-items-container" style="display:flex; flex-direction:column; gap:8px;">
+              <!-- 장바구니 아이템들이 여기에 렌더링됨 -->
             </div>
-            <div id="cart-discount-row" style="display:none; justify-content:space-between; font-size:12px; color:#ef4444;">
-              <span>할인 적용</span>
-              <span id="cart-discount-price" style="font-weight:600;">-0원</span>
+
+            <!-- 쿠폰 및 포인트 사용 섹션 -->
+            <div id="cart-benefits-section" style="border-top:1px solid #f1f5f9; padding-top:12px; display:flex; flex-direction:column; gap:10px;">
+              <!-- 쿠폰 선택 -->
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12.5px; font-weight:600; color:#475569;">할인 쿠폰</span>
+                <select id="cart-coupon-select" onchange="calculateCartBenefits()" disabled
+                  style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; color:#94a3b8; outline:none; background:#f8fafc; cursor:not-allowed;">
+                  <option value="0">보유 쿠폰 없음 (0장)</option>
+                </select>
+              </div>
+
+              <!-- 포인트 사용 -->
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                  <span style="font-size:12.5px; font-weight:600; color:#475569;">포인트 사용</span>
+                  <span style="font-size:11.5px; color:#64748b;">보유 <strong id="cart-available-points" style="color:#0f172a; font-weight:700;">0</strong>P</span>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <input type="number" id="cart-points-input" placeholder="0" min="0" value="0" oninput="calculateCartBenefits()"
+                    style="flex:1; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; box-sizing:border-box; outline:none; text-align:right;">
+                  <button type="button" onclick="applyAllPoints()"
+                    style="padding:0 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; color:#475569; cursor:pointer; flex-shrink:0;"
+                    onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                    전액 사용
+                  </button>
+                </div>
+              </div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:6px; border-top:1px dashed #f1f5f9;">
-              <span style="font-size:14px; font-weight:700; color:#0f172a;">총 결제 금액</span>
-              <span id="cart-total-price" style="font-size:18px; font-weight:800; color:#0f172a;">0원</span>
+
+            <!-- 금액 요약 블록 -->
+            <div style="border-top:1px solid #f1f5f9; padding-top:10px; display:flex; flex-direction:column; gap:5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:#64748b;">
+                <span>주문 금액</span>
+                <span id="cart-subtotal-price" style="font-weight:600; color:#0f172a;">0원</span>
+              </div>
+              <div id="cart-discount-row" style="display:none; justify-content:space-between; font-size:12px; color:#ef4444;">
+                <span>할인 적용</span>
+                <span id="cart-discount-price" style="font-weight:600;">-0원</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:6px; border-top:1px dashed #f1f5f9;">
+                <span style="font-size:13.5px; font-weight:700; color:#0f172a;">총 결제 금액</span>
+                <span id="cart-total-price" style="font-size:17px; font-weight:800; color:#0f172a;">0원</span>
+              </div>
             </div>
+
+            <!-- 배송지 정보 박스 -->
+            <div id="cart-shipping-preview" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <div style="display:flex; align-items:flex-start; gap:8px; min-width:0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <div style="min-width:0;">
+                  <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                    <span id="cart-shipping-name" style="font-size:12px; font-weight:700; color:#0f172a;">배송지 정보</span>
+                    <span id="cart-shipping-phone" style="font-size:11.5px; color:#64748b; font-weight:500;"></span>
+                  </div>
+                  <div id="cart-shipping-address" style="font-size:11.5px; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">
+                    등록된 배송 정보 확인 중...
+                  </div>
+                </div>
+              </div>
+              <button id="btn-change-shipping" type="button"
+                style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-size:11px; font-weight:700; padding:5px 8px; border-radius:6px; cursor:pointer; flex-shrink:0; transition:all 0.15s; outline:none; white-space:nowrap;"
+                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                주소 변경
+              </button>
+            </div>
+
           </div>
-          <!-- 장바구니 하단 배송지 확인 및 주소 변경 박스 -->
-          <div id="cart-shipping-preview" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
-            <div style="display:flex; align-items:flex-start; gap:8px; min-width:0;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
+
+          <!-- 3. 고정 결제하기 버튼 (절대 잘리지 않음! 항상 100% 가시성 보장) -->
+          <div style="flex-shrink:0; padding-top:4px;">
+            <button id="btn-checkout" type="button"
+              style="width:100%; padding:14px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(15,23,42,0.25); transition:all 0.2s; outline:none; display:flex; align-items:center; justify-content:center; gap:8px;"
+              onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'"
+              onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
               </svg>
-              <div style="min-width:0;">
-                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-                  <span id="cart-shipping-name" style="font-size:12px; font-weight:700; color:#0f172a;">배송지 정보</span>
-                  <span id="cart-shipping-phone" style="font-size:11.5px; color:#64748b; font-weight:500;"></span>
-                </div>
-                <div id="cart-shipping-address" style="font-size:11.5px; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">
-                  등록된 배송 정보 확인 중...
-                </div>
-              </div>
-            </div>
-            <button id="btn-change-shipping" type="button"
-              style="background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-size:11px; font-weight:700; padding:5px 8px; border-radius:6px; cursor:pointer; flex-shrink:0; transition:all 0.15s; outline:none; white-space:nowrap;"
-              onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
-              주소 변경
+              <span>결제하기</span>
             </button>
           </div>
 
-          <button id="btn-checkout"
-            style="width:100%; padding:14px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(15,23,42,0.25); transition:all 0.2s; outline:none; display:flex; align-items:center; justify-content:center; gap:8px;"
-            onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'"
-            onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-            <span>결제하기</span>
-          </button>
         </div>
       </div>
 
