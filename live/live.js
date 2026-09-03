@@ -4761,3 +4761,128 @@ window.handlePushSubscribeClick = async function() {
     alert('알림 등록 중 오류가 발생했습니다: ' + (err.message || err));
   }
 };
+
+// ── 스트리머/브랜드 프로필 모달 제어 ──
+window.openStreamerProfileModal = function() {
+  const modal = document.getElementById('streamer-profile-modal');
+  if (!modal) return;
+
+  const cfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+  
+  const nameEl = document.getElementById('profile-modal-name');
+  const titleEl = document.getElementById('profile-modal-title');
+  const avatarEl = document.getElementById('profile-modal-avatar');
+  const coverImg = document.getElementById('profile-cover-img');
+  const statusBadge = document.getElementById('profile-modal-status-badge');
+  const liveBadgeDot = document.getElementById('profile-live-badge-dot');
+
+  // DOM 또는 캐시에서 이름 및 로고 가져오기
+  const brandName = cfg.brandName || document.querySelector('.brand-name')?.textContent || 'RYZIN';
+  const broadcastTitle = cfg.title || document.querySelector('.broadcast-title')?.textContent || '단독 특가 라이브 방송 중!';
+  const logoUrl = cfg.logoUrl || document.querySelector('.brand-logo')?.src || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff';
+  const thumbUrl = cfg.thumbnailUrl || document.getElementById('thumbnail-img')?.src || '';
+  const isLive = cfg.isLive !== false;
+
+  if (nameEl) nameEl.textContent = brandName;
+  if (titleEl) titleEl.textContent = broadcastTitle;
+  if (avatarEl) avatarEl.src = logoUrl;
+
+  if (coverImg && thumbUrl && thumbUrl.trim()) {
+    coverImg.src = thumbUrl.trim();
+    coverImg.style.display = 'block';
+  } else if (coverImg) {
+    coverImg.style.display = 'none';
+  }
+
+  if (statusBadge) {
+    statusBadge.textContent = isLive ? 'LIVE' : '대기';
+    statusBadge.style.color = isLive ? '#ef4444' : '#64748b';
+    statusBadge.style.background = isLive ? '#fee2e2' : '#f1f5f9';
+    statusBadge.style.borderColor = isLive ? '#fecaca' : '#e2e8f0';
+  }
+  if (liveBadgeDot) {
+    liveBadgeDot.style.background = isLive ? '#ef4444' : '#94a3b8';
+  }
+
+  // 일촌 상태 업데이트
+  updateFriendConnectUI();
+
+  modal.style.display = 'flex';
+};
+
+window.closeStreamerProfileModal = function() {
+  const modal = document.getElementById('streamer-profile-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+function updateFriendConnectUI() {
+  const btn = document.getElementById('btn-friend-connect');
+  const text = document.getElementById('text-friend-connect');
+  const icon = document.getElementById('icon-friend-add');
+  if (!btn || !text) return;
+
+  const isFriend = localStorage.getItem(`ryzin_friend_${LIVE_ID}`) === 'true';
+
+  if (isFriend) {
+    btn.style.background = '#ffffff';
+    btn.style.color = '#0f172a';
+    btn.style.borderColor = '#cbd5e1';
+    text.textContent = '일촌 (연결됨)';
+    if (icon) {
+      icon.innerHTML = `<polyline points="20 6 9 17 4 12"></polyline>`;
+      icon.setAttribute('stroke', '#10b981');
+    }
+  } else {
+    btn.style.background = '#0f172a';
+    btn.style.color = '#ffffff';
+    btn.style.borderColor = '#0f172a';
+    text.textContent = '일촌맺기';
+    if (icon) {
+      icon.innerHTML = `<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line>`;
+      icon.setAttribute('stroke', 'currentColor');
+    }
+  }
+}
+
+window.toggleFriendConnect = function() {
+  const isFriend = localStorage.getItem(`ryzin_friend_${LIVE_ID}`) === 'true';
+  const newStatus = !isFriend;
+  localStorage.setItem(`ryzin_friend_${LIVE_ID}`, String(newStatus));
+  updateFriendConnectUI();
+
+  if (newStatus) {
+    showToast('일촌을 맺었습니다! 새 소식을 먼저 받아보실 수 있습니다.');
+  } else {
+    showToast('일촌이 해제되었습니다.');
+  }
+};
+
+window.shareStreamerProfile = function() {
+  const liveUrl = window.location.href.split('#')[0];
+  const title = document.getElementById('profile-modal-name')?.textContent || 'RYZIN LIVE';
+
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      text: `${title} 라이브 방송에 초대합니다!`,
+      url: liveUrl
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(liveUrl).then(() => {
+      showToast('방송 링크가 클립보드에 복사되었습니다.');
+    }).catch(() => {
+      showToast('공유 링크 복사에 실패했습니다.');
+    });
+  }
+};
+
+window.handleEnterLiveClick = function() {
+  closeStreamerProfileModal();
+
+  const video = document.getElementById('live-video');
+  if (video && video.muted) {
+    video.muted = false;
+    video.volume = 1.0;
+  }
+  showToast('라이브 방송에 입장했습니다.');
+};
