@@ -353,7 +353,7 @@ function formField(label, className, value, type='text', isFull=false) {
   return `
     <div style="${isFull ? 'grid-column: 1 / -1;' : ''}">
       <label class="sm-label">${label}</label>
-      <input class="sm-input ${className}" type="${type}" value="${esc(value || '')}">
+      <input id="${className}" class="sm-input ${className}" type="${type}" value="${esc(value || '')}">
     </div>
   `;
 }
@@ -1317,23 +1317,33 @@ function openUserModal(userObj, wrapper, panel) {
             <input class="sm-input" id="um-code" value="${esc(userCode)}" readonly style="background:#f8fafc; font-weight:800; color:#2563eb;">
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            ${formField('회원 이름 (예: 채이준)','um-name', userObj ? userObj.name : '')}
-            ${formField('연락처 (전화번호)','um-phone', initPhone, 'text', '010-0000-0000')}
+            <div>
+              <label class="sm-label">회원 이름 (예: 채이준)</label>
+              <input id="um-name" class="sm-input" type="text" value="${esc(userObj ? userObj.name : '')}">
+            </div>
+            <div>
+              <label class="sm-label">연락처 (전화번호)</label>
+              <input id="um-phone" class="sm-input" type="text" placeholder="010-0000-0000" value="${esc(initPhone)}">
+            </div>
           </div>
           <div>
-            ${formField('이메일 주소 (카카오계정 이메일)','um-email', initEmail, 'email', 'user@kakao.com')}
+            <label class="sm-label">이메일 주소 (카카오계정 이메일)</label>
+            <input id="um-email" class="sm-input" type="email" placeholder="user@kakao.com" value="${esc(initEmail)}">
           </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div>
               <label class="sm-label">보유 포인트 (P)</label>
-              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 0}" style="font-weight:800; color:#FF8730;">
+              <input id="um-points" class="sm-input" type="number" value="${userObj ? (userObj.points || 0) : 0}" style="font-weight:800; color:#FF8730;">
             </div>
             <div>
               <label class="sm-label">보유 쿠폰 수 (장)</label>
-              <input class="sm-input" id="um-coupons" type="number" value="${userObj ? (userObj.coupons_count || 0) : 0}" style="font-weight:800; color:#2563eb;">
+              <input id="um-coupons" class="sm-input" type="number" value="${userObj ? (userObj.coupons_count || 0) : 0}" style="font-weight:800; color:#2563eb;">
             </div>
           </div>
-          ${formField('기본 배송지 주소','um-addr', userObj ? userObj.default_address : '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2')}
+          <div>
+            <label class="sm-label">기본 배송지 주소</label>
+            <input id="um-addr" class="sm-input" type="text" value="${esc(userObj ? userObj.default_address : '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2')}">
+          </div>
           <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px; padding-top:14px; border-top:1px solid #e2e8f0;">
             <button type="button" class="sm-action-btn sm-btn-secondary" id="u-cancel-btn">취소</button>
             <button type="submit" class="sm-action-btn sm-btn-success">${isEdit ? '수정 내용 저장' : '회원 생성'}</button>
@@ -1362,6 +1372,12 @@ function openUserModal(userObj, wrapper, panel) {
       default_address: modalContainer.querySelector('#um-addr').value.trim(),
     };
 
+    const submitBtn = modalContainer.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = '저장 중...';
+    }
+
     try {
       if (isEdit && userObj && userObj.id && !String(userObj.id).startsWith('u-fallback')) {
         await userDB.update(userObj.id, payload);
@@ -1371,14 +1387,14 @@ function openUserModal(userObj, wrapper, panel) {
       toast('회원 정보 저장이 완료되었습니다.');
       try {
         localStorage.setItem('ryzin_user_benefits_sync', Date.now().toString());
-        // 우측 미리보기 또는 라이브 창에 즉시 postMessage 전파
         const previewIframe = document.getElementById('live-preview-iframe') || document.querySelector('iframe');
         if (previewIframe && previewIframe.contentWindow) {
           previewIframe.contentWindow.postMessage({ type: 'sync_user_benefits', points: payload.points, coupons: payload.coupons_count }, '*');
         }
       } catch(e) {}
     } catch(err) {
-      toast('회원 정보 저장 완료');
+      console.error('user save error:', err);
+      alert('회원 정보 저장 실패: ' + (err.message || JSON.stringify(err)));
     }
     closeModal();
     await renderUsersPanel(panel, wrapper);
