@@ -12,29 +12,51 @@ import { store } from '../data/store.js';
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
 
 // ─── 공통 유틸 ───────────────────────────────────────────────
-const getLives = () => JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
+// ─── 안전한 유틸리티 ───────────────────────────────────────────
+const safeJsonParse = (str, fallback) => {
+  try {
+    if (!str) return fallback;
+    return JSON.parse(str);
+  } catch (e) {
+    console.warn('safeJsonParse error:', e);
+    return fallback;
+  }
+};
+
+const getLives = () => safeJsonParse(localStorage.getItem('ryzin_lives'), []);
 const saveLives = (list) => localStorage.setItem('ryzin_lives', JSON.stringify(list));
 
-const getLiveConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_config_${liveId}`) || 'null');
+const getLiveConfig = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_config_${liveId}`), null);
 const saveLiveConfig = (liveId, data) => {
   localStorage.setItem(`ryzin_config_${liveId}`, JSON.stringify(data));
   localStorage.setItem(`ryzin_live_config_${liveId}`, JSON.stringify(data));
 };
 
-const getLiveStats = (liveId) => JSON.parse(localStorage.getItem(`ryzin_stats_${liveId}`) || JSON.stringify({ viewers: 0, hearts: 0, cumViewers: 0 }));
+const getLiveStats = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_stats_${liveId}`), { viewers: 0, hearts: 0, cumViewers: 0 });
 const saveLiveStats = (liveId, data) => {
   localStorage.setItem(`ryzin_stats_${liveId}`, JSON.stringify(data));
   localStorage.setItem(`ryzin_live_stats_${liveId}`, JSON.stringify(data));
 };
 
-const getLiveProducts = (liveId) => JSON.parse(localStorage.getItem(`ryzin_products_${liveId}`) || '[]');
+const getLiveProducts = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_products_${liveId}`), []);
 const saveLiveProductsLocal = (liveId, data) => {
   localStorage.setItem(`ryzin_products_${liveId}`, JSON.stringify(data));
   localStorage.setItem(`ryzin_live_products_${liveId}`, JSON.stringify(data));
 };
 
-const getBotConfig = (liveId) => JSON.parse(localStorage.getItem(`ryzin_bot_${liveId}`) || JSON.stringify({ list: '', interval: 10, autoReplyRules: [], autoReplyActive: true }));
+const getBotConfig = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_bot_${liveId}`), { list: '', interval: 10, autoReplyRules: [], autoReplyActive: true });
 const saveBotConfig = (liveId, data) => localStorage.setItem(`ryzin_bot_${liveId}`, JSON.stringify(data));
+
+// 비동기 안전 Supabase 클라이언트 획득 함수 (타이밍 이슈 100% 방어)
+const getSupabaseClient = async (timeoutMs = 3000) => {
+  if (window.supabaseClient) return window.supabaseClient;
+  const startTime = Date.now();
+  while (Date.now() - startTime < timeoutMs) {
+    if (window.supabaseClient) return window.supabaseClient;
+    await new Promise(r => setTimeout(r, 50));
+  }
+  return window.supabaseClient || null;
+};
 
 function extractYouTubeId(url) {
   if (!url || typeof url !== 'string') return null;
@@ -228,57 +250,14 @@ function renderListView(container, showView) {
 
   container.appendChild(wrapper);
 
-  const renderList = async () => {
-    if (db) {
-      try {
-        const { data, error } = await db.from('live_control').select('live_id, updated_at, status, title, subtitle');
-        if (!error && data && Array.isArray(data)) {
-          const localLives = getLives();
-          const deletedLives = JSON.parse(localStorage.getItem('ryzin_deleted_lives') || '[]');
-          data.forEach(row => {
-            if (row.live_id && !deletedLives.includes(row.live_id)) {
-              if (!localLives.some(l => l.id === row.live_id)) {
-                localLives.push({ id: row.live_id, createdAt: new Date(row.updated_at).getTime() });
-              }
-              // DB의 개별 라이브 status('ON'/'OFF')를 해당 live_id localConfig에 정확히 반영
-              const cfg = getLiveConfig(row.live_id) || {};
-              cfg.isLive = (row.status === 'ON');
-              if (row.title) cfg.brandName = row.title;
-              if (row.subtitle) cfg.title = row.subtitle;
-              saveLiveConfig(row.live_id, cfg);
-            }
-          });
-          saveLives(localLives);
-        }
-      } catch (e) { console.warn('Failed to load remote lives', e); }
-    }
+  // UI 즉시 그리기 함수 (DOM 안전 참조)
+  const drawCards = (livesToDraw) => {
+    const targetContainer = document.getElementById('live-list-container') || listContainer;
+    if (!targetContainer) return;
+    targetContainer.innerHTML = '';
 
-    let lives = getLives();
-    // 특정 라이브 전용 로그인 상태인 경우, 해당 라이브 ID만 단독 노출 (미캐시 시 자동 등록)
-    if (isLiveStreamOnly && targetLiveId) {
-      if (!lives.some(l => l.id === targetLiveId)) {
-        lives.push({ id: targetLiveId, createdAt: Date.now() });
-      }
-      lives = lives.filter(l => l.id === targetLiveId);
-    } else if (isBrandPartner && targetBrandId) {
-      const brand = store.getById('brands', targetBrandId);
-      const targetBrandName = brand ? brand.name : '';
-      if (targetBrandName) {
-        lives = lives.filter(l => {
-          const cfg = getLiveConfig(l.id) || {};
-          return cfg.brandName === targetBrandName;
-        });
-      } else {
-        lives = [];
-      }
-    }
-
-    // 생성된 시간(createdAt) 순으로 정렬
-    lives.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-    listContainer.innerHTML = '';
-
-    if (lives.length === 0) {
-      listContainer.innerHTML = `
+    if (!livesToDraw || livesToDraw.length === 0) {
+      targetContainer.innerHTML = `
         <div style="text-align:center; padding:80px 20px; color:#94a3b8;">
           <div style="font-size:48px; margin-bottom:16px;">📡</div>
           <p style="font-size:16px; font-weight:600; margin:0 0 8px;">아직 생성된 라이브가 없습니다.</p>
@@ -288,7 +267,7 @@ function renderListView(container, showView) {
       return;
     }
 
-    lives.forEach((live, idx) => {
+    livesToDraw.forEach((live, idx) => {
       const config = getLiveConfig(live.id) || {};
       const badgeClass = config.isLive ? 'badge-live' : 'badge-ready';
       const badgeText = config.isLive ? 'LIVE' : '대기';
@@ -319,55 +298,113 @@ function renderListView(container, showView) {
           `}
         </div>
       `;
-      listContainer.appendChild(card);
-    });
 
-    listContainer.querySelectorAll('.btn-edit').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      card.querySelector('.btn-edit').addEventListener('click', (e) => {
         e.stopPropagation();
-        showView(btn.dataset.id);
+        showView(live.id);
       });
-    });
-    listContainer.querySelectorAll('.btn-delete').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const id = btn.dataset.id;
-        if (confirm(`${id} 라이브를 삭제하시겠습니까? 관련 데이터가 모두 삭제됩니다.`)) {
-          let lives = getLives();
-          lives = lives.filter(l => l.id !== id);
-          saveLives(lives);
-          localStorage.removeItem(`ryzin_config_${id}`);
-          localStorage.removeItem(`ryzin_stats_${id}`);
-          localStorage.removeItem(`ryzin_products_${id}`);
-          localStorage.removeItem(`ryzin_bot_${id}`);
 
-          const deleted = JSON.parse(localStorage.getItem('ryzin_deleted_lives') || '[]');
-          if (!deleted.includes(id)) {
-            deleted.push(id);
-            localStorage.setItem('ryzin_deleted_lives', JSON.stringify(deleted));
-          }
-          
-          if (db) {
-            try {
-              await db.from('live_chats').delete().eq('live_id', id);
-              await db.from('live_control').delete().eq('live_id', id);
-            } catch(err) {
-              console.warn('Supabase delete failed', err);
+      if (!isRestricted) {
+        const btnDel = card.querySelector('.btn-delete');
+        if (btnDel) {
+          btnDel.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (!confirm(`라이브 ${live.id}를 정말 삭제하시겠습니까?\n시청자 페이지도 접근이 차단됩니다.`)) return;
+            let currentLives = getLives().filter(l => l.id !== live.id);
+            saveLives(currentLives);
+            const deleted = safeJsonParse(localStorage.getItem('ryzin_deleted_lives'), []);
+            if (!deleted.includes(live.id)) {
+              deleted.push(live.id);
+              localStorage.setItem('ryzin_deleted_lives', JSON.stringify(deleted));
             }
-          }
-
-          renderList();
+            const sClient = await getSupabaseClient();
+            if (sClient) {
+              try { await sClient.from('live_control').delete().eq('live_id', live.id); } catch(err) {}
+            }
+            renderList();
+          });
         }
-      });
-    });
+      }
 
-    listContainer.querySelectorAll('.live-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
-        const id = card.querySelector('.btn-edit').dataset.id;
-        showView(id);
-      });
+      card.addEventListener('click', () => showView(live.id));
+      targetContainer.appendChild(card);
     });
+  };
+
+  const getFilteredLives = (rawLives) => {
+    let lives = [...rawLives];
+    if (isLiveStreamOnly && targetLiveId) {
+      if (!lives.some(l => l.id === targetLiveId)) {
+        lives.push({ id: targetLiveId, createdAt: Date.now() });
+      }
+      lives = lives.filter(l => l.id === targetLiveId);
+    } else if (isBrandPartner && targetBrandId) {
+      const brand = store.getById('brands', targetBrandId);
+      const targetBrandName = brand ? brand.name : '';
+      if (targetBrandName) {
+        lives = lives.filter(l => {
+          const cfg = getLiveConfig(l.id) || {};
+          return cfg.brandName === targetBrandName;
+        });
+      } else {
+        lives = [];
+      }
+    }
+    lives.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    return lives;
+  };
+
+  const renderList = async () => {
+    // 1단계: 캐시된 로컬 데이터로 0.01초 즉시 렌더링 (하얀 화면 방지)
+    let initialLives = getFilteredLives(getLives());
+    if (initialLives.length > 0) {
+      drawCards(initialLives);
+    } else {
+      const targetContainer = document.getElementById('live-list-container') || listContainer;
+      if (targetContainer) {
+        targetContainer.innerHTML = `
+          <div style="text-align:center; padding:60px 20px; color:#64748b;">
+            <div style="display:inline-block; width:36px; height:36px; border:3px solid #e2e8f0; border-top-color:#3b82f6; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:14px;"></div>
+            <p style="font-size:14px; font-weight:600; margin:0;">라이브 목록을 불러오는 중입니다...</p>
+          </div>
+        `;
+      }
+    }
+
+    // 2단계: 비동기로 Supabase DB에서 최신 데이터 조회 후 2차 갱신
+    try {
+      const sClient = await getSupabaseClient();
+      if (sClient) {
+        const { data, error } = await sClient.from('live_control').select('live_id, updated_at, status, title, subtitle');
+        if (!error && data && Array.isArray(data)) {
+          const localLives = getLives();
+          const deletedLives = safeJsonParse(localStorage.getItem('ryzin_deleted_lives'), []);
+          data.forEach(row => {
+            if (row.live_id) {
+              // 매니저 계정의 targetLiveId는 절대 deletedLives에 걸러지지 않음
+              const isExcluded = deletedLives.includes(row.live_id) && row.live_id !== targetLiveId;
+              if (!isExcluded) {
+                if (!localLives.some(l => l.id === row.live_id)) {
+                  localLives.push({ id: row.live_id, createdAt: new Date(row.updated_at).getTime() });
+                }
+                const cfg = getLiveConfig(row.live_id) || {};
+                cfg.isLive = (row.status === 'ON');
+                if (row.title) cfg.brandName = row.title;
+                if (row.subtitle) cfg.title = row.subtitle;
+                saveLiveConfig(row.live_id, cfg);
+              }
+            }
+          });
+          saveLives(localLives);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load remote lives from Supabase', e);
+    }
+
+    // 최종 최신 데이터로 화면 갱신
+    const finalLives = getFilteredLives(getLives());
+    drawCards(finalLives);
   };
 
   renderList();
