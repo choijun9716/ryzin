@@ -1254,80 +1254,120 @@ Minimum version required to store current data is: `+c+`.
             </tbody>
           </table>
         </div>
-      `,e.querySelectorAll(`.btn-customer-detail`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=parseInt(e.dataset.orderIdx);r[n]&&m(r[n])})})},m=e=>{document.getElementById(`customer-detail-modal`)?.remove();let t=e.customer_name||e.buyer_name||`(미입력)`,n=e.customer_phone||e.buyer_phone||`(미입력)`,r=e.customer_address||e.shipping_address||`(미입력)`,i=(e.payment_status||`payapp_requested`).toLowerCase(),a=i===`paid`,o=c.includes(i),l=a?`결제완료`:o?`취소/환불`:`결제대기`,u=a?`#ecfdf5`:o?`#fef2f2`:`#fffbeb`,d=a?`#059669`:o?`#ef4444`:`#d97706`,f=s(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),p=`-`;if(e.created_at){let t=new Date(e.created_at);if(isNaN(t.getTime())){let n=Number(e.created_at);isNaN(n)||(t=new Date(n))}p=isNaN(t.getTime())?String(e.created_at):`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,`0`)}.${String(t.getDate()).padStart(2,`0`)} ${String(t.getHours()).padStart(2,`0`)}:${String(t.getMinutes()).padStart(2,`0`)}`}let m=document.createElement(`div`);m.id=`customer-detail-modal`,m.style.cssText=`position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); padding:16px;`,m.innerHTML=`
-        <div style="background:#ffffff; border-radius:14px; width:440px; max-width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0; animation:orderModalIn 0.16s ease-out;">
+      `,e.querySelectorAll(`.btn-customer-detail`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=parseInt(e.dataset.orderIdx);r[n]&&m(r[n])})})},m=e=>{document.getElementById(`customer-detail-modal`)?.remove();let n=e.customer_name||e.buyer_name||`(미입력)`,r=e.customer_phone||e.buyer_phone||`(미입력)`,i=e.customer_address||e.shipping_address||`(미입력)`,a=(e.payment_status||`payapp_requested`).toLowerCase(),o=a===`paid`,l=c.includes(a),u=``;u=o?`<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981;"></span>결제완료</span>`:l?`<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444;"></span>취소/환불</span>`:`<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b;"></span>결제대기</span>`;let f=s(e).map(e=>{let t=e.quantity||1;return`${e.name||e.goodname||`상품`}${t>1?` (${t}개)`:``}`}).join(`, `),p=`-`;if(e.created_at){let t=new Date(e.created_at);if(isNaN(t.getTime())){let n=Number(e.created_at);isNaN(n)||(t=new Date(n))}p=isNaN(t.getTime())?String(e.created_at):`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,`0`)}.${String(t.getDate()).padStart(2,`0`)} ${String(t.getHours()).padStart(2,`0`)}:${String(t.getMinutes()).padStart(2,`0`)}`}let m=parseInt(e.total_amount)||0,h=e.pg_receipt_id||e.receipt_id||e.order_number||``,g=document.createElement(`div`);g.id=`customer-detail-modal`,g.style.cssText=`position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); padding:16px;`,g.innerHTML=`
+        <div style="background:#ffffff; border-radius:14px; width:450px; max-width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0; animation:orderModalIn 0.16s ease-out;">
           <!-- 모달 헤더 -->
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1.5px solid #f1f5f9; background:#ffffff;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #f1f5f9; background:#ffffff;">
             <div style="display:flex; align-items:center; gap:8px;">
               <h4 style="margin:0; font-size:15px; font-weight:700; color:#0f172a;">고객 주문 및 배송 정보</h4>
-              <span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:${u}; color:${d};">${l}</span>
+              ${u}
             </div>
-            <button type="button" id="btn-close-customer-modal" style="background:none; border:none; color:#94a3b8; font-size:20px; line-height:1; cursor:pointer; padding:4px; border-radius:6px;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
+            <button type="button" id="btn-close-customer-modal" style="background:none; border:none; color:#94a3b8; font-size:20px; line-height:1; cursor:pointer; padding:4px; border-radius:6px; transition:color 0.12s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
           </div>
 
-          <!-- 모달 바디: 고객 개인정보 영역 -->
-          <div style="padding:20px; background:#ffffff;">
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
-              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                <span>고객 개인정보</span>
-                <span style="font-size:11px; color:#94a3b8; font-weight:500;">보안 보호 적용</span>
-              </div>
+          <!-- 모달 바디 -->
+          <div style="padding:20px; background:#ffffff; max-height:80vh; overflow-y:auto;">
+            <!-- 1. 고객 개인정보 카드 (보안보호적용 문구 삭제 완료) -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px;">
+              <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:12px;">고객 개인정보</div>
 
               <!-- 고객 이름 -->
               <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #edf2f7;">
-                <span style="font-size:12.5px; color:#64748b; font-weight:600; width:70px;">이름</span>
-                <span style="font-size:14px; font-weight:700; color:#0f172a; flex:1; text-align:right;">${t}</span>
+                <span style="font-size:12.5px; color:#64748b; font-weight:500; width:70px;">이름</span>
+                <span style="font-size:14px; font-weight:700; color:#0f172a; flex:1; text-align:right;">${n}</span>
               </div>
 
               <!-- 전화번호 -->
               <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #edf2f7;">
-                <span style="font-size:12.5px; color:#64748b; font-weight:600; width:70px;">전화번호</span>
+                <span style="font-size:12.5px; color:#64748b; font-weight:500; width:70px;">전화번호</span>
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <span style="font-size:13.5px; font-family:monospace; font-weight:700; color:#0f172a;">${n}</span>
-                  ${n===`(미입력)`?``:`<button type="button" class="btn-copy-field" data-copy="${n}" style="padding:2px 7px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">복사</button>`}
+                  <span style="font-size:13.5px; font-weight:600; color:#0f172a; font-variant-numeric:tabular-nums;">${r}</span>
+                  ${r===`(미입력)`?``:`<button type="button" class="btn-copy-field" data-copy="${r}" style="padding:3px 8px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">복사</button>`}
                 </div>
               </div>
 
               <!-- 배송지 주소 -->
-              <div style="display:flex; flex-direction:column; gap:4px;">
+              <div style="display:flex; flex-direction:column; gap:6px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-size:12.5px; color:#64748b; font-weight:600;">배송지 주소</span>
-                  ${r===`(미입력)`?``:`<button type="button" class="btn-copy-field" data-copy="${r}" style="padding:2px 7px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">주소 복사</button>`}
+                  <span style="font-size:12.5px; color:#64748b; font-weight:500;">배송지 주소</span>
+                  ${i===`(미입력)`?``:`<button type="button" class="btn-copy-field" data-copy="${i}" style="padding:3px 8px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">주소 복사</button>`}
                 </div>
-                <div style="font-size:13px; color:#1e293b; font-weight:600; line-height:1.5; word-break:break-all; background:#ffffff; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0; margin-top:4px;">
-                  ${r}
+                <div style="font-size:13px; color:#1e293b; font-weight:500; line-height:1.55; word-break:break-all; background:#ffffff; padding:10px 12px; border-radius:7px; border:1px solid #e2e8f0;">
+                  ${i}
                 </div>
               </div>
             </div>
 
-            <!-- 주문 및 결제 내역 요약 -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px;">
-              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:10px;">주문 결제 정보</div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
+            <!-- 2. 주문 및 결제 내역 요약 -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px;">
+              <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:12px;">주문 결제 정보</div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
                 <span style="color:#64748b;">주문 상품</span>
-                <span style="font-weight:700; color:#0f172a; text-align:right; max-width:260px;">${f}</span>
+                <span style="font-weight:600; color:#0f172a; text-align:right; max-width:280px; line-height:1.4;">${f}</span>
               </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
                 <span style="color:#64748b;">결제 금액</span>
-                <span style="font-weight:800; color:#000000; font-size:14px;">${(parseInt(e.total_amount)||0).toLocaleString()}원</span>
+                <span style="font-weight:700; color:#0f172a; font-size:14px; font-variant-numeric:tabular-nums;">${m.toLocaleString()}원</span>
               </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
                 <span style="color:#64748b;">영수증 번호</span>
-                <span style="font-family:monospace; color:#475569;">${e.pg_receipt_id||e.receipt_id||e.order_number||`-`}</span>
+                <span style="color:#475569; font-variant-numeric:tabular-nums;">${h||`-`}</span>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:12.5px;">
                 <span style="color:#64748b;">주문 일시</span>
-                <span style="color:#334155; font-family:monospace; font-weight:600;">${p}</span>
+                <span style="color:#475569; font-variant-numeric:tabular-nums;">${p}</span>
               </div>
+            </div>
+
+            <!-- 3. 결제 취소 / 부분 취소 제어 카드 -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:12px; font-weight:700; color:#334155;">결제 취소 관리</span>
+                <span style="font-size:11px; color:#94a3b8;">PG사 실시간 취소 연동</span>
+              </div>
+
+              ${l?`
+                <div style="text-align:center; padding:12px; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; color:#dc2626; font-size:12.5px; font-weight:600;">
+                  이미 결제 취소(환불) 처리가 완료된 주문건입니다.
+                </div>
+              `:`
+                <div style="display:flex; gap:8px;">
+                  <button type="button" id="btn-modal-cancel-all" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fecaca; background:#fff5f5; color:#dc2626; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">
+                    결제 전체 취소
+                  </button>
+                  <button type="button" id="btn-modal-cancel-partial" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fed7aa; background:#fffbeb; color:#b45309; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
+                    부분 취소
+                  </button>
+                </div>
+
+                <!-- 부분 취소 인라인 입력 폼 -->
+                <div id="modal-partial-form" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #e2e8f0;">
+                  <div style="margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                      <label style="font-size:11.5px; font-weight:600; color:#475569;">부분 취소 금액 (원)</label>
+                      <span style="font-size:11px; color:#94a3b8;">최대 ${m.toLocaleString()}원</span>
+                    </div>
+                    <input type="number" id="partial-cancel-amount" placeholder="취소할 금액 입력 (예: 10000)" max="${m}" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; font-weight:700; color:#0f172a;">
+                  </div>
+                  <div style="margin-bottom:10px;">
+                    <label style="display:block; font-size:11.5px; font-weight:600; color:#475569; margin-bottom:4px;">취소 사유</label>
+                    <input type="text" id="partial-cancel-memo" value="고객 요청 부분 취소" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; outline:none; color:#334155;">
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; gap:6px;">
+                    <button type="button" id="btn-close-partial-form" style="padding:6px 12px; font-size:11.5px; font-weight:600; border:1px solid #e2e8f0; background:#ffffff; color:#64748b; border-radius:6px; cursor:pointer;">접기</button>
+                    <button type="button" id="btn-submit-partial-cancel" style="padding:6px 14px; font-size:11.5px; font-weight:700; border:none; background:#d97706; color:#ffffff; border-radius:6px; cursor:pointer;">부분 취소 실행</button>
+                  </div>
+                </div>
+              `}
             </div>
           </div>
 
           <!-- 모달 푸터 -->
           <div style="display:flex; justify-content:flex-end; padding:12px 20px; background:#f8fafc; border-top:1px solid #e2e8f0;">
-            <button type="button" id="btn-confirm-customer-modal" class="action-btn btn-primary-solid" style="padding:7px 18px; font-size:12.5px;">확인</button>
+            <button type="button" id="btn-confirm-customer-modal" class="action-btn btn-primary-solid" style="padding:7px 20px; font-size:12.5px;">확인</button>
           </div>
         </div>
-      `,document.body.appendChild(m);let h=()=>m.remove();m.querySelector(`#btn-close-customer-modal`)?.addEventListener(`click`,h),m.querySelector(`#btn-confirm-customer-modal`)?.addEventListener(`click`,h),m.addEventListener(`click`,e=>{e.target===m&&h()}),m.querySelectorAll(`.btn-copy-field`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.dataset.copy;t&&navigator.clipboard.writeText(t).then(()=>{let t=e.textContent;e.textContent=`복사완료`,e.style.color=`#059669`,e.style.borderColor=`#059669`,setTimeout(()=>{e.textContent=t,e.style.color=`#475569`,e.style.borderColor=`#cbd5e1`},1200)})})})},h=()=>{let e=document.getElementById(`ranking-table-container`);if(!e)return;let t=n.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),i={},a=0;t.forEach(e=>{s(e).forEach(t=>{let n=(t.name||t.goodname||`상품`).trim(),r=parseInt(t.quantity||t.qty||1)||1,o=parseInt(t.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,s(e).length)),c=o*r;a+=c,i[n]||(i[n]={name:n,code:t.product_code||t.code||`-`,unitPrice:o,totalQty:0,totalAmount:0,orderCount:0}),i[n].totalQty+=r,i[n].totalAmount+=c,i[n].orderCount+=1})});let o=Object.values(i);if(r===`qty`?o.sort((e,t)=>t.totalQty-e.totalQty||t.totalAmount-e.totalAmount):o.sort((e,t)=>t.totalAmount-e.totalAmount||t.totalQty-e.totalQty),o.length===0){e.innerHTML=`
+      `,document.body.appendChild(g);let _=()=>g.remove();g.querySelector(`#btn-close-customer-modal`)?.addEventListener(`click`,_),g.querySelector(`#btn-confirm-customer-modal`)?.addEventListener(`click`,_),g.addEventListener(`click`,e=>{e.target===g&&_()}),g.querySelectorAll(`.btn-copy-field`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.dataset.copy;t&&navigator.clipboard.writeText(t).then(()=>{let t=e.textContent;e.textContent=`복사완료`,e.style.color=`#059669`,e.style.borderColor=`#059669`,setTimeout(()=>{e.textContent=t,e.style.color=`#475569`,e.style.borderColor=`#cbd5e1`},1200)})})});let v=g.querySelector(`#modal-partial-form`),y=g.querySelector(`#btn-modal-cancel-partial`),b=g.querySelector(`#btn-close-partial-form`);y&&v&&y.addEventListener(`click`,()=>{v.style.display=v.style.display===`none`?`block`:`none`}),b&&v&&b.addEventListener(`click`,()=>{v.style.display=`none`}),g.querySelector(`#btn-modal-cancel-all`)?.addEventListener(`click`,async()=>{if(!confirm(`정말로 이 주문(총 ${m.toLocaleString()}원)의 결제를 전체 취소하시겠습니까?\n이 작업은 PG사(페이앱) 승인 취소와 함께 연동됩니다.`))return;let n=g.querySelector(`#btn-modal-cancel-all`);n&&(n.disabled=!0,n.textContent=`취소 처리 중...`);try{if(h&&h!==`-`&&h!==`undefined`)try{let e=await(await fetch(`/api/payapp`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({cmd:`paycancel`,mul_no:h,cancelmemo:`관리자 주문 전체 취소`})})).json();e.success||console.warn(`PayApp API cancel notice:`,e.message)}catch(e){console.warn(`PayApp cancellation request failed:`,e)}if(X)try{e.id?await X.from(`live_orders`).update({payment_status:`cancelled`}).eq(`id`,e.id):h&&await X.from(`live_orders`).update({payment_status:`cancelled`}).eq(`pg_receipt_id`,h)}catch(e){console.warn(`DB order update failed:`,e)}try{let n=JSON.parse(localStorage.getItem(`ryzin_live_orders_${t}`)||`[]`),r=n.find(t=>t.id&&t.id===e.id||t.pg_receipt_id&&t.pg_receipt_id===h);r&&(r.payment_status=`cancelled`,localStorage.setItem(`ryzin_live_orders_${t}`,JSON.stringify(n)))}catch{}alert(`결제가 정상적으로 전체 취소 처리되었습니다.`),_(),d()}catch(e){alert(`취소 처리 중 오류가 발생했습니다: `+e.message),n&&(n.disabled=!1,n.textContent=`결제 전체 취소`)}}),g.querySelector(`#btn-submit-partial-cancel`)?.addEventListener(`click`,async()=>{let n=g.querySelector(`#partial-cancel-amount`),r=g.querySelector(`#partial-cancel-memo`),i=parseInt(n?.value||0,10),a=r?.value?.trim()||`관리자 부분 취소 처리`;if(isNaN(i)||i<=0){alert(`유효한 부분 취소 금액을 입력해주세요.`),n?.focus();return}if(i>m){alert(`부분 취소 금액은 현재 결제 금액(${m.toLocaleString()}원)을 초과할 수 없습니다.`),n?.focus();return}if(!confirm(`${i.toLocaleString()}원을 부분 취소하시겠습니까?\n남은 결제 금액: ${(m-i).toLocaleString()}원`))return;let o=g.querySelector(`#btn-submit-partial-cancel`);o&&(o.disabled=!0,o.textContent=`처리 중...`);try{if(h&&h!==`-`&&h!==`undefined`)try{let e=await(await fetch(`/api/payapp`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({cmd:`paycancel`,mul_no:h,cancelprice:i,cancelmemo:a})})).json();e.success||console.warn(`PayApp partial cancel notice:`,e.message)}catch(e){console.warn(`PayApp partial cancel request failed:`,e)}let n=Math.max(0,m-i),r=n===0?`cancelled`:`paid`;if(X)try{let t={total_amount:n,payment_status:r};e.id?await X.from(`live_orders`).update(t).eq(`id`,e.id):h&&await X.from(`live_orders`).update(t).eq(`pg_receipt_id`,h)}catch(e){console.warn(`DB partial cancel update failed:`,e)}try{let i=JSON.parse(localStorage.getItem(`ryzin_live_orders_${t}`)||`[]`),a=i.find(t=>t.id&&t.id===e.id||t.pg_receipt_id&&t.pg_receipt_id===h);a&&(a.total_amount=n,a.payment_status=r,localStorage.setItem(`ryzin_live_orders_${t}`,JSON.stringify(i)))}catch{}alert(`${i.toLocaleString()}원이 정상적으로 부분 취소되었습니다.`),_(),d()}catch(e){alert(`부분 취소 처리 중 오류가 발생했습니다: `+e.message),o&&(o.disabled=!1,o.textContent=`부분 취소 실행`)}})},h=()=>{let e=document.getElementById(`ranking-table-container`);if(!e)return;let t=n.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),i={},a=0;t.forEach(e=>{s(e).forEach(t=>{let n=(t.name||t.goodname||`상품`).trim(),r=parseInt(t.quantity||t.qty||1)||1,o=parseInt(t.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,s(e).length)),c=o*r;a+=c,i[n]||(i[n]={name:n,code:t.product_code||t.code||`-`,unitPrice:o,totalQty:0,totalAmount:0,orderCount:0}),i[n].totalQty+=r,i[n].totalAmount+=c,i[n].orderCount+=1})});let o=Object.values(i);if(r===`qty`?o.sort((e,t)=>t.totalQty-e.totalQty||t.totalAmount-e.totalAmount):o.sort((e,t)=>t.totalAmount-e.totalAmount||t.totalQty-e.totalQty),o.length===0){e.innerHTML=`
           <div style="text-align:center; padding:50px 20px; color:#94a3b8; font-size:13.5px;">
             실제 결제 완료된 판매 데이터가 아직 없습니다.
           </div>

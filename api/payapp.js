@@ -119,24 +119,35 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, results });
     }
 
-    // ── 2. 결제 취소 요청 (paycancel / cancel) ──
+    // ── 2. 결제 취소 / 부분 취소 요청 (paycancel / cancel) ──
     if (cmd === 'paycancel' || cmd === 'cancel') {
       const mul_no = String(body.mul_no || '');
       if (!mul_no) {
         return res.status(400).json({ success: false, message: '취소할 mul_no(결제번호)가 필요합니다.' });
       }
 
-      const cancelmemo = body.cancelmemo || '고객 직접 주문 취소 요청';
-      const cancelRes = await requestPayApp({
+      const cancelmemo = body.cancelmemo || '관리자 주문 취소 처리';
+      const cancelParams = {
         cmd: 'paycancel',
         userid: PAYAPP_USERID,
         linkkey: PAYAPP_LINKKEY,
         mul_no: mul_no,
         cancelmemo: cancelmemo
-      });
+      };
+
+      // 부분 취소 금액 지원
+      if (body.cancelprice && Number(body.cancelprice) > 0) {
+        cancelParams.cancelprice = String(body.cancelprice);
+      }
+
+      const cancelRes = await requestPayApp(cancelParams);
 
       if (cancelRes.state === '1') {
-        return res.status(200).json({ success: true, message: '결제가 정상적으로 취소되었습니다.', raw: cancelRes });
+        return res.status(200).json({
+          success: true,
+          message: body.cancelprice ? `부분 취소(${Number(body.cancelprice).toLocaleString()}원)가 완료되었습니다.` : '결제가 정상적으로 취소되었습니다.',
+          raw: cancelRes
+        });
       } else {
         return res.status(400).json({
           success: false,

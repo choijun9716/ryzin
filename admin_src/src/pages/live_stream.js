@@ -4008,7 +4008,7 @@ function renderLiveEditView(container, liveId, showView) {
       });
     };
 
-    // ── 고객 상세 정보 팝업 모달 (이름, 전화번호, 주소) ──
+    // ── 고객 상세 정보 팝업 모달 (이름, 전화번호, 주소 및 결제 취소/부분취소 기능) ──
     const showCustomerModal = (ord) => {
       document.getElementById('customer-detail-modal')?.remove();
 
@@ -4018,11 +4018,22 @@ function renderLiveEditView(container, liveId, showView) {
       const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
       const isPaid = pStatus === 'paid';
       const isCancel = cancelStatuses.includes(pStatus);
-      const statusText = isPaid ? '결제완료' : isCancel ? '취소/환불' : '결제대기';
-      const statusBg = isPaid ? '#ecfdf5' : isCancel ? '#fef2f2' : '#fffbeb';
-      const statusColor = isPaid ? '#059669' : isCancel ? '#ef4444' : '#d97706';
+
+      // 세련된 소프트 닷 뱃지
+      let statusBadge = '';
+      if (isPaid) {
+        statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981;"></span>결제완료</span>';
+      } else if (isCancel) {
+        statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444;"></span>취소/환불</span>';
+      } else {
+        statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b;"></span>결제대기</span>';
+      }
+
       const items = parseItems(ord);
-      const itemsText = items.map(it => `${it.name || it.goodname} (${it.quantity || 1}개)`).join(', ');
+      const itemsText = items.map(it => {
+        const qty = it.quantity || 1;
+        return `${it.name || it.goodname || '상품'}${qty > 1 ? ` (${qty}개)` : ''}`;
+      }).join(', ');
       
       let dateStr = '-';
       if (ord.created_at) {
@@ -4043,81 +4054,124 @@ function renderLiveEditView(container, liveId, showView) {
         }
       }
 
+      const currentAmount = parseInt(ord.total_amount) || 0;
+      const receiptNo = ord.pg_receipt_id || ord.receipt_id || ord.order_number || '';
+
       const modalEl = document.createElement('div');
       modalEl.id = 'customer-detail-modal';
       modalEl.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(3px); padding:16px;';
 
       modalEl.innerHTML = `
-        <div style="background:#ffffff; border-radius:14px; width:440px; max-width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0; animation:orderModalIn 0.16s ease-out;">
+        <div style="background:#ffffff; border-radius:14px; width:450px; max-width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0; animation:orderModalIn 0.16s ease-out;">
           <!-- 모달 헤더 -->
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1.5px solid #f1f5f9; background:#ffffff;">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #f1f5f9; background:#ffffff;">
             <div style="display:flex; align-items:center; gap:8px;">
               <h4 style="margin:0; font-size:15px; font-weight:700; color:#0f172a;">고객 주문 및 배송 정보</h4>
-              <span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:${statusBg}; color:${statusColor};">${statusText}</span>
+              ${statusBadge}
             </div>
-            <button type="button" id="btn-close-customer-modal" style="background:none; border:none; color:#94a3b8; font-size:20px; line-height:1; cursor:pointer; padding:4px; border-radius:6px;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
+            <button type="button" id="btn-close-customer-modal" style="background:none; border:none; color:#94a3b8; font-size:20px; line-height:1; cursor:pointer; padding:4px; border-radius:6px; transition:color 0.12s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
           </div>
 
-          <!-- 모달 바디: 고객 개인정보 영역 -->
-          <div style="padding:20px; background:#ffffff;">
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
-              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                <span>고객 개인정보</span>
-                <span style="font-size:11px; color:#94a3b8; font-weight:500;">보안 보호 적용</span>
-              </div>
+          <!-- 모달 바디 -->
+          <div style="padding:20px; background:#ffffff; max-height:80vh; overflow-y:auto;">
+            <!-- 1. 고객 개인정보 카드 (보안보호적용 문구 삭제 완료) -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px;">
+              <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:12px;">고객 개인정보</div>
 
               <!-- 고객 이름 -->
               <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #edf2f7;">
-                <span style="font-size:12.5px; color:#64748b; font-weight:600; width:70px;">이름</span>
+                <span style="font-size:12.5px; color:#64748b; font-weight:500; width:70px;">이름</span>
                 <span style="font-size:14px; font-weight:700; color:#0f172a; flex:1; text-align:right;">${customerName}</span>
               </div>
 
               <!-- 전화번호 -->
               <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #edf2f7;">
-                <span style="font-size:12.5px; color:#64748b; font-weight:600; width:70px;">전화번호</span>
+                <span style="font-size:12.5px; color:#64748b; font-weight:500; width:70px;">전화번호</span>
                 <div style="display:flex; align-items:center; gap:6px;">
-                  <span style="font-size:13.5px; font-family:monospace; font-weight:700; color:#0f172a;">${customerPhone}</span>
-                  ${customerPhone !== '(미입력)' ? `<button type="button" class="btn-copy-field" data-copy="${customerPhone}" style="padding:2px 7px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">복사</button>` : ''}
+                  <span style="font-size:13.5px; font-weight:600; color:#0f172a; font-variant-numeric:tabular-nums;">${customerPhone}</span>
+                  ${customerPhone !== '(미입력)' ? `<button type="button" class="btn-copy-field" data-copy="${customerPhone}" style="padding:3px 8px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">복사</button>` : ''}
                 </div>
               </div>
 
               <!-- 배송지 주소 -->
-              <div style="display:flex; flex-direction:column; gap:4px;">
+              <div style="display:flex; flex-direction:column; gap:6px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-size:12.5px; color:#64748b; font-weight:600;">배송지 주소</span>
-                  ${customerAddress !== '(미입력)' ? `<button type="button" class="btn-copy-field" data-copy="${customerAddress}" style="padding:2px 7px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">주소 복사</button>` : ''}
+                  <span style="font-size:12.5px; color:#64748b; font-weight:500;">배송지 주소</span>
+                  ${customerAddress !== '(미입력)' ? `<button type="button" class="btn-copy-field" data-copy="${customerAddress}" style="padding:3px 8px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; border-radius:5px; background:#ffffff; color:#475569; cursor:pointer;">주소 복사</button>` : ''}
                 </div>
-                <div style="font-size:13px; color:#1e293b; font-weight:600; line-height:1.5; word-break:break-all; background:#ffffff; padding:10px 12px; border-radius:6px; border:1px solid #e2e8f0; margin-top:4px;">
+                <div style="font-size:13px; color:#1e293b; font-weight:500; line-height:1.55; word-break:break-all; background:#ffffff; padding:10px 12px; border-radius:7px; border:1px solid #e2e8f0;">
                   ${customerAddress}
                 </div>
               </div>
             </div>
 
-            <!-- 주문 및 결제 내역 요약 -->
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px;">
-              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:10px;">주문 결제 정보</div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
+            <!-- 2. 주문 및 결제 내역 요약 -->
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px;">
+              <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:12px;">주문 결제 정보</div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
                 <span style="color:#64748b;">주문 상품</span>
-                <span style="font-weight:700; color:#0f172a; text-align:right; max-width:260px;">${itemsText}</span>
+                <span style="font-weight:600; color:#0f172a; text-align:right; max-width:280px; line-height:1.4;">${itemsText}</span>
               </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
                 <span style="color:#64748b;">결제 금액</span>
-                <span style="font-weight:800; color:#000000; font-size:14px;">${(parseInt(ord.total_amount) || 0).toLocaleString()}원</span>
+                <span style="font-weight:700; color:#0f172a; font-size:14px; font-variant-numeric:tabular-nums;">${currentAmount.toLocaleString()}원</span>
               </div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
                 <span style="color:#64748b;">영수증 번호</span>
-                <span style="font-family:monospace; color:#475569;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</span>
+                <span style="color:#475569; font-variant-numeric:tabular-nums;">${receiptNo || '-'}</span>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; font-size:12.5px;">
                 <span style="color:#64748b;">주문 일시</span>
-                <span style="color:#334155; font-family:monospace; font-weight:600;">${dateStr}</span>
+                <span style="color:#475569; font-variant-numeric:tabular-nums;">${dateStr}</span>
               </div>
+            </div>
+
+            <!-- 3. 결제 취소 / 부분 취소 제어 카드 -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:12px; font-weight:700; color:#334155;">결제 취소 관리</span>
+                <span style="font-size:11px; color:#94a3b8;">PG사 실시간 취소 연동</span>
+              </div>
+
+              ${isCancel ? `
+                <div style="text-align:center; padding:12px; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; color:#dc2626; font-size:12.5px; font-weight:600;">
+                  이미 결제 취소(환불) 처리가 완료된 주문건입니다.
+                </div>
+              ` : `
+                <div style="display:flex; gap:8px;">
+                  <button type="button" id="btn-modal-cancel-all" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fecaca; background:#fff5f5; color:#dc2626; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">
+                    결제 전체 취소
+                  </button>
+                  <button type="button" id="btn-modal-cancel-partial" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fed7aa; background:#fffbeb; color:#b45309; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
+                    부분 취소
+                  </button>
+                </div>
+
+                <!-- 부분 취소 인라인 입력 폼 -->
+                <div id="modal-partial-form" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #e2e8f0;">
+                  <div style="margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                      <label style="font-size:11.5px; font-weight:600; color:#475569;">부분 취소 금액 (원)</label>
+                      <span style="font-size:11px; color:#94a3b8;">최대 ${currentAmount.toLocaleString()}원</span>
+                    </div>
+                    <input type="number" id="partial-cancel-amount" placeholder="취소할 금액 입력 (예: 10000)" max="${currentAmount}" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; font-weight:700; color:#0f172a;">
+                  </div>
+                  <div style="margin-bottom:10px;">
+                    <label style="display:block; font-size:11.5px; font-weight:600; color:#475569; margin-bottom:4px;">취소 사유</label>
+                    <input type="text" id="partial-cancel-memo" value="고객 요청 부분 취소" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; outline:none; color:#334155;">
+                  </div>
+                  <div style="display:flex; justify-content:flex-end; gap:6px;">
+                    <button type="button" id="btn-close-partial-form" style="padding:6px 12px; font-size:11.5px; font-weight:600; border:1px solid #e2e8f0; background:#ffffff; color:#64748b; border-radius:6px; cursor:pointer;">접기</button>
+                    <button type="button" id="btn-submit-partial-cancel" style="padding:6px 14px; font-size:11.5px; font-weight:700; border:none; background:#d97706; color:#ffffff; border-radius:6px; cursor:pointer;">부분 취소 실행</button>
+                  </div>
+                </div>
+              `}
             </div>
           </div>
 
           <!-- 모달 푸터 -->
           <div style="display:flex; justify-content:flex-end; padding:12px 20px; background:#f8fafc; border-top:1px solid #e2e8f0;">
-            <button type="button" id="btn-confirm-customer-modal" class="action-btn btn-primary-solid" style="padding:7px 18px; font-size:12.5px;">확인</button>
+            <button type="button" id="btn-confirm-customer-modal" class="action-btn btn-primary-solid" style="padding:7px 20px; font-size:12.5px;">확인</button>
           </div>
         </div>
       `;
@@ -4131,6 +4185,7 @@ function renderLiveEditView(container, liveId, showView) {
         if (e.target === modalEl) closeModal();
       });
 
+      // 복사 버튼 기능
       modalEl.querySelectorAll('.btn-copy-field').forEach(btn => {
         btn.addEventListener('click', () => {
           const text = btn.dataset.copy;
@@ -4148,6 +4203,186 @@ function renderLiveEditView(container, liveId, showView) {
             });
           }
         });
+      });
+
+      // 부분 취소 폼 토글
+      const partialForm = modalEl.querySelector('#modal-partial-form');
+      const btnPartialToggle = modalEl.querySelector('#btn-modal-cancel-partial');
+      const btnPartialClose = modalEl.querySelector('#btn-close-partial-form');
+
+      if (btnPartialToggle && partialForm) {
+        btnPartialToggle.addEventListener('click', () => {
+          partialForm.style.display = partialForm.style.display === 'none' ? 'block' : 'none';
+        });
+      }
+      if (btnPartialClose && partialForm) {
+        btnPartialClose.addEventListener('click', () => {
+          partialForm.style.display = 'none';
+        });
+      }
+
+      // ── 전체 결제 취소 실행 핸들러 ──
+      modalEl.querySelector('#btn-modal-cancel-all')?.addEventListener('click', async () => {
+        if (!confirm(`정말로 이 주문(총 ${currentAmount.toLocaleString()}원)의 결제를 전체 취소하시겠습니까?\n이 작업은 PG사(페이앱) 승인 취소와 함께 연동됩니다.`)) {
+          return;
+        }
+
+        const btnCancelAll = modalEl.querySelector('#btn-modal-cancel-all');
+        if (btnCancelAll) {
+          btnCancelAll.disabled = true;
+          btnCancelAll.textContent = '취소 처리 중...';
+        }
+
+        try {
+          // 1. PayApp 결제 취소 API 요청
+          if (receiptNo && receiptNo !== '-' && receiptNo !== 'undefined') {
+            try {
+              const cancelRes = await fetch('/api/payapp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  cmd: 'paycancel',
+                  mul_no: receiptNo,
+                  cancelmemo: '관리자 주문 전체 취소'
+                })
+              });
+              const cancelData = await cancelRes.json();
+              if (!cancelData.success) {
+                console.warn('PayApp API cancel notice:', cancelData.message);
+              }
+            } catch (err) {
+              console.warn('PayApp cancellation request failed:', err);
+            }
+          }
+
+          // 2. Supabase live_orders 테이블 상태를 'cancelled'로 업데이트
+          if (db) {
+            try {
+              if (ord.id) {
+                await db.from('live_orders').update({ payment_status: 'cancelled' }).eq('id', ord.id);
+              } else if (receiptNo) {
+                await db.from('live_orders').update({ payment_status: 'cancelled' }).eq('pg_receipt_id', receiptNo);
+              }
+            } catch (e) {
+              console.warn('DB order update failed:', e);
+            }
+          }
+
+          // 3. 로컬 캐시 스토리지 업데이트
+          try {
+            const loc = JSON.parse(localStorage.getItem(`ryzin_live_orders_${liveId}`) || '[]');
+            const target = loc.find(l => (l.id && l.id === ord.id) || (l.pg_receipt_id && l.pg_receipt_id === receiptNo));
+            if (target) {
+              target.payment_status = 'cancelled';
+              localStorage.setItem(`ryzin_live_orders_${liveId}`, JSON.stringify(loc));
+            }
+          } catch (e) {}
+
+          alert('결제가 정상적으로 전체 취소 처리되었습니다.');
+          closeModal();
+          loadData();
+        } catch (err) {
+          alert('취소 처리 중 오류가 발생했습니다: ' + err.message);
+          if (btnCancelAll) {
+            btnCancelAll.disabled = false;
+            btnCancelAll.textContent = '결제 전체 취소';
+          }
+        }
+      });
+
+      // ── 부분 취소 실행 핸들러 ──
+      modalEl.querySelector('#btn-submit-partial-cancel')?.addEventListener('click', async () => {
+        const amountInput = modalEl.querySelector('#partial-cancel-amount');
+        const memoInput = modalEl.querySelector('#partial-cancel-memo');
+        const cancelPrice = parseInt(amountInput?.value || 0, 10);
+        const cancelMemo = memoInput?.value?.trim() || '관리자 부분 취소 처리';
+
+        if (isNaN(cancelPrice) || cancelPrice <= 0) {
+          alert('유효한 부분 취소 금액을 입력해주세요.');
+          amountInput?.focus();
+          return;
+        }
+
+        if (cancelPrice > currentAmount) {
+          alert(`부분 취소 금액은 현재 결제 금액(${currentAmount.toLocaleString()}원)을 초과할 수 없습니다.`);
+          amountInput?.focus();
+          return;
+        }
+
+        if (!confirm(`${cancelPrice.toLocaleString()}원을 부분 취소하시겠습니까?\n남은 결제 금액: ${(currentAmount - cancelPrice).toLocaleString()}원`)) {
+          return;
+        }
+
+        const submitBtn = modalEl.querySelector('#btn-submit-partial-cancel');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = '처리 중...';
+        }
+
+        try {
+          // 1. PayApp 부분 취소 API 요청
+          if (receiptNo && receiptNo !== '-' && receiptNo !== 'undefined') {
+            try {
+              const cancelRes = await fetch('/api/payapp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  cmd: 'paycancel',
+                  mul_no: receiptNo,
+                  cancelprice: cancelPrice,
+                  cancelmemo: cancelMemo
+                })
+              });
+              const cancelData = await cancelRes.json();
+              if (!cancelData.success) {
+                console.warn('PayApp partial cancel notice:', cancelData.message);
+              }
+            } catch (err) {
+              console.warn('PayApp partial cancel request failed:', err);
+            }
+          }
+
+          const remainingAmount = Math.max(0, currentAmount - cancelPrice);
+          const nextStatus = remainingAmount === 0 ? 'cancelled' : 'paid';
+
+          // 2. Supabase live_orders 테이블 업데이트
+          if (db) {
+            try {
+              const updatePayload = {
+                total_amount: remainingAmount,
+                payment_status: nextStatus
+              };
+              if (ord.id) {
+                await db.from('live_orders').update(updatePayload).eq('id', ord.id);
+              } else if (receiptNo) {
+                await db.from('live_orders').update(updatePayload).eq('pg_receipt_id', receiptNo);
+              }
+            } catch (e) {
+              console.warn('DB partial cancel update failed:', e);
+            }
+          }
+
+          // 3. 로컬 캐시 스토리지 업데이트
+          try {
+            const loc = JSON.parse(localStorage.getItem(`ryzin_live_orders_${liveId}`) || '[]');
+            const target = loc.find(l => (l.id && l.id === ord.id) || (l.pg_receipt_id && l.pg_receipt_id === receiptNo));
+            if (target) {
+              target.total_amount = remainingAmount;
+              target.payment_status = nextStatus;
+              localStorage.setItem(`ryzin_live_orders_${liveId}`, JSON.stringify(loc));
+            }
+          } catch (e) {}
+
+          alert(`${cancelPrice.toLocaleString()}원이 정상적으로 부분 취소되었습니다.`);
+          closeModal();
+          loadData();
+        } catch (err) {
+          alert('부분 취소 처리 중 오류가 발생했습니다: ' + err.message);
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '부분 취소 실행';
+          }
+        }
       });
     };
 
