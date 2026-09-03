@@ -4478,3 +4478,105 @@ window.closeProductDetailModal = function() {
     setTimeout(window.resumeAllMedia, 200);
   }
 };
+
+
+// =========================================================================
+// ── [웹 푸시(Web Push) 알림 엔진] VAPID & PWA 연동 ──
+// =========================================================================
+const VAPID_PUBLIC_KEY = 'BBM6fCUu5FI8wW3tOH3nzyOanT45GBcCEd9TrrDgIim0xnz_i4piPm46cyJNZx86YAiVuBwCkkTf5OTcMJ0ZyOA';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// 서비스 워커 등록
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW Fail:', e));
+  });
+}
+
+// 알림 신청 버튼 클릭 핸들러
+window.handlePushSubscribeClick = async function() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  // 아이폰(iOS) 사파리 브라우저 상태에서 푸시 미지원 시 홈 화면 추가 가이드 모달 표시
+  if (isIOS && !isStandalone && !('Notification' in window)) {
+    const iosModal = document.getElementById('ios-pwa-modal');
+    if (iosModal) iosModal.style.display = 'flex';
+    return;
+  }
+
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+    alert('현재 브라우저 환경에서는 웹 푸시 알림을 지원하지 않습니다.');
+    return;
+  }
+
+  if (Notification.permission === 'denied') {
+    alert('브라우저 알림 권한이 차단되어 있습니다.\n브라우저 주소창 왼쪽 자물쇠/설정 아이콘을 눌러 알림을 [허용]으로 변경해주세요.');
+    return;
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      alert('알림 권한이 허용되지 않았습니다.');
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      const convertedVapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey
+      });
+    }
+
+    if (subscription && db) {
+      // Supabase live_leads에 __WEB_PUSH__ 토큰 저장
+      const subJson = JSON.stringify(subscription);
+      
+      // 중복 체크 후 저장
+      const { data: existing } = await db.from('live_leads')
+        .select('id')
+        .eq('live_id', LIVE_ID)
+        .eq('name', '__WEB_PUSH__')
+        .eq('phone', subJson)
+        .limit(1);
+
+      if (!existing || existing.length === 0) {
+        await db.from('live_leads').insert([{
+          live_id: LIVE_ID,
+          name: '__WEB_PUSH__',
+          phone: subJson
+        }]);
+      }
+
+      // 벨 아이콘 활성화 스타일
+      const bellBtn = document.getElementById('btn-push-notification');
+      if (bellBtn) {
+        bellBtn.style.color = '#e50914';
+        bellBtn.style.borderColor = 'rgba(229, 9, 20, 0.4)';
+        bellBtn.title = '방송 알림 신청 완료';
+      }
+
+      alert('방송 알림 신청이 완료되었습니다!\n방송 시작 시 푸시 알림을 보내드립니다.');
+    }
+  } catch (err) {
+    console.error('Push subscribe error:', err);
+    alert('알림 등록 중 오류가 발생했습니다: ' + (err.message || err));
+  }
+};

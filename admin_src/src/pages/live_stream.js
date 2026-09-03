@@ -753,6 +753,7 @@ function renderLiveEditView(container, liveId, showView) {
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상품 관리</button>
       <button class="tab-btn" data-tab="orders" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">주문 관리</button>
       <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상담 DB</button>
+      <button class="tab-btn" data-tab="push" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px; font-weight:700; color:#2563eb;">푸시 알림</button>
     `;
 
   topBar.innerHTML = `
@@ -3069,6 +3070,137 @@ function renderLiveEditView(container, liveId, showView) {
 
   };
 
+  // ── [NEW] 웹 푸시 알림 제어 탭 ──
+  const renderPushTab = async () => {
+    contentArea.innerHTML = `
+      <div class="card" style="margin-bottom:20px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.04); border:1px solid #e2e8f0; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #f1f5f9; padding-bottom:16px;">
+          <div>
+            <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+              <span>🔔</span> 웹 푸시 알림 발송 센터
+            </h3>
+            <p style="margin:4px 0 0; font-size:13px; color:#64748b;">
+              해당 라이브 방송 알림을 신청한 시청자(안드로이드/PC/iOS PWA)에게 실시간 웹 푸시를 전송합니다.
+            </p>
+          </div>
+          <div style="text-align:right;">
+            <div id="push-subscriber-badge" style="display:inline-block; padding:6px 14px; background:#eff6ff; color:#2563eb; font-weight:800; font-size:14px; border-radius:30px; border:1px solid #bfdbfe;">
+              알림 신청자: 조회 중...
+            </div>
+            <button id="btn-refresh-push-sub" style="margin-left:8px; padding:6px 10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; cursor:pointer; font-weight:600;">새로고침</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr; gap:16px; max-width:680px;">
+          <div>
+            <label style="display:block; font-size:13px; font-weight:700; color:#334155; margin-bottom:6px;">푸시 알림 제목</label>
+            <input type="text" id="push-title-input" class="input" style="width:100%; padding:10px 14px; font-size:14px; border-radius:10px; border:1px solid #cbd5e1;" value="${config.brandName || 'RYZIN'} 라이브 방송이 시작되었습니다!" placeholder="알림 제목을 입력하세요">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:13px; font-weight:700; color:#334155; margin-bottom:6px;">푸시 알림 본문 내용</label>
+            <textarea id="push-body-input" class="input" rows="3" style="width:100%; padding:10px 14px; font-size:14px; border-radius:10px; border:1px solid #cbd5e1; resize:vertical;" placeholder="알림 내용을 입력하세요">지금 접속하셔서 라이브 단독 특가 및 다양한 혜택을 놓치지 마세요!</textarea>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:13px; font-weight:700; color:#334155; margin-bottom:6px;">클릭 시 이동할 방송 URL</label>
+            <input type="text" id="push-url-input" class="input" style="width:100%; padding:10px 14px; font-size:14px; border-radius:10px; border:1px solid #cbd5e1; background:#f8fafc;" value="https://ryzincorp.com/live/${liveId}">
+          </div>
+
+          <div style="margin-top:10px; display:flex; gap:12px; align-items:center;">
+            <button id="btn-send-push-now" class="action-btn btn-primary-solid" style="padding:12px 28px; font-size:15px; font-weight:800; border-radius:12px; display:flex; align-items:center; gap:8px;">
+              <span>🚀</span> 방송 시작 알림 전체 발송
+            </button>
+            <span id="push-status-text" style="font-size:13px; color:#64748b; font-weight:600;"></span>
+          </div>
+        </div>
+
+        <div style="margin-top:28px; padding:16px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; font-size:12px; color:#475569; line-height:1.7;">
+          <strong style="color:#0f172a; font-size:13px;">📱 디바이스별 웹 푸시 지원 안내</strong><br>
+          • <strong>안드로이드 모바일 / PC (크롬, 삼성인터넷, 엣지, 웨일 등)</strong>: 라이브 화면에서 알림 권한을 허용한 시청자에게 앱 없이 스마트폰 상단 바로 알림이 즉시 수신됩니다.<br>
+          • <strong>아이폰 / iOS</strong>: iOS 16.4 이상에서 사파리의 [홈 화면에 추가] 후 실행한 시청자에게 푸시 알림이 발송됩니다.<br>
+          • 별도의 통신사 문자/알림톡 비용이 발생하지 않는 <strong>100% 무료 무제한 웹 푸시</strong>입니다.
+        </div>
+      </div>
+    `;
+
+    const badge = contentArea.querySelector('#push-subscriber-badge');
+    const statusText = contentArea.querySelector('#push-status-text');
+    const sendBtn = contentArea.querySelector('#btn-send-push-now');
+    const refreshBtn = contentArea.querySelector('#btn-refresh-push-sub');
+
+    // 구독자 수 갱신
+    const updateSubscriberCount = async () => {
+      try {
+        if (!db) return;
+        const { count, error } = await db.from('live_leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('live_id', liveId)
+          .eq('name', '__WEB_PUSH__');
+        if (!error && badge) {
+          badge.textContent = `알림 신청자: ${count || 0}명`;
+        }
+      } catch (e) {
+        if (badge) badge.textContent = '알림 신청자: 0명';
+      }
+    };
+
+    updateSubscriberCount();
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => {
+        updateSubscriberCount();
+        showSuccess('구독자 수를 갱신했습니다.');
+      });
+    }
+
+    if (sendBtn) {
+      sendBtn.addEventListener('click', async () => {
+        const title = contentArea.querySelector('#push-title-input').value.trim();
+        const body = contentArea.querySelector('#push-body-input').value.trim();
+        const url = contentArea.querySelector('#push-url-input').value.trim();
+
+        if (!title || !body) {
+          showError('푸시 알림 제목과 내용을 모두 입력해주세요.');
+          return;
+        }
+
+        if (!confirm(`알림을 신청한 모든 시청자에게 웹 푸시를 발송하시겠습니까?\n\n제목: ${title}`)) {
+          return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.style.opacity = '0.6';
+        statusText.textContent = '푸시 발송 중...';
+
+        try {
+          const res = await fetch('/api/send_push', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ liveId, title, body, url })
+          });
+          const result = await res.json();
+
+          if (result.success) {
+            showSuccess(`웹 푸시 발송 완료! (성공: ${result.sentCount}건 / 대상: ${result.total || 0}명)`);
+            statusText.textContent = `최근 발송 완료: ${new Date().toLocaleTimeString()} (성공 ${result.sentCount}건)`;
+            updateSubscriberCount();
+          } else {
+            showError('푸시 발송 실패: ' + (result.message || '알 수 없는 오류'));
+            statusText.textContent = '발송 실패';
+          }
+        } catch (err) {
+          console.error(err);
+          showError('푸시 발송 중 네트워크 오류가 발생했습니다.');
+          statusText.textContent = '발송 실패';
+        } finally {
+          sendBtn.disabled = false;
+          sendBtn.style.opacity = '1';
+        }
+      });
+    }
+  };
+
   const renderLeadsTab = () => {
     contentArea.innerHTML = `
       <div class="section-card">
@@ -3099,7 +3231,7 @@ function renderLiveEditView(container, liveId, showView) {
         if (error) throw error;
 
         // 도입문의 식별자로 시작하지 않는 순수 시청자 상담건만 필터링 분리
-        currentLeads = (list || []).filter(lead => !lead.name || !lead.name.startsWith('[도입문의]'));
+        currentLeads = (list || []).filter(lead => !lead.name || (!lead.name.startsWith('[도입문의]') && lead.name !== '__WEB_PUSH__'));
         const container = document.getElementById('leads-list-container');
         const btnCsv = document.getElementById('btn-download-csv-leads');
         
@@ -4121,6 +4253,7 @@ function renderLiveEditView(container, liveId, showView) {
     else if (tabName === 'product') renderProductTab();
     else if (tabName === 'orders') renderOrdersTab();
     else if (tabName === 'leads') renderLeadsTab();
+    else if (tabName === 'push') renderPushTab();
   };
 
   tabBtns.forEach(btn => {

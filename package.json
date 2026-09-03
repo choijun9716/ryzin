@@ -1,0 +1,25 @@
+{
+  "name": "ryzin-main-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "cart_logic.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/choijun9716/ryzin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/choijun9716/ryzin/issues"
+  },
+  "homepage": "https://github.com/choijun9716/ryzin#readme",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}
