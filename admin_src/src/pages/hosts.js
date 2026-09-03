@@ -13,6 +13,7 @@ export function renderHosts() {
   let sortDirection = 'desc';
 
   function render() {
+    const isPD = store.getCurrentRole() === 'pd';
     let hosts = store.getAll('hosts');
 
     if (searchTerm) {
@@ -62,12 +63,12 @@ export function renderHosts() {
       <tr class="clickable" data-id="${h.id}">
         <td><a href="javascript:void(0)" class="host-link" data-id="${h.id}">${h.name}</a></td>
         <td>${h.phone || '-'}</td>
-        <td class="text-right">${formatNumber(h.stats.totalBroadcasts)}회</td>
-        <td class="text-right">${formatNumber(h.stats.monthBroadcasts)}회</td>
-        <td class="text-right">${formatCurrency(h.stats.totalSettlement)}</td>
-        <td>${formatDate(h.stats.lastBroadcastDate)}</td>
-        <td class="text-right">${formatCurrency(h.stats.avgRevenue)}</td>
-        <td class="text-right">${formatROI(h.stats.avgROI)}</td>
+        <td class="text-right">${isPD ? '**' : `${formatNumber(h.stats.totalBroadcasts)}회`}</td>
+        <td class="text-right">${isPD ? '**' : `${formatNumber(h.stats.monthBroadcasts)}회`}</td>
+        <td class="text-right">${isPD ? '**' : formatCurrency(h.stats.totalSettlement)}</td>
+        <td>${isPD ? '**' : formatDate(h.stats.lastBroadcastDate)}</td>
+        <td class="text-right">${isPD ? '**' : formatCurrency(h.stats.avgRevenue)}</td>
+        <td class="text-right">${isPD ? '**' : formatROI(h.stats.avgROI)}</td>
         <td class="col-actions">
           <button class="btn btn-ghost btn-icon btn-sm btn-edit-host" data-id="${h.id}" data-tooltip="수정">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -186,6 +187,7 @@ export function renderHosts() {
 }
 
 function openHostModal(hostId = null) {
+  const isPD = store.getCurrentRole() === 'pd';
   const isEdit = !!hostId;
   const host = isEdit ? store.getById('hosts', hostId) : {};
 
@@ -201,7 +203,7 @@ function openHostModal(hostId = null) {
       </div>
       <div class="input-group">
         <label>주민등록번호</label>
-        <input class="input" id="host-ssn" value="${host.ssn || ''}" placeholder="마스킹 처리됨">
+        <input class="input" id="host-ssn" value="${isPD ? '**' : (host.ssn || '')}" placeholder="마스킹 처리됨" ${isPD ? 'readonly style="background:#f1f5f9; cursor:not-allowed;"' : ''}>
       </div>
       <div class="input-group">
         <label>은행명</label>
@@ -302,6 +304,7 @@ function openHostModal(hostId = null) {
 
 // 쇼호스트 상세 페이지
 export function renderHostDetail(params) {
+  const isPD = store.getCurrentRole() === 'pd';
   const container = document.createElement('div');
   const host = store.getById('hosts', params.id);
 
@@ -349,27 +352,27 @@ export function renderHostDetail(params) {
       <div class="stats-grid" style="margin-bottom: var(--space-6);">
         <div class="stat-card">
           <div class="stat-label">총 방송횟수</div>
-          <div class="stat-value">${formatNumber(stats.totalBroadcasts)}회</div>
+          <div class="stat-value">${isPD ? '**' : `${formatNumber(stats.totalBroadcasts)}회`}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">이번달 방송</div>
-          <div class="stat-value">${formatNumber(stats.monthBroadcasts)}회</div>
+          <div class="stat-value">${isPD ? '**' : `${formatNumber(stats.monthBroadcasts)}회`}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">누적 정산금액</div>
-          <div class="stat-value">${formatCurrency(stats.totalSettlement)}</div>
+          <div class="stat-value">${isPD ? '**' : formatCurrency(stats.totalSettlement)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">최근 방송일</div>
-          <div class="stat-value">${formatDate(stats.lastBroadcastDate)}</div>
+          <div class="stat-value">${isPD ? '**' : formatDate(stats.lastBroadcastDate)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">평균 매출</div>
-          <div class="stat-value">${formatCurrency(stats.avgRevenue)}</div>
+          <div class="stat-value">${isPD ? '**' : formatCurrency(stats.avgRevenue)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">평균 ROI</div>
-          <div class="stat-value">${formatROI(stats.avgROI)}</div>
+          <div class="stat-value">${isPD ? '**' : formatROI(stats.avgROI)}</div>
         </div>
       </div>
 
@@ -385,7 +388,7 @@ export function renderHostDetail(params) {
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">주민등록번호</span>
-                <span class="detail-field-value ssn-toggle" data-ssn="${host.ssn || ''}" style="cursor: pointer; text-decoration: underline;" title="클릭하여 확인">${host.ssn ? maskSSN(host.ssn) : '-'}</span>
+                <span class="detail-field-value ${isPD ? '' : 'ssn-toggle'}" data-ssn="${host.ssn || ''}" style="${isPD ? '' : 'cursor: pointer; text-decoration: underline;'}" title="${isPD ? '열람 권한 없음' : '클릭하여 확인'}">${isPD ? '**' : (host.ssn ? maskSSN(host.ssn) : '-')}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">은행</span>
@@ -448,9 +451,9 @@ export function renderHostDetail(params) {
                   <td>${formatDate(h.project.broadcastDate)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${h.project.id}">${h.brand ? h.brand.name : '-'}</a></td>
                   <td>${{main: '메인', sub: '서브', guest: '게스트'}[h.matching.role] || '-'}</td>
-                  <td class="text-right">${formatCurrency(h.matching.fee)}</td>
+                  <td class="text-right">${isPD ? '**' : formatCurrency(h.matching.fee)}</td>
                   <td><span class="badge ${h.matching.settleStatus === 'done' ? 'badge-success' : 'badge-default'}">${{pending:'대기', processing:'진행중', done:'완료'}[h.matching.settleStatus] || '-'}</span></td>
-                  <td>${h.result ? formatCurrency(h.result.liveRevenue) : '-'}</td>
+                  <td>${isPD ? '**' : (h.result ? formatCurrency(h.result.liveRevenue) : '-')}</td>
                 </tr>
               `).join('') : '<tr><td colspan="6" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">방송 이력이 없습니다.</td></tr>'}
             </tbody>
@@ -462,7 +465,7 @@ export function renderHostDetail(params) {
 
   setTimeout(() => {
     const ssnToggle = container.querySelector('.ssn-toggle');
-    if (ssnToggle && ssnToggle.dataset.ssn) {
+    if (ssnToggle && ssnToggle.dataset.ssn && !isPD) {
       let isMasked = true;
       ssnToggle.addEventListener('click', () => {
         isMasked = !isMasked;

@@ -12,6 +12,7 @@ export function renderBrands() {
   let searchTerm = '';
 
   function render() {
+    const isPD = store.getCurrentRole() === 'pd';
     let brands = store.getAll('brands');
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -79,10 +80,10 @@ export function renderBrands() {
                     <td>${b.manager || '-'}</td>
                     <td>${b.phone || '-'}</td>
                     <td>${b.taxInvoice ? '<span class="badge badge-success">발행</span>' : '<span class="badge badge-default">미발행</span>'}</td>
-                    <td class="text-right">${formatNumber(b.stats.totalBroadcasts)}회</td>
-                    <td class="text-right">${formatCurrency(b.stats.totalRevenue)}</td>
-                    <td>${formatDate(b.stats.lastBroadcastDate)}</td>
-                    <td class="text-right">${formatROI(b.stats.avgROI)}</td>
+                    <td class="text-right">${isPD ? '**' : `${formatNumber(b.stats.totalBroadcasts)}회`}</td>
+                    <td class="text-right">${isPD ? '**' : formatCurrency(b.stats.totalRevenue)}</td>
+                    <td>${isPD ? '**' : formatDate(b.stats.lastBroadcastDate)}</td>
+                    <td class="text-right">${isPD ? '**' : formatROI(b.stats.avgROI)}</td>
                     <td class="col-actions">
                       <button class="btn btn-ghost btn-icon btn-sm btn-edit-brand" data-id="${b.id}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -252,6 +253,7 @@ function openBrandModal(brandId = null) {
 
 // 브랜드 상세 페이지
 export function renderBrandDetail(params) {
+  const isPD = store.getCurrentRole() === 'pd';
   const container = document.createElement('div');
   const brand = store.getById('brands', params.id);
 
@@ -283,10 +285,10 @@ export function renderBrandDetail(params) {
     </div>
     <div class="page-body">
       <div class="stats-grid" style="margin-bottom: var(--space-6);">
-        <div class="stat-card"><div class="stat-label">총 방송횟수</div><div class="stat-value">${formatNumber(stats.totalBroadcasts)}회</div></div>
-        <div class="stat-card"><div class="stat-label">누적 매출</div><div class="stat-value">${formatCurrency(stats.totalRevenue)}</div></div>
-        <div class="stat-card"><div class="stat-label">최근 방송일</div><div class="stat-value">${formatDate(stats.lastBroadcastDate)}</div></div>
-        <div class="stat-card"><div class="stat-label">평균 ROI</div><div class="stat-value">${formatROI(stats.avgROI)}</div></div>
+        <div class="stat-card"><div class="stat-label">총 방송횟수</div><div class="stat-value">${isPD ? '**' : `${formatNumber(stats.totalBroadcasts)}회`}</div></div>
+        <div class="stat-card"><div class="stat-label">누적 매출</div><div class="stat-value">${isPD ? '**' : formatCurrency(stats.totalRevenue)}</div></div>
+        <div class="stat-card"><div class="stat-label">최근 방송일</div><div class="stat-value">${isPD ? '**' : formatDate(stats.lastBroadcastDate)}</div></div>
+        <div class="stat-card"><div class="stat-label">평균 ROI</div><div class="stat-value">${isPD ? '**' : formatROI(stats.avgROI)}</div></div>
       </div>
 
       <div class="card" style="margin-bottom: var(--space-6);">
@@ -321,9 +323,9 @@ export function renderBrandDetail(params) {
                   <td>${renderStatusBadge(p.broadcastStatus)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${p.id}">${formatDate(p.broadcastDate) || '상세보기'}</a></td>
                   <td>${p.platform || '-'}</td>
-                  <td class="text-right">${result ? formatNumber(result.views) : '-'}</td>
-                  <td class="text-right">${result ? formatCurrencyShort(result.liveRevenue) : '-'}</td>
-                  <td class="text-right">${result ? formatROI(result.roi) : '-'}</td>
+                  <td class="text-right">${isPD ? '**' : (result ? formatNumber(result.views) : '-')}</td>
+                  <td class="text-right">${isPD ? '**' : (result ? formatCurrencyShort(result.liveRevenue) : '-')}</td>
+                  <td class="text-right">${isPD ? '**' : (result ? formatROI(result.roi) : '-')}</td>
                 </tr>`;
               }).join('') : '<tr><td colspan="6" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">방송 이력이 없습니다.</td></tr>'}
             </tbody>

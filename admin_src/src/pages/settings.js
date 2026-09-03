@@ -138,6 +138,10 @@ export function renderSettings() {
             </tbody>
           </table>
         </div>
+        <div style="padding: 12px 16px; background: #f8fafc; border-top: 1px solid var(--border-color); font-size: 12px; color: #475569; line-height: 1.5;">
+          <strong style="color: #0f172a;">🔒 PD 계정 민감 데이터 보안 마스킹 정책:</strong><br>
+          PD 권한으로 접속 시 쇼호스트(누적정산, 평균매출, 평균 ROI, 주민등록번호, 방송횟수, 최근방송일) 및 브랜드 관리(누적매출, 방송횟수, 실적 지표)의 민감 수치가 자동으로 <strong>**</strong> 마스킹 처리되어 안전하게 보호됩니다.
+        </div>
       </div>
     </div>
   `;

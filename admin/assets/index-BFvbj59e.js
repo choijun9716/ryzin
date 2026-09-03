@@ -1116,28 +1116,28 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         `}),o+=`</div>`,t.innerHTML=o,t.querySelectorAll(`.btn-toggle-product-orders`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.getAttribute(`data-product-idx`),n=document.getElementById(`product-orders-table-${t}`),r=document.getElementById(`toggle-label-${t}`),i=document.getElementById(`toggle-arrow-${t}`);if(!n)return;let a=n.style.display===`none`;n.style.display=a?`block`:`none`,r&&(r.textContent=a?`주문자 명단 닫기`:`주문자 명단 열기`),i&&(i.textContent=a?`▲`:`▼`)})}),t.querySelectorAll(`.btn-export-single-product`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation();let n=Number(e.getAttribute(`data-product-idx`)),r=a[n];r&&m(r)})})},m=e=>{let n=`제품명,주문수량,금액,주문일시,주문자명,연락처,배송지주소,결제상태,결제번호
 `;e.orders.forEach(t=>{let r=t.createdAt?new Date(t.createdAt).toLocaleString(`ko-KR`).replace(/,/g,``):``,i=(e.name||``).replace(/,/g,` `),a=(t.customerName||``).replace(/,/g,` `),o=(t.customerPhone||``).replace(/,/g,` `),s=(t.customerAddress||``).replace(/,/g,` `),c=t.isCancelled?t.statusDetail||`결제취소`:`결제완료`,l=t.pgReceiptId||``;n+=`${i},${t.quantity},${t.subTotal},${r},${a},${o},${s},${c},${l}\n`});let r=e.name.replace(/[/\\?%*:|"<>]/g,`_`).slice(0,20),i=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),a=URL.createObjectURL(i),o=document.createElement(`a`);o.href=a,o.download=`제품주문_${r}_${t}.csv`,document.body.appendChild(o),o.click(),document.body.removeChild(o),URL.revokeObjectURL(a)};o(),document.getElementById(`btn-refresh-orders`).addEventListener(`click`,o),document.getElementById(`btn-download-csv-orders`).addEventListener(`click`,()=>{let e=s();if(e.length!==0)if(n===`products`){let n=c(e),r=`제품명,총판매수량,총판매금액,주문일시,개별주문수량,주문금액,주문자명,연락처,배송지주소,상태,결제번호
 `;n.forEach(e=>{let t=e.name.replace(/,/g,` `);e.orders.forEach(n=>{let i=n.createdAt?new Date(n.createdAt).toLocaleString(`ko-KR`).replace(/,/g,``):``,a=(n.customerName||``).replace(/,/g,` `),o=(n.customerPhone||``).replace(/,/g,` `),s=(n.customerAddress||``).replace(/,/g,` `),c=n.isCancelled?n.statusDetail||`결제취소`:`결제완료`,l=n.pgReceiptId||``;r+=`${t},${e.totalQty},${e.totalAmount},${i},${n.quantity},${n.subTotal},${a},${o},${s},${c},${l}\n`})});let i=new Blob([`﻿`+r],{type:`text/csv;charset=utf-8;`}),a=URL.createObjectURL(i),o=document.createElement(`a`);o.href=a,o.download=`제품별_주문집계_${t}.csv`,document.body.appendChild(o),o.click(),document.body.removeChild(o),URL.revokeObjectURL(a)}else{let n=`주문일시,주문상품목록,결제금액,주문자명,연락처,배송지주소,결제상태,결제번호
-`;e.forEach(e=>{let t=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`).replace(/,/g,``):``,r=a(e).map(e=>`${e.name}(${e.quantity||1}개)`).join(` + `).replace(/,/g,` `),o=Number(e.total_amount)||0,s=(e.customer_name||``).replace(/,/g,` `),c=(e.customer_phone||``).replace(/,/g,` `),l=(e.customer_address||``).replace(/,/g,` `),u=i.includes((e.payment_status||``).toLowerCase())?e.status_detail||`결제취소`:`결제완료`,d=e.pg_receipt_id||``;n+=`${t},${r},${o},${s},${c},${l},${u},${d}\n`});let r=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),o=URL.createObjectURL(r),s=document.createElement(`a`);s.href=o,s.download=`전체주문내역_${t}.csv`,document.body.appendChild(s),s.click(),document.body.removeChild(s),URL.revokeObjectURL(o)}});let h=document.getElementById(`btn-view-mode-orders`),g=document.getElementById(`btn-view-mode-products`),_=document.getElementById(`product-filter-select`),v=document.getElementById(`order-search-input`);h&&g&&(h.addEventListener(`click`,()=>{n=`orders`,h.style.background=`#ffffff`,h.style.color=`#0f172a`,h.style.fontWeight=`700`,h.style.boxShadow=`0 1px 3px rgba(0,0,0,0.1)`,g.style.background=`transparent`,g.style.color=`#64748b`,g.style.fontWeight=`600`,g.style.boxShadow=`none`,d()}),g.addEventListener(`click`,()=>{n=`products`,g.style.background=`#ffffff`,g.style.color=`#0f172a`,g.style.fontWeight=`700`,g.style.boxShadow=`0 1px 3px rgba(0,0,0,0.1)`,h.style.background=`transparent`,h.style.color=`#64748b`,h.style.fontWeight=`600`,h.style.boxShadow=`none`,d()})),_&&_.addEventListener(`change`,e=>{r=e.target.value,d()}),v&&v.addEventListener(`input`,d)},he=C.querySelector(`#btn-back`);he&&he.addEventListener(`click`,()=>{j.dispatchEvent(new Event(`adminTabLeave`)),A(),m&&clearInterval(m),ve&&X.removeChannel(ve),_e&&X.removeChannel(_e),n(null)});let ge=C.querySelector(`#btn-refresh-preview`);ge&&ge.addEventListener(`click`,()=>{let e=C.querySelector(`#live-preview-iframe`);e&&(e.src=N)});let _e=null;X&&(_e=X.channel(`bot-sync-${t}`).on(`postgres_changes`,{event:`INSERT`,schema:`public`,table:`live_chats`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(n&&p.autoReplyActive&&p.autoReplyRules&&p.autoReplyRules.length>0){let e=n.nickname||``;if(!e.includes(`|`)&&e!==`관리자`&&e!==`자동응답봇`){let e=(n.content||``).toLowerCase();for(let n of p.autoReplyRules)if(n.keywords.split(`,`).map(e=>e.trim().toLowerCase()).filter(e=>e).some(t=>e.includes(t))){setTimeout(async()=>{try{if(!X)return;await X.from(`live_chats`).insert([{live_id:t,nickname:`자동응답봇`,content:n.answer,created_at:Date.now().toString()}])}catch(e){console.warn(`Auto-reply failed`,e)}},600);break}}}}).subscribe());let ve=null;X&&(ve=X.channel(`admin-sync-${t}`).on(`postgres_changes`,{event:`UPDATE`,schema:`public`,table:`live_control`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(!n)return;u.brandName=n.title||``,u.title=n.subtitle||``;let r=n.profile_image||``,i=`라이브 보기`,a=`right`,o=``,s=!1,c=r.split(`#`),l=c[0];c.slice(1).forEach(e=>{e===`nosplash`||(e.startsWith(`widgetText=`)?i=decodeURIComponent(e.replace(`widgetText=`,``)):e.startsWith(`widgetPosition=`)?a=e.replace(`widgetPosition=`,``):e.startsWith(`widgetImageUrl=`)?o=e.replace(`widgetImageUrl=`,``):e.startsWith(`showOnMain=`)&&(s=e.replace(`showOnMain=`,``)===`true`))}),u.showSplash=!r.includes(`#nosplash`),u.logoUrl=l,u.widgetText=i,u.widgetPosition=a,u.widgetImageUrl=o,u.showOnMain=s,u.streamUrl=n.stream_url||``,u.showViewers=n.show_viewers!==!1,u.thumbnailUrl=n.thumbnail_url||``,u.liveStartTime=n.start_time||``,u.isLive=n.status===`ON`,u.shareTitle=n.share_title||``,u.shareDesc=n.share_desc||``,u.shareImageUrl=n.share_image||``,u.likeImageUrl=n.like_image_url||``,u.bannedWords=n.banned_words||``,u.bannedUsers=n.banned_users||``,n.winner_name!==void 0&&(u.winner_name=n.winner_name),n.winner_timestamp!==void 0&&(u.winner_timestamp=n.winner_timestamp),n.viewers!==void 0&&(d.viewers=parseInt(n.viewers)||0),n.cum_viewers!==void 0&&(d.cumViewers=parseInt(n.cum_viewers)||0),n.hearts!==void 0&&(d.hearts=parseInt(n.hearts)||0),St(t,u),wt(t,d),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay();let p=(e,t)=>{let n=C.querySelector(`#`+e)||document.getElementById(e);n&&document.activeElement!==n&&(n.type===`checkbox`?n.checked=!!t:n.value=t)};p(`cfg-brandName`,u.brandName),p(`cfg-title`,u.title),p(`cfg-stream`,u.streamUrl),p(`cfg-showViewers`,u.showViewers),p(`cfg-liveStartTime`,u.liveStartTime),p(`cfg-shareTitle`,u.shareTitle),p(`cfg-shareDesc`,u.shareDesc),p(`cfg-bannedWords`,u.bannedWords),p(`cfg-bannedUsers`,u.bannedUsers);let m=C.querySelector(`#logo-preview`)||document.getElementById(`logo-preview`);m&&(m.src=u.logoUrl);let h=C.querySelector(`#thumbnail-preview`)||document.getElementById(`thumbnail-preview`);h&&(h.src=u.thumbnailUrl);let g=C.querySelector(`#like-preview`)||document.getElementById(`like-preview`);g&&(g.src=u.likeImageUrl,g.style.display=u.likeImageUrl?`block`:`none`);let _=C.querySelector(`#like-preview-placeholder`)||document.getElementById(`like-preview-placeholder`);_&&(_.style.display=u.likeImageUrl?`none`:`block`);let v=C.querySelector(`#btn-clear-like-icon`)||document.getElementById(`btn-clear-like-icon`);v&&(v.style.display=u.likeImageUrl?`block`:`none`);let y=C.querySelector(`#btn-toggle-live`)||document.getElementById(`btn-toggle-live`);if(y&&document.activeElement!==y&&(y.textContent=u.isLive?`라이브 종료`:`라이브 시작`,y.className=`action-btn ${u.isLive?`btn-danger-solid`:`btn-success-solid`}`),n.products&&Array.isArray(n.products)){let e=JSON.stringify(n.products);if(JSON.stringify(f)!==e){Array.isArray(f)||(f=[]),f.length=0,f.push(...n.products),Et(t,f);let e=C.querySelector(`#product-list-container`)||document.getElementById(`product-list-container`);e&&!e.contains(document.activeElement)&&typeof B==`function`&&(e.innerHTML=B())}}}).subscribe()),X&&setInterval(async()=>{try{let{data:e,error:n}=await X.from(`live_control`).select(`viewers, cum_viewers, hearts`).eq(`live_id`,t).maybeSingle();e&&!n&&(d.viewers=parseInt(e.viewers)||0,d.cumViewers=parseInt(e.cum_viewers)||0,d.hearts=parseInt(e.hearts)||0,wt(t,d),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay())}catch{}},2500);let ye=T.querySelectorAll(`.tab-btn`),be=e=>{j.dispatchEvent(new Event(`adminTabLeave`)),ye.forEach(t=>t.classList.toggle(`active`,t.dataset.tab===e)),e===`config`?z():e===`chat`?de():e===`product`?fe():e===`orders`?me():e===`leads`&&pe()};ye.forEach(e=>{e.addEventListener(`click`,()=>be(e.dataset.tab))}),o?de():z()}function It(){let e=document.createElement(`div`),t=``,n=null,r=`desc`;function i(){let a=U.getAll(`hosts`);if(t){let e=t.toLowerCase();a=a.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let o=a.map(e=>{let t=U.getHostStats(e.id);return{...e,stats:t}});n&&o.sort((e,t)=>{let i=e.stats[n]||0,a=t.stats[n]||0;return i<a?r===`asc`?-1:1:i>a?r===`asc`?1:-1:0});let s=e=>n===e?r===`asc`?`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▲</span>`:`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▼</span>`:`<span style="color:#cbd5e1; font-size:10px; margin-left:4px;">↕</span>`,c=`
+`;e.forEach(e=>{let t=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`).replace(/,/g,``):``,r=a(e).map(e=>`${e.name}(${e.quantity||1}개)`).join(` + `).replace(/,/g,` `),o=Number(e.total_amount)||0,s=(e.customer_name||``).replace(/,/g,` `),c=(e.customer_phone||``).replace(/,/g,` `),l=(e.customer_address||``).replace(/,/g,` `),u=i.includes((e.payment_status||``).toLowerCase())?e.status_detail||`결제취소`:`결제완료`,d=e.pg_receipt_id||``;n+=`${t},${r},${o},${s},${c},${l},${u},${d}\n`});let r=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),o=URL.createObjectURL(r),s=document.createElement(`a`);s.href=o,s.download=`전체주문내역_${t}.csv`,document.body.appendChild(s),s.click(),document.body.removeChild(s),URL.revokeObjectURL(o)}});let h=document.getElementById(`btn-view-mode-orders`),g=document.getElementById(`btn-view-mode-products`),_=document.getElementById(`product-filter-select`),v=document.getElementById(`order-search-input`);h&&g&&(h.addEventListener(`click`,()=>{n=`orders`,h.style.background=`#ffffff`,h.style.color=`#0f172a`,h.style.fontWeight=`700`,h.style.boxShadow=`0 1px 3px rgba(0,0,0,0.1)`,g.style.background=`transparent`,g.style.color=`#64748b`,g.style.fontWeight=`600`,g.style.boxShadow=`none`,d()}),g.addEventListener(`click`,()=>{n=`products`,g.style.background=`#ffffff`,g.style.color=`#0f172a`,g.style.fontWeight=`700`,g.style.boxShadow=`0 1px 3px rgba(0,0,0,0.1)`,h.style.background=`transparent`,h.style.color=`#64748b`,h.style.fontWeight=`600`,h.style.boxShadow=`none`,d()})),_&&_.addEventListener(`change`,e=>{r=e.target.value,d()}),v&&v.addEventListener(`input`,d)},he=C.querySelector(`#btn-back`);he&&he.addEventListener(`click`,()=>{j.dispatchEvent(new Event(`adminTabLeave`)),A(),m&&clearInterval(m),ve&&X.removeChannel(ve),_e&&X.removeChannel(_e),n(null)});let ge=C.querySelector(`#btn-refresh-preview`);ge&&ge.addEventListener(`click`,()=>{let e=C.querySelector(`#live-preview-iframe`);e&&(e.src=N)});let _e=null;X&&(_e=X.channel(`bot-sync-${t}`).on(`postgres_changes`,{event:`INSERT`,schema:`public`,table:`live_chats`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(n&&p.autoReplyActive&&p.autoReplyRules&&p.autoReplyRules.length>0){let e=n.nickname||``;if(!e.includes(`|`)&&e!==`관리자`&&e!==`자동응답봇`){let e=(n.content||``).toLowerCase();for(let n of p.autoReplyRules)if(n.keywords.split(`,`).map(e=>e.trim().toLowerCase()).filter(e=>e).some(t=>e.includes(t))){setTimeout(async()=>{try{if(!X)return;await X.from(`live_chats`).insert([{live_id:t,nickname:`자동응답봇`,content:n.answer,created_at:Date.now().toString()}])}catch(e){console.warn(`Auto-reply failed`,e)}},600);break}}}}).subscribe());let ve=null;X&&(ve=X.channel(`admin-sync-${t}`).on(`postgres_changes`,{event:`UPDATE`,schema:`public`,table:`live_control`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(!n)return;u.brandName=n.title||``,u.title=n.subtitle||``;let r=n.profile_image||``,i=`라이브 보기`,a=`right`,o=``,s=!1,c=r.split(`#`),l=c[0];c.slice(1).forEach(e=>{e===`nosplash`||(e.startsWith(`widgetText=`)?i=decodeURIComponent(e.replace(`widgetText=`,``)):e.startsWith(`widgetPosition=`)?a=e.replace(`widgetPosition=`,``):e.startsWith(`widgetImageUrl=`)?o=e.replace(`widgetImageUrl=`,``):e.startsWith(`showOnMain=`)&&(s=e.replace(`showOnMain=`,``)===`true`))}),u.showSplash=!r.includes(`#nosplash`),u.logoUrl=l,u.widgetText=i,u.widgetPosition=a,u.widgetImageUrl=o,u.showOnMain=s,u.streamUrl=n.stream_url||``,u.showViewers=n.show_viewers!==!1,u.thumbnailUrl=n.thumbnail_url||``,u.liveStartTime=n.start_time||``,u.isLive=n.status===`ON`,u.shareTitle=n.share_title||``,u.shareDesc=n.share_desc||``,u.shareImageUrl=n.share_image||``,u.likeImageUrl=n.like_image_url||``,u.bannedWords=n.banned_words||``,u.bannedUsers=n.banned_users||``,n.winner_name!==void 0&&(u.winner_name=n.winner_name),n.winner_timestamp!==void 0&&(u.winner_timestamp=n.winner_timestamp),n.viewers!==void 0&&(d.viewers=parseInt(n.viewers)||0),n.cum_viewers!==void 0&&(d.cumViewers=parseInt(n.cum_viewers)||0),n.hearts!==void 0&&(d.hearts=parseInt(n.hearts)||0),St(t,u),wt(t,d),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay();let p=(e,t)=>{let n=C.querySelector(`#`+e)||document.getElementById(e);n&&document.activeElement!==n&&(n.type===`checkbox`?n.checked=!!t:n.value=t)};p(`cfg-brandName`,u.brandName),p(`cfg-title`,u.title),p(`cfg-stream`,u.streamUrl),p(`cfg-showViewers`,u.showViewers),p(`cfg-liveStartTime`,u.liveStartTime),p(`cfg-shareTitle`,u.shareTitle),p(`cfg-shareDesc`,u.shareDesc),p(`cfg-bannedWords`,u.bannedWords),p(`cfg-bannedUsers`,u.bannedUsers);let m=C.querySelector(`#logo-preview`)||document.getElementById(`logo-preview`);m&&(m.src=u.logoUrl);let h=C.querySelector(`#thumbnail-preview`)||document.getElementById(`thumbnail-preview`);h&&(h.src=u.thumbnailUrl);let g=C.querySelector(`#like-preview`)||document.getElementById(`like-preview`);g&&(g.src=u.likeImageUrl,g.style.display=u.likeImageUrl?`block`:`none`);let _=C.querySelector(`#like-preview-placeholder`)||document.getElementById(`like-preview-placeholder`);_&&(_.style.display=u.likeImageUrl?`none`:`block`);let v=C.querySelector(`#btn-clear-like-icon`)||document.getElementById(`btn-clear-like-icon`);v&&(v.style.display=u.likeImageUrl?`block`:`none`);let y=C.querySelector(`#btn-toggle-live`)||document.getElementById(`btn-toggle-live`);if(y&&document.activeElement!==y&&(y.textContent=u.isLive?`라이브 종료`:`라이브 시작`,y.className=`action-btn ${u.isLive?`btn-danger-solid`:`btn-success-solid`}`),n.products&&Array.isArray(n.products)){let e=JSON.stringify(n.products);if(JSON.stringify(f)!==e){Array.isArray(f)||(f=[]),f.length=0,f.push(...n.products),Et(t,f);let e=C.querySelector(`#product-list-container`)||document.getElementById(`product-list-container`);e&&!e.contains(document.activeElement)&&typeof B==`function`&&(e.innerHTML=B())}}}).subscribe()),X&&setInterval(async()=>{try{let{data:e,error:n}=await X.from(`live_control`).select(`viewers, cum_viewers, hearts`).eq(`live_id`,t).maybeSingle();e&&!n&&(d.viewers=parseInt(e.viewers)||0,d.cumViewers=parseInt(e.cum_viewers)||0,d.hearts=parseInt(e.hearts)||0,wt(t,d),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay())}catch{}},2500);let ye=T.querySelectorAll(`.tab-btn`),be=e=>{j.dispatchEvent(new Event(`adminTabLeave`)),ye.forEach(t=>t.classList.toggle(`active`,t.dataset.tab===e)),e===`config`?z():e===`chat`?de():e===`product`?fe():e===`orders`?me():e===`leads`&&pe()};ye.forEach(e=>{e.addEventListener(`click`,()=>be(e.dataset.tab))}),o?de():z()}function It(){let e=document.createElement(`div`),t=``,n=null,r=`desc`;function i(){let a=U.getCurrentRole()===`pd`,o=U.getAll(`hosts`);if(t){let e=t.toLowerCase();o=o.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let s=o.map(e=>{let t=U.getHostStats(e.id);return{...e,stats:t}});n&&s.sort((e,t)=>{let i=e.stats[n]||0,a=t.stats[n]||0;return i<a?r===`asc`?-1:1:i>a?r===`asc`?1:-1:0});let c=e=>n===e?r===`asc`?`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▲</span>`:`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▼</span>`:`<span style="color:#cbd5e1; font-size:10px; margin-left:4px;">↕</span>`,l=`
       <tr>
         <th>이름</th>
         <th>전화번호</th>
-        <th class="text-right sortable" data-sort="totalBroadcasts" style="cursor:pointer; user-select:none;">총 방송 ${s(`totalBroadcasts`)}</th>
+        <th class="text-right sortable" data-sort="totalBroadcasts" style="cursor:pointer; user-select:none;">총 방송 ${c(`totalBroadcasts`)}</th>
         <th class="text-right">이번달</th>
         <th class="text-right">누적 정산</th>
         <th>최근 방송일</th>
-        <th class="text-right sortable" data-sort="avgRevenue" style="cursor:pointer; user-select:none;">평균 매출 ${s(`avgRevenue`)}</th>
-        <th class="text-right sortable" data-sort="avgROI" style="cursor:pointer; user-select:none;">평균 ROI ${s(`avgROI`)}</th>
+        <th class="text-right sortable" data-sort="avgRevenue" style="cursor:pointer; user-select:none;">평균 매출 ${c(`avgRevenue`)}</th>
+        <th class="text-right sortable" data-sort="avgROI" style="cursor:pointer; user-select:none;">평균 ROI ${c(`avgROI`)}</th>
         <th class="col-actions"></th>
       </tr>
-    `,l=o.length>0?o.map(e=>`
+    `,u=s.length>0?s.map(e=>`
       <tr class="clickable" data-id="${e.id}">
         <td><a href="javascript:void(0)" class="host-link" data-id="${e.id}">${e.name}</a></td>
         <td>${e.phone||`-`}</td>
-        <td class="text-right">${et(e.stats.totalBroadcasts)}회</td>
-        <td class="text-right">${et(e.stats.monthBroadcasts)}회</td>
-        <td class="text-right">${W(e.stats.totalSettlement)}</td>
-        <td>${G(e.stats.lastBroadcastDate)}</td>
-        <td class="text-right">${W(e.stats.avgRevenue)}</td>
-        <td class="text-right">${tt(e.stats.avgROI)}</td>
+        <td class="text-right">${a?`**`:`${et(e.stats.totalBroadcasts)}회`}</td>
+        <td class="text-right">${a?`**`:`${et(e.stats.monthBroadcasts)}회`}</td>
+        <td class="text-right">${a?`**`:W(e.stats.totalSettlement)}</td>
+        <td>${a?`**`:G(e.stats.lastBroadcastDate)}</td>
+        <td class="text-right">${a?`**`:W(e.stats.avgRevenue)}</td>
+        <td class="text-right">${a?`**`:tt(e.stats.avgROI)}</td>
         <td class="col-actions">
           <button class="btn btn-ghost btn-icon btn-sm btn-edit-host" data-id="${e.id}" data-tooltip="수정">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1146,7 +1146,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       </tr>
     `).join(``):`
       <tr><td colspan="9" class="text-center" style="padding: var(--space-10); color: var(--text-tertiary);">등록된 쇼호스트가 없습니다.</td></tr>
-    `;function u(){e.querySelectorAll(`.host-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),M.navigate(`/hosts/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`.btn-edit-host`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation(),Lt(e.getAttribute(`data-id`))})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{M.navigate(`/hosts/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`.sortable`).forEach(e=>{e.addEventListener(`click`,t=>{let a=e.getAttribute(`data-sort`);n===a?r=r===`asc`?`desc`:`asc`:(n=a,r=`desc`),i()})})}let d=e.querySelector(`.data-table tbody`),f=e.querySelector(`.data-table thead`);if(d&&f){f.innerHTML=c,d.innerHTML=l;let t=e.querySelector(`.table-count strong`);t&&(t.textContent=o.length),u();return}e.innerHTML=`
+    `;function d(){e.querySelectorAll(`.host-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),M.navigate(`/hosts/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`.btn-edit-host`).forEach(e=>{e.addEventListener(`click`,t=>{t.stopPropagation(),Lt(e.getAttribute(`data-id`))})}),e.querySelectorAll(`tr.clickable`).forEach(e=>{e.addEventListener(`click`,()=>{M.navigate(`/hosts/${e.getAttribute(`data-id`)}`)})}),e.querySelectorAll(`.sortable`).forEach(e=>{e.addEventListener(`click`,t=>{let a=e.getAttribute(`data-sort`);n===a?r=r===`asc`?`desc`:`asc`:(n=a,r=`desc`),i()})})}let f=e.querySelector(`.data-table tbody`),p=e.querySelector(`.data-table thead`);if(f&&p){p.innerHTML=l,f.innerHTML=u;let t=e.querySelector(`.table-count strong`);t&&(t.textContent=s.length),d();return}e.innerHTML=`
       <div class="page-header">
         <div class="page-header-left">
           <div>
@@ -1169,68 +1169,68 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" placeholder="이름, 전화번호 검색..." id="host-search" value="${t}">
               </div>
-              <span class="table-count">총 <strong>${o.length}</strong>명</span>
+              <span class="table-count">총 <strong>${s.length}</strong>명</span>
             </div>
           </div>
           <div class="table-scroll">
             <table class="data-table">
               <thead>
-                ${c}
+                ${l}
               </thead>
               <tbody>
-                ${l}
+                ${u}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-    `,setTimeout(()=>{e.querySelector(`#host-search`)?.addEventListener(`input`,e=>{t=e.target.value,i()}),e.querySelector(`#btn-add-host`)?.addEventListener(`click`,()=>{Lt()}),u()},0)}return i(),U.on(`hosts:changed`,i),e}function Lt(e=null){let t=!!e,n=t?U.getById(`hosts`,e):{},r=`
+    `,setTimeout(()=>{e.querySelector(`#host-search`)?.addEventListener(`input`,e=>{t=e.target.value,i()}),e.querySelector(`#btn-add-host`)?.addEventListener(`click`,()=>{Lt()}),d()},0)}return i(),U.on(`hosts:changed`,i),e}function Lt(e=null){let t=U.getCurrentRole()===`pd`,n=!!e,r=n?U.getById(`hosts`,e):{},i=`
     <div class="form-grid">
       <div class="input-group">
         <label class="required">이름</label>
-        <input class="input" id="host-name" value="${n.name||``}" placeholder="이름 입력">
+        <input class="input" id="host-name" value="${r.name||``}" placeholder="이름 입력">
       </div>
       <div class="input-group">
         <label class="required">전화번호</label>
-        <input class="input" id="host-phone" value="${n.phone||``}" placeholder="010-0000-0000">
+        <input class="input" id="host-phone" value="${r.phone||``}" placeholder="010-0000-0000">
       </div>
       <div class="input-group">
         <label>주민등록번호</label>
-        <input class="input" id="host-ssn" value="${n.ssn||``}" placeholder="마스킹 처리됨">
+        <input class="input" id="host-ssn" value="${t?`**`:r.ssn||``}" placeholder="마스킹 처리됨" ${t?`readonly style="background:#f1f5f9; cursor:not-allowed;"`:``}>
       </div>
       <div class="input-group">
         <label>은행명</label>
         <select class="input" id="host-bank">
           <option value="">선택</option>
-          ${oe.map(e=>`<option value="${e}" ${n.bank===e?`selected`:``}>${e}</option>`).join(``)}
+          ${oe.map(e=>`<option value="${e}" ${r.bank===e?`selected`:``}>${e}</option>`).join(``)}
         </select>
       </div>
       <div class="input-group">
         <label>계좌번호</label>
-        <input class="input" id="host-account" value="${n.account||``}" placeholder="계좌번호">
+        <input class="input" id="host-account" value="${r.account||``}" placeholder="계좌번호">
       </div>
       <div class="input-group">
         <label>예금주</label>
-        <input class="input" id="host-holder" value="${n.accountHolder||``}" placeholder="예금주">
+        <input class="input" id="host-holder" value="${r.accountHolder||``}" placeholder="예금주">
       </div>
       <div class="input-group full-width">
         <label>주소</label>
-        <input class="input" id="host-address" value="${n.address||``}" placeholder="주소">
+        <input class="input" id="host-address" value="${r.address||``}" placeholder="주소">
       </div>
     </div>
-  `,i=document.createElement(`div`);if(i.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,t){let t=document.createElement(`button`);t.className=`btn btn-danger`,t.textContent=`삭제`,t.style.marginRight=`auto`,t.addEventListener(`click`,()=>{q(),st({title:`쇼호스트 삭제`,message:`"${n.name}" 쇼호스트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.delete(`hosts`,e),J(`쇼호스트가 삭제되었습니다.`)}})}),i.appendChild(t)}let a=document.createElement(`button`);a.className=`btn btn-secondary`,a.textContent=`취소`,a.addEventListener(`click`,q);let o=document.createElement(`button`);o.className=`btn btn-primary`,o.textContent=t?`수정`:`등록`,o.addEventListener(`click`,()=>{let n=document.getElementById(`host-name`).value.trim(),r=document.getElementById(`host-phone`).value.trim();if(!n){Y(`이름을 입력해주세요.`);return}let i={name:n,phone:r,ssn:document.getElementById(`host-ssn`).value.trim(),bank:document.getElementById(`host-bank`).value,account:document.getElementById(`host-account`).value.trim(),accountHolder:document.getElementById(`host-holder`).value.trim(),address:document.getElementById(`host-address`).value.trim()};t?(U.update(`hosts`,e,i),J(`쇼호스트 정보가 수정되었습니다.`)):(i.id=L(`host`),i.memo={features:``,strengths:``,weaknesses:``,style:``,brandPreference:``,caution:``,comment:``},i.createdAt=new Date().toISOString().split(`T`)[0],U.create(`hosts`,i),J(`쇼호스트가 등록되었습니다.`)),q()}),i.appendChild(a),i.appendChild(o),K({title:t?`쇼호스트 수정`:`쇼호스트 등록`,size:`lg`,content:r,footer:i})}function Rt(e){let t=document.createElement(`div`),n=U.getById(`hosts`,e.id);if(!n)return t.innerHTML=`
+  `,a=document.createElement(`div`);if(a.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,n){let t=document.createElement(`button`);t.className=`btn btn-danger`,t.textContent=`삭제`,t.style.marginRight=`auto`,t.addEventListener(`click`,()=>{q(),st({title:`쇼호스트 삭제`,message:`"${r.name}" 쇼호스트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.delete(`hosts`,e),J(`쇼호스트가 삭제되었습니다.`)}})}),a.appendChild(t)}let o=document.createElement(`button`);o.className=`btn btn-secondary`,o.textContent=`취소`,o.addEventListener(`click`,q);let s=document.createElement(`button`);s.className=`btn btn-primary`,s.textContent=n?`수정`:`등록`,s.addEventListener(`click`,()=>{let t=document.getElementById(`host-name`).value.trim(),r=document.getElementById(`host-phone`).value.trim();if(!t){Y(`이름을 입력해주세요.`);return}let i={name:t,phone:r,ssn:document.getElementById(`host-ssn`).value.trim(),bank:document.getElementById(`host-bank`).value,account:document.getElementById(`host-account`).value.trim(),accountHolder:document.getElementById(`host-holder`).value.trim(),address:document.getElementById(`host-address`).value.trim()};n?(U.update(`hosts`,e,i),J(`쇼호스트 정보가 수정되었습니다.`)):(i.id=L(`host`),i.memo={features:``,strengths:``,weaknesses:``,style:``,brandPreference:``,caution:``,comment:``},i.createdAt=new Date().toISOString().split(`T`)[0],U.create(`hosts`,i),J(`쇼호스트가 등록되었습니다.`)),q()}),a.appendChild(o),a.appendChild(s),K({title:n?`쇼호스트 수정`:`쇼호스트 등록`,size:`lg`,content:i,footer:a})}function Rt(e){let t=U.getCurrentRole()===`pd`,n=document.createElement(`div`),r=U.getById(`hosts`,e.id);if(!r)return n.innerHTML=`
       <div class="page-header"><div class="page-header-left"><h1 class="page-title">쇼호스트를 찾을 수 없습니다</h1></div></div>
       <div class="page-body"><button class="btn btn-secondary" id="btn-back">목록으로</button></div>
-    `,setTimeout(()=>{t.querySelector(`#btn-back`)?.addEventListener(`click`,()=>M.navigate(`/hosts`))},0),t;let r=U.getHostStats(n.id),i=n.memo||{},a=U.query(`liveHosts`,e=>e.hostId===n.id).map(e=>{let t=U.getById(`projects`,e.liveId);return{matching:e,project:t,brand:t?U.getById(`brands`,t.brandId):null,result:U.getById(`results`,e.liveId)}}).filter(e=>e.project);return t.innerHTML=`
+    `,setTimeout(()=>{n.querySelector(`#btn-back`)?.addEventListener(`click`,()=>M.navigate(`/hosts`))},0),n;let i=U.getHostStats(r.id),a=r.memo||{},o=U.query(`liveHosts`,e=>e.hostId===r.id).map(e=>{let t=U.getById(`projects`,e.liveId);return{matching:e,project:t,brand:t?U.getById(`brands`,t.brandId):null,result:U.getById(`results`,e.liveId)}}).filter(e=>e.project);return n.innerHTML=`
     <div class="page-header">
       <div class="page-header-left">
         <div>
           <div class="breadcrumb">
             <a href="javascript:void(0)" id="breadcrumb-list">쇼호스트 관리</a>
             <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-current">${n.name}</span>
+            <span class="breadcrumb-current">${r.name}</span>
           </div>
-          <h1 class="page-title" style="margin-top: var(--space-2);">${n.name}</h1>
+          <h1 class="page-title" style="margin-top: var(--space-2);">${r.name}</h1>
         </div>
       </div>
       <div class="page-header-right">
@@ -1242,27 +1242,27 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="stats-grid" style="margin-bottom: var(--space-6);">
         <div class="stat-card">
           <div class="stat-label">총 방송횟수</div>
-          <div class="stat-value">${et(r.totalBroadcasts)}회</div>
+          <div class="stat-value">${t?`**`:`${et(i.totalBroadcasts)}회`}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">이번달 방송</div>
-          <div class="stat-value">${et(r.monthBroadcasts)}회</div>
+          <div class="stat-value">${t?`**`:`${et(i.monthBroadcasts)}회`}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">누적 정산금액</div>
-          <div class="stat-value">${W(r.totalSettlement)}</div>
+          <div class="stat-value">${t?`**`:W(i.totalSettlement)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">최근 방송일</div>
-          <div class="stat-value">${G(r.lastBroadcastDate)}</div>
+          <div class="stat-value">${t?`**`:G(i.lastBroadcastDate)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">평균 매출</div>
-          <div class="stat-value">${W(r.avgRevenue)}</div>
+          <div class="stat-value">${t?`**`:W(i.avgRevenue)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">평균 ROI</div>
-          <div class="stat-value">${tt(r.avgROI)}</div>
+          <div class="stat-value">${t?`**`:tt(i.avgROI)}</div>
         </div>
       </div>
 
@@ -1274,27 +1274,27 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
             <div class="detail-grid" style="grid-template-columns: 1fr 1fr;">
               <div class="detail-field">
                 <span class="detail-field-label">전화번호</span>
-                <span class="detail-field-value">${n.phone||`-`}</span>
+                <span class="detail-field-value">${r.phone||`-`}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">주민등록번호</span>
-                <span class="detail-field-value ssn-toggle" data-ssn="${n.ssn||``}" style="cursor: pointer; text-decoration: underline;" title="클릭하여 확인">${n.ssn?nt(n.ssn):`-`}</span>
+                <span class="detail-field-value ${t?``:`ssn-toggle`}" data-ssn="${r.ssn||``}" style="${t?``:`cursor: pointer; text-decoration: underline;`}" title="${t?`열람 권한 없음`:`클릭하여 확인`}">${t?`**`:r.ssn?nt(r.ssn):`-`}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">은행</span>
-                <span class="detail-field-value">${n.bank||`-`}</span>
+                <span class="detail-field-value">${r.bank||`-`}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">계좌번호</span>
-                <span class="detail-field-value">${n.account||`-`}</span>
+                <span class="detail-field-value">${r.account||`-`}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">예금주</span>
-                <span class="detail-field-value">${n.accountHolder||`-`}</span>
+                <span class="detail-field-value">${r.accountHolder||`-`}</span>
               </div>
               <div class="detail-field" style="grid-column: 1/-1;">
                 <span class="detail-field-label">주소</span>
-                <span class="detail-field-value">${n.address||`-`}</span>
+                <span class="detail-field-value">${r.address||`-`}</span>
               </div>
             </div>
           </div>
@@ -1308,13 +1308,13 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
           </div>
           <div class="card-body">
             <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-              ${zt(`특징`,i.features)}
-              ${zt(`강점`,i.strengths)}
-              ${zt(`약점`,i.weaknesses)}
-              ${zt(`진행 스타일`,i.style)}
-              ${zt(`브랜드 선호도`,i.brandPreference)}
-              ${zt(`주의사항`,i.caution)}
-              ${zt(`기타`,i.comment)}
+              ${zt(`특징`,a.features)}
+              ${zt(`강점`,a.strengths)}
+              ${zt(`약점`,a.weaknesses)}
+              ${zt(`진행 스타일`,a.style)}
+              ${zt(`브랜드 선호도`,a.brandPreference)}
+              ${zt(`주의사항`,a.caution)}
+              ${zt(`기타`,a.comment)}
             </div>
           </div>
         </div>
@@ -1336,14 +1336,14 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               </tr>
             </thead>
             <tbody>
-              ${a.length>0?a.map(e=>`
+              ${o.length>0?o.map(e=>`
                 <tr>
                   <td>${G(e.project.broadcastDate)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${e.project.id}">${e.brand?e.brand.name:`-`}</a></td>
                   <td>${{main:`메인`,sub:`서브`,guest:`게스트`}[e.matching.role]||`-`}</td>
-                  <td class="text-right">${W(e.matching.fee)}</td>
+                  <td class="text-right">${t?`**`:W(e.matching.fee)}</td>
                   <td><span class="badge ${e.matching.settleStatus===`done`?`badge-success`:`badge-default`}">${{pending:`대기`,processing:`진행중`,done:`완료`}[e.matching.settleStatus]||`-`}</span></td>
-                  <td>${e.result?W(e.result.liveRevenue):`-`}</td>
+                  <td>${t?`**`:e.result?W(e.result.liveRevenue):`-`}</td>
                 </tr>
               `).join(``):`<tr><td colspan="6" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">방송 이력이 없습니다.</td></tr>`}
             </tbody>
@@ -1351,7 +1351,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{let e=t.querySelector(`.ssn-toggle`);if(e&&e.dataset.ssn){let t=!0;e.addEventListener(`click`,()=>{t=!t,e.textContent=t?nt(e.dataset.ssn):e.dataset.ssn})}t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/hosts`)),t.querySelector(`#btn-edit-host`)?.addEventListener(`click`,()=>Lt(n.id)),t.querySelector(`#btn-edit-memo`)?.addEventListener(`click`,()=>Bt(n)),t.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),M.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),t}function zt(e,t){return`
+  `,setTimeout(()=>{let e=n.querySelector(`.ssn-toggle`);if(e&&e.dataset.ssn&&!t){let t=!0;e.addEventListener(`click`,()=>{t=!t,e.textContent=t?nt(e.dataset.ssn):e.dataset.ssn})}n.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/hosts`)),n.querySelector(`#btn-edit-host`)?.addEventListener(`click`,()=>Lt(r.id)),n.querySelector(`#btn-edit-memo`)?.addEventListener(`click`,()=>Bt(r)),n.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),M.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),n}function zt(e,t){return`
     <div>
       <div style="font-size: var(--text-xs); color: var(--text-tertiary); font-weight: var(--weight-medium); margin-bottom: 2px;">${e}</div>
       <div style="font-size: var(--text-sm); color: var(--text-secondary);">${t||`-`}</div>
@@ -1365,7 +1365,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
       `).join(``)}
     </div>
-  `,i=document.createElement(`div`);i.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let a=document.createElement(`button`);a.className=`btn btn-secondary`,a.textContent=`취소`,a.addEventListener(`click`,q);let o=document.createElement(`button`);o.className=`btn btn-primary`,o.textContent=`저장`,o.addEventListener(`click`,()=>{let t={};n.forEach(e=>{t[e.key]=document.getElementById(`memo-${e.key}`).value.trim()}),U.update(`hosts`,e.id,{memo:t}),q(),J(`메모가 저장되었습니다.`),M.navigate(`/hosts/${e.id}`)}),i.appendChild(a),i.appendChild(o),K({title:`메모 수정`,size:`lg`,content:r,footer:i})}function Vt(){let e=document.createElement(`div`),t=``;function n(){let r=U.getAll(`brands`);if(t){let e=t.toLowerCase();r=r.filter(t=>t.name.toLowerCase().includes(e)||t.manager&&t.manager.toLowerCase().includes(e)||t.category&&t.category.toLowerCase().includes(e))}let i=r.map(e=>{let t=U.getBrandStats(e.id);return{...e,stats:t}});e.innerHTML=`
+  `,i=document.createElement(`div`);i.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let a=document.createElement(`button`);a.className=`btn btn-secondary`,a.textContent=`취소`,a.addEventListener(`click`,q);let o=document.createElement(`button`);o.className=`btn btn-primary`,o.textContent=`저장`,o.addEventListener(`click`,()=>{let t={};n.forEach(e=>{t[e.key]=document.getElementById(`memo-${e.key}`).value.trim()}),U.update(`hosts`,e.id,{memo:t}),q(),J(`메모가 저장되었습니다.`),M.navigate(`/hosts/${e.id}`)}),i.appendChild(a),i.appendChild(o),K({title:`메모 수정`,size:`lg`,content:r,footer:i})}function Vt(){let e=document.createElement(`div`),t=``;function n(){let r=U.getCurrentRole()===`pd`,i=U.getAll(`brands`);if(t){let e=t.toLowerCase();i=i.filter(t=>t.name.toLowerCase().includes(e)||t.manager&&t.manager.toLowerCase().includes(e)||t.category&&t.category.toLowerCase().includes(e))}let a=i.map(e=>{let t=U.getBrandStats(e.id);return{...e,stats:t}});e.innerHTML=`
       <div class="page-header">
         <div class="page-header-left">
           <div>
@@ -1388,7 +1388,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" placeholder="브랜드명, 담당자 검색..." id="brand-search" value="${t}">
               </div>
-              <span class="table-count">총 <strong>${i.length}</strong>개</span>
+              <span class="table-count">총 <strong>${a.length}</strong>개</span>
             </div>
           </div>
           <div class="table-scroll">
@@ -1409,7 +1409,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                 </tr>
               </thead>
               <tbody>
-                ${i.length>0?i.map(e=>`
+                ${a.length>0?a.map(e=>`
                   <tr class="clickable" data-id="${e.id}">
                     <td><a href="javascript:void(0)" class="brand-link" data-id="${e.id}">${e.name}</a></td>
                     <td>${e.companyName||`-`}</td>
@@ -1417,10 +1417,10 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                     <td>${e.manager||`-`}</td>
                     <td>${e.phone||`-`}</td>
                     <td>${e.taxInvoice?`<span class="badge badge-success">발행</span>`:`<span class="badge badge-default">미발행</span>`}</td>
-                    <td class="text-right">${et(e.stats.totalBroadcasts)}회</td>
-                    <td class="text-right">${W(e.stats.totalRevenue)}</td>
-                    <td>${G(e.stats.lastBroadcastDate)}</td>
-                    <td class="text-right">${tt(e.stats.avgROI)}</td>
+                    <td class="text-right">${r?`**`:`${et(e.stats.totalBroadcasts)}회`}</td>
+                    <td class="text-right">${r?`**`:W(e.stats.totalRevenue)}</td>
+                    <td>${r?`**`:G(e.stats.lastBroadcastDate)}</td>
+                    <td class="text-right">${r?`**`:tt(e.stats.avgROI)}</td>
                     <td class="col-actions">
                       <button class="btn btn-ghost btn-icon btn-sm btn-edit-brand" data-id="${e.id}">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -1482,17 +1482,17 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         <textarea class="input" id="brand-memo" rows="3">${n.memo||``}</textarea>
       </div>
     </div>
-  `,i=document.createElement(`div`);if(i.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,t){let t=document.createElement(`button`);t.className=`btn btn-danger`,t.textContent=`삭제`,t.style.marginRight=`auto`,t.addEventListener(`click`,()=>{q(),st({title:`브랜드 삭제`,message:`"${n.name}" 브랜드를 삭제하시겠습니까?`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.delete(`brands`,e),J(`브랜드가 삭제되었습니다.`)}})}),i.appendChild(t)}let a=document.createElement(`button`);a.className=`btn btn-secondary`,a.textContent=`취소`,a.addEventListener(`click`,q);let o=document.createElement(`button`);o.className=`btn btn-primary`,o.textContent=t?`수정`:`등록`,o.addEventListener(`click`,()=>{let n=document.getElementById(`brand-name`).value.trim();if(!n){Y(`브랜드명을 입력해주세요.`);return}let r={name:n,companyName:document.getElementById(`brand-company`).value.trim(),category:document.getElementById(`brand-category`).value,manager:document.getElementById(`brand-manager`).value.trim(),phone:document.getElementById(`brand-phone`).value.trim(),email:document.getElementById(`brand-email`).value.trim(),businessNo:document.getElementById(`brand-biz`).value.trim(),taxInvoice:document.getElementById(`brand-tax`).value===`true`,address:document.getElementById(`brand-address`).value.trim(),memo:document.getElementById(`brand-memo`).value.trim()};t?(U.update(`brands`,e,r),J(`브랜드 정보가 수정되었습니다.`)):(r.id=L(`brand`),r.createdAt=new Date().toISOString().split(`T`)[0],U.create(`brands`,r),J(`브랜드가 등록되었습니다.`)),q()}),i.appendChild(a),i.appendChild(o),K({title:t?`브랜드 수정`:`브랜드 등록`,size:`lg`,content:r,footer:i})}function Ut(e){let t=document.createElement(`div`),n=U.getById(`brands`,e.id);if(!n)return t.innerHTML=`<div class="page-header"><div class="page-header-left"><h1 class="page-title">브랜드를 찾을 수 없습니다</h1></div></div>
-    <div class="page-body"><button class="btn btn-secondary" id="btn-back">목록으로</button></div>`,setTimeout(()=>{t.querySelector(`#btn-back`)?.addEventListener(`click`,()=>M.navigate(`/brands`))},0),t;let r=U.getBrandStats(n.id),i=U.query(`projects`,e=>e.brandId===n.id||e.brandName===n.name);return t.innerHTML=`
+  `,i=document.createElement(`div`);if(i.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,t){let t=document.createElement(`button`);t.className=`btn btn-danger`,t.textContent=`삭제`,t.style.marginRight=`auto`,t.addEventListener(`click`,()=>{q(),st({title:`브랜드 삭제`,message:`"${n.name}" 브랜드를 삭제하시겠습니까?`,confirmText:`삭제`,danger:!0,onConfirm:()=>{U.delete(`brands`,e),J(`브랜드가 삭제되었습니다.`)}})}),i.appendChild(t)}let a=document.createElement(`button`);a.className=`btn btn-secondary`,a.textContent=`취소`,a.addEventListener(`click`,q);let o=document.createElement(`button`);o.className=`btn btn-primary`,o.textContent=t?`수정`:`등록`,o.addEventListener(`click`,()=>{let n=document.getElementById(`brand-name`).value.trim();if(!n){Y(`브랜드명을 입력해주세요.`);return}let r={name:n,companyName:document.getElementById(`brand-company`).value.trim(),category:document.getElementById(`brand-category`).value,manager:document.getElementById(`brand-manager`).value.trim(),phone:document.getElementById(`brand-phone`).value.trim(),email:document.getElementById(`brand-email`).value.trim(),businessNo:document.getElementById(`brand-biz`).value.trim(),taxInvoice:document.getElementById(`brand-tax`).value===`true`,address:document.getElementById(`brand-address`).value.trim(),memo:document.getElementById(`brand-memo`).value.trim()};t?(U.update(`brands`,e,r),J(`브랜드 정보가 수정되었습니다.`)):(r.id=L(`brand`),r.createdAt=new Date().toISOString().split(`T`)[0],U.create(`brands`,r),J(`브랜드가 등록되었습니다.`)),q()}),i.appendChild(a),i.appendChild(o),K({title:t?`브랜드 수정`:`브랜드 등록`,size:`lg`,content:r,footer:i})}function Ut(e){let t=U.getCurrentRole()===`pd`,n=document.createElement(`div`),r=U.getById(`brands`,e.id);if(!r)return n.innerHTML=`<div class="page-header"><div class="page-header-left"><h1 class="page-title">브랜드를 찾을 수 없습니다</h1></div></div>
+    <div class="page-body"><button class="btn btn-secondary" id="btn-back">목록으로</button></div>`,setTimeout(()=>{n.querySelector(`#btn-back`)?.addEventListener(`click`,()=>M.navigate(`/brands`))},0),n;let i=U.getBrandStats(r.id),a=U.query(`projects`,e=>e.brandId===r.id||e.brandName===r.name);return n.innerHTML=`
     <div class="page-header">
       <div class="page-header-left">
         <div>
           <div class="breadcrumb">
             <a href="javascript:void(0)" id="breadcrumb-list">브랜드 관리</a>
             <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-current">${n.name}</span>
+            <span class="breadcrumb-current">${r.name}</span>
           </div>
-          <h1 class="page-title" style="margin-top: var(--space-2);">${n.name}</h1>
+          <h1 class="page-title" style="margin-top: var(--space-2);">${r.name}</h1>
         </div>
       </div>
       <div class="page-header-right">
@@ -1501,25 +1501,25 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
     </div>
     <div class="page-body">
       <div class="stats-grid" style="margin-bottom: var(--space-6);">
-        <div class="stat-card"><div class="stat-label">총 방송횟수</div><div class="stat-value">${et(r.totalBroadcasts)}회</div></div>
-        <div class="stat-card"><div class="stat-label">누적 매출</div><div class="stat-value">${W(r.totalRevenue)}</div></div>
-        <div class="stat-card"><div class="stat-label">최근 방송일</div><div class="stat-value">${G(r.lastBroadcastDate)}</div></div>
-        <div class="stat-card"><div class="stat-label">평균 ROI</div><div class="stat-value">${tt(r.avgROI)}</div></div>
+        <div class="stat-card"><div class="stat-label">총 방송횟수</div><div class="stat-value">${t?`**`:`${et(i.totalBroadcasts)}회`}</div></div>
+        <div class="stat-card"><div class="stat-label">누적 매출</div><div class="stat-value">${t?`**`:W(i.totalRevenue)}</div></div>
+        <div class="stat-card"><div class="stat-label">최근 방송일</div><div class="stat-value">${t?`**`:G(i.lastBroadcastDate)}</div></div>
+        <div class="stat-card"><div class="stat-label">평균 ROI</div><div class="stat-value">${t?`**`:tt(i.avgROI)}</div></div>
       </div>
 
       <div class="card" style="margin-bottom: var(--space-6);">
         <div class="card-header"><h3>기본 정보</h3></div>
         <div class="card-body">
           <div class="detail-grid">
-            <div class="detail-field"><span class="detail-field-label">사업자명</span><span class="detail-field-value">${n.companyName||`-`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">카테고리</span><span class="detail-field-value">${n.category||`-`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">담당자</span><span class="detail-field-value">${n.manager||`-`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">연락처</span><span class="detail-field-value">${n.phone||`-`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">이메일</span><span class="detail-field-value">${n.email||`-`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">사업자등록번호</span><span class="detail-field-value">${n.businessNo||`-`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">세금계산서</span><span class="detail-field-value">${n.taxInvoice?`발행`:`미발행`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">주소</span><span class="detail-field-value">${n.address||`-`}</span></div>
-            <div class="detail-field"><span class="detail-field-label">메모</span><span class="detail-field-value">${n.memo||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">사업자명</span><span class="detail-field-value">${r.companyName||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">카테고리</span><span class="detail-field-value">${r.category||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">담당자</span><span class="detail-field-value">${r.manager||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">연락처</span><span class="detail-field-value">${r.phone||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">이메일</span><span class="detail-field-value">${r.email||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">사업자등록번호</span><span class="detail-field-value">${r.businessNo||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">세금계산서</span><span class="detail-field-value">${r.taxInvoice?`발행`:`미발행`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">주소</span><span class="detail-field-value">${r.address||`-`}</span></div>
+            <div class="detail-field"><span class="detail-field-label">메모</span><span class="detail-field-value">${r.memo||`-`}</span></div>
           </div>
         </div>
       </div>
@@ -1532,21 +1532,21 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               <tr><th>진행상태</th><th>방송일</th><th>플랫폼</th><th class="text-right">시청뷰</th><th class="text-right">매출</th><th class="text-right">ROI</th></tr>
             </thead>
             <tbody>
-              ${i.length>0?i.map(e=>{let t=U.getAll(`results`).find(t=>t.liveId===e.id);return`
+              ${a.length>0?a.map(e=>{let n=U.getAll(`results`).find(t=>t.liveId===e.id);return`
                 <tr class="clickable" data-id="${e.id}">
                   <td>${at(e.broadcastStatus)}</td>
                   <td><a href="javascript:void(0)" class="project-link" data-id="${e.id}">${G(e.broadcastDate)||`상세보기`}</a></td>
                   <td>${e.platform||`-`}</td>
-                  <td class="text-right">${t?et(t.views):`-`}</td>
-                  <td class="text-right">${t?$e(t.liveRevenue):`-`}</td>
-                  <td class="text-right">${t?tt(t.roi):`-`}</td>
+                  <td class="text-right">${t?`**`:n?et(n.views):`-`}</td>
+                  <td class="text-right">${t?`**`:n?$e(n.liveRevenue):`-`}</td>
+                  <td class="text-right">${t?`**`:n?tt(n.roi):`-`}</td>
                 </tr>`}).join(``):`<tr><td colspan="6" class="text-center" style="padding: var(--space-8); color: var(--text-tertiary);">방송 이력이 없습니다.</td></tr>`}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{t.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/brands`)),t.querySelector(`#btn-edit-brand`)?.addEventListener(`click`,()=>Ht(n.id)),t.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),M.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),t}function Wt(e,t){if(!e)return``;let n=e.replace(/\./g,`-`),r=new Date(n);if(isNaN(r.getTime()))return``;let i=0;if(t===`design`?i=-4:t===`cue_sheet`?i=-5:t===`host_cast`&&(i=-7),i===0)return``;let a=new Date(r);a.setDate(a.getDate()+i);let o=String(a.getMonth()+1).padStart(2,`0`),s=String(a.getDate()).padStart(2,`0`),c=new Date;c.setHours(0,0,0,0);let l=a.getTime()-c.getTime(),u=Math.ceil(l/(1e3*60*60*24)),d=``;return d=u===0?`D-Day`:u>0?`D-${u}`:`D+${Math.abs(u)}`,`<br><span style="font-size: 10px; opacity: 0.8; font-weight: normal;">(${o}/${s} 까지 / <strong style="color:var(--status-error);">${d}</strong>)</span>`}function Gt(){let e=document.createElement(`div`),t=U.getCurrentRole(),n=t&&t.startsWith(`brand:`),r=n?t.split(`:`)[1]:null,i=new URLSearchParams(window.location.search).get(`settleStatus`)||``,a=``,o={status:``,brand:``,platform:``,month:``,category:``,settleStatus:i},s={basic:!0,host:!0,result:!1,finance:!1},c=`list`,l=new Date;function u(){let t=U.getAll(`projects`);if(n&&r&&(t=t.filter(e=>e.brandId===r)),U.getAll(`brands`),U.getAll(`hosts`),a){let e=a.toLowerCase();t=t.filter(t=>{let n=U.getById(`brands`,t.brandId),r=U.query(`liveHosts`,e=>e.liveId===t.id).some(t=>{let n=U.getById(`hosts`,t.hostId);return n&&n.name.toLowerCase().includes(e)});return n&&n.name.toLowerCase().includes(e)||r})}o.settleStatus&&(t=o.settleStatus===`pending`?t.filter(e=>e.settleStatus!==`done`&&e.settleStatus!==`settle_done`):t.filter(e=>e.settleStatus===o.settleStatus)),o.status&&(t=t.filter(e=>e.broadcastStatus===o.status)),o.brand&&(t=t.filter(e=>e.brandId===o.brand)),o.platform&&(t=t.filter(e=>e.platform===o.platform)),o.month&&(t=t.filter(e=>e.broadcastMonth===o.month||e.broadcastDate&&e.broadcastDate.replace(/\./g,`-`).substring(0,7)===o.month?!0:e.broadcastMonth&&e.broadcastMonth.length<=2&&e.broadcastDate?e.broadcastDate.replace(/\./g,`-`).substring(0,4)+`-`+e.broadcastMonth.padStart(2,`0`)===o.month:!1)),o.category&&(t=t.filter(e=>e.category===o.category)),t.sort((e,t)=>(t.broadcastDate||``).localeCompare(e.broadcastDate||``));let i=t.map(e=>{let t=U.getById(`brands`,e.brandId),n=U.query(`liveHosts`,t=>t.liveId===e.id),r=U.getAll(`results`).find(t=>t.liveId===e.id),i=U.getAll(`finances`).find(t=>t.liveId===e.id),a=n[0]?U.getById(`hosts`,n[0].hostId):null,o=n[1]?U.getById(`hosts`,n[1].hostId):null,s=n.reduce((e,t)=>e+(t.fee||0),0),c=n.length>0&&n.every(e=>e.settleStatus===`done`)?`완료`:n.some(e=>e.settleStatus===`done`)?`일부완료`:`대기`;return{...e,brand:t,matchings:n,result:r,finance:i,hostA:a,hostB:o,totalHostFee:s,settleLabel:c,hostAFee:n[0]?.fee||0,hostBFee:n[1]?.fee||0}});[...new Set(U.getAll(`projects`).map(e=>e.broadcastMonth).filter(Boolean))].sort().reverse();function d(e){let t=l.getFullYear(),n=l.getMonth(),r=new Date(t,n,1).getDay(),i=new Date(t,n+1,0).getDate(),a=new Date,o=a.getFullYear()===t&&a.getMonth()===n,s=``;for(let e=0;e<r;e++)s+=`<div class="calendar-day empty"></div>`;for(let r=1;r<=i;r++){let i=`${t}-${String(n+1).padStart(2,`0`)}-${String(r).padStart(2,`0`)}`,c=e.filter(e=>e.broadcastDate===i),l=o&&a.getDate()===r,u=c.map(e=>{let t=`#e2e8f0`,n=`#475569`;return e.broadcastStatus===`ready`?(t=`#dbeafe`,n=`#2563eb`):e.broadcastStatus===`live`?(t=`#fee2e2`,n=`#dc2626`):e.broadcastStatus===`done`?(t=`#dcfce3`,n=`#16a34a`):e.broadcastStatus===`cancel`&&(t=`#f1f5f9`,n=`#64748b`),`
+  `,setTimeout(()=>{n.querySelector(`#breadcrumb-list`)?.addEventListener(`click`,()=>M.navigate(`/brands`)),n.querySelector(`#btn-edit-brand`)?.addEventListener(`click`,()=>Ht(r.id)),n.querySelectorAll(`.project-link`).forEach(e=>{e.addEventListener(`click`,t=>{t.preventDefault(),M.navigate(`/projects/${e.getAttribute(`data-id`)}`)})})},0),n}function Wt(e,t){if(!e)return``;let n=e.replace(/\./g,`-`),r=new Date(n);if(isNaN(r.getTime()))return``;let i=0;if(t===`design`?i=-4:t===`cue_sheet`?i=-5:t===`host_cast`&&(i=-7),i===0)return``;let a=new Date(r);a.setDate(a.getDate()+i);let o=String(a.getMonth()+1).padStart(2,`0`),s=String(a.getDate()).padStart(2,`0`),c=new Date;c.setHours(0,0,0,0);let l=a.getTime()-c.getTime(),u=Math.ceil(l/(1e3*60*60*24)),d=``;return d=u===0?`D-Day`:u>0?`D-${u}`:`D+${Math.abs(u)}`,`<br><span style="font-size: 10px; opacity: 0.8; font-weight: normal;">(${o}/${s} 까지 / <strong style="color:var(--status-error);">${d}</strong>)</span>`}function Gt(){let e=document.createElement(`div`),t=U.getCurrentRole(),n=t&&t.startsWith(`brand:`),r=n?t.split(`:`)[1]:null,i=new URLSearchParams(window.location.search).get(`settleStatus`)||``,a=``,o={status:``,brand:``,platform:``,month:``,category:``,settleStatus:i},s={basic:!0,host:!0,result:!1,finance:!1},c=`list`,l=new Date;function u(){let t=U.getAll(`projects`);if(n&&r&&(t=t.filter(e=>e.brandId===r)),U.getAll(`brands`),U.getAll(`hosts`),a){let e=a.toLowerCase();t=t.filter(t=>{let n=U.getById(`brands`,t.brandId),r=U.query(`liveHosts`,e=>e.liveId===t.id).some(t=>{let n=U.getById(`hosts`,t.hostId);return n&&n.name.toLowerCase().includes(e)});return n&&n.name.toLowerCase().includes(e)||r})}o.settleStatus&&(t=o.settleStatus===`pending`?t.filter(e=>e.settleStatus!==`done`&&e.settleStatus!==`settle_done`):t.filter(e=>e.settleStatus===o.settleStatus)),o.status&&(t=t.filter(e=>e.broadcastStatus===o.status)),o.brand&&(t=t.filter(e=>e.brandId===o.brand)),o.platform&&(t=t.filter(e=>e.platform===o.platform)),o.month&&(t=t.filter(e=>e.broadcastMonth===o.month||e.broadcastDate&&e.broadcastDate.replace(/\./g,`-`).substring(0,7)===o.month?!0:e.broadcastMonth&&e.broadcastMonth.length<=2&&e.broadcastDate?e.broadcastDate.replace(/\./g,`-`).substring(0,4)+`-`+e.broadcastMonth.padStart(2,`0`)===o.month:!1)),o.category&&(t=t.filter(e=>e.category===o.category)),t.sort((e,t)=>(t.broadcastDate||``).localeCompare(e.broadcastDate||``));let i=t.map(e=>{let t=U.getById(`brands`,e.brandId),n=U.query(`liveHosts`,t=>t.liveId===e.id),r=U.getAll(`results`).find(t=>t.liveId===e.id),i=U.getAll(`finances`).find(t=>t.liveId===e.id),a=n[0]?U.getById(`hosts`,n[0].hostId):null,o=n[1]?U.getById(`hosts`,n[1].hostId):null,s=n.reduce((e,t)=>e+(t.fee||0),0),c=n.length>0&&n.every(e=>e.settleStatus===`done`)?`완료`:n.some(e=>e.settleStatus===`done`)?`일부완료`:`대기`;return{...e,brand:t,matchings:n,result:r,finance:i,hostA:a,hostB:o,totalHostFee:s,settleLabel:c,hostAFee:n[0]?.fee||0,hostBFee:n[1]?.fee||0}});[...new Set(U.getAll(`projects`).map(e=>e.broadcastMonth).filter(Boolean))].sort().reverse();function d(e){let t=l.getFullYear(),n=l.getMonth(),r=new Date(t,n,1).getDay(),i=new Date(t,n+1,0).getDate(),a=new Date,o=a.getFullYear()===t&&a.getMonth()===n,s=``;for(let e=0;e<r;e++)s+=`<div class="calendar-day empty"></div>`;for(let r=1;r<=i;r++){let i=`${t}-${String(n+1).padStart(2,`0`)}-${String(r).padStart(2,`0`)}`,c=e.filter(e=>e.broadcastDate===i),l=o&&a.getDate()===r,u=c.map(e=>{let t=`#e2e8f0`,n=`#475569`;return e.broadcastStatus===`ready`?(t=`#dbeafe`,n=`#2563eb`):e.broadcastStatus===`live`?(t=`#fee2e2`,n=`#dc2626`):e.broadcastStatus===`done`?(t=`#dcfce3`,n=`#16a34a`):e.broadcastStatus===`cancel`&&(t=`#f1f5f9`,n=`#64748b`),`
             <div class="calendar-project-block clickable" data-id="${e.id}" style="background-color: ${t}; color: ${n}; border-left: 3px solid ${n};">
               <div class="cp-time">${e.broadcastTime||`-`}</div>
               <div class="cp-brand">${e.brandName||(e.brand?e.brand.name:`-`)}</div>
@@ -3606,6 +3606,10 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
               `).join(``)}
             </tbody>
           </table>
+        </div>
+        <div style="padding: 12px 16px; background: #f8fafc; border-top: 1px solid var(--border-color); font-size: 12px; color: #475569; line-height: 1.5;">
+          <strong style="color: #0f172a;">🔒 PD 계정 민감 데이터 보안 마스킹 정책:</strong><br>
+          PD 권한으로 접속 시 쇼호스트(누적정산, 평균매출, 평균 ROI, 주민등록번호, 방송횟수, 최근방송일) 및 브랜드 관리(누적매출, 방송횟수, 실적 지표)의 민감 수치가 자동으로 <strong>**</strong> 마스킹 처리되어 안전하게 보호됩니다.
         </div>
       </div>
     </div>
