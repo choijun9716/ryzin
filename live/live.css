@@ -1373,86 +1373,73 @@ video::-webkit-media-controls-overlay-play-button {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   셀러 프로필 & 소통 채널 전체 화면 확장 뷰 (Channel View)
+   셀러 프로필 & 소통 채널 전체 화면 오버레이 (Full-Screen Overlay)
    ═══════════════════════════════════════════════════════════ */
 
-/* 채널 뷰 활성화 시 컨테이너 스크롤 전환 */
-.live-container.channel-view-active {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  background-color: #ffffff;
-}
-
-/* 상단 비디오는 상단 고정 플레이어로 축소되어 끊김 없이 무중단 재생 */
-.live-container.channel-view-active .video-wrapper {
-  position: sticky !important;
-  top: 0;
-  left: 0;
-  width: 100% !important;
-  height: 230px !important;
-  min-height: 230px !important;
-  z-index: 60 !important;
-  background-color: #000000;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-  transition: height 0.3s ease;
-}
-
-/* 채널 뷰에서는 기존 전체화면 라이브 전용 오버레이(채팅, 플로팅 등) 숨김 */
-.live-container.channel-view-active .ui-layer,
-.live-container.channel-view-active .bottom-gradient {
-  display: none !important;
-}
-
-/* 채널 모드 전용 상단 영상 컨트롤 오버레이 */
-.channel-video-controls {
+#seller-channel-view {
   display: none;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100000;
+  background-color: #ffffff;
+  color: #0f172a;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-direction: column;
+  pointer-events: auto;
+  animation: channelViewSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes channelViewSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 1. 상단 커버 영역 (와이드 배너 + 상단 닫기/공유 버튼) */
+.channel-cover-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.channel-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.channel-cover-overlay {
   position: absolute;
   inset: 0;
-  z-index: 25;
-  pointer-events: none;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 12px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 40%, transparent 60%, rgba(0, 0, 0, 0.6) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.5) 100%);
 }
 
-.live-container.channel-view-active .channel-video-controls {
-  display: flex !important;
-}
-
-.channel-ctrl-top {
+.channel-cover-nav {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  z-index: 10;
 }
 
-.channel-ctrl-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #ffffff;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
-.channel-ctrl-brand-name {
-  font-size: 15px;
-  font-weight: 800;
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-}
-
-.channel-ctrl-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: auto;
-}
-
-.channel-ctrl-btn {
-  width: 34px;
-  height: 34px;
+.channel-cover-btn {
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -1461,81 +1448,38 @@ video::-webkit-media-controls-overlay-play-button {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition: background 0.15s, transform 0.15s;
 }
 
-.channel-ctrl-btn:hover {
+.channel-cover-btn:hover {
   background: rgba(0, 0, 0, 0.7);
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-.channel-ctrl-bottom {
+/* 2. 채널 본문 컨텐츠 (패딩 및 배치) */
+.channel-content-body {
+  padding: 0 20px 40px 20px;
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
-  pointer-events: auto;
-}
-
-.channel-expand-live-btn {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-}
-
-/* ─── 셀러 채널 뷰 본체 영역 ─── */
-#seller-channel-view {
-  display: none;
-  width: 100%;
-  background: #ffffff;
-  color: #0f172a;
-  min-height: calc(100% - 230px);
-  z-index: 55;
-  position: relative;
   flex-direction: column;
-  padding: 20px 18px 40px 18px;
-  box-sizing: border-box;
 }
 
-.live-container.channel-view-active #seller-channel-view {
-  display: flex !important;
-  animation: slideUpChannel 0.25s ease-out;
-}
-
-@keyframes slideUpChannel {
-  0% {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 프로필 정보 헤더 (원형 아바타 + LIVE 뱃지 + 이름 + 단골수) */
+/* 프로필 행: 아바타(커버 위에 걸침) + 닉네임 + 단골수 */
 .channel-profile-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 16px;
+  margin-top: -42px;
   margin-bottom: 18px;
+  position: relative;
+  z-index: 15;
 }
 
 .channel-avatar-wrap {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: 84px;
+  height: 84px;
   flex-shrink: 0;
 }
 
@@ -1544,21 +1488,20 @@ video::-webkit-media-controls-overlay-play-button {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #f43f5e;
-  padding: 2px;
+  border: 4px solid #ffffff;
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
 }
 
 .channel-avatar-badge {
   position: absolute;
-  top: -2px;
+  top: 0;
   right: -2px;
   background: #f43f5e;
   color: #ffffff;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 10px;
   border: 2px solid #ffffff;
   line-height: 1.2;
@@ -1569,53 +1512,54 @@ video::-webkit-media-controls-overlay-play-button {
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  padding-bottom: 4px;
 }
 
 .channel-profile-name {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.02em;
   margin: 0;
-  line-height: 1.25;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .channel-fan-count {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: #64748b;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
-/* 메인 액션 버튼 그룹 (단골/일촌맺기 + 소통 말풍선) */
+/* 메인 액션 버튼 그룹 (단골맺기 + 소통 말풍선) */
 .channel-actions-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .btn-channel-fan {
   flex: 1;
-  height: 46px;
-  border-radius: 12px;
+  height: 48px;
+  border-radius: 14px;
   border: none;
   background: #f43f5e;
   color: #ffffff;
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25);
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.28);
   transition: background 0.15s, transform 0.15s;
 }
 
@@ -1635,12 +1579,12 @@ video::-webkit-media-controls-overlay-play-button {
 }
 
 .btn-channel-chat {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   border: 1.5px solid #e2e8f0;
   background: #ffffff;
-  color: #475569;
+  color: #334155;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1655,20 +1599,20 @@ video::-webkit-media-controls-overlay-play-button {
   color: #0f172a;
 }
 
-/* 셀러 혜택 및 소개 공지 텍스트 카드 */
+/* 셀러 혜택 및 공지 안내 카드 */
 .channel-notice-card {
   background: #f8fafc;
   border: 1px solid #f1f5f9;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
+  border-radius: 18px;
+  padding: 18px 16px;
+  margin-bottom: 22px;
 }
 
 .channel-notice-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 13.5px;
+  gap: 10px;
+  font-size: 14px;
   font-weight: 500;
   color: #334155;
   line-height: 1.5;
@@ -1677,44 +1621,45 @@ video::-webkit-media-controls-overlay-play-button {
 .channel-notice-item {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
 }
 
 .channel-notice-more-btn {
   background: none;
   border: none;
   color: #94a3b8;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  padding: 6px 0 0 0;
+  padding: 8px 0 0 0;
   text-align: left;
 }
 
 /* 라이브 바로 입장하기 카드 */
 .channel-live-card {
   background: #0f172a;
-  border-radius: 16px;
-  padding: 16px 18px;
+  border-radius: 18px;
+  padding: 18px 20px;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 24px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
+  gap: 14px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.18);
 }
 
 .channel-live-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .channel-live-badge-inline {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 11px;
   font-weight: 800;
   color: #f43f5e;
@@ -1729,22 +1674,26 @@ video::-webkit-media-controls-overlay-play-button {
 }
 
 .channel-live-title {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn-enter-live-cta {
-  padding: 10px 18px;
-  border-radius: 10px;
+  padding: 11px 20px;
+  border-radius: 12px;
   background: #ffffff;
   color: #0f172a;
   border: none;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.15s, transform 0.15s;
 }
 
@@ -1756,21 +1705,21 @@ video::-webkit-media-controls-overlay-play-button {
   transform: scale(0.97);
 }
 
-/* 채널 하단 푸터 */
+/* 하단 푸터 */
 .channel-footer {
   margin-top: auto;
-  padding-top: 20px;
+  padding-top: 22px;
   border-top: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .channel-footer-links {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 12px;
+  gap: 12px;
+  font-size: 13px;
   color: #64748b;
   font-weight: 600;
 }
@@ -1785,7 +1734,7 @@ video::-webkit-media-controls-overlay-play-button {
 }
 
 .channel-footer-copy {
-  font-size: 11px;
+  font-size: 11.5px;
   color: #94a3b8;
-  line-height: 1.4;
+  line-height: 1.45;
 }

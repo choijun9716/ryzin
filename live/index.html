@@ -53,7 +53,7 @@
     }
   </script>
 
-  <link rel="stylesheet" href="live.css?v=202609040008">
+  <link rel="stylesheet" href="live.css?v=202609040012">
   <style>
     /* Embed Mode Overrides */
     body.embed-mode {
@@ -300,42 +300,6 @@
 
       <!-- 하단 그라데이션 오버레이 (텍스트 가독성) -->
       <div class="bottom-gradient"></div>
-
-      <!-- 채널 모드 전용 상단 영상 컨트롤 오버레이 (무중단 재생 중 상단 바) -->
-      <div class="channel-video-controls">
-        <div class="channel-ctrl-top">
-          <div class="channel-ctrl-brand" onclick="closeSellerChannelView()">
-            <button type="button" class="channel-ctrl-btn" aria-label="라이브로 돌아가기" style="width:30px; height:30px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
-            <span class="channel-ctrl-brand-name" id="channel-ctrl-brand-name">RYZIN</span>
-          </div>
-          <div class="channel-ctrl-actions">
-            <button type="button" class="channel-ctrl-btn" onclick="shareChannel()" title="공유하기" aria-label="공유하기">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="channel-ctrl-bottom">
-          <button type="button" class="channel-expand-live-btn" onclick="enterLiveFullScreen()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <polyline points="9 21 3 21 3 15"></polyline>
-              <line x1="21" y1="3" x2="14" y2="10"></line>
-              <line x1="3" y1="21" x2="10" y2="14"></line>
-            </svg>
-            <span>전체화면</span>
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- UI 레이어 (비디오 위에 띄워지는 정보들) -->
@@ -1443,93 +1407,122 @@
            ═══════════════════════════════════════════════════════════ -->
       <div id="seller-channel-view">
         
-        <!-- 1. 프로필 정보 헤더 -->
-        <div class="channel-profile-row">
-          <div class="channel-avatar-wrap">
-            <img id="channel-avatar-img" class="channel-avatar-img" src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Seller Avatar">
-            <span id="channel-avatar-badge" class="channel-avatar-badge">LIVE</span>
-          </div>
-          <div class="channel-profile-info">
-            <h2 id="channel-seller-name" class="channel-profile-name">RYZIN</h2>
-            <div class="channel-fan-count">
-              <span>단골</span>
-              <span id="channel-fan-num" style="color:#0f172a; font-weight:800;">341,746</span>
-            </div>
+        <!-- 1. 상단 커버 배너 (뒤로가기 + 커버 이미지 + 공유 버튼) -->
+        <div class="channel-cover-wrapper">
+          <img id="channel-cover-img" class="channel-cover-img" src="" alt="Cover Banner" style="display:none;">
+          <div class="channel-cover-overlay"></div>
+          
+          <div class="channel-cover-nav">
+            <button type="button" class="channel-cover-btn" onclick="closeSellerChannelView()" aria-label="라이브로 돌아가기" title="라이브로 돌아가기">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <button type="button" class="channel-cover-btn" onclick="shareChannel()" aria-label="채널 공유하기" title="채널 공유하기">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </button>
           </div>
         </div>
 
-        <!-- 2. 메인 액션 버튼 (단골맺기 + 소통 말풍선) -->
-        <div class="channel-actions-row">
-          <button type="button" id="btn-channel-fan" class="btn-channel-fan" onclick="toggleChannelFriend()">
-            <svg id="icon-channel-heart" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-            <span id="text-channel-fan">단골맺기</span>
-          </button>
-          <button type="button" class="btn-channel-chat" onclick="openChannelChat()" title="셀러와 1:1 소통" aria-label="셀러와 소통하기">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </button>
-        </div>
+        <!-- 2. 채널 본문 컨텐츠 -->
+        <div class="channel-content-body">
+          
+          <!-- 프로필 정보 헤더 -->
+          <div class="channel-profile-row">
+            <div class="channel-avatar-wrap">
+              <img id="channel-avatar-img" class="channel-avatar-img" src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Seller Avatar">
+              <span id="channel-avatar-badge" class="channel-avatar-badge">LIVE</span>
+            </div>
+            <div class="channel-profile-info">
+              <h2 id="channel-seller-name" class="channel-profile-name">RYZIN</h2>
+              <div class="channel-fan-count">
+                <span>단골</span>
+                <span id="channel-fan-num" style="color:#0f172a; font-weight:800;">341,746</span>
+              </div>
+            </div>
+          </div>
 
-        <!-- 3. 셀러 혜택 및 소개 공지 카드 -->
-        <div class="channel-notice-card">
-          <div class="channel-notice-list" id="channel-notice-list">
-            <div class="channel-notice-item">
-              <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
-              <span id="channel-notice-line1">단골 맺고 VIP 혜택 먼저 받기!</span>
-            </div>
-            <div class="channel-notice-item">
-              <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
-              <span id="channel-notice-line2">방송 중 특가 혜택 및 단독 사은품 증정</span>
-            </div>
-            <div class="channel-notice-item">
-              <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
-              <span id="channel-notice-line3">실시간 채팅 및 이벤트 참여 기회 제공</span>
-            </div>
-            <div id="channel-notice-more-content" style="display:none; flex-direction:column; gap:8px;">
+          <!-- 메인 액션 버튼 (단골맺기 + 소통 말풍선) -->
+          <div class="channel-actions-row">
+            <button type="button" id="btn-channel-fan" class="btn-channel-fan" onclick="toggleChannelFriend()">
+              <svg id="icon-channel-heart" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              <span id="text-channel-fan">단골맺기</span>
+            </button>
+            <button type="button" class="btn-channel-chat" onclick="openChannelChat()" title="셀러와 1:1 소통" aria-label="셀러와 소통하기">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- 셀러 혜택 및 소개 공지 카드 -->
+          <div class="channel-notice-card">
+            <div class="channel-notice-list" id="channel-notice-list">
               <div class="channel-notice-item">
                 <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
-                <span>백화점 브랜드 / 명품 / 산지직송 퀄리티 보장</span>
+                <span id="channel-notice-line1">단골 맺고 VIP 혜택 먼저 받기!</span>
               </div>
               <div class="channel-notice-item">
                 <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
-                <span>신선 냉장 · 냉동 / 프리미엄 뷰티까지 올킬</span>
+                <span id="channel-notice-line2">방송 중 특가 혜택 및 단독 사은품 증정</span>
               </div>
-              <div class="channel-notice-item" style="margin-top:4px; font-size:12.5px; color:#64748b;">
-                <span id="channel-broadcast-intro">지금 바로 라이브에 입장하여 특별 혜택을 확인해보세요!</span>
+              <div class="channel-notice-item">
+                <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
+                <span id="channel-notice-line3">실시간 채팅 및 이벤트 참여 기회 제공</span>
+              </div>
+              <div id="channel-notice-more-content" style="display:none; flex-direction:column; gap:8px;">
+                <div class="channel-notice-item">
+                  <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
+                  <span>백화점 브랜드 / 명품 / 산지직송 퀄리티 보장</span>
+                </div>
+                <div class="channel-notice-item">
+                  <span style="font-size:15px; font-weight:800; color:#f43f5e;">•</span>
+                  <span>신선 냉장 · 냉동 / 프리미엄 뷰티까지 올킬</span>
+                </div>
+                <div class="channel-notice-item" style="margin-top:4px; font-size:13px; color:#64748b;">
+                  <span id="channel-broadcast-intro">지금 바로 라이브에 입장하여 특가 혜택을 확인해보세요!</span>
+                </div>
               </div>
             </div>
+            <button type="button" class="channel-notice-more-btn" id="btn-channel-more" onclick="toggleChannelNoticeMore()">...더보기</button>
           </div>
-          <button type="button" class="channel-notice-more-btn" id="btn-channel-more" onclick="toggleChannelNoticeMore()">...더보기</button>
-        </div>
 
-        <!-- 4. 실시간 라이브 바로입장 카드 -->
-        <div class="channel-live-card">
-          <div class="channel-live-info">
-            <div class="channel-live-badge-inline">
-              <span class="channel-live-badge-dot"></span>
-              <span id="channel-live-badge-text">NOW LIVE</span>
+          <!-- 실시간 라이브 바로입장 카드 (클릭 시 덮개 닫히고 라이브 영상 노출) -->
+          <div class="channel-live-card">
+            <div class="channel-live-info">
+              <div class="channel-live-badge-inline">
+                <span class="channel-live-badge-dot"></span>
+                <span id="channel-live-badge-text">NOW LIVE</span>
+              </div>
+              <div class="channel-live-title" id="channel-card-live-title">라이브 방송이 진행 중입니다</div>
             </div>
-            <div class="channel-live-title" id="channel-card-live-title">라이브 방송이 진행 중입니다</div>
+            <button type="button" class="btn-enter-live-cta" onclick="enterLiveFullScreen()">라이브 입장하기</button>
           </div>
-          <button type="button" class="btn-enter-live-cta" onclick="enterLiveFullScreen()">라이브 입장하기</button>
-        </div>
 
-        <!-- 5. 채널 하단 푸터 -->
-        <div class="channel-footer">
-          <div class="channel-footer-links">
-            <a href="javascript:void(0)" onclick="openMyCsModal()">고객센터</a>
-            <span>•</span>
-            <a href="javascript:void(0)" onclick="openMyTermsModal()">이용약관</a>
-            <span>•</span>
-            <a href="javascript:void(0)" onclick="shareChannel()">채널 공유</a>
+          <!-- 채널 하단 푸터 -->
+          <div class="channel-footer">
+            <div class="channel-footer-links">
+              <a href="javascript:void(0)" onclick="openMyCsModal()">고객센터</a>
+              <span>•</span>
+              <a href="javascript:void(0)" onclick="openMyTermsModal()">이용약관</a>
+              <span>•</span>
+              <a href="javascript:void(0)" onclick="shareChannel()">채널 공유</a>
+            </div>
+            <div class="channel-footer-copy">
+              RYZIN LIVE COMMERCE 공식 인증 셀러 채널입니다.<br>
+              쇼핑과 소통이 함께하는 실시간 라이브 스트리밍을 경험해보세요.
+            </div>
           </div>
-          <div class="channel-footer-copy">
-            RYZIN LIVE COMMERCE 공식 인증 셀러 채널입니다.<br>
-            쇼핑과 소통이 함께하는 실시간 라이브 스트리밍을 경험해보세요.
-          </div>
+
         </div>
 
       </div>
@@ -1539,7 +1532,7 @@
     <!-- Supabase JS SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config.js"></script>
-    <script src="live.js?v=202609040008"></script>
+    <script src="live.js?v=202609040012"></script>
 
 
   <!-- iOS PWA 홈 화면 추가 가이드 모달 (화이트 미니멀 스타일 + 공유 아이콘) -->

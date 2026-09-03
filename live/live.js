@@ -4769,8 +4769,8 @@ window.handlePushSubscribeClick = async function() {
 const BASE_FAN_COUNT = 341746;
 
 window.openSellerChannelView = function() {
-  const container = document.querySelector('.live-container');
-  if (!container) return;
+  const channelView = document.getElementById('seller-channel-view');
+  if (!channelView) return;
 
   const cfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
 
@@ -4778,17 +4778,26 @@ window.openSellerChannelView = function() {
   const brandName = cfg.brandName || document.querySelector('.brand-name')?.textContent || 'RYZIN';
   const broadcastTitle = cfg.title || document.querySelector('.broadcast-title')?.textContent || '단독 특가 라이브 방송이 진행 중입니다';
   const logoUrl = cfg.logoUrl || document.querySelector('.brand-logo')?.src || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff';
+  const thumbUrl = cfg.thumbnailUrl || document.getElementById('thumbnail-img')?.src || '';
   const isLive = cfg.isLive !== false;
 
-  // 채널 상단 바 & 프로필 영역 갱신
-  const topBrandNameEl = document.getElementById('channel-ctrl-brand-name');
+  // 채널 상단 커버 & 프로필 영역 갱신
+  const coverImgEl = document.getElementById('channel-cover-img');
   const sellerNameEl = document.getElementById('channel-seller-name');
   const avatarImgEl = document.getElementById('channel-avatar-img');
   const avatarBadgeEl = document.getElementById('channel-avatar-badge');
   const liveBadgeTextEl = document.getElementById('channel-live-badge-text');
   const cardLiveTitleEl = document.getElementById('channel-card-live-title');
 
-  if (topBrandNameEl) topBrandNameEl.textContent = brandName;
+  if (coverImgEl) {
+    if (thumbUrl && thumbUrl.trim()) {
+      coverImgEl.src = thumbUrl.trim();
+      coverImgEl.style.display = 'block';
+    } else {
+      coverImgEl.style.display = 'none';
+    }
+  }
+
   if (sellerNameEl) sellerNameEl.textContent = brandName;
   if (avatarImgEl) avatarImgEl.src = logoUrl;
   if (cardLiveTitleEl) cardLiveTitleEl.textContent = broadcastTitle;
@@ -4811,15 +4820,15 @@ window.openSellerChannelView = function() {
   // 단골/일촌 상태 업데이트
   updateChannelFanUI();
 
-  // 채널 뷰 활성화
-  container.classList.add('channel-view-active');
-  container.scrollTop = 0;
+  // 오버레이 활성화 (영상을 덮음)
+  channelView.style.display = 'flex';
+  channelView.scrollTop = 0;
 };
 
 window.closeSellerChannelView = function() {
-  const container = document.querySelector('.live-container');
-  if (container) {
-    container.classList.remove('channel-view-active');
+  const channelView = document.getElementById('seller-channel-view');
+  if (channelView) {
+    channelView.style.display = 'none';
   }
 };
 
@@ -4831,7 +4840,7 @@ window.enterLiveFullScreen = function() {
     video.muted = false;
     video.volume = 1.0;
   }
-  showToast('라이브 방송으로 전환되었습니다.');
+  showToast('라이브 방송에 입장했습니다.');
 };
 
 function updateChannelFanUI() {
