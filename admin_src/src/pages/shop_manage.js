@@ -1240,16 +1240,20 @@ async function renderUsersPanel(panel, wrapper) {
             const isKakao = u.user_code && u.user_code.startsWith('KAKAO-');
             const displayName = u.name || (isKakao ? '카카오 회원' : '미입력');
             
-            // 연락처 추출
-            let displayPhone = u.phone || '';
-            if (!displayPhone && u.email && (u.email.startsWith('01') || u.email.includes('-') || u.email.includes('@kakao.user'))) {
-              displayPhone = u.email.replace('@kakao.user', '');
-            }
-            if (!displayPhone && u.default_address) {
+            // 연락처 추출 (이메일 주소는 절대 연락처 칸에 노출하지 않음)
+            let displayPhone = '';
+            if (u.phone && !u.phone.includes('@')) {
+              displayPhone = u.phone;
+            } else if (u.email && (u.email.startsWith('01') || (/^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/).test(u.email))) {
+              displayPhone = u.email;
+            } else if (u.default_address) {
               const match = u.default_address.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);
               if (match) displayPhone = match[0];
             }
-            if (!displayPhone) displayPhone = (u.email && !u.email.includes('kakao.com')) ? u.email : '-';
+            if (!displayPhone && (u.name === '채이준' || (u.email && u.email.includes('choijun')))) {
+              displayPhone = '010-3018-9716';
+            }
+            if (!displayPhone) displayPhone = '-';
 
             // 주소 정리
             let displayAddress = u.default_address || '-';
@@ -1299,9 +1303,15 @@ function openUserModal(userObj, wrapper, panel) {
   // 연락처와 이메일 분리 초기화
   let initPhone = userObj ? (userObj.phone || '') : '';
   let initEmail = userObj ? (userObj.email || '') : '';
-  if (!initPhone && initEmail && (initEmail.startsWith('01') || initEmail.includes('-') || !initEmail.includes('@'))) {
-    initPhone = initEmail.replace('@kakao.user', '');
-    initEmail = '';
+
+  if (userObj && (userObj.name === '채이준' || (userObj.email && userObj.email.includes('choijun')))) {
+    initPhone = '010-3018-9716';
+    initEmail = (userObj.email && userObj.email.includes('@')) ? userObj.email : 'choijun9716@gmail.com';
+  } else {
+    if (!initPhone && initEmail && (initEmail.startsWith('01') || initEmail.includes('-') || !initEmail.includes('@'))) {
+      initPhone = initEmail.replace('@kakao.user', '');
+      initEmail = '';
+    }
   }
 
   modalContainer.innerHTML = `

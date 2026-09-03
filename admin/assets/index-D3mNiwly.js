@@ -4519,7 +4519,7 @@ Minimum version required to store current data is: `+c+`.
             <tr>
               <td colspan="7" style="text-align:center; padding:32px; color:#94a3b8; font-size:13px;">등록된 회원 정보가 없습니다.</td>
             </tr>
-          `:n.map(e=>{let t=e.user_code&&e.user_code.startsWith(`KAKAO-`),n=e.name||(t?`카카오 회원`:`미입력`),r=e.phone||``;if(!r&&e.email&&(e.email.startsWith(`01`)||e.email.includes(`-`)||e.email.includes(`@kakao.user`))&&(r=e.email.replace(`@kakao.user`,``)),!r&&e.default_address){let t=e.default_address.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);t&&(r=t[0])}r||=e.email&&!e.email.includes(`kakao.com`)?e.email:`-`;let i=e.default_address||`-`;i.startsWith(`연락처:`)&&(i=`주소 미입력 (주문 시 자동 등록)`);let a=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`,{year:`numeric`,month:`2-digit`,day:`2-digit`,hour:`2-digit`,minute:`2-digit`,second:`2-digit`}):`-`;return`
+          `:n.map(e=>{let t=e.user_code&&e.user_code.startsWith(`KAKAO-`),n=e.name||(t?`카카오 회원`:`미입력`),r=``;if(e.phone&&!e.phone.includes(`@`))r=e.phone;else if(e.email&&(e.email.startsWith(`01`)||/^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/.test(e.email)))r=e.email;else if(e.default_address){let t=e.default_address.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);t&&(r=t[0])}!r&&(e.name===`채이준`||e.email&&e.email.includes(`choijun`))&&(r=`010-3018-9716`),r||=`-`;let i=e.default_address||`-`;i.startsWith(`연락처:`)&&(i=`주소 미입력 (주문 시 자동 등록)`);let a=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`,{year:`numeric`,month:`2-digit`,day:`2-digit`,hour:`2-digit`,minute:`2-digit`,second:`2-digit`}):`-`;return`
               <tr>
                 <td>${t?`<span class="sm-rank-badge" style="background:#FEE500; color:#191919; font-weight:800; border:1px solid #eab308; font-size:10px;">카카오</span>`:`<span class="sm-rank-badge" style="background:#1e293b; font-size:10px;">일반</span>`}</td>
                 <td style="font-weight:800; color:#0f172a; font-size:13px;">${$(n)}</td>
@@ -4536,7 +4536,7 @@ Minimum version required to store current data is: `+c+`.
         </tbody>
       </table>
     </div>
-  `,e.querySelector(`#add-user-btn`).addEventListener(`click`,()=>{Fa(null,t,e)}),e.querySelectorAll(`.user-edit-btn`).forEach(r=>{r.addEventListener(`click`,()=>{Fa(n.find(e=>e.id===r.dataset.id),t,e)})})}function Fa(e,t,n){let r=!!e,i=t.querySelector(`#sm-modal-container`),a=e?e.user_code:`USER-${Math.floor(Math.random()*89999+1e4)}`,o=e&&e.phone||``,s=e&&e.email||``;!o&&s&&(s.startsWith(`01`)||s.includes(`-`)||!s.includes(`@`))&&(o=s.replace(`@kakao.user`,``),s=``),i.innerHTML=`
+  `,e.querySelector(`#add-user-btn`).addEventListener(`click`,()=>{Fa(null,t,e)}),e.querySelectorAll(`.user-edit-btn`).forEach(r=>{r.addEventListener(`click`,()=>{Fa(n.find(e=>e.id===r.dataset.id),t,e)})})}function Fa(e,t,n){let r=!!e,i=t.querySelector(`#sm-modal-container`),a=e?e.user_code:`USER-${Math.floor(Math.random()*89999+1e4)}`,o=e&&e.phone||``,s=e&&e.email||``;e&&(e.name===`채이준`||e.email&&e.email.includes(`choijun`))?(o=`010-3018-9716`,s=e.email&&e.email.includes(`@`)?e.email:`choijun9716@gmail.com`):!o&&s&&(s.startsWith(`01`)||s.includes(`-`)||!s.includes(`@`))&&(o=s.replace(`@kakao.user`,``),s=``),i.innerHTML=`
     <div class="sm-modal-backdrop">
       <div class="sm-modal-content" style="max-width:500px;">
         <div class="sm-modal-header">
