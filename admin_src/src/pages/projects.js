@@ -43,6 +43,8 @@ function getDeadlineText(broadcastDate, statusKey) {
 export function renderProjects() {
   const container = document.createElement('div');
   const role = store.getCurrentRole();
+  const currentUser = store.getCurrentUser();
+  const isPD = role === 'pd';
   const isBrandPartner = role && role.startsWith('brand:');
   const targetBrandId = isBrandPartner ? role.split(':')[1] : null;
 
@@ -58,6 +60,16 @@ export function renderProjects() {
     let projects = store.getAll('projects');
     if (isBrandPartner && targetBrandId) {
       projects = projects.filter(p => p.brandId === targetBrandId);
+    }
+    // [PD 권한] 본인에게 할당된 라이브만 조회
+    if (isPD) {
+      const myName = (currentUser?.name || '').trim().toLowerCase();
+      const myId = (currentUser?.id || '').trim().toLowerCase();
+      projects = projects.filter(p => {
+        if (!p.pd) return false;
+        const pdStr = String(p.pd).trim().toLowerCase();
+        return (myName && pdStr.includes(myName)) || (myId && pdStr.includes(myId));
+      });
     }
     const brands = store.getAll('brands');
     const hosts = store.getAll('hosts');
@@ -499,7 +511,7 @@ function openProjectCreateModal(onSave) {
       </div>
       <div class="input-group">
         <label>담당 PD</label>
-        <input class="input" id="proj-pd" placeholder="담당 PD">
+        <input class="input" id="proj-pd" placeholder="담당 PD" value="${isPD ? (currentUser?.name || '') : ''}">
       </div>
       <div class="input-group">
         <label>담당 디자이너</label>

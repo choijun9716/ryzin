@@ -11,9 +11,23 @@ let currentProjectFilter = 'in_progress';
 
 export function renderDashboard() {
   const container = document.createElement('div');
+  const role = store.getCurrentRole();
+  const currentUser = store.getCurrentUser();
+  const isPD = role === 'pd';
 
   const kpi = store.getDashboardKPI();
-  const projects = store.getAll('projects');
+  let projects = store.getAll('projects');
+
+  // [PD 권한] 대시보드에서도 본인에게 할당된 라이브 프로젝트만 표시
+  if (isPD) {
+    const myName = (currentUser?.name || '').trim().toLowerCase();
+    const myId = (currentUser?.id || '').trim().toLowerCase();
+    projects = projects.filter(p => {
+      if (!p.pd) return false;
+      const pdStr = String(p.pd).trim().toLowerCase();
+      return (myName && pdStr.includes(myName)) || (myId && pdStr.includes(myId));
+    });
+  }
   
   let filteredProjects = projects;
   if (currentProjectFilter === 'in_progress') {
