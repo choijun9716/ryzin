@@ -282,7 +282,7 @@ body {
 .product-price {
   font-size: 15px;
   font-weight: bold;
-  color: #b91c1c;
+  color: #e50914;
 }
 
 .btn-shop {
@@ -848,13 +848,13 @@ body.ui-hidden .bottom-product-banner {
 }
 
 .banner-discount {
-  color: #b91c1c;
+  color: #ef4444;
   font-weight: 800;
   font-size: 13.5px;
 }
 
 .banner-price {
-  color: #b91c1c;
+  color: #e50914;
   font-weight: 800;
   font-size: 13.5px;
 }
