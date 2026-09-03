@@ -3525,7 +3525,7 @@ function renderLiveEditView(container, liveId, showView) {
                   <circle cx="11" cy="11" r="8"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="subtab-order-search" placeholder="주문자, 영수증번호, 상품명 검색" style="height:35px; width:230px; padding:0 12px 0 32px; border:1px solid #cbd5e1; border-radius:7px; font-size:12px; outline:none; background:#ffffff; color:#0f172a;">
+                <input type="text" id="subtab-order-search" placeholder="주문자, 주문번호, 상품명 검색" style="height:35px; width:230px; padding:0 12px 0 32px; border:1px solid #cbd5e1; border-radius:7px; font-size:12px; outline:none; background:#ffffff; color:#0f172a;">
               </div>
             </div>
           </div>
@@ -3946,7 +3946,7 @@ function renderLiveEditView(container, liveId, showView) {
           <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <!-- 1. 상태 -->
             <td style="padding:13px 14px; text-align:center;">${statusBadge}</td>
-            <!-- 2. 영수증번호 -->
+            <!-- 2. 주문번호 -->
             <td style="padding:13px 14px; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
             <!-- 3. 주문일시 (자연스러운 날짜와 시간) -->
             <td style="padding:13px 14px; color:#334155; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap;">
@@ -3982,7 +3982,7 @@ function renderLiveEditView(container, liveId, showView) {
             <thead>
               <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px; color:#64748b;">
                 <th style="padding:11px 14px; font-weight:600; width:95px; text-align:center;">상태</th>
-                <th style="padding:11px 14px; font-weight:600; width:120px;">영수증번호</th>
+                <th style="padding:11px 14px; font-weight:600; width:120px;">주문번호</th>
                 <th style="padding:11px 14px; font-weight:600; width:140px;">주문일시</th>
                 <th style="padding:11px 14px; font-weight:600; width:100px;">주문자</th>
                 <th style="padding:11px 14px; font-weight:600;">주문 상품</th>
@@ -4117,7 +4117,7 @@ function renderLiveEditView(container, liveId, showView) {
                 <span style="font-weight:700; color:#0f172a; font-size:14px; font-variant-numeric:tabular-nums;">${currentAmount.toLocaleString()}원</span>
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
-                <span style="color:#64748b;">영수증 번호</span>
+                <span style="color:#64748b;">주문번호</span>
                 <span style="color:#475569; font-variant-numeric:tabular-nums;">${receiptNo || '-'}</span>
               </div>
               <div style="display:flex; justify-content:space-between; font-size:12.5px;">
@@ -4616,7 +4616,7 @@ function renderLiveEditView(container, liveId, showView) {
 
     // ── CSV 다운로드 핸들러 ──
     const downloadOrdersCsv = () => {
-      let csv = '주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,영수증번호\n';
+      let csv = '주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,주문번호\n';
       currentOrders.forEach(ord => {
         const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString() : '';
         const itemsSummary = `"${parseItems(ord).map(it => `${it.name}(${it.quantity}개)`).join(', ')}"`;
