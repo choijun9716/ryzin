@@ -1,3 +1,4 @@
+import QRCode from 'qrcode';
 // ============================================================
 //  RYZIN LIVE STREAM ADMIN — 멀티 라이브 관리 시스템
 //  - 라이브 목록 관리 (live01, live02 ...)
@@ -769,12 +770,72 @@ function renderLiveEditView(container, liveId, showView) {
       <span style="font-size:12px; color:#475569; font-weight:700; white-space:nowrap;">시청자 URL</span>
       <span style="font-size:12px; color:#0f172a; font-family:monospace; font-weight:600; white-space:nowrap; margin-right:4px;">ryzincorp.com/live/${liveId}</span>
       <button id="btn-copy-live-url" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; height:28px; line-height:1; border-radius:6px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; font-weight:700; white-space:nowrap;">복사</button>
+      <button id="btn-view-live-qr" class="action-btn btn-neutral" style="padding:4px 10px; font-size:11px; height:28px; line-height:1; border-radius:6px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; font-weight:700; white-space:nowrap;">QR코드</button>
     </div>
   `;
   leftPanel.appendChild(topBar);
 
-  // URL 복사 이벤트 리스너 추가
+  // URL 복사 및 QR코드 이벤트 리스너 추가
   setTimeout(() => {
+    const btnViewQr = document.getElementById('btn-view-live-qr');
+    if (btnViewQr) {
+      btnViewQr.addEventListener('click', async () => {
+        const liveUrl = `https://ryzincorp.com/live/${liveId}`;
+        try {
+          const qrDataUrl = await QRCode.toDataURL(liveUrl, {
+            width: 320,
+            margin: 2,
+            color: { dark: '#000000', light: '#ffffff' }
+          });
+
+          // 모달 생성
+          let qrModal = document.getElementById('admin-live-qr-modal');
+          if (!qrModal) {
+            qrModal = document.createElement('div');
+            qrModal.id = 'admin-live-qr-modal';
+            qrModal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:999999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);';
+            document.body.appendChild(qrModal);
+          }
+
+          qrModal.innerHTML = `
+            <div style="background:#fff; border-radius:20px; padding:28px; max-width:360px; width:100%; text-align:center; box-shadow:0 25px 50px rgba(0,0,0,0.25); border:1px solid #e2e8f0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div style="font-size:16px; font-weight:800; color:#0f172a;">라이브 바로가기 QR</div>
+                <button id="btn-close-qr-modal" style="background:transparent; border:none; font-size:20px; color:#94a3b8; cursor:pointer; padding:0; line-height:1;">&times;</button>
+              </div>
+
+              <div style="background:#f8fafc; padding:16px; border-radius:14px; border:1px solid #e2e8f0; display:inline-block; margin-bottom:16px;">
+                <img src="${qrDataUrl}" alt="Live QR" style="width:240px; height:240px; display:block; border-radius:8px;">
+              </div>
+
+              <div style="font-size:12px; font-family:monospace; color:#64748b; margin-bottom:20px; word-break:break-all; background:#f1f5f9; padding:8px 12px; border-radius:8px;">
+                ${liveUrl}
+              </div>
+
+              <div style="display:flex; gap:8px;">
+                <a href="${qrDataUrl}" download="qr_${liveId}.png" class="action-btn btn-primary-solid" style="flex:1; padding:10px; font-size:13px; font-weight:700; text-decoration:none; display:flex; align-items:center; justify-content:center; border-radius:10px;">
+                  이미지 다운로드
+                </a>
+                <button id="btn-close-qr-modal-bottom" class="action-btn btn-neutral" style="padding:10px 16px; font-size:13px; font-weight:700; border-radius:10px;">
+                  닫기
+                </button>
+              </div>
+            </div>
+          `;
+          qrModal.style.display = 'flex';
+
+          const closeModal = () => { qrModal.style.display = 'none'; };
+          qrModal.querySelector('#btn-close-qr-modal').onclick = closeModal;
+          qrModal.querySelector('#btn-close-qr-modal-bottom').onclick = closeModal;
+          qrModal.onclick = (e) => { if (e.target === qrModal) closeModal(); };
+
+        } catch(err) {
+          console.error(err);
+          alert('QR 코드 생성 오류: ' + err.message);
+        }
+      });
+    }
+
     const btnCopyUrl = document.getElementById('btn-copy-live-url');
     if (btnCopyUrl) {
       btnCopyUrl.addEventListener('click', async () => {
