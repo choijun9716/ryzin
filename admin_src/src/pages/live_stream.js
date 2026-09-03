@@ -3903,14 +3903,14 @@ function renderLiveEditView(container, liveId, showView) {
         const isPaid = pStatus === 'paid';
         const isCancel = cancelStatuses.includes(pStatus);
 
-        // 세련된 소프트 닷 뱃지
+        // 세련된 소프트 닷 뱃지 (절대 줄바꿈 방지 white-space: nowrap)
         let statusBadge = '';
         if (isPaid) {
-          statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981;"></span>결제완료</span>';
+          statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981; flex-shrink:0;"></span>결제완료</span>';
         } else if (isCancel) {
-          statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444;"></span>취소/환불</span>';
+          statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444; flex-shrink:0;"></span>결제취소</span>';
         } else {
-          statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b;"></span>결제대기</span>';
+          statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b; flex-shrink:0;"></span>결제대기</span>';
         }
 
         // 자연스러운 날짜/시간 분리 포맷
@@ -3945,7 +3945,7 @@ function renderLiveEditView(container, liveId, showView) {
         rowsHtml += `
           <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <!-- 1. 상태 -->
-            <td style="padding:13px 14px; text-align:center;">${statusBadge}</td>
+            <td style="padding:13px 8px; text-align:center; white-space:nowrap;">${statusBadge}</td>
             <!-- 2. 주문번호 -->
             <td style="padding:13px 14px; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
             <!-- 3. 주문일시 (자연스러운 날짜와 시간) -->
@@ -3968,9 +3968,16 @@ function renderLiveEditView(container, liveId, showView) {
                 ${itemsSummary}
               </div>
             </td>
-            <!-- 6. 결제금액 (정갈한 블랙 폰트) -->
-            <td style="padding:13px 20px 13px 14px; text-align:right; font-weight:700; font-size:13.5px; font-variant-numeric:tabular-nums; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : '#0f172a;'}">
-              ${(parseInt(ord.total_amount) || 0).toLocaleString()}원
+            <!-- 6. 결제금액 -->
+            <td style="padding:13px 20px 13px 14px; text-align:right; font-variant-numeric:tabular-nums;">
+              ${isCancel ? `
+                <div style="display:inline-flex; flex-direction:column; align-items:flex-end;">
+                  <span style="color:#94a3b8; font-size:13px; text-decoration:line-through; font-weight:500;">${(parseInt(ord.total_amount) || 0).toLocaleString()}원</span>
+                  <span style="color:#dc2626; font-size:11px; font-weight:600; margin-top:2px;">취소완료</span>
+                </div>
+              ` : `
+                <span style="font-weight:700; font-size:13.5px; color:#0f172a;">${(parseInt(ord.total_amount) || 0).toLocaleString()}원</span>
+              `}
             </td>
           </tr>
         `;
@@ -3981,7 +3988,7 @@ function renderLiveEditView(container, liveId, showView) {
           <table style="width:100%; border-collapse:collapse; text-align:left;">
             <thead>
               <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px; color:#64748b;">
-                <th style="padding:11px 14px; font-weight:600; width:95px; text-align:center;">상태</th>
+                <th style="padding:11px 8px; font-weight:600; width:105px; min-width:105px; text-align:center;">상태</th>
                 <th style="padding:11px 14px; font-weight:600; width:120px;">주문번호</th>
                 <th style="padding:11px 14px; font-weight:600; width:140px;">주문일시</th>
                 <th style="padding:11px 14px; font-weight:600; width:100px;">주문자</th>
@@ -4022,11 +4029,11 @@ function renderLiveEditView(container, liveId, showView) {
       // 세련된 소프트 닷 뱃지
       let statusBadge = '';
       if (isPaid) {
-        statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981;"></span>결제완료</span>';
+        statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981; flex-shrink:0;"></span>결제완료</span>';
       } else if (isCancel) {
-        statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444;"></span>취소/환불</span>';
+        statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444; flex-shrink:0;"></span>결제취소</span>';
       } else {
-        statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b;"></span>결제대기</span>';
+        statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b; flex-shrink:0;"></span>결제대기</span>';
       }
 
       const items = parseItems(ord);
