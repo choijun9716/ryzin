@@ -638,25 +638,10 @@ function renderLiveEditView(container, liveId, showView) {
 
           if (data.products) {
             let pData = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
-            if (Array.isArray(pData)) {
-              if (!products || products.length === 0) {
-                // 로컬에 데이터 없으면 DB 데이터를 그대로 사용
-                products.length = 0;
-                products.push(...pData);
-              } else {
-                // 로컬에 데이터 있으면 DB에서 price, normalPrice, discountRate, clicks, image 동기화
-                products.forEach(localProd => {
-                  const dbProd = pData.find(d => d.id === localProd.id || d.name === localProd.name);
-                  if (dbProd) {
-                    // price/normalPrice는 DB 값이 최신이므로 동기화
-                    if (dbProd.price !== undefined) localProd.price = dbProd.price;
-                    if (dbProd.normalPrice !== undefined) localProd.normalPrice = dbProd.normalPrice;
-                    if (dbProd.discountRate !== undefined) localProd.discountRate = dbProd.discountRate;
-                    localProd.clicks = parseInt(dbProd.clicks) || 0;
-                    if (!localProd.image && dbProd.image) localProd.image = dbProd.image;
-                  }
-                });
-              }
+            if (Array.isArray(pData) && pData.length > 0) {
+              // DB에 상품 데이터가 있으면 새로고침 시 무조건 100% DB 원본 데이터로 복원
+              products.length = 0;
+              products.push(...pData);
             }
           }
           saveLiveConfig(liveId, config);
@@ -2814,20 +2799,19 @@ function renderLiveEditView(container, liveId, showView) {
           const preview = document.getElementById(`img-prev-${idx}`);
           if (preview) preview.style.opacity = '0.5';
           try {
-            // 이미지 압축 적용 (업로드 실패 방지)
-            const base64 = await compressImage(file, 600, 600, 0.85);
-            const url = await uploadToImgBB(base64);
-            if (!url) throw new Error('서버로부터 이미지 URL을 받지 못했습니다.');
+            // 외부 호스팅 API 장애/만료에 구애받지 않도록 최적화 압축(250x250, 0.8) Data URL로 직접 영구 저장
+            const base64Data = await compressImage(file, 250, 250, 0.8);
+            const dataUrl = base64Data.startsWith('data:') ? base64Data : `data:image/jpeg;base64,${base64Data}`;
 
-            products[idx].image = url;
-            if (preview) preview.src = url;
+            products[idx].image = dataUrl;
+            if (preview) preview.src = dataUrl;
             saveProducts(true);
             syncToSheetDB(liveId, config, stats, products, true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
           } catch (err) {
-            console.error('상품 이미지 업로드 에러:', err);
-            alert('상품 이미지 업로드 에러: ' + err.message);
+            console.error('상품 이미지 등록 에러:', err);
+            alert('상품 이미지 등록 에러: ' + err.message);
           } finally {
             if (preview) preview.style.opacity = '1';
           }
