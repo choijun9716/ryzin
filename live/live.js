@@ -3645,46 +3645,46 @@ window.openMyMenuModal = function() {
     const displayEmail = (kakaoUserObj && kakaoUserObj.email) || (kakaoUserObj && kakaoUserObj.phone) || '';
 
     profileBox.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:40px; height:40px; border-radius:12px; background:#FEE500; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#191919">
-              <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:9px;">
+          <div style="width:34px; height:34px; border-radius:50%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#475569;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
           <div>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span style="font-size:15px; font-weight:800; color:#0f172a;">${displayName}님</span>
-              <span style="background:#fef08a; color:#854d0e; font-size:10.5px; font-weight:700; padding:2px 6px; border-radius:4px;">카카오회원</span>
+            <div style="display:flex; align-items:center; gap:5px;">
+              <span style="font-size:14.5px; font-weight:700; color:#0f172a;">${displayName}</span>
+              <span style="background:#f1f5f9; color:#64748b; font-size:10px; font-weight:600; padding:1px 5px; border-radius:4px;">회원</span>
             </div>
-            <div style="font-size:12px; color:#64748b; margin-top:2px;">${displayEmail}</div>
+            <div style="font-size:11.5px; color:#64748b; margin-top:1px;">${displayEmail}</div>
           </div>
         </div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:9px 12px;">
         <div style="text-align:center; border-right:1px solid #e2e8f0;">
-          <div style="font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px;">보유 포인트</div>
-          <div style="font-size:14px; font-weight:800; color:#059669;">3,000P</div>
+          <div style="font-size:10.5px; font-weight:500; color:#64748b; margin-bottom:1px;">포인트</div>
+          <div style="font-size:13.5px; font-weight:700; color:#0f172a; font-family:monospace;">3,000P</div>
         </div>
         <div style="text-align:center;">
-          <div style="font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px;">할인 쿠폰</div>
-          <div style="font-size:14px; font-weight:800; color:#2563eb;">1장</div>
+          <div style="font-size:10.5px; font-weight:500; color:#64748b; margin-bottom:1px;">쿠폰</div>
+          <div style="font-size:13.5px; font-weight:700; color:#0f172a; font-family:monospace;">1장</div>
         </div>
       </div>
     `;
     if (logoutRow) logoutRow.style.display = 'block';
   } else {
     profileBox.innerHTML = `
-      <div style="margin-bottom:12px;">
-        <div style="font-size:15px; font-weight:800; color:#0f172a; margin-bottom:4px;">로그인이 필요합니다</div>
-        <div style="font-size:12px; color:#64748b; line-height:1.4;">카카오 1초 로그인으로 주문 내역과 적립 혜택을 확인하세요.</div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:14.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">로그인</div>
+        <div style="font-size:11.5px; color:#64748b; line-height:1.4;">로그인하고 주문 내역과 혜택을 확인하세요.</div>
       </div>
       <button type="button" onclick="closeMyMenuModal(); loginWithKakao('checkout');"
-        style="width:100%; padding:11px; background:#FEE500; color:#191919; border:none; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.06); outline:none;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#191919">
-          <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
+        style="width:100%; padding:10px; background:#0f172a; color:#ffffff; border:none; border-radius:10px; font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; outline:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line>
         </svg>
-        <span>카카오 1초 간편 로그인</span>
+        <span>카카오 간편 로그인</span>
       </button>
     `;
     if (logoutRow) logoutRow.style.display = 'none';
