@@ -3680,9 +3680,10 @@ window.openMyMenuModal = function() {
         <div style="font-size:11.5px; color:#64748b; line-height:1.4;">로그인하고 주문 내역과 혜택을 확인하세요.</div>
       </div>
       <button type="button" onclick="closeMyMenuModal(); loginWithKakao('checkout');"
-        style="width:100%; padding:10px; background:#0f172a; color:#ffffff; border:none; border-radius:10px; font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; outline:none;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line>
+        style="width:100%; padding:11px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; outline:none; transition:background 0.15s;"
+        onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3c-5.523 0-10 3.582-10 8 0 2.868 1.864 5.395 4.707 6.786-.208.766-.755 2.774-.864 3.208-.135.539.197.532.414.388.171-.114 2.715-1.848 3.815-2.602.62.086 1.265.132 1.928.132 5.523 0 10-3.582 10-8s-4.477-8-10-8z"/>
         </svg>
         <span>카카오 간편 로그인</span>
       </button>
