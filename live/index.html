@@ -263,18 +263,22 @@
           allowfullscreen></iframe>
       </div>
 
-      <!-- 썸네일 오버레이 (방송 대기 시 카운트다운 및 썸네일 노출) -->
+      <!-- 썸네일 오버레이 (방송 대기 시 기본 썸네일 노출) -->
       <div id="thumbnail-overlay" class="thumbnail-overlay">
         <img id="thumbnail-img" class="thumbnail-img" src="" alt="Live Thumbnail">
-        <div class="thumbnail-content">
-          <div id="live-start-text" class="live-start-text"></div>
-        </div>
       </div>
 
-      <!-- 방송 진행 중 예비 썸네일 오버레이 (ON 설정 시 표시) -->
+      <!-- 방송 대기/진행 중 예비 썸네일 오버레이 (ON 설정 시 표시) -->
       <div id="standby-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:4; background:#000; align-items:center; justify-content:center; overflow:hidden;">
         <img id="standby-img" src="" alt="Standby Thumbnail" style="width:100%; height:100%; object-fit:cover; display:none;">
         <div id="standby-youtube-wrap" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; pointer-events:none;"></div>
+      </div>
+
+      <!-- 카운트다운 오버레이 (예비 썸네일이 나와도 z-index: 5로 상위에 항상 또렷하게 표시) -->
+      <div id="countdown-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:5; pointer-events:none; align-items:center; justify-content:center;">
+        <div class="thumbnail-content" style="pointer-events:auto;">
+          <div id="live-start-text" class="live-start-text"></div>
+        </div>
       </div>
 
 
