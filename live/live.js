@@ -1,3 +1,64 @@
+
+// ── [동적 PWA Manifest 엔진] 홈 화면 추가 시 현재 라이브 세부 주소 및 썸네일 완벽 보존 ──
+(function initDynamicManifest() {
+  try {
+    const liveId = window.INJECTED_LIVE_ID 
+      || new URLSearchParams(window.location.search).get('id') 
+      || (window.location.pathname.split('/live/')[1] || '').split('/')[0] 
+      || '';
+
+    const currentUrl = liveId 
+      ? `${window.location.origin}/live/${liveId}` 
+      : window.location.href;
+
+    const ogTitle = document.querySelector('meta[property="og:title"]')?.content 
+      || document.title 
+      || 'RYZIN LIVE';
+
+    const ogImage = document.querySelector('meta[property="og:image"]')?.content 
+      || 'https://i.ibb.co/GQN2NXgR/image.jpg';
+
+    const dynamicManifest = {
+      name: ogTitle,
+      short_name: ogTitle.length > 12 ? ogTitle.substring(0, 10) + '..' : ogTitle,
+      description: "라이브커머스 실시간 방송 및 쇼핑",
+      start_url: currentUrl,
+      scope: "/live/",
+      display: "standalone",
+      background_color: "#000000",
+      theme_color: "#000000",
+      icons: [
+        {
+          src: ogImage,
+          sizes: "192x192 512x512",
+          type: "image/png"
+        }
+      ]
+    };
+
+    const blob = new Blob([JSON.stringify(dynamicManifest)], { type: 'application/json' });
+    const blobUrl = URL.createObjectURL(blob);
+    let link = document.querySelector('link[rel="manifest"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'manifest';
+      document.head.appendChild(link);
+    }
+    link.href = blobUrl;
+
+    // apple-touch-icon 동적 연동
+    let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+    if (!appleIcon) {
+      appleIcon = document.createElement('link');
+      appleIcon.rel = 'apple-touch-icon';
+      document.head.appendChild(appleIcon);
+    }
+    appleIcon.href = ogImage;
+  } catch (e) {
+    console.warn('Dynamic manifest init error:', e);
+  }
+})();
+
 // === Global Supabase & State Variables ===
 function extractYouTubeId(url) {
   if (!url || typeof url !== 'string') return null;

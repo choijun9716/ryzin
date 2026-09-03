@@ -74,7 +74,8 @@ export default async function handler(req, res) {
   
   // 클라이언트 측 JS(live.js)가 URL 쿼리스트링 없이도 현재 라이브 ID를 알 수 있도록 전역 변수 주입
   if (id) {
-    html = html.replace('<head>', `<head>\n  <script>window.INJECTED_LIVE_ID = "${id}";</script>`);
+    const liveTargetUrl = `https://ryzincorp.com/live/${id}`;
+    html = html.replace('<head>', `<head>\n  <script>window.INJECTED_LIVE_ID = "${id}";</script>\n  <meta name="apple-mobile-web-app-title" content="${title}">\n  <link rel="apple-touch-icon" href="${thumbnail}">\n  <link rel="canonical" href="${liveTargetUrl}">`);
   }
   
   // 정규식으로 meta 속성 교체

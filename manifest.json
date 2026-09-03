@@ -2,7 +2,7 @@
   "name": "RYZIN STUDIO LIVE",
   "short_name": "RYZIN",
   "description": "라이브커머스 실시간 방송 및 쇼핑",
-  "start_url": "/live/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
@@ -12,5 +12,6 @@
       "sizes": "192x192 512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "scope": "/live/"
 }
