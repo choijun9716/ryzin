@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- 1. 안내 배너 -->
           <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:12px 14px; margin-bottom:16px;">
             <div style="font-size:12.5px; color:#1e40af; font-weight:600; line-height:1.5;">
-              ${adminName}님이 [${targetNick}] 고객님의 장바구니 주문서와 입금 계좌를 확인하도록 요청했습니다.
+              ${adminName}님이 ${targetNick} 고객님의 장바구니 주문서와 입금 계좌를 확인하도록 요청했습니다.
             </div>
           </div>
 
@@ -680,16 +680,13 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- 3. 입금 계좌번호 카드 -->
           <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:10px; padding:16px; margin-bottom:14px;">
             <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:8px;">입금 계좌 안내</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0;">
               <span id="direct-order-bank-text" style="font-size:13.5px; font-weight:700; color:#0f172a; font-variant-numeric:tabular-nums; word-break:break-all;">
                 ${depositAccount}
               </span>
               <button type="button" id="btn-copy-deposit-bank" style="flex-shrink:0; margin-left:8px; padding:5px 10px; font-size:11.5px; font-weight:700; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#2563eb; cursor:pointer; transition:all 0.12s;">
                 계좌 복사
               </button>
-            </div>
-            <div style="font-size:11.5px; color:#64748b; line-height:1.5;">
-              정확한 주문 확인을 위해 입금 시 입금자명을 <b>[${targetNick}]</b> 으로 입력해 주세요.
             </div>
           </div>
         </div>
