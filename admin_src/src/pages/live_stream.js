@@ -3538,7 +3538,7 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
     `;
 
-    // ── 주문 품목 추출 헬퍼 ──
+    // ── 주문 아이템 품목 파싱 헬퍼 ──
     const parseItems = (ord) => {
       let list = [];
       if (Array.isArray(ord.items) && ord.items.length > 0) list = ord.items;
@@ -3551,14 +3551,14 @@ function renderLiveEditView(container, liveId, showView) {
         }
       }
       if (list.length === 0) {
-        list = [{ name: ord.goodname || '라이브 상품', price: ord.total_amount || 0, quantity: 1 }];
+        list = [{ name: ord.goodname || ord.item_name || '라이브 상품', price: ord.total_amount || 0, quantity: 1 }];
       }
       return list;
     };
 
     const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
 
-    // ── 1. 데이터 로드 및 KPI 집계 ──
+    // ── 1. 데이터 로드 및 실제 결제 상태 동기화 ──
     const loadData = async () => {
       const statusBadge = document.getElementById('orders-status-badge');
       if (statusBadge) {
@@ -3574,44 +3574,138 @@ function renderLiveEditView(container, liveId, showView) {
       }
 
       try {
-        let dbList = [];
+        let rawOrders = [];
+
+        // 1-1. Supabase live_orders 테이블 조회 (실제 라이브 주문)
         if (db) {
           try {
-            const { data: ordData } = await db.from('live_orders')
+            const { data: ordData, error: ordErr } = await db.from('live_orders')
               .select('*')
               .eq('live_id', liveId)
               .order('created_at', { ascending: false });
-            if (Array.isArray(ordData)) dbList.push(...ordData);
+            if (Array.isArray(ordData) && !ordErr) {
+              ordData.forEach(o => {
+                rawOrders.push({
+                  id: o.id,
+                  live_id: o.live_id,
+                  customer_name: o.customer_name || o.buyer_name || o.name || '',
+                  customer_phone: o.customer_phone || o.buyer_phone || o.phone || '',
+                  customer_address: o.customer_address || o.shipping_address || o.address || '',
+                  total_amount: Number(o.total_amount) || 0,
+                  items: o.items,
+                  payment_status: (o.payment_status || 'payapp_requested').toLowerCase(),
+                  pg_provider: o.pg_provider || 'payapp',
+                  pg_receipt_id: o.pg_receipt_id || o.receipt_id || '',
+                  created_at: o.created_at
+                });
+              });
+            }
           } catch(e) {}
 
+          // 1-2. live_winners 중 오직 type: 'order'인 레거시 주문 데이터만 추출 (추첨 당첨자는 제외!)
           try {
-            const { data: winData } = await db.from('live_winners')
+            const { data: winData, error: winErr } = await db.from('live_winners')
               .select('*')
               .eq('live_id', liveId)
               .order('created_at', { ascending: false });
-            if (Array.isArray(winData)) {
+            if (Array.isArray(winData) && !winErr) {
               winData.forEach(w => {
-                if (!dbList.some(o => (o.receipt_id && o.receipt_id === w.receipt_id) || (o.id && o.id === w.id))) {
-                  dbList.push({
-                    id: w.id,
-                    live_id: w.live_id,
-                    order_number: w.receipt_id || `WIN-${w.id}`,
-                    receipt_id: w.receipt_id || '',
-                    buyer_name: w.nickname || w.buyer_name || '익명',
-                    buyer_phone: w.phone || '',
-                    shipping_address: w.address || '',
-                    items: w.item_name || '당첨/주문 상품',
-                    total_amount: parseInt(w.amount) || 0,
-                    status: w.status || 'paid',
-                    created_at: w.created_at || new Date().toISOString()
-                  });
+                if (w.nickname && (w.nickname.startsWith('{"type":"order"') || w.nickname.startsWith('{"type": "order"'))) {
+                  try {
+                    const parsed = JSON.parse(w.nickname);
+                    rawOrders.push({
+                      id: w.id,
+                      live_id: w.live_id,
+                      customer_name: w.name || '',
+                      customer_phone: w.phone || '',
+                      customer_address: w.address || '',
+                      total_amount: Number(parsed.total) || 0,
+                      items: parsed.items || [{ name: parsed.goodname || '상품', price: Number(parsed.total) || 0 }],
+                      payment_status: (parsed.status || 'payapp_requested').toLowerCase(),
+                      pg_provider: parsed.pg_provider || 'payapp',
+                      pg_receipt_id: String(parsed.mul_no || ''),
+                      created_at: w.created_at
+                    });
+                  } catch(e) {}
                 }
               });
             }
           } catch(e) {}
         }
-        currentOrders = dbList;
+
+        // 1-3. 로컬스토리지 캐시 백업 주문 병합
+        try {
+          const loc = JSON.parse(localStorage.getItem(`ryzin_live_orders_${liveId}`) || '[]');
+          if (Array.isArray(loc)) {
+            loc.forEach(l => {
+              rawOrders.push({
+                id: l.id,
+                live_id: l.live_id || liveId,
+                customer_name: l.customer_name || l.buyer_name || l.name || '',
+                customer_phone: l.customer_phone || l.buyer_phone || l.phone || '',
+                customer_address: l.customer_address || l.shipping_address || l.address || '',
+                total_amount: Number(l.total_amount) || 0,
+                items: l.items,
+                payment_status: (l.payment_status || 'payapp_requested').toLowerCase(),
+                pg_provider: l.pg_provider || 'payapp',
+                pg_receipt_id: l.pg_receipt_id || l.receipt_id || '',
+                created_at: l.created_at
+              });
+            });
+          }
+        } catch(e) {}
+
+        // 1-4. 중복 제거 (pg_receipt_id or id or created_at+phone 기준)
+        const orderMap = new Map();
+        rawOrders.forEach(o => {
+          const key = (o.pg_receipt_id && o.pg_receipt_id !== 'undefined' && o.pg_receipt_id !== '-' ? o.pg_receipt_id : null) || o.id || `${o.created_at}_${o.customer_phone}`;
+          const existing = orderMap.get(key);
+          if (!existing) {
+            orderMap.set(key, o);
+          } else {
+            if (o.payment_status === 'paid' && existing.payment_status !== 'paid') {
+              orderMap.set(key, o);
+            }
+          }
+        });
+
+        currentOrders = Array.from(orderMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+        // 1-5. PayApp 실시간 결제 상태 조회 동기화 (실제 결제 완료 여부 자동 검증!)
+        const mulNos = currentOrders.map(o => o.pg_receipt_id).filter(m => m && m !== 'undefined' && m !== '-');
+        if (mulNos.length > 0) {
+          try {
+            const payRes = await fetch('/api/payapp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ cmd: 'check_orders', mul_nos: mulNos })
+            });
+            if (payRes.ok) {
+              const resData = await payRes.json();
+              if (resData.success && resData.results) {
+                let updated = false;
+                currentOrders.forEach(o => {
+                  const info = resData.results[o.pg_receipt_id];
+                  if (info && info.status && info.status !== 'unknown') {
+                    if (o.payment_status !== info.status) {
+                      o.payment_status = info.status;
+                      updated = true;
+                    }
+                  }
+                });
+                if (updated) {
+                  try {
+                    localStorage.setItem(`ryzin_live_orders_${liveId}`, JSON.stringify(currentOrders));
+                  } catch(e) {}
+                }
+              }
+            }
+          } catch(e) {
+            console.warn('PayApp status check failed:', e);
+          }
+        }
       } catch (err) {
+        console.warn('Order loading error:', err);
         currentOrders = [];
       }
 
@@ -3619,21 +3713,26 @@ function renderLiveEditView(container, liveId, showView) {
       renderActiveSubTab();
     };
 
-    // ── KPI 계산 및 반영 ──
+    // ── KPI 계산 및 반영 (실제 결제 완료된 데이터만 매출 및 판매량에 집계!) ──
     const updateKpis = () => {
-      const validOrders = currentOrders.filter(o => !cancelStatuses.includes((o.status || '').toLowerCase()));
+      const paidOrders = currentOrders.filter(o => (o.payment_status || '').toLowerCase() === 'paid');
+      const pendingOrders = currentOrders.filter(o => (o.payment_status || '').toLowerCase() === 'payapp_requested');
+      const cancelledOrders = currentOrders.filter(o => cancelStatuses.includes((o.payment_status || '').toLowerCase()));
+
       let totalSales = 0;
       let totalQty = 0;
       const productTypesSet = new Set();
 
-      validOrders.forEach(ord => {
+      // 오직 실제 결제 완료(paid)된 주문만 집계!
+      paidOrders.forEach(ord => {
         const items = parseItems(ord);
         items.forEach(it => {
           const qty = parseInt(it.quantity || it.qty || 1) || 1;
           const price = parseInt(it.price || 0) || Math.round((parseInt(ord.total_amount) || 0) / Math.max(1, items.length));
           totalSales += price * qty;
           totalQty += qty;
-          productTypesSet.add((it.name || it.goodname || '상품').trim());
+          const pName = (it.name || it.goodname || '').trim();
+          if (pName) productTypesSet.add(pName);
         });
       });
 
@@ -3662,7 +3761,13 @@ function renderLiveEditView(container, liveId, showView) {
       const elCumViewers = document.getElementById('kpi-cum-viewers');
 
       if (elTotalSales) elTotalSales.textContent = `${totalSales.toLocaleString()}원`;
-      if (elOrdersCount) elOrdersCount.textContent = `${validOrders.length}건 결제 완료`;
+      if (elOrdersCount) {
+        if (paidOrders.length === 0 && pendingOrders.length > 0) {
+          elOrdersCount.innerHTML = `결제 0건 <span style="font-size:11px; color:#f59e0b; font-weight:600;">(대기 ${pendingOrders.length}건)</span>`;
+        } else {
+          elOrdersCount.textContent = `결제완료 ${paidOrders.length}건${cancelledOrders.length > 0 ? ` (취소 ${cancelledOrders.length})` : ''}`;
+        }
+      }
       if (elTotalQty) elTotalQty.textContent = `${totalQty.toLocaleString()}개`;
       if (elProductTypes) elProductTypes.textContent = `${productTypesSet.size}종 품목`;
       if (elPeakViewers) elPeakViewers.textContent = `${peakViewers.toLocaleString()}명`;
@@ -3700,7 +3805,7 @@ function renderLiveEditView(container, liveId, showView) {
       }
     };
 
-    // ── [서브 뷰 1] 주문 내역 목록 ──
+    // ── [서브 뷰 1] 주문 내역 목록 (실제 고객 정보 및 정확한 결제 상태 표기) ──
     const renderOrdersView = (container) => {
       const allProductNames = new Set();
       currentOrders.forEach(ord => {
@@ -3717,8 +3822,8 @@ function renderLiveEditView(container, liveId, showView) {
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
         filtered = filtered.filter(ord => {
-          const name = (ord.buyer_name || '').toLowerCase();
-          const phone = (ord.buyer_phone || '').toLowerCase();
+          const name = (ord.customer_name || ord.buyer_name || '').toLowerCase();
+          const phone = (ord.customer_phone || ord.buyer_phone || '').toLowerCase();
           const items = JSON.stringify(ord.items || '').toLowerCase();
           return name.includes(q) || phone.includes(q) || items.includes(q);
         });
@@ -3734,32 +3839,42 @@ function renderLiveEditView(container, liveId, showView) {
         rowsHtml = `
           <tr>
             <td colspan="7" style="text-align:center; padding:35px 20px; color:#94a3b8; font-size:13px;">
-              조회된 주문 내역이 없습니다.
+              조회된 실제 주문 내역이 없습니다.
             </td>
           </tr>
         `;
       } else {
         filtered.forEach(ord => {
-          const isCancel = cancelStatuses.includes((ord.status || '').toLowerCase());
+          const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
+          const isPaid = pStatus === 'paid';
+          const isCancel = cancelStatuses.includes(pStatus);
+          const isPending = !isPaid && !isCancel;
+
+          let statusBadge = '';
+          if (isPaid) {
+            statusBadge = '<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#ecfdf5; color:#059669;">결제완료</span>';
+          } else if (isCancel) {
+            statusBadge = '<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#fef2f2; color:#ef4444;">취소/환불</span>';
+          } else {
+            statusBadge = '<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#fffbeb; color:#d97706;">결제대기</span>';
+          }
+
           const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
           const items = parseItems(ord);
           const itemsText = items.map(it => `${it.name || it.goodname} (${it.quantity || 1}개)`).join(', ');
+          const customerName = ord.customer_name || ord.buyer_name || '-';
 
           rowsHtml += `
             <tr style="border-bottom:1px solid #f8fafc; font-size:12.5px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
               <td style="padding:10px 12px; color:#64748b; font-family:monospace;">${dateStr}</td>
               <td style="padding:10px 12px; font-weight:700; color:#0f172a; max-width:260px; line-height:1.35;">${itemsText}</td>
-              <td style="padding:10px 12px; text-align:right; font-weight:800; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : '#0f172a;'}">
+              <td style="padding:10px 12px; text-align:right; font-weight:800; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : isPaid ? '#0f172a;' : '#d97706;'}">
                 ${(parseInt(ord.total_amount) || 0).toLocaleString()}원
               </td>
-              <td style="padding:10px 12px; color:#334155; font-weight:600;">${ord.buyer_name || '익명'}</td>
-              <td style="padding:10px 12px; color:#64748b; font-family:monospace;">${ord.buyer_phone || '-'}</td>
-              <td style="padding:10px 12px; text-align:center;">
-                <span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; ${isCancel ? 'background:#fef2f2; color:#ef4444;' : 'background:#ecfdf5; color:#059669;'}">
-                  ${isCancel ? '취소/환불' : '결제완료'}
-                </span>
-              </td>
-              <td style="padding:10px 12px; color:#94a3b8; font-size:11px; font-family:monospace;">${ord.receipt_id || ord.order_number || '-'}</td>
+              <td style="padding:10px 12px; color:#334155; font-weight:600;">${customerName}</td>
+              <td style="padding:10px 12px; color:#64748b; font-family:monospace;">${ord.customer_phone || ord.buyer_phone || '-'}</td>
+              <td style="padding:10px 12px; text-align:center;">${statusBadge}</td>
+              <td style="padding:10px 12px; color:#94a3b8; font-size:11px; font-family:monospace;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
             </tr>
           `;
         });
@@ -3789,7 +3904,7 @@ function renderLiveEditView(container, liveId, showView) {
                 <th style="padding:9px 12px; font-weight:700; width:90px;">주문자</th>
                 <th style="padding:9px 12px; font-weight:700; width:110px;">연락처</th>
                 <th style="padding:9px 12px; font-weight:700; width:85px; text-align:center;">상태</th>
-                <th style="padding:9px 12px; font-weight:700; width:110px;">주문번호</th>
+                <th style="padding:9px 12px; font-weight:700; width:110px;">영수증번호</th>
               </tr>
             </thead>
             <tbody>
@@ -3809,35 +3924,28 @@ function renderLiveEditView(container, liveId, showView) {
       });
     };
 
-    // ── [서브 뷰 2] 상품 판매 순위 랭킹 ──
+    // ── [서브 뷰 2] 상품 판매 순위 랭킹 (오직 실제 결제 완료된 상품만 순위 산정!) ──
     const renderRankingView = (container) => {
-      const validOrders = currentOrders.filter(o => !cancelStatuses.includes((o.status || '').toLowerCase()));
-      const cancelledOrders = currentOrders.filter(o => cancelStatuses.includes((o.status || '').toLowerCase()));
+      // 실제 결제 완료된 주문만 추출!
+      const paidOrders = currentOrders.filter(o => (o.payment_status || '').toLowerCase() === 'paid');
 
       const pMap = {};
       let grandTotalSales = 0;
 
-      validOrders.forEach(ord => {
+      paidOrders.forEach(ord => {
         parseItems(ord).forEach(it => {
-          const name = (it.name || it.goodname || '기타 상품').trim();
+          const name = (it.name || it.goodname || '상품').trim();
           const qty = parseInt(it.quantity || it.qty || 1) || 1;
           const price = parseInt(it.price || 0) || Math.round((parseInt(ord.total_amount) || 0) / Math.max(1, parseItems(ord).length));
           const lineTotal = price * qty;
           grandTotalSales += lineTotal;
 
           if (!pMap[name]) {
-            pMap[name] = { name, code: it.product_code || it.code || '-', unitPrice: price, totalQty: 0, totalAmount: 0, orderCount: 0, cancelCount: 0 };
+            pMap[name] = { name, code: it.product_code || it.code || '-', unitPrice: price, totalQty: 0, totalAmount: 0, orderCount: 0 };
           }
           pMap[name].totalQty += qty;
           pMap[name].totalAmount += lineTotal;
           pMap[name].orderCount += 1;
-        });
-      });
-
-      cancelledOrders.forEach(ord => {
-        parseItems(ord).forEach(it => {
-          const name = (it.name || it.goodname || '기타 상품').trim();
-          if (pMap[name]) pMap[name].cancelCount += 1;
         });
       });
 
@@ -3853,7 +3961,7 @@ function renderLiveEditView(container, liveId, showView) {
         rowsHtml = `
           <tr>
             <td colspan="6" style="text-align:center; padding:35px 20px; color:#94a3b8; font-size:13px;">
-              결제 완료된 주문 내역이 아직 없습니다.
+              실제 결제 완료된 판매 데이터가 아직 없습니다.
             </td>
           </tr>
         `;
@@ -3896,7 +4004,7 @@ function renderLiveEditView(container, liveId, showView) {
 
       container.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <span style="font-size:12px; font-weight:600; color:#64748b;">판매 집계 총 ${list.length}개 품목</span>
+          <span style="font-size:12px; font-weight:600; color:#64748b;">실제 결제 완료 품목: 총 ${list.length}개</span>
           <div style="display:flex; background:#f1f5f9; padding:2px; border-radius:7px; gap:2px;">
             <button id="rank-sort-qty" type="button" style="padding:4px 10px; font-size:11.5px; font-weight:${rankingSortBy === 'qty' ? '700' : '600'}; border-radius:5px; border:none; background:${rankingSortBy === 'qty' ? '#ffffff' : 'transparent'}; color:${rankingSortBy === 'qty' ? '#0f172a' : '#64748b'}; box-shadow:${rankingSortBy === 'qty' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'}; cursor:pointer;">수량순</button>
             <button id="rank-sort-amount" type="button" style="padding:4px 10px; font-size:11.5px; font-weight:${rankingSortBy === 'amount' ? '700' : '600'}; border-radius:5px; border:none; background:${rankingSortBy === 'amount' ? '#ffffff' : 'transparent'}; color:${rankingSortBy === 'amount' ? '#0f172a' : '#64748b'}; box-shadow:${rankingSortBy === 'amount' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'}; cursor:pointer;">금액순</button>
@@ -4047,16 +4155,17 @@ function renderLiveEditView(container, liveId, showView) {
     // ── CSV 통합 다운로드 ──
     const handleCsvExport = () => {
       if (currentSubTab === 'orders') {
-        let csv = '주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,결제번호\n';
+        let csv = '주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,영수증번호\n';
         currentOrders.forEach(ord => {
           const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString() : '';
           const itemsSummary = `"${parseItems(ord).map(it => `${it.name}(${it.quantity}개)`).join(', ')}"`;
           const amount = ord.total_amount || 0;
-          const name = `"${ord.buyer_name || ''}"`;
-          const phone = `"${ord.buyer_phone || ''}"`;
-          const status = `"${ord.status || 'paid'}"`;
-          const receipt = `"${ord.receipt_id || ord.order_number || ''}"`;
-          csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${status},${receipt}\n`;
+          const name = `"${ord.customer_name || ord.buyer_name || ''}"`;
+          const phone = `"${ord.customer_phone || ord.buyer_phone || ''}"`;
+          const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
+          const statusStr = pStatus === 'paid' ? '결제완료' : cancelStatuses.includes(pStatus) ? '취소/환불' : '결제대기';
+          const receipt = `"${ord.pg_receipt_id || ord.receipt_id || ord.order_number || ''}"`;
+          csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${statusStr},${receipt}\n`;
         });
         const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -4068,9 +4177,9 @@ function renderLiveEditView(container, liveId, showView) {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else if (currentSubTab === 'ranking') {
-        const validOrders = currentOrders.filter(o => !cancelStatuses.includes((o.status || '').toLowerCase()));
+        const paidOrders = currentOrders.filter(o => (o.payment_status || '').toLowerCase() === 'paid');
         const pMap = {};
-        validOrders.forEach(ord => {
+        paidOrders.forEach(ord => {
           parseItems(ord).forEach(it => {
             const name = (it.name || it.goodname || '상품').trim();
             const qty = parseInt(it.quantity || it.qty || 1) || 1;
