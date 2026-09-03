@@ -2711,19 +2711,24 @@ function renderLiveEditView(container, liveId, showView) {
     const bindProductEvents = () => {
       const plc = document.getElementById('product-list-container');
 
-      // 실시간 숫자 콤마 포맷팅 + blur 시 즉시 저장
+      // 실시간 타이핑 디바운스 자동 저장 타이머
+      let typingTimer = null;
+      const triggerRealtimeSave = () => {
+        if (typingTimer) clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+          saveProducts(true);
+        }, 300);
+      };
+
+      // 실시간 숫자 콤마 포맷팅 및 입력 즉시 반영
       plc.querySelectorAll('.price-input').forEach(input => {
         input.addEventListener('input', (e) => {
           let val = e.target.value.replace(/[^0-9]/g, '');
           e.target.value = val ? Number(val).toLocaleString() : '';
-        });
-        // blur 이벤트: 포커스 이탈 시 change와 동일하게 저장 처리
-        input.addEventListener('blur', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           const field = e.target.dataset.field;
-          if (field === 'price' || field === 'normalPrice') {
-            const cleaned = e.target.value.replace(/[^0-9]/g, '');
-            products[idx][field] = cleaned;
+          if (products[idx]) {
+            products[idx][field] = val;
             const n = Number((products[idx].normalPrice || '').toString().replace(/[^0-9]/g, ''));
             const p = Number((products[idx].price || '').toString().replace(/[^0-9]/g, ''));
             if (n > 0 && n >= p) {
@@ -2735,8 +2740,11 @@ function renderLiveEditView(container, liveId, showView) {
               const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
               if (ri) ri.value = 0;
             }
-            saveProducts();
+            triggerRealtimeSave();
           }
+        });
+        input.addEventListener('blur', () => {
+          saveProducts(true);
         });
       });
 
@@ -2794,6 +2802,22 @@ function renderLiveEditView(container, liveId, showView) {
           }
           saveProducts(true);
         };
+        input.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const field = e.target.dataset.field;
+          if (products[idx]) {
+            if (field === 'name') {
+              products[idx].name = e.target.value.trim();
+              triggerRealtimeSave();
+            } else if (field === 'url') {
+              products[idx].url = e.target.value.trim();
+              triggerRealtimeSave();
+            } else if (field === 'giveawayStock') {
+              products[idx].giveawayStock = parseInt(e.target.value) || 3;
+              triggerRealtimeSave();
+            }
+          }
+        });
         input.addEventListener('change', handleAutoSave);
         input.addEventListener('blur', handleAutoSave);
       });
@@ -2805,25 +2829,20 @@ function renderLiveEditView(container, liveId, showView) {
           const preview = document.getElementById(`img-prev-${idx}`);
           if (preview) preview.style.opacity = '0.5';
           try {
-            const base64 = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result.split(',')[1]);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
-
+            // 이미지 압축 적용 (업로드 실패 방지)
+            const base64 = await compressImage(file, 600, 600, 0.85);
             const url = await uploadToImgBB(base64);
-            if (!url) throw new Error('서버로부터 다운로드 URL을 받지 못했습니다.');
+            if (!url) throw new Error('서버로부터 이미지 URL을 받지 못했습니다.');
 
             products[idx].image = url;
             if (preview) preview.src = url;
-            saveProducts();
+            saveProducts(true);
+            syncToSheetDB(liveId, config, stats, products, true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
-            alert('🎉 상품 이미지 변경 성공!');
           } catch (err) {
-            console.error(err);
-            alert('❌ 상품 이미지 업로드 에러:\n' + err.message);
+            console.error('상품 이미지 업로드 에러:', err);
+            alert('상품 이미지 업로드 에러: ' + err.message);
           } finally {
             if (preview) preview.style.opacity = '1';
           }
