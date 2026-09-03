@@ -593,13 +593,13 @@ Minimum version required to store current data is: `+c+`.
 
       <div class="section-card" id="notice-memo-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-          <h3 style="margin:0; border:none; padding:0;">좌측 포스트잇 공지 메모장 설정</h3>
+          <h3 style="margin:0; border:none; padding:0;">포스트잇 공지 메모장 설정</h3>
           <div style="display:flex; align-items:center; gap:8px;">
             <input type="checkbox" id="cfg-showNoticeNote" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;" ${l.showNoticeNote===!1?``:`checked`}>
             <label for="cfg-showNoticeNote" style="font-size:13px; font-weight:700; color:#0f172a; cursor:pointer;">메모장 노출 (ON)</label>
           </div>
         </div>
-        <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">라이브 시청 화면 좌측에 노란색 포스트잇(메모장) 형태로 공지사항을 노출합니다. 시청자가 클릭하면 부드럽게 커지면서 긴 공지 내용도 스크롤하여 확인할 수 있습니다.</p>
+        <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">라이브 시청 화면에 노란색 포스트잇(메모장) 형태로 공지사항을 노출합니다. 시청자가 클릭하면 부드럽게 커지면서 긴 공지 내용도 스크롤하여 확인할 수 있습니다.</p>
         
         <div style="display:grid; grid-template-columns: 240px 1fr; gap:16px;">
           <div>

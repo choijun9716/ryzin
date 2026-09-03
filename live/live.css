@@ -1177,11 +1177,12 @@ video::-webkit-media-controls-overlay-play-button {
   justify-content: center;
 }
 
-/* ─── 좌측 포스트잇 공지 메모장 (Sticky Note Memo) ─── */
+/* ─── 포스트잇 공지 메모장 (Sticky Note Memo) ─── */
 .live-notice-memo {
   position: absolute;
-  top: 106px;
-  left: 14px;
+  top: 68px;
+  right: 14px;
+  left: auto;
   z-index: 85;
   width: 88px;
   min-height: 82px;
