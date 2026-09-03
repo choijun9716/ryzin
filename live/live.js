@@ -586,7 +586,8 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.classList.remove('hidden');
           }
           if (thumbImg) {
-            if (c.thumbnailUrl && c.thumbnailUrl.trim()) {
+            const isStandbyActive = c.useStandbyImage && c.standbyImageUrl && c.standbyImageUrl.trim();
+            if (!isStandbyActive && c.thumbnailUrl && c.thumbnailUrl.trim()) {
               thumbImg.src = c.thumbnailUrl.trim();
               thumbImg.style.display = 'block';
             } else {
@@ -666,61 +667,48 @@ document.addEventListener('DOMContentLoaded', () => {
           clearInterval(window.liveCountdownInterval);
         }
 
-        const countdownOverlay = document.getElementById('countdown-overlay');
-
-        if (!c.isLive) {
-          // [방송 시작 전 / 대기 상태] 카운트다운 오버레이 표시 (예비 썸네일 위에서도 항상 선명하게 표시!)
-          if (countdownOverlay) {
-            countdownOverlay.style.display = 'flex';
+        if (c.liveStartTime && startText && !c.isLive) {
+          let rawStart = String(c.liveStartTime).trim();
+          if (rawStart.length === 16 && !rawStart.includes('Z') && !rawStart.includes('+')) {
+            rawStart += ':00';
+          }
+          let targetTime = new Date(rawStart).getTime();
+          if (isNaN(targetTime)) {
+            targetTime = new Date(rawStart.replace('T', ' ')).getTime();
           }
 
-          if (c.liveStartTime && startText) {
-            let rawStart = String(c.liveStartTime).trim();
-            if (rawStart.length === 16 && !rawStart.includes('Z') && !rawStart.includes('+')) {
-              rawStart += ':00';
-            }
-            let targetTime = new Date(rawStart).getTime();
-            if (isNaN(targetTime)) {
-              targetTime = new Date(rawStart.replace('T', ' ')).getTime();
-            }
+          const updateCountdown = () => {
+            const now = Date.now();
+            const diff = targetTime - now;
 
-            const updateCountdown = () => {
-              const now = Date.now();
-              const diff = targetTime - now;
-
-              if (diff <= 0) {
-                startText.textContent = '곧 라이브가 시작됩니다!';
-                if (window.liveCountdownInterval) clearInterval(window.liveCountdownInterval);
-              } else {
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                let countStr = '라이브 시작까지\n';
-                if (days > 0) countStr += `${days}일 `;
-                countStr += `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                startText.innerText = countStr;
-              }
-            };
-
-            if (!isNaN(targetTime) && targetTime > Date.now()) {
-              updateCountdown();
-              window.liveCountdownInterval = setInterval(updateCountdown, 1000);
-            } else if (!isNaN(targetTime) && targetTime <= Date.now()) {
+            if (diff <= 0) {
               startText.textContent = '곧 라이브가 시작됩니다!';
+              if (window.liveCountdownInterval) clearInterval(window.liveCountdownInterval);
             } else {
-              startText.textContent = c.liveStartTime;
+              const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+              const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+              let countStr = '라이브 시작까지\n';
+              if (days > 0) countStr += `${days}일 `;
+              countStr += `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+              startText.innerText = countStr;
             }
-          } else if (startText) {
-            startText.textContent = '라이브 대기 중입니다.';
+          };
+
+          if (!isNaN(targetTime) && targetTime > Date.now()) {
+            updateCountdown();
+            window.liveCountdownInterval = setInterval(updateCountdown, 1000);
+          } else if (!isNaN(targetTime) && targetTime <= Date.now()) {
+            startText.textContent = '곧 라이브가 시작됩니다!';
+          } else {
+            startText.textContent = c.liveStartTime;
           }
-        } else {
-          // [방송 진행 중 ON] 카운트다운 오버레이 숨김
-          if (countdownOverlay) {
-            countdownOverlay.style.display = 'none';
-          }
-          if (startText) {
+        } else if (startText) {
+          if (!c.isLive) {
+            startText.textContent = '라이브가 종료되었습니다.';
+          } else {
             startText.textContent = '';
           }
         }
@@ -2404,8 +2392,6 @@ function playStreamUrl(url, isLive) {
         overlay.classList.add('hidden');
         overlay.style.display = 'none';
       }
-      const cOverlayOn = document.getElementById('countdown-overlay');
-      if (cOverlayOn) cOverlayOn.style.display = 'none';
     } else {
       // [방송 OFF - 라이브 종료] 유튜브 정지 및 종료 오버레이 표시
       if (ytBox) ytBox.style.display = 'none';
@@ -2416,8 +2402,6 @@ function playStreamUrl(url, isLive) {
         overlay.classList.remove('hidden');
         overlay.style.display = 'flex';
       }
-      const cOverlayOff = document.getElementById('countdown-overlay');
-      if (cOverlayOff) cOverlayOff.style.display = 'flex';
       const startText = document.getElementById('live-start-text');
       if (startText) {
         startText.textContent = '라이브가 종료되었습니다.';
