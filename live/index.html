@@ -1229,46 +1229,35 @@
         </div>
       </div>
 
-      <!-- 내 주문 내역 모달 -->
+      <!-- [NEW] 내 주문 내역 모달 (마이 모달과 100% 동일한 규격 & 미니멀 리스트형) -->
       <div id="my-orders-modal"
-        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.68); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); justify-content:center; align-items:center; z-index:100000; padding:20px; pointer-events:auto;">
+        style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); justify-content:center; align-items:center; z-index:100001; padding:20px; pointer-events:auto;">
         <div
-          style="background:#ffffff; width:100%; max-width:380px; max-height:85vh; border-radius:24px; padding:26px 20px 20px 20px; box-shadow:0 20px 40px rgba(0,0,0,0.25); position:relative; animation: modalScaleUp 0.3s ease-out; color:#0f172a; border:1px solid #e2e8f0; display:flex; flex-direction:column; text-align:left;">
+          style="background:#ffffff; width:100%; max-width:350px; max-height:85vh; border-radius:24px; padding:28px 24px 22px 24px; box-shadow:0 20px 48px rgba(0,0,0,0.14); position:relative; animation: modalScaleUp 0.25s ease-out; color:#0f172a; border:1px solid #e2e8f0; display:flex; flex-direction:column; text-align:left;">
           
-          <button id="btn-close-my-orders" type="button"
-            style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.2s;"
+          <button id="btn-close-my-orders" type="button" onclick="document.getElementById('my-orders-modal').style.display='none'; document.getElementById('my-menu-modal').style.display='flex';"
+            style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:19px; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.15s;"
             onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
 
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
-            <div style="width:34px; height:34px; border-radius:10px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#0f172a;">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
-            <div>
-              <h3 style="margin:0; font-size:17px; font-weight:800; color:#0f172a; line-height:1.2;">내 주문 내역</h3>
-              <span id="my-orders-count-text" style="font-size:11.5px; color:#64748b; font-weight:500;">주문하신 내역을 확인합니다.</span>
-            </div>
+          <div style="margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #f1f5f9;">
+            <h3 style="margin:0 0 3px 0; font-size:16.5px; font-weight:800; color:#0f172a;">내 주문목록</h3>
+            <span id="my-orders-count-text" style="font-size:11.5px; color:#64748b; font-weight:500;">주문하신 내역을 확인합니다.</span>
           </div>
 
-          <!-- 주문 리스트 스크롤 영역 -->
-          <div id="my-orders-list" style="flex:1; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:12px; min-height:180px;">
-            <!-- 주문 내역이 여기에 렌더링됨 -->
+          <!-- 주문 리스트 스크롤 영역 (미니멀 게시판 리스트 형태) -->
+          <div id="my-orders-list" style="flex:1; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column;">
+            <!-- 주문 내역 리스트 항목들이 여기에 렌더링됨 -->
           </div>
 
-          <div style="margin-top:16px; padding-top:10px; border-top:1px solid #f1f5f9;">
-            <button id="btn-confirm-my-orders" type="button" onclick="document.getElementById('my-orders-modal').style.display='none'"
-              style="width:100%; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:13.5px; font-weight:700; color:#475569; cursor:pointer; transition:all 0.15s; outline:none;"
+          <div style="margin-top:14px; padding-top:12px; border-top:1px solid #f1f5f9;">
+            <button id="btn-confirm-my-orders" type="button" onclick="document.getElementById('my-orders-modal').style.display='none'; document.getElementById('my-menu-modal').style.display='flex';"
+              style="width:100%; padding:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; transition:all 0.15s; outline:none;"
               onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-              닫기
+              확인
             </button>
           </div>
         </div>
       </div>
-
-
 
     </div>
 

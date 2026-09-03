@@ -3347,9 +3347,9 @@ window.openMyOrdersModal = async function() {
     
     let badgeHtml = '';
     if (isCancelled) {
-      badgeHtml = '<span style="font-size:10.5px; font-weight:700; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:6px;">결제취소</span>';
+      badgeHtml = '<span style="font-size:10px; font-weight:600; color:#b91c1c; background:#fef2f2; border:1px solid #fecdd3; padding:2px 6px; border-radius:4px;">결제취소</span>';
     } else if (isPaid) {
-      badgeHtml = '<span style="font-size:10.5px; font-weight:700; background:#dcfce7; color:#166534; padding:3px 8px; border-radius:6px;">결제완료</span>';
+      badgeHtml = '<span style="font-size:10px; font-weight:600; color:#15803d; background:#f0fdf4; border:1px solid #bbf7d0; padding:2px 6px; border-radius:4px;">결제완료</span>';
     }
 
     const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
@@ -3371,60 +3371,66 @@ window.openMyOrdersModal = async function() {
       itemsSummary = ord.goodname || '라이브 주문 상품';
     }
 
-    // 상세 개별 품목 HTML
+    // 상세 개별 품목 HTML (미니멀 라인형)
     const itemsDetailHtml = itemsList.length > 0 ? itemsList.map(item => {
       const unitPrice = item.price ? Number(item.price.toString().replace(/[^0-9]/g, '')) : 0;
       const qty = item.quantity || 1;
       const subTotal = (unitPrice * qty).toLocaleString();
-      const imgTag = item.image ? `<img src="${item.image}" alt="thumb" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">` : '';
+      const imgTag = item.image ? `<img src="${item.image}" alt="thumb" style="width:32px; height:32px; border-radius:6px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">` : '';
       return `
-        <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #f8fafc;">
           ${imgTag}
           <div style="flex:1; min-width:0;">
-            <div style="font-size:12px; font-weight:700; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
-            <div style="font-size:11px; color:#64748b;">${unitPrice.toLocaleString()}원 × ${qty}개</div>
+            <div style="font-size:11.5px; font-weight:600; color:#1e293b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
+            <div style="font-size:10.5px; color:#64748b;">${unitPrice.toLocaleString()}원 × ${qty}개</div>
           </div>
-          <div style="font-size:12px; font-weight:800; color:#0f172a; flex-shrink:0;">${subTotal}원</div>
+          <div style="font-size:11.5px; font-weight:700; color:#0f172a; flex-shrink:0;">${subTotal}원</div>
         </div>
       `;
-    }).join('') : `<div style="font-size:12px; color:#64748b; padding:4px 0;">${itemsSummary}</div>`;
+    }).join('') : `<div style="font-size:11.5px; color:#64748b; padding:4px 0;">${itemsSummary}</div>`;
 
     return `
-      <div class="my-order-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
-        <!-- 카드 헤더 (클릭 시 아코디언 토글) -->
-        <div onclick="toggleOrderDetail(${idx})" style="padding:12px 14px; background:#f8fafc; cursor:pointer; display:flex; flex-direction:column; gap:6px; border-bottom:1px solid #f1f5f9;" title="클릭하여 상세 상품 확인">
+      <!-- 미니멀 게시판 리스트 아이템 -->
+      <div class="my-order-item" style="border-bottom:1px solid #f1f5f9; padding:13px 0;">
+        <!-- 리스트 헤더 행 (클릭 시 아코디언 토글) -->
+        <div onclick="toggleOrderDetail(${idx})" style="cursor:pointer; display:flex; flex-direction:column; gap:5px;" title="클릭하여 상세 정보 확인">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11.5px; color:#64748b; font-weight:600;">${dateStr}</span>
-            <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:11px; color:#94a3b8; font-weight:500;">${dateStr}</span>
+            <div style="display:flex; align-items:center; gap:5px;">
               ${badgeHtml}
-              <span id="order-arrow-${idx}" style="font-size:11px; color:#94a3b8; font-weight:800; transition:transform 0.2s;">▼</span>
+              <span id="order-arrow-${idx}" style="font-size:10px; color:#94a3b8; font-weight:700; transition:transform 0.2s;">▼</span>
             </div>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            <div style="font-size:13.5px; font-weight:800; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${itemsSummary}</div>
-            <div style="font-size:14.5px; font-weight:800; color:${isCancelled ? '#94a3b8' : '#0f172a'}; text-decoration:${isCancelled ? 'line-through' : 'none'}; flex-shrink:0;">${totalStr}원</div>
+            <div style="font-size:13px; font-weight:600; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">
+              ${itemsSummary}
+            </div>
+            <div style="font-size:13.5px; font-weight:700; color:${isCancelled ? '#94a3b8' : '#0f172a'}; text-decoration:${isCancelled ? 'line-through' : 'none'}; flex-shrink:0;">
+              ${totalStr}원
+            </div>
           </div>
         </div>
 
-        <!-- 상세 상품 및 배송지 아코디언 영역 -->
-        <div id="order-detail-${idx}" style="display:none; padding:12px 14px; background:#ffffff; flex-direction:column; gap:8px;">
-          <div style="font-size:11.5px; font-weight:800; color:#475569; margin-bottom:2px;">주문 상세 상품</div>
-          <div style="display:flex; flex-direction:column; margin-bottom:6px;">
+        <!-- 클릭 시 펼쳐지는 미니멀 상세 정보 -->
+        <div id="order-detail-${idx}" style="display:none; padding-top:10px; margin-top:8px; border-top:1px dashed #f1f5f9; flex-direction:column; gap:8px;">
+          <!-- 품목 리스트 -->
+          <div style="display:flex; flex-direction:column; gap:2px;">
             ${itemsDetailHtml}
           </div>
 
-          <div style="background:#f8fafc; border:1px solid #f1f5f9; border-radius:10px; padding:9px 11px; font-size:11.5px; color:#475569; display:flex; flex-direction:column; gap:3px;">
-            <div><span style="color:#94a3b8; font-weight:700;">수령인:</span> ${ord.customer_name || '-'} (${ord.customer_phone || '-'})</div>
-            <div style="word-break:break-all;"><span style="color:#94a3b8; font-weight:700;">배송지:</span> ${ord.customer_address || '-'}</div>
-            ${mulNo ? `<div style="font-size:10.5px; color:#94a3b8; margin-top:2px;">결제승인번호: ${mulNo}</div>` : ''}
+          <!-- 배송지 정보 (미니멀 텍스트) -->
+          <div style="padding:8px 10px; background:#f8fafc; border-radius:8px; font-size:11px; color:#64748b; line-height:1.5;">
+            <div><strong style="color:#475569;">받는분:</strong> ${ord.customer_name || '-'} (${ord.customer_phone || '-'})</div>
+            <div style="word-break:break-all;"><strong style="color:#475569;">주소:</strong> ${ord.customer_address || '-'}</div>
+            ${mulNo ? `<div style="color:#94a3b8; margin-top:2px;">승인번호: ${mulNo}</div>` : ''}
           </div>
 
-          <!-- 고객 직접 결제 취소 버튼 (결제완료 건만 노출) -->
+          <!-- 결제 취소 버튼 (결제완료 건만) -->
           ${(isPaid && mulNo) ? `
-            <div style="margin-top:4px; display:flex; justify-content:flex-end;">
+            <div style="display:flex; justify-content:flex-end; margin-top:2px;">
               <button type="button" onclick="cancelMyOrder('${mulNo}', '${ord.id || ''}', event)"
-                style="padding:6px 12px; background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer; transition:all 0.15s; outline:none;"
-                onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
+                style="padding:5px 10px; background:#ffffff; color:#dc2626; border:1px solid #fca5a5; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; outline:none;"
+                onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#ffffff'">
                 주문 결제 취소
               </button>
             </div>
