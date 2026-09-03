@@ -793,67 +793,81 @@ document.addEventListener('DOMContentLoaded', () => {
             priceHtml = `<span style="font-size:13px; color:#94a3b8; font-weight:600;">가격 준비중</span>`;
           }
           el.innerHTML = `
-            <img src="${item.image}" alt="product" class="product-image">
-            <div class="product-info" style="flex:1; min-width:0;">
+            <img src="${item.image}" alt="product" class="product-image" style="cursor:pointer;">
+            <div class="product-info" style="flex:1; min-width:0; cursor:pointer;">
               <div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
               <div class="product-price">${priceHtml}</div>
             </div>
-            <button type="button" class="btn-card-add-cart" style="background:#0f172a; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; flex-shrink:0; align-self:center; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(15,23,42,0.15);" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-              <span>담기</span>
-            </button>
+            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+              <button type="button" class="btn-card-detail" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155; border-radius:8px; padding:7px 11px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; outline:none;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                상세
+              </button>
+              <button type="button" class="btn-card-add-cart" style="background:#0f172a; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(15,23,42,0.15);" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span>담기</span>
+              </button>
+            </div>
           `;
-          el.addEventListener('click', async (e) => {
-            const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
-            if (!currentConfig.isLive) {
-              e.preventDefault();
-              alert('라이브 방송 중에만 구매 가능합니다.');
-              return;
-            }
-            if (item.url === '__LEAD_FORM__') {
-              e.preventDefault();
-              openLeadModal(item.name);
-              // don't return, let it sync clicks!
-            } else if (!item.url || item.url === '#') {
-              e.preventDefault();
-              if (typeof addToCart === 'function') {
-                addToCart(item);
-              }
-            } else {
-              el.target = '_blank';
-            }
-            try {
-              const targetLiveId = LIVE_ID || 'live01';
-              if (!targetLiveId || !db) return;
 
-              const { data, error } = await db
-                .from('live_control')
-                .select('products')
-                .eq('live_id', targetLiveId)
-                .maybeSingle();
+          // 상세 버튼 클릭 시 상세 모달 오픈
+          const btnDetail = el.querySelector('.btn-card-detail');
+          if (btnDetail) {
+            btnDetail.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              openProductDetailModal(item);
+            });
+          }
 
-              if (data && data.products) {
-                const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
-                const targetProd = remoteProducts.find(p => p.name === item.name);
-                if (targetProd) {
-                  targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
-                  localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(remoteProducts));
-                  await db
-                    .from('live_control')
-                    .update({ 
-                      products: remoteProducts,
-                      updated_at: new Date().toISOString()
-                    })
-                    .eq('live_id', targetLiveId);
-                }
-              }
-            } catch (err) {
-              console.warn('Product click sync failed', err);
+          // 이미지 및 상품명 클릭 시에도 상세 모달 오픈
+          const imgEl = el.querySelector('.product-image');
+          const infoEl = el.querySelector('.product-info');
+          [imgEl, infoEl].forEach(targetEl => {
+            if (targetEl) {
+              targetEl.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                openProductDetailModal(item);
+              });
             }
           });
+
+          // 담기 버튼 클릭 시 장바구니에 담기
+          const btnAdd = el.querySelector('.btn-card-add-cart');
+          if (btnAdd) {
+            btnAdd.addEventListener('click', async (ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+              if (!currentConfig.isLive) {
+                alert('라이브 방송 중에만 구매 가능합니다.');
+                return;
+              }
+              if (item.url === '__LEAD_FORM__') {
+                openLeadModal(item.name);
+              } else if (typeof addToCart === 'function') {
+                addToCart(item);
+              }
+
+              try {
+                const targetLiveId = LIVE_ID || 'live01';
+                if (!targetLiveId || !db) return;
+                const { data } = await db.from('live_control').select('products').eq('live_id', targetLiveId).maybeSingle();
+                if (data && data.products) {
+                  const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+                  const targetProd = remoteProducts.find(p => p.name === item.name);
+                  if (targetProd) {
+                    targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
+                    localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(remoteProducts));
+                    await db.from('live_control').update({ products: remoteProducts, updated_at: new Date().toISOString() }).eq('live_id', targetLiveId);
+                  }
+                }
+              } catch(err) {}
+            });
+          }
           modalProductsList.appendChild(el);
         });
 
@@ -4150,3 +4164,75 @@ window.addEventListener('storage', (e) => {
     if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
   }
 });
+
+// ====================================================
+// [NEW] 제품 상세 모달 제어 엔진
+// ====================================================
+
+window.__currentDetailProduct = null;
+
+window.openProductDetailModal = function(item) {
+  if (!item) return;
+  window.__currentDetailProduct = item;
+
+  const modal = document.getElementById('product-detail-modal');
+  const imgEl = document.getElementById('detail-modal-img');
+  const nameEl = document.getElementById('detail-modal-name');
+  const priceEl = document.getElementById('detail-modal-price');
+  const urlWrap = document.getElementById('detail-modal-url-wrap');
+  const urlBtn = document.getElementById('detail-modal-url-btn');
+  const addCartBtn = document.getElementById('detail-modal-add-cart-btn');
+
+  if (!modal) return;
+
+  if (imgEl) imgEl.src = item.image || 'https://via.placeholder.com/300';
+  if (nameEl) {
+    const dealBadge = (item.dealEndTime && item.dealEndTime > Date.now()) 
+      ? '<span style="color:#e11d48; font-weight:800; margin-right:5px;">[깜짝딜]</span>' : '';
+    nameEl.innerHTML = dealBadge + (item.name || '상품 정보');
+  }
+
+  if (priceEl) {
+    const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+    const npNum = Number((item.normalPrice || '').toString().replace(/[^0-9]/g, ''));
+
+    if (pNum > 0) {
+      let pHtml = `<span style="font-size:18px; font-weight:800; color:#e50914;">${pNum.toLocaleString()}원</span>`;
+      if (npNum > pNum) {
+        pHtml += `<span style="font-size:13px; color:#94a3b8; text-decoration:line-through; margin-left:6px;">${npNum.toLocaleString()}원</span>`;
+      }
+      pHtml += `<span style="background:#fff1f2; border:1px solid #ffe4e6; color:#f43f5e; font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; margin-left:8px;">라이브 혜택가</span>`;
+      priceEl.innerHTML = pHtml;
+    } else if (item.price === '0' || item.price === 0) {
+      priceEl.innerHTML = `<span style="font-size:18px; font-weight:800; color:#16a34a;">무료나눔</span>`;
+    } else {
+      priceEl.innerHTML = `<span style="font-size:15px; color:#94a3b8; font-weight:600;">가격 준비중</span>`;
+    }
+  }
+
+  // 자사몰 링크 유무에 따른 노출 처리
+  if (urlWrap && urlBtn) {
+    if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
+      urlWrap.style.display = 'block';
+      urlBtn.href = item.url;
+    } else {
+      urlWrap.style.display = 'none';
+    }
+  }
+
+  if (addCartBtn) {
+    addCartBtn.onclick = function() {
+      if (typeof addToCart === 'function') {
+        addToCart(item);
+      }
+      closeProductDetailModal();
+    };
+  }
+
+  modal.style.display = 'flex';
+};
+
+window.closeProductDetailModal = function() {
+  const modal = document.getElementById('product-detail-modal');
+  if (modal) modal.style.display = 'none';
+};
