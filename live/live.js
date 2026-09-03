@@ -4626,11 +4626,8 @@ window.handlePushSubscribeClick = async function() {
         }]);
       }
 
-      // 벨 아이콘 활성화 스타일
       const bellBtn = document.getElementById('btn-push-notification');
       if (bellBtn) {
-        bellBtn.style.color = '#e50914';
-        bellBtn.style.borderColor = 'rgba(229, 9, 20, 0.4)';
         bellBtn.title = '방송 알림 신청 완료';
       }
 
