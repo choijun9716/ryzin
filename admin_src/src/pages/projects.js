@@ -362,11 +362,11 @@ export function renderProjects() {
                     ` : ''}
                     ${colGroups.result ? `
                     <td class="text-right">${p.result ? formatNumber(p.result.views) : '-'}</td>
-                    <td class="text-right" style="font-weight: bold;">${p.result ? formatCurrencyShort(p.result.liveRevenue) : '-'}</td>
-                    <td class="text-right" style="font-weight: bold;">${p.result ? formatROI(p.result.roi) : '-'}</td>
+                    <td class="text-right" style="font-weight: bold;">${isPD ? '**' : (p.result ? formatCurrencyShort(p.result.liveRevenue) : '-')}</td>
+                    <td class="text-right" style="font-weight: bold;">${isPD ? '**' : (p.result ? formatROI(p.result.roi) : '-')}</td>
                     ` : ''}
                     ${colGroups.finance ? `
-                    <td><span class="badge ${p.settleLabel === '완료' ? 'badge-success' : p.settleLabel === '일부완료' ? 'badge-warning' : 'badge-default'}">${p.settleLabel}</span></td>
+                    <td><span class="badge ${p.settleLabel === '완료' ? 'badge-success' : p.settleLabel === '일부완료' ? 'badge-warning' : 'badge-default'}">${isPD ? '**' : p.settleLabel}</span></td>
                     ` : ''}
                     ${colGroups.basic ? `
                     <td>${p.pd || '-'}</td>
@@ -1964,6 +1964,7 @@ function openDesignModal(liveId, designId, onSave) {
 
 // ===== 탭: 성과 =====
 function renderResultTab(project) {
+  const isPD = store.getCurrentRole() === 'pd';
   const el = document.createElement('div');
   const result = store.getAll('results').find(r => r.liveId === project.id) || {};
 
@@ -1978,8 +1979,8 @@ function renderResultTab(project) {
           <div class="stat-card"><div class="stat-label">시청뷰</div><div class="stat-value">${formatNumber(result.views)}</div></div>
           <div class="stat-card"><div class="stat-label">좋아요</div><div class="stat-value">${formatNumber(result.likes)}</div></div>
           <div class="stat-card"><div class="stat-label">주문건수</div><div class="stat-value">${formatNumber(result.orders)}건</div></div>
-          <div class="stat-card"><div class="stat-label">라이브 매출</div><div class="stat-value">${formatCurrency(result.liveRevenue)}</div></div>
-          <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value">${formatROI(result.roi)}</div></div>
+          <div class="stat-card"><div class="stat-label">라이브 매출</div><div class="stat-value">${isPD ? '**' : formatCurrency(result.liveRevenue)}</div></div>
+          <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value">${isPD ? '**' : formatROI(result.roi)}</div></div>
         </div>
       </div>
     </div>

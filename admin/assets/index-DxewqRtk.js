@@ -58,8 +58,8 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="dashboard-kpi-grid" id="kpi-grid">
         ${mt(`이번주 방송`,et(i.thisWeekBroadcasts)+`건`,`/projects`)}
         ${mt(`이번달 방송`,et(i.monthBroadcasts)+`건`,`/projects`)}
-        ${mt(`이번달 매출`,$e(i.monthRevenue),`/finance`)}
-        ${mt(`브랜드 미수금`,$e(i.settleWaitAmount),`/projects?settleStatus=pending`)}
+        ${r?mt(`이번달 매출`,`**`,null):mt(`이번달 매출`,$e(i.monthRevenue),`/finance`)}
+        ${r?mt(`브랜드 미수금`,`**`,null):mt(`브랜드 미수금`,$e(i.settleWaitAmount),`/projects?settleStatus=pending`)}
       </div>
 
       
@@ -1710,11 +1710,11 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
                     `:``}
                     ${l.result?`
                     <td class="text-right">${e.result?et(e.result.views):`-`}</td>
-                    <td class="text-right" style="font-weight: bold;">${e.result?$e(e.result.liveRevenue):`-`}</td>
-                    <td class="text-right" style="font-weight: bold;">${e.result?tt(e.result.roi):`-`}</td>
+                    <td class="text-right" style="font-weight: bold;">${r?`**`:e.result?$e(e.result.liveRevenue):`-`}</td>
+                    <td class="text-right" style="font-weight: bold;">${r?`**`:e.result?tt(e.result.roi):`-`}</td>
                     `:``}
                     ${l.finance?`
-                    <td><span class="badge ${e.settleLabel===`완료`?`badge-success`:e.settleLabel===`일부완료`?`badge-warning`:`badge-default`}">${e.settleLabel}</span></td>
+                    <td><span class="badge ${e.settleLabel===`완료`?`badge-success`:e.settleLabel===`일부완료`?`badge-warning`:`badge-default`}">${r?`**`:e.settleLabel}</span></td>
                     `:``}
                     ${l.basic?`
                     <td>${e.pd||`-`}</td>
@@ -2409,7 +2409,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       <div class="input-group"><label>파일 링크</label><input class="input" id="design-file" value="${i.fileLink||``}"></div>
       <div class="input-group"><label>메모</label><input class="input" id="design-memo" value="${i.memo||``}"></div>
     </div>
-  `,o=document.createElement(`div`);if(o.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,r){let e=document.createElement(`button`);e.className=`btn btn-danger`,e.textContent=`삭제`,e.style.marginRight=`auto`,e.addEventListener(`click`,()=>{U.delete(`designs`,t),q(),J(`삭제되었습니다.`),n&&n()}),o.appendChild(e)}let s=document.createElement(`button`);s.className=`btn btn-secondary`,s.textContent=`취소`,s.addEventListener(`click`,q);let c=document.createElement(`button`);c.className=`btn btn-primary`,c.textContent=r?`수정`:`등록`,c.addEventListener(`click`,()=>{let i={liveId:e,requestDate:document.getElementById(`design-date`).value,designer:document.getElementById(`design-designer`).value.trim(),status:document.getElementById(`design-status`).value,workLink:document.getElementById(`design-work`).value.trim(),fileLink:document.getElementById(`design-file`).value.trim(),memo:document.getElementById(`design-memo`).value.trim()};r?(U.update(`designs`,t,i),J(`수정되었습니다.`)):(i.id=L(`design`),U.create(`designs`,i),J(`디자인 요청이 등록되었습니다.`)),q(),n&&n()}),o.appendChild(s),o.appendChild(c),K({title:r?`디자인 요청 수정`:`디자인 요청 추가`,size:`md`,content:a,footer:o})}function an(e){let t=document.createElement(`div`),n=U.getAll(`results`).find(t=>t.liveId===e.id)||{};return t.innerHTML=`
+  `,o=document.createElement(`div`);if(o.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`,r){let e=document.createElement(`button`);e.className=`btn btn-danger`,e.textContent=`삭제`,e.style.marginRight=`auto`,e.addEventListener(`click`,()=>{U.delete(`designs`,t),q(),J(`삭제되었습니다.`),n&&n()}),o.appendChild(e)}let s=document.createElement(`button`);s.className=`btn btn-secondary`,s.textContent=`취소`,s.addEventListener(`click`,q);let c=document.createElement(`button`);c.className=`btn btn-primary`,c.textContent=r?`수정`:`등록`,c.addEventListener(`click`,()=>{let i={liveId:e,requestDate:document.getElementById(`design-date`).value,designer:document.getElementById(`design-designer`).value.trim(),status:document.getElementById(`design-status`).value,workLink:document.getElementById(`design-work`).value.trim(),fileLink:document.getElementById(`design-file`).value.trim(),memo:document.getElementById(`design-memo`).value.trim()};r?(U.update(`designs`,t,i),J(`수정되었습니다.`)):(i.id=L(`design`),U.create(`designs`,i),J(`디자인 요청이 등록되었습니다.`)),q(),n&&n()}),o.appendChild(s),o.appendChild(c),K({title:r?`디자인 요청 수정`:`디자인 요청 추가`,size:`md`,content:a,footer:o})}function an(e){let t=U.getCurrentRole()===`pd`,n=document.createElement(`div`),r=U.getAll(`results`).find(t=>t.liveId===e.id)||{};return n.innerHTML=`
     <div class="card">
       <div class="card-header">
         <h3>방송 성과</h3>
@@ -2417,22 +2417,22 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
       </div>
       <div class="card-body">
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">시청뷰</div><div class="stat-value">${et(n.views)}</div></div>
-          <div class="stat-card"><div class="stat-label">좋아요</div><div class="stat-value">${et(n.likes)}</div></div>
-          <div class="stat-card"><div class="stat-label">주문건수</div><div class="stat-value">${et(n.orders)}건</div></div>
-          <div class="stat-card"><div class="stat-label">라이브 매출</div><div class="stat-value">${W(n.liveRevenue)}</div></div>
-          <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value">${tt(n.roi)}</div></div>
+          <div class="stat-card"><div class="stat-label">시청뷰</div><div class="stat-value">${et(r.views)}</div></div>
+          <div class="stat-card"><div class="stat-label">좋아요</div><div class="stat-value">${et(r.likes)}</div></div>
+          <div class="stat-card"><div class="stat-label">주문건수</div><div class="stat-value">${et(r.orders)}건</div></div>
+          <div class="stat-card"><div class="stat-label">라이브 매출</div><div class="stat-value">${t?`**`:W(r.liveRevenue)}</div></div>
+          <div class="stat-card"><div class="stat-label">ROI</div><div class="stat-value">${t?`**`:tt(r.roi)}</div></div>
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{t.querySelector(`#btn-edit-result`)?.addEventListener(`click`,()=>{let r=`
+  `,setTimeout(()=>{n.querySelector(`#btn-edit-result`)?.addEventListener(`click`,()=>{let t=`
         <div class="form-grid">
-          <div class="input-group"><label>시청뷰</label><input class="input" type="number" id="res-views" value="${n.views||``}"></div>
-          <div class="input-group"><label>좋아요</label><input class="input" type="number" id="res-likes" value="${n.likes||``}"></div>
-          <div class="input-group"><label>주문건수</label><input class="input" type="number" id="res-orders" value="${n.orders||``}"></div>
-          <div class="input-group"><label>라이브 매출</label><input class="input" type="number" id="res-revenue" value="${n.liveRevenue||``}"></div>
+          <div class="input-group"><label>시청뷰</label><input class="input" type="number" id="res-views" value="${r.views||``}"></div>
+          <div class="input-group"><label>좋아요</label><input class="input" type="number" id="res-likes" value="${r.likes||``}"></div>
+          <div class="input-group"><label>주문건수</label><input class="input" type="number" id="res-orders" value="${r.orders||``}"></div>
+          <div class="input-group"><label>라이브 매출</label><input class="input" type="number" id="res-revenue" value="${r.liveRevenue||``}"></div>
         </div>
-      `,i=document.createElement(`div`);i.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let a=document.createElement(`button`);a.className=`btn btn-secondary`,a.textContent=`취소`,a.addEventListener(`click`,q);let o=document.createElement(`button`);o.className=`btn btn-primary`,o.textContent=`저장`,o.addEventListener(`click`,()=>{let n=parseInt(document.getElementById(`res-revenue`).value)||0,r=U.getAll(`finances`).find(t=>t.liveId===e.id),i=r?r.adCost+r.productionCost+r.hostCost+r.otherCost:0,a=i>0?Math.round(n/i*100)/100:0,o={liveId:e.id,views:parseInt(document.getElementById(`res-views`).value)||0,likes:parseInt(document.getElementById(`res-likes`).value)||0,orders:parseInt(document.getElementById(`res-orders`).value)||0,liveRevenue:n,roi:a},s=U.getAll(`results`).find(t=>t.liveId===e.id);s?U.update(`results`,s.id,o):(o.id=e.id,U.create(`results`,o)),q(),J(`성과가 저장되었습니다.`);let c=an(e);t.replaceWith(c)}),i.appendChild(a),i.appendChild(o),K({title:`방송 성과 수정`,size:`md`,content:r,footer:i})})},0),t}function on(e){let t=document.createElement(`div`),n=U.getAll(`finances`).find(t=>t.liveId===e.id)||{},r=U.query(`liveHosts`,t=>t.liveId===e.id).reduce((e,t)=>e+(t.fee||0),0),i=n.productionCost||0,a=n.adCost||0,o=n.otherCost||0,s=!!n.includeHostCost,c=!!n.brandPaysHost,l=c?0:r,u=c||s?i+a:i+r+a,d=u-(l+a+o),f=Math.round(u*.1),p=d-f;return t.innerHTML=`
+      `,i=document.createElement(`div`);i.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let a=document.createElement(`button`);a.className=`btn btn-secondary`,a.textContent=`취소`,a.addEventListener(`click`,q);let o=document.createElement(`button`);o.className=`btn btn-primary`,o.textContent=`저장`,o.addEventListener(`click`,()=>{let t=parseInt(document.getElementById(`res-revenue`).value)||0,r=U.getAll(`finances`).find(t=>t.liveId===e.id),i=r?r.adCost+r.productionCost+r.hostCost+r.otherCost:0,a=i>0?Math.round(t/i*100)/100:0,o={liveId:e.id,views:parseInt(document.getElementById(`res-views`).value)||0,likes:parseInt(document.getElementById(`res-likes`).value)||0,orders:parseInt(document.getElementById(`res-orders`).value)||0,liveRevenue:t,roi:a},s=U.getAll(`results`).find(t=>t.liveId===e.id);s?U.update(`results`,s.id,o):(o.id=e.id,U.create(`results`,o)),q(),J(`성과가 저장되었습니다.`);let c=an(e);n.replaceWith(c)}),i.appendChild(a),i.appendChild(o),K({title:`방송 성과 수정`,size:`md`,content:t,footer:i})})},0),n}function on(e){let t=document.createElement(`div`),n=U.getAll(`finances`).find(t=>t.liveId===e.id)||{},r=U.query(`liveHosts`,t=>t.liveId===e.id).reduce((e,t)=>e+(t.fee||0),0),i=n.productionCost||0,a=n.adCost||0,o=n.otherCost||0,s=!!n.includeHostCost,c=!!n.brandPaysHost,l=c?0:r,u=c||s?i+a:i+r+a,d=u-(l+a+o),f=Math.round(u*.1),p=d-f;return t.innerHTML=`
     <div class="card">
       <div class="card-header">
         <h3>매출 및 정산</h3>
@@ -3609,7 +3609,7 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
         </div>
         <div style="padding: 12px 16px; background: #f8fafc; border-top: 1px solid var(--border-color); font-size: 12px; color: #475569; line-height: 1.5;">
           <strong style="color: #0f172a;">🔒 PD 계정 민감 데이터 보안 마스킹 정책:</strong><br>
-          PD 권한으로 접속 시 쇼호스트(누적정산, 평균매출, 평균 ROI, 주민등록번호, 방송횟수, 최근방송일) 및 브랜드 관리(누적매출, 방송횟수, 실적 지표)의 민감 수치가 자동으로 <strong>**</strong> 마스킹 처리되어 안전하게 보호됩니다.
+          PD 권한 접속 시 대시보드의 <strong>이번달 매출 및 브랜드 미수금</strong> 지표가 비공개(**) 처리되며, 쇼호스트(누적정산, 평균매출, 평균 ROI, 주민등록번호, 방송횟수, 최근방송일) 및 브랜드/라이브 성과(누적매출, 방송횟수, 라이브매출, 정산 등) 민감 수치가 모두 <strong>**</strong> 마스킹되어 안전하게 보호됩니다.
         </div>
       </div>
     </div>

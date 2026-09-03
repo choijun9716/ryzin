@@ -83,8 +83,8 @@ export function renderDashboard() {
       <div class="dashboard-kpi-grid" id="kpi-grid">
         ${renderKPI('이번주 방송', formatNumber(kpi.thisWeekBroadcasts) + '건', '/projects')}
         ${renderKPI('이번달 방송', formatNumber(kpi.monthBroadcasts) + '건', '/projects')}
-        ${renderKPI('이번달 매출', formatCurrencyShort(kpi.monthRevenue), '/finance')}
-        ${renderKPI('브랜드 미수금', formatCurrencyShort(kpi.settleWaitAmount), '/projects?settleStatus=pending')}
+        ${isPD ? renderKPI('이번달 매출', '**', null) : renderKPI('이번달 매출', formatCurrencyShort(kpi.monthRevenue), '/finance')}
+        ${isPD ? renderKPI('브랜드 미수금', '**', null) : renderKPI('브랜드 미수금', formatCurrencyShort(kpi.settleWaitAmount), '/projects?settleStatus=pending')}
       </div>
 
       
