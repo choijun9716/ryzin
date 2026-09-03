@@ -105,7 +105,7 @@ async function initApp() {
       const currentUser = store.getCurrentUser();
       const currentRole = store.getCurrentRole();
       if (currentRole && currentRole.startsWith('live_stream:')) {
-        if (to !== '/live_stream' && to !== '/settings' && to !== '/login') {
+        if (to !== '/live_stream' && to !== '/login') {
           return '/live_stream';
         }
       }

@@ -19,7 +19,7 @@ export function hasPermission(permission) {
 
   // 동적 라이브 전용 관리자 역할 처리
   if (role.startsWith('live_stream:')) {
-    return permission === 'live_stream' || permission === 'settings';
+    return permission === 'live_stream';
   }
   // 브랜드 파트너사 역할 처리
   if (role.startsWith('brand:')) {
@@ -75,8 +75,7 @@ export function getAccessibleMenus() {
   const role = getCurrentRole();
   if (role && role.startsWith('live_stream:')) {
     return [
-      { key: 'live_stream', label: '라이브 송출 관리' },
-      { key: 'settings', label: '설정' }
+      { key: 'live_stream', label: '라이브 송출 관리' }
     ];
   }
   if (role && role.startsWith('brand:')) {

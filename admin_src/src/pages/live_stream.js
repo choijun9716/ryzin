@@ -198,6 +198,12 @@ function renderListView(container, showView) {
   const role = store.getCurrentRole();
   const isLiveStreamOnly = role && role.startsWith('live_stream:');
   const targetLiveId = isLiveStreamOnly ? role.split(':')[1] : null;
+
+  // 매니저 권한인 경우 목록을 거치지 않고 곧바로 할당된 라이브 화면으로 직행
+  if (isLiveStreamOnly && targetLiveId) {
+    showView(targetLiveId);
+    return;
+  }
   const isBrandPartner = role && role.startsWith('brand:');
   const targetBrandId = isBrandPartner ? role.split(':')[1] : null;
   const isRestricted = isLiveStreamOnly || isBrandPartner;
@@ -757,7 +763,9 @@ function renderLiveEditView(container, liveId, showView) {
     `;
 
   topBar.innerHTML = `
+    ${isLiveStreamOnly ? '' : `
     <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:4px;"><span style="font-size:14px; line-height:1;">←</span> 목록</button>
+    `}
     <div style="display:flex; align-items:center; gap:10px; min-width: 180px; max-width: 480px; flex-shrink:0;">
       <span style="font-size:12px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-family:monospace; line-height:1; flex-shrink:0;">${liveId}</span>
       <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; line-height:1.2;" title="${config.brandName || ''}">${config.brandName || ''}</span>
@@ -1378,10 +1386,12 @@ function renderLiveEditView(container, liveId, showView) {
             <div style="display:flex; gap:6px; align-items:center;">
               <div class="modern-input" id="cfg-viewers-display" style="background:#f1f5f9; font-weight:700; color:#0f172a; flex:1; display:flex; align-items:center;">${(stats.viewers + (stats.cumViewers || 0)).toLocaleString()}명 <span style="font-size:11px; font-weight:normal; color:#64748b; margin-left:4px;">(방송+수동: ${stats.viewers.toLocaleString()}, 누적: ${(stats.cumViewers || 0).toLocaleString()})</span></div>
             </div>
+            ${isLiveStreamOnly ? '' : `
             <div style="display:flex; gap:6px; margin-top:6px; align-items:center;">
               <input type="number" class="modern-input" id="cfg-viewers-add" placeholder="+추가할 수" style="flex:1; padding:8px 10px; font-size:13px;">
               <button id="btn-add-viewers" class="action-btn btn-primary-solid" style="white-space:nowrap; padding:8px 12px; font-size:13px;">+추가</button>
             </div>
+            `}
           </div>
           <div>
             <label class="modern-label">누적 시청자 수</label>
@@ -1409,7 +1419,9 @@ function renderLiveEditView(container, liveId, showView) {
             <label for="cfg-showSplash" style="font-size:14px; font-weight:600; color:#374151; cursor:pointer;">스플래시 화면 켜기</label>
           </div>
           <div style="flex:1;"></div>
+          ${isLiveStreamOnly ? '' : `
           <button id="btn-reset-stats" class="action-btn btn-danger-solid" style="padding:8px 14px; font-size:13px;">통계 초기화</button>
+          `}
         </div>
       </div>
 
@@ -1984,7 +1996,9 @@ function renderLiveEditView(container, liveId, showView) {
       <!-- 서브 탭 네비게이션 -->
       <div style="display:flex; gap:8px; margin-bottom:16px; background:#f1f5f9; padding:4px; border-radius:10px;">
         <button class="chat-sub-tab-btn active" data-subtab="admin" style="flex:1; padding:8px 0; font-size:13px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">관리자 채팅 & 정책</button>
+        ${isLiveStreamOnly ? '' : `
         <button class="chat-sub-tab-btn" data-subtab="bot" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">채팅 봇 관리</button>
+        `}
         <button class="chat-sub-tab-btn" data-subtab="event" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">이벤트 관리</button>
       </div>
 
@@ -2064,6 +2078,7 @@ function renderLiveEditView(container, liveId, showView) {
       </div>
 
       <!-- 채팅 봇 관리 뷰 -->
+      ${isLiveStreamOnly ? '' : `
       <div id="chat-sub-bot" class="chat-sub-view" style="display:none;">
         <div class="section-card">
         <h3>채팅 봇</h3>
@@ -2109,6 +2124,7 @@ function renderLiveEditView(container, liveId, showView) {
           </div>
         </div>
       </div>
+      `}
 
       <!-- 이벤트 관리 뷰 -->
       <div id="chat-sub-event" class="chat-sub-view" style="display:none;">
@@ -2829,6 +2845,7 @@ function renderLiveEditView(container, liveId, showView) {
           <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
+        ${isLiveStreamOnly ? '' : `
         <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
           <summary style="padding:10px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none;">고급 설정 (깜짝딜 / 좋아요 조건)</summary>
           <div style="padding:10px 14px; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
@@ -2858,6 +2875,7 @@ function renderLiveEditView(container, liveId, showView) {
             </div>
           </div>
         </details>
+        `}
       </div>
     </div>
     `;

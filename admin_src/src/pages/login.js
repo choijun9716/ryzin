@@ -268,7 +268,13 @@ export function renderLogin() {
           // [임시 OTP 해제] - OTP 인증 없이 바로 로그인
           store.completeLogin(user);
           showSuccess('환영합니다.');
-          router.navigate('/');
+          if (user.role && user.role.startsWith('live_stream:')) {
+            router.navigate('/live_stream');
+          } else if (user.role && user.role.startsWith('brand:')) {
+            router.navigate('/projects');
+          } else {
+            router.navigate('/');
+          }
           return;
           /* ---- OTP 인증 (현재 비활성화) ----
           const isTrusted = localStorage.getItem(`ryzin_otp_trusted_${user.id}`) === 'true';

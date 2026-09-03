@@ -227,7 +227,7 @@ function renderUserList(container) {
     if (ROLES[u.role]) {
       roleLabel = ROLES[u.role].label;
     } else if (u.role && u.role.startsWith('live_stream:')) {
-      roleLabel = `송출 관리자 (${u.role.split(':')[1]})`;
+      roleLabel = `라이브 매니저 (${u.role.split(':')[1]})`;
     } else if (u.role && u.role.startsWith('brand:')) {
       const bId = u.role.split(':')[1];
       const b = store.getById('brands', bId);
@@ -281,9 +281,9 @@ async function openUserModal(existingUser = null) {
   try {
     const db = window.supabaseClient;
     if (db) {
-      const { data, error } = await db.from('live_control').select('live_id');
+      const { data, error } = await db.from('live_control').select('live_id, title, brand_name');
       if (!error && data) {
-        lives = data.map(d => ({ id: d.live_id }));
+        lives = data.map(d => ({ id: d.live_id, title: d.title || d.brand_name || '' }));
       }
     }
   } catch (e) {
@@ -314,7 +314,7 @@ async function openUserModal(existingUser = null) {
       <label class="required">권한</label>
       <select class="input" id="user-role">
         ${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${existingUser && existingUser.role === k ? 'selected' : ''}>${v.label} (${k})</option>`).join('')}
-        ${lives.map(l => `<option value="live_stream:${l.id}" ${existingUser && existingUser.role === `live_stream:${l.id}` ? 'selected' : ''}>송출 관리자 (${l.id})</option>`).join('')}
+        ${lives.map(l => `<option value="live_stream:${l.id}" ${existingUser && existingUser.role === `live_stream:${l.id}` ? 'selected' : ''}>라이브 매니저 - ${l.title ? l.title + ' ' : ''}(${l.id})</option>`).join('')}
         ${brands.map(b => `<option value="brand:${b.id}" ${existingUser && existingUser.role === `brand:${b.id}` ? 'selected' : ''}>파트너사 - ${b.name} (${b.id})</option>`).join('')}
       </select>
     </div>
