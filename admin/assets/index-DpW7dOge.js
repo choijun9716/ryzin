@@ -223,7 +223,7 @@ Minimum version required to store current data is: `+c+`.
     .btn-success-solid { background:linear-gradient(135deg, #10b981, #059669); color:#fff; box-shadow:0 4px 12px rgba(5,150,105,0.25); }
     .btn-neutral { background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; }
     .btn-neutral:hover { background:#e2e8f0; }
-  `,e.appendChild(t)}function ln(){let e=document.createElement(`div`);e.style.cssText=`display:flex; flex-direction:column; height:calc(100vh - 48px); background:#f8fafc; overflow:hidden;`,cn(e);let t=n=>{e.innerHTML=``,cn(e),n===null?un(e,t):dn(e,n,t)},n=U.getCurrentRole(),r=n&&n.startsWith(`live_stream:`),i=r?n.split(`:`)[1]:null;return r&&i?t(i):un(e,t),e}function un(e,t){let n=U.getCurrentRole(),r=n&&n.startsWith(`live_stream:`),i=r?n.split(`:`)[1]:null;if(r&&i){t(i);return}let a=n&&n.startsWith(`brand:`),o=a?n.split(`:`)[1]:null,s=r||a,c=document.createElement(`div`);c.style.cssText=`max-width:720px; margin:0 auto; padding:40px 24px; width:100%; overflow-y:auto;`;let l=document.createElement(`div`);l.style.cssText=`display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;`,l.innerHTML=`
+  `,e.appendChild(t)}function ln(){let e=document.createElement(`div`);e.style.cssText=`display:flex; flex-direction:column; height:calc(100vh - 48px); background:#f8fafc; overflow:hidden;`,cn(e);let t=n=>{e.innerHTML=``,cn(e),n===null?un(e,t):dn(e,n,t)};return un(e,t),e}function un(e,t){let n=U.getCurrentRole(),r=n&&n.startsWith(`live_stream:`),i=r?n.split(`:`)[1]:null,a=n&&n.startsWith(`brand:`),o=a?n.split(`:`)[1]:null,s=r||a,c=document.createElement(`div`);c.style.cssText=`max-width:720px; margin:0 auto; padding:40px 24px; width:100%; overflow-y:auto;`;let l=document.createElement(`div`);l.style.cssText=`display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;`,l.innerHTML=`
     <div>
       <h1 style="margin:0; font-size:26px; font-weight:800; color:#0f172a;">라이브 목록</h1>
       <p style="margin:6px 0 0; font-size:14px; color:#64748b;">각 라이브는 독립된 URL로 시청자에게 제공됩니다.</p>
@@ -233,7 +233,7 @@ Minimum version required to store current data is: `+c+`.
       <span style="font-size:18px;">+</span> 새 라이브 생성
     </button>
     `}
-  `,c.appendChild(l);let u=document.createElement(`div`);u.id=`live-list-container`,c.appendChild(u),e.appendChild(c);let d=async()=>{if(Y)try{let{data:e,error:t}=await Y.from(`live_control`).select(`live_id, updated_at, status, title, subtitle`);if(!t&&e&&Array.isArray(e)){let t=Jt(),n=JSON.parse(localStorage.getItem(`ryzin_deleted_lives`)||`[]`);e.forEach(e=>{if(e.live_id&&!n.includes(e.live_id)){t.some(t=>t.id===e.live_id)||t.push({id:e.live_id,createdAt:new Date(e.updated_at).getTime()});let n=Xt(e.live_id)||{};n.isLive=e.status===`ON`,e.title&&(n.brandName=e.title),e.subtitle&&(n.title=e.subtitle),Zt(e.live_id,n)}}),Yt(t)}}catch(e){console.warn(`Failed to load remote lives`,e)}let e=Jt();if(r&&i)e=e.filter(e=>e.id===i);else if(a&&o){let t=U.getById(`brands`,o),n=t?t.name:``;e=n?e.filter(e=>(Xt(e.id)||{}).brandName===n):[]}if(e.sort((e,t)=>(e.createdAt||0)-(t.createdAt||0)),u.innerHTML=``,e.length===0){u.innerHTML=`
+  `,c.appendChild(l);let u=document.createElement(`div`);u.id=`live-list-container`,c.appendChild(u),e.appendChild(c);let d=async()=>{if(Y)try{let{data:e,error:t}=await Y.from(`live_control`).select(`live_id, updated_at, status, title, subtitle`);if(!t&&e&&Array.isArray(e)){let t=Jt(),n=JSON.parse(localStorage.getItem(`ryzin_deleted_lives`)||`[]`);e.forEach(e=>{if(e.live_id&&!n.includes(e.live_id)){t.some(t=>t.id===e.live_id)||t.push({id:e.live_id,createdAt:new Date(e.updated_at).getTime()});let n=Xt(e.live_id)||{};n.isLive=e.status===`ON`,e.title&&(n.brandName=e.title),e.subtitle&&(n.title=e.subtitle),Zt(e.live_id,n)}}),Yt(t)}}catch(e){console.warn(`Failed to load remote lives`,e)}let e=Jt();if(r&&i)e.some(e=>e.id===i)||e.push({id:i,createdAt:Date.now()}),e=e.filter(e=>e.id===i);else if(a&&o){let t=U.getById(`brands`,o),n=t?t.name:``;e=n?e.filter(e=>(Xt(e.id)||{}).brandName===n):[]}if(e.sort((e,t)=>(e.createdAt||0)-(t.createdAt||0)),u.innerHTML=``,e.length===0){u.innerHTML=`
         <div style="text-align:center; padding:80px 20px; color:#94a3b8;">
           <div style="font-size:48px; margin-bottom:16px;">📡</div>
           <p style="font-size:16px; font-weight:600; margin:0 0 8px;">아직 생성된 라이브가 없습니다.</p>
@@ -269,9 +269,7 @@ Minimum version required to store current data is: `+c+`.
       <button class="tab-btn" data-tab="orders" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">주문 관리</button>
       <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상담 DB</button>
     `;w.innerHTML=`
-    ${i?``:`
     <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:4px;"><span style="font-size:14px; line-height:1;">←</span> 목록</button>
-    `}
     <div style="display:flex; align-items:center; gap:10px; min-width: 180px; max-width: 480px; flex-shrink:0;">
       <span style="font-size:12px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-family:monospace; line-height:1; flex-shrink:0;">${t}</span>
       <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; line-height:1.2;" title="${l.brandName||``}">${l.brandName||``}</span>

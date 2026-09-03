@@ -189,15 +189,7 @@ export function renderLiveStream() {
     }
   };
 
-  const role = store.getCurrentRole();
-  const isLiveStreamOnly = role && role.startsWith('live_stream:');
-  const targetLiveId = isLiveStreamOnly ? role.split(':')[1] : null;
-
-  if (isLiveStreamOnly && targetLiveId) {
-    showView(targetLiveId);
-  } else {
-    renderListView(container, showView);
-  }
+  renderListView(container, showView);
   return container;
 }
 
@@ -208,12 +200,6 @@ function renderListView(container, showView) {
   const role = store.getCurrentRole();
   const isLiveStreamOnly = role && role.startsWith('live_stream:');
   const targetLiveId = isLiveStreamOnly ? role.split(':')[1] : null;
-
-  // 매니저 권한인 경우 목록을 거치지 않고 곧바로 할당된 라이브 화면으로 직행
-  if (isLiveStreamOnly && targetLiveId) {
-    showView(targetLiveId);
-    return;
-  }
   const isBrandPartner = role && role.startsWith('brand:');
   const targetBrandId = isBrandPartner ? role.split(':')[1] : null;
   const isRestricted = isLiveStreamOnly || isBrandPartner;
@@ -268,8 +254,11 @@ function renderListView(container, showView) {
     }
 
     let lives = getLives();
-    // 특정 라이브 전용 로그인 상태인 경우, 해당 라이브 ID만 필터링
+    // 특정 라이브 전용 로그인 상태인 경우, 해당 라이브 ID만 단독 노출 (미캐시 시 자동 등록)
     if (isLiveStreamOnly && targetLiveId) {
+      if (!lives.some(l => l.id === targetLiveId)) {
+        lives.push({ id: targetLiveId, createdAt: Date.now() });
+      }
       lives = lives.filter(l => l.id === targetLiveId);
     } else if (isBrandPartner && targetBrandId) {
       const brand = store.getById('brands', targetBrandId);
@@ -773,9 +762,7 @@ function renderLiveEditView(container, liveId, showView) {
     `;
 
   topBar.innerHTML = `
-    ${isLiveStreamOnly ? '' : `
     <button id="btn-back" class="action-btn btn-neutral" style="padding:8px 14px; font-size:13px; display:flex; align-items:center; gap:4px;"><span style="font-size:14px; line-height:1;">←</span> 목록</button>
-    `}
     <div style="display:flex; align-items:center; gap:10px; min-width: 180px; max-width: 480px; flex-shrink:0;">
       <span style="font-size:12px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-family:monospace; line-height:1; flex-shrink:0;">${liveId}</span>
       <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; line-height:1.2;" title="${config.brandName || ''}">${config.brandName || ''}</span>
