@@ -3550,6 +3550,8 @@ function renderLiveEditView(container, liveId, showView) {
     let rankingSortBy = 'qty'; // 'qty' | 'amount'
     let selectedProductFilter = 'all';
     let searchQuery = '';
+    let selectedPayTypeFilter = 'all'; // 'all' | 'bank_transfer'
+    let selectedTransferStatusFilter = 'all'; // 'all' | 'requested' | 'paid'
     let statsTimer = null;
 
     contentArea.innerHTML = `
@@ -3602,6 +3604,32 @@ function renderLiveEditView(container, liveId, showView) {
               <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">평균 시청자</div>
               <div id="kpi-avg-viewers" style="font-size:22px; font-weight:800; color:#2563eb;">0명</div>
               <div id="kpi-cum-viewers" style="font-size:11.5px; color:#64748b; margin-top:3px;">누적 0명</div>
+            </div>
+          </div>
+
+          <!-- 결제수단 필터 세그먼트 (전체 주문 vs 계좌이체 주문) 및 상태 분리 -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; background:#f1f5f9; padding:3px; border-radius:8px; gap:4px;">
+              <button id="order-paytype-all" type="button" class="btn-paytype-filter active" data-paytype="all" style="padding:6px 14px; font-size:12.5px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:6px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
+                전체 주문
+              </button>
+              <button id="order-paytype-transfer" type="button" class="btn-paytype-filter" data-paytype="bank_transfer" style="padding:6px 14px; font-size:12.5px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                <span>계좌이체(무통장)</span>
+                <span id="transfer-pending-count-badge" style="display:none; font-size:11px; font-weight:700; background:#f59e0b; color:#fff; padding:1px 6px; border-radius:10px;">0</span>
+              </button>
+            </div>
+
+            <!-- 계좌이체 전용 서브 상태 필터 -->
+            <div id="transfer-status-filter-group" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; padding:3px; border-radius:8px; gap:3px;">
+              <button class="btn-transfer-status-filter active" data-tstatus="all" style="padding:5px 11px; font-size:12px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:5px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.06);">
+                전체
+              </button>
+              <button class="btn-transfer-status-filter" data-tstatus="requested" style="padding:5px 11px; font-size:12px; font-weight:600; border:none; background:transparent; color:#b45309; border-radius:5px; cursor:pointer;">
+                입금요청(대기)
+              </button>
+              <button class="btn-transfer-status-filter" data-tstatus="paid" style="padding:5px 11px; font-size:12px; font-weight:600; border:none; background:transparent; color:#059669; border-radius:5px; cursor:pointer;">
+                입금완료
+              </button>
             </div>
           </div>
 
@@ -3991,20 +4019,82 @@ function renderLiveEditView(container, liveId, showView) {
         return;
       }
 
+      // 1. 결제 수단 필터 (전체 주문 vs 계좌이체 주문)
+      if (selectedPayTypeFilter === 'bank_transfer') {
+        filtered = filtered.filter(ord => {
+          return (ord.pg_provider || '').toLowerCase() === 'bank_transfer' ||
+            (ord.payment_status || '').startsWith('transfer_') ||
+            (ord.payment_type || '').includes('계좌');
+        });
+
+        // 1-1. 계좌이체 세부 상태 필터 (전체, 입금요청, 입금완료)
+        if (selectedTransferStatusFilter === 'requested') {
+          filtered = filtered.filter(ord => (ord.payment_status || '').toLowerCase() !== 'paid');
+        } else if (selectedTransferStatusFilter === 'paid') {
+          filtered = filtered.filter(ord => (ord.payment_status || '').toLowerCase() === 'paid');
+        }
+      }
+
+      // 계좌이체 미처리(입금요청 대기) 건수 카운트
+      const pendingTransferCount = currentOrders.filter(ord => {
+        const isTransfer = (ord.pg_provider || '').toLowerCase() === 'bank_transfer' ||
+          (ord.payment_status || '').startsWith('transfer_') ||
+          (ord.payment_type || '').includes('계좌');
+        const isPaid = (ord.payment_status || '').toLowerCase() === 'paid';
+        return isTransfer && !isPaid;
+      }).length;
+
+      const transferBadgeEl = document.getElementById('transfer-pending-count-badge');
+      if (transferBadgeEl) {
+        if (pendingTransferCount > 0) {
+          transferBadgeEl.textContent = `${pendingTransferCount}건 대기`;
+          transferBadgeEl.style.display = 'inline-block';
+        } else {
+          transferBadgeEl.style.display = 'none';
+        }
+      }
+
       let rowsHtml = '';
       filtered.forEach((ord, idx) => {
         const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
         const isPaid = pStatus === 'paid';
         const isCancel = cancelStatuses.includes(pStatus);
+        const isTransfer = (ord.pg_provider || '').toLowerCase() === 'bank_transfer' ||
+          (ord.payment_status || '').startsWith('transfer_') ||
+          (ord.payment_type || '').includes('계좌');
 
         // 세련된 소프트 닷 뱃지 (절대 줄바꿈 방지 white-space: nowrap)
         let statusBadge = '';
         if (isPaid) {
-          statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981; flex-shrink:0;"></span>결제완료</span>';
+          statusBadge = isTransfer
+            ? '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981; flex-shrink:0;"></span>입금완료</span>'
+            : '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981; flex-shrink:0;"></span>결제완료</span>';
         } else if (isCancel) {
           statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444; flex-shrink:0;"></span>결제취소</span>';
         } else {
-          statusBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b; flex-shrink:0;"></span>결제대기</span>';
+          statusBadge = isTransfer
+            ? '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b; flex-shrink:0;"></span>입금요청</span>'
+            : '<span style="display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 9px; border-radius:6px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309; white-space:nowrap; line-height:1;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b; flex-shrink:0;"></span>결제대기</span>';
+        }
+
+        const payTypeBadge = isTransfer
+          ? '<span style="display:inline-flex; align-items:center; padding:3px 7px; border-radius:5px; font-size:11px; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; white-space:nowrap;">계좌이체</span>'
+          : '<span style="display:inline-flex; align-items:center; padding:3px 7px; border-radius:5px; font-size:11px; font-weight:600; background:#eff6ff; color:#2563eb; border:1px solid #dbeafe; white-space:nowrap;">카드결제</span>';
+
+        let actionCell = '<span style="color:#cbd5e1; font-size:12px;">-</span>';
+        if (isTransfer) {
+          if (!isPaid && !isCancel) {
+            actionCell = `
+              <button type="button" class="btn-confirm-transfer-action" data-order-idx="${idx}"
+                style="background:#0f172a; color:#ffffff; border:none; border-radius:6px; padding:4px 10px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap; transition:all 0.12s; box-shadow:0 1px 2px rgba(0,0,0,0.1);"
+                onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#0f172a'"
+                title="실제 통장 입금을 확인한 후 클릭하면 '입금완료'로 승인됩니다.">
+                입금 확인 완료
+              </button>
+            `;
+          } else if (isPaid) {
+            actionCell = `<span style="font-size:11.5px; font-weight:700; color:#10b981; display:inline-flex; align-items:center; gap:3px;">승인완료</span>`;
+          }
         }
 
         // 자연스러운 날짜/시간 분리 포맷
@@ -4040,15 +4130,17 @@ function renderLiveEditView(container, liveId, showView) {
           <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <!-- 1. 상태 -->
             <td style="padding:13px 8px; text-align:center; white-space:nowrap;">${statusBadge}</td>
-            <!-- 2. 주문번호 -->
-            <td style="padding:13px 14px; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
-            <!-- 3. 주문일시 (자연스러운 날짜와 시간) -->
-            <td style="padding:13px 14px; color:#334155; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap;">
+            <!-- 2. 결제수단 -->
+            <td style="padding:13px 8px; text-align:center; white-space:nowrap;">${payTypeBadge}</td>
+            <!-- 3. 주문번호 -->
+            <td style="padding:13px 12px; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
+            <!-- 4. 주문일시 (자연스러운 날짜와 시간) -->
+            <td style="padding:13px 12px; color:#334155; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap;">
               <span style="font-weight:500;">${datePart}</span>
               ${timePart ? `<span style="color:#94a3b8; font-size:11.5px; margin-left:5px;">${timePart}</span>` : ''}
             </td>
-            <!-- 4. 주문자 (우아한 텍스트 링크) -->
-            <td style="padding:13px 14px;">
+            <!-- 5. 주문자 (우아한 텍스트 링크) -->
+            <td style="padding:13px 12px;">
               <button type="button" class="btn-customer-detail" data-order-idx="${idx}"
                 style="background:transparent; border:none; padding:0; font-size:13px; font-weight:600; color:#0f172a; cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:3px; transition:all 0.15s;"
                 onmouseover="this.style.color='#2563eb'; this.style.textDecorationColor='#2563eb';"
@@ -4056,14 +4148,14 @@ function renderLiveEditView(container, liveId, showView) {
                 ${customerName}
               </button>
             </td>
-            <!-- 5. 주문 상품 (자연스러운 폰트 + 말줄임표) -->
-            <td style="padding:13px 14px; max-width:320px;">
+            <!-- 6. 주문 상품 (자연스러운 폰트 + 말줄임표) -->
+            <td style="padding:13px 12px; max-width:280px;">
               <div style="color:#1e293b; font-weight:500; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.4;" title="${itemsSummary.replace(/"/g, '&quot;')}">
                 ${itemsSummary}
               </div>
             </td>
-            <!-- 6. 결제금액 -->
-            <td style="padding:13px 20px 13px 14px; text-align:right; font-variant-numeric:tabular-nums;">
+            <!-- 7. 결제금액 -->
+            <td style="padding:13px 16px 13px 12px; text-align:right; font-variant-numeric:tabular-nums;">
               ${isCancel ? `
                 <div style="display:inline-flex; flex-direction:column; align-items:flex-end;">
                   <span style="color:#94a3b8; font-size:13px; text-decoration:line-through; font-weight:500;">${(parseInt(ord.total_amount) || 0).toLocaleString()}원</span>
@@ -4072,6 +4164,10 @@ function renderLiveEditView(container, liveId, showView) {
               ` : `
                 <span style="font-weight:700; font-size:13.5px; color:#0f172a;">${(parseInt(ord.total_amount) || 0).toLocaleString()}원</span>
               `}
+            </td>
+            <!-- 8. 입금확인/관리 -->
+            <td style="padding:13px 12px; text-align:center; white-space:nowrap;">
+              ${actionCell}
             </td>
           </tr>
         `;
@@ -4082,12 +4178,14 @@ function renderLiveEditView(container, liveId, showView) {
           <table style="width:100%; border-collapse:collapse; text-align:left;">
             <thead>
               <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px; color:#64748b;">
-                <th style="padding:11px 8px; font-weight:600; width:105px; min-width:105px; text-align:center;">상태</th>
-                <th style="padding:11px 14px; font-weight:600; width:120px;">주문번호</th>
-                <th style="padding:11px 14px; font-weight:600; width:140px;">주문일시</th>
-                <th style="padding:11px 14px; font-weight:600; width:100px;">주문자</th>
-                <th style="padding:11px 14px; font-weight:600;">주문 상품</th>
-                <th style="padding:11px 20px 11px 14px; font-weight:600; width:120px; text-align:right;">결제금액</th>
+                <th style="padding:11px 8px; font-weight:600; width:95px; min-width:95px; text-align:center;">상태</th>
+                <th style="padding:11px 8px; font-weight:600; width:75px; text-align:center;">결제수단</th>
+                <th style="padding:11px 12px; font-weight:600; width:120px;">주문번호</th>
+                <th style="padding:11px 12px; font-weight:600; width:135px;">주문일시</th>
+                <th style="padding:11px 12px; font-weight:600; width:90px;">주문자</th>
+                <th style="padding:11px 12px; font-weight:600;">주문 상품</th>
+                <th style="padding:11px 16px 11px 12px; font-weight:600; width:110px; text-align:right;">결제금액</th>
+                <th style="padding:11px 12px; font-weight:600; width:115px; text-align:center;">입금확인/관리</th>
               </tr>
             </thead>
             <tbody>
@@ -4107,6 +4205,56 @@ function renderLiveEditView(container, liveId, showView) {
           }
         });
       });
+
+      // 테이블 내 입금 확인 완료 버튼 이벤트 바인딩
+      container.querySelectorAll('.btn-confirm-transfer-action').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.orderIdx);
+          if (filtered[idx]) {
+            confirmTransferOrder(filtered[idx]);
+          }
+        });
+      });
+    };
+
+    // ── 계좌이체 주문 관리자 입금 확인 완료 처리 ──
+    const confirmTransferOrder = async (ord) => {
+      const custName = ord.customer_name || ord.buyer_name || '고객';
+      const amount = (parseInt(ord.total_amount) || 0).toLocaleString();
+
+      if (!confirm(`[${custName}] 고객님의 계좌 입금(${amount}원) 내역을 확인하셨습니까?\n\n'확인'을 누르면 '입금완료'로 최종 승인 처리되며 실매출 통계에 즉시 반영됩니다.`)) {
+        return;
+      }
+
+      ord.payment_status = 'paid';
+      ord.transfer_confirmed = true;
+      ord.transfer_confirmed_at = Date.now();
+
+      try {
+        if (db) {
+          if (ord.id) {
+            await db.from('live_orders')
+              .update({ payment_status: 'paid', updated_at: Date.now() })
+              .eq('id', ord.id);
+          } else if (ord.pg_receipt_id) {
+            await db.from('live_orders')
+              .update({ payment_status: 'paid', updated_at: Date.now() })
+              .eq('pg_receipt_id', ord.pg_receipt_id);
+          }
+        }
+      } catch (e) {
+        console.warn('live_orders update failed:', e);
+      }
+
+      try {
+        localStorage.setItem(`ryzin_live_orders_${liveId}`, JSON.stringify(currentOrders));
+      } catch (e) {}
+
+      alert(`[${custName}] 님의 계좌이체 주문이 '입금완료'로 정상 승인 처리되었습니다.`);
+      updateKpis();
+      renderOrdersView();
+      renderRankingView();
     };
 
     // ── 고객 상세 정보 팝업 모달 (이름, 전화번호, 주소 및 결제 취소/부분취소 기능) ──
@@ -4218,6 +4366,10 @@ function renderLiveEditView(container, liveId, showView) {
                 <span style="font-weight:700; color:#0f172a; font-size:14px; font-variant-numeric:tabular-nums;">${currentAmount.toLocaleString()}원</span>
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
+                <span style="color:#64748b;">결제 수단</span>
+                <span style="font-weight:600; color:#0f172a;">${(ord.pg_provider || '').toLowerCase() === 'bank_transfer' ? '무통장 계좌이체' : '신용카드/간편결제'}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12.5px;">
                 <span style="color:#64748b;">주문번호</span>
                 <span style="color:#475569; font-variant-numeric:tabular-nums;">${receiptNo || '-'}</span>
               </div>
@@ -4227,45 +4379,66 @@ function renderLiveEditView(container, liveId, showView) {
               </div>
             </div>
 
-            <!-- 3. 결제 취소 / 부분 취소 제어 카드 -->
+            <!-- 3. 결제 관리 / 계좌이체 입금 관리 카드 -->
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:16px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span style="font-size:12px; font-weight:700; color:#334155;">결제 취소 관리</span>
-                <span style="font-size:11px; color:#94a3b8;">PG사 실시간 취소 연동</span>
-              </div>
-
-              ${isCancel ? `
-                <div style="text-align:center; padding:12px; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; color:#dc2626; font-size:12.5px; font-weight:600;">
-                  이미 결제 취소(환불) 처리가 완료된 주문건입니다.
+              ${(ord.pg_provider || '').toLowerCase() === 'bank_transfer' ? `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:12px; font-weight:700; color:#334155;">계좌이체 입금 관리</span>
+                  <span style="font-size:11px; color:#94a3b8;">관리자 수동 입금 확인</span>
                 </div>
+                ${isPaid ? `
+                  <div style="text-align:center; padding:12px; background:#ecfdf5; border:1px solid #d1fae5; border-radius:8px; color:#059669; font-size:13px; font-weight:700;">
+                    실제 계좌 입금 확인 및 승인이 완료된 주문건입니다.
+                  </div>
+                ` : `
+                  <div>
+                    <p style="font-size:12px; color:#64748b; margin:0 0 10px 0; line-height:1.4;">
+                      실제 통장에 입금 금액(${currentAmount.toLocaleString()}원)이 입금되었는지 확인하신 후 아래 완료 버튼을 눌러주세요.
+                    </p>
+                    <button type="button" id="btn-modal-confirm-transfer" style="width:100%; padding:11px; font-size:13px; font-weight:700; border:none; background:#0f172a; color:#ffffff; border-radius:8px; cursor:pointer; transition:all 0.12s; box-shadow:0 1px 3px rgba(0,0,0,0.1);" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#0f172a'">
+                      실제 통장 입금 확인 완료 처리
+                    </button>
+                  </div>
+                `}
               ` : `
-                <div style="display:flex; gap:8px;">
-                  <button type="button" id="btn-modal-cancel-all" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fecaca; background:#fff5f5; color:#dc2626; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">
-                    결제 전체 취소
-                  </button>
-                  <button type="button" id="btn-modal-cancel-partial" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fed7aa; background:#fffbeb; color:#b45309; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
-                    부분 취소
-                  </button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:12px; font-weight:700; color:#334155;">결제 취소 관리</span>
+                  <span style="font-size:11px; color:#94a3b8;">PG사 실시간 취소 연동</span>
                 </div>
 
-                <!-- 부분 취소 인라인 입력 폼 -->
-                <div id="modal-partial-form" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #e2e8f0;">
-                  <div style="margin-bottom:8px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                      <label style="font-size:11.5px; font-weight:600; color:#475569;">부분 취소 금액 (원)</label>
-                      <span style="font-size:11px; color:#94a3b8;">최대 ${currentAmount.toLocaleString()}원</span>
+                ${isCancel ? `
+                  <div style="text-align:center; padding:12px; background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; color:#dc2626; font-size:12.5px; font-weight:600;">
+                    이미 결제 취소(환불) 처리가 완료된 주문건입니다.
+                  </div>
+                ` : `
+                  <div style="display:flex; gap:8px;">
+                    <button type="button" id="btn-modal-cancel-all" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fecaca; background:#fff5f5; color:#dc2626; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">
+                      결제 전체 취소
+                    </button>
+                    <button type="button" id="btn-modal-cancel-partial" style="flex:1; padding:9px 12px; font-size:12px; font-weight:700; border:1px solid #fed7aa; background:#fffbeb; color:#b45309; border-radius:7px; cursor:pointer; transition:all 0.12s;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
+                      부분 취소
+                    </button>
+                  </div>
+
+                  <!-- 부분 취소 인라인 입력 폼 -->
+                  <div id="modal-partial-form" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #e2e8f0;">
+                    <div style="margin-bottom:8px;">
+                      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <label style="font-size:11.5px; font-weight:600; color:#475569;">부분 취소 금액 (원)</label>
+                        <span style="font-size:11px; color:#94a3b8;">최대 ${currentAmount.toLocaleString()}원</span>
+                      </div>
+                      <input type="number" id="partial-cancel-amount" placeholder="취소할 금액 입력 (예: 10000)" max="${currentAmount}" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; font-weight:700; color:#0f172a;">
                     </div>
-                    <input type="number" id="partial-cancel-amount" placeholder="취소할 금액 입력 (예: 10000)" max="${currentAmount}" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; font-weight:700; color:#0f172a;">
+                    <div style="margin-bottom:10px;">
+                      <label style="display:block; font-size:11.5px; font-weight:600; color:#475569; margin-bottom:4px;">취소 사유</label>
+                      <input type="text" id="partial-cancel-memo" value="고객 요청 부분 취소" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; outline:none; color:#334155;">
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:6px;">
+                      <button type="button" id="btn-close-partial-form" style="padding:6px 12px; font-size:11.5px; font-weight:600; border:1px solid #e2e8f0; background:#ffffff; color:#64748b; border-radius:6px; cursor:pointer;">접기</button>
+                      <button type="button" id="btn-submit-partial-cancel" style="padding:6px 14px; font-size:11.5px; font-weight:700; border:none; background:#d97706; color:#ffffff; border-radius:6px; cursor:pointer;">부분 취소 실행</button>
+                    </div>
                   </div>
-                  <div style="margin-bottom:10px;">
-                    <label style="display:block; font-size:11.5px; font-weight:600; color:#475569; margin-bottom:4px;">취소 사유</label>
-                    <input type="text" id="partial-cancel-memo" value="고객 요청 부분 취소" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; outline:none; color:#334155;">
-                  </div>
-                  <div style="display:flex; justify-content:flex-end; gap:6px;">
-                    <button type="button" id="btn-close-partial-form" style="padding:6px 12px; font-size:11.5px; font-weight:600; border:1px solid #e2e8f0; background:#ffffff; color:#64748b; border-radius:6px; cursor:pointer;">접기</button>
-                    <button type="button" id="btn-submit-partial-cancel" style="padding:6px 14px; font-size:11.5px; font-weight:700; border:none; background:#d97706; color:#ffffff; border-radius:6px; cursor:pointer;">부분 취소 실행</button>
-                  </div>
-                </div>
+                `}
               `}
             </div>
           </div>
@@ -4282,6 +4455,10 @@ function renderLiveEditView(container, liveId, showView) {
       const closeModal = () => modalEl.remove();
       modalEl.querySelector('#btn-close-customer-modal')?.addEventListener('click', closeModal);
       modalEl.querySelector('#btn-confirm-customer-modal')?.addEventListener('click', closeModal);
+      modalEl.querySelector('#btn-modal-confirm-transfer')?.addEventListener('click', () => {
+        closeModal();
+        confirmTransferOrder(ord);
+      });
       modalEl.addEventListener('click', (e) => {
         if (e.target === modalEl) closeModal();
       });
@@ -4831,6 +5008,69 @@ function renderLiveEditView(container, liveId, showView) {
         renderRankingView();
       });
     }
+
+    // ── 결제수단 탭 필터 (전체 주문 vs 계좌이체 주문) 및 상태 필터 ──
+    const btnPaytypeAll = document.getElementById('order-paytype-all');
+    const btnPaytypeTransfer = document.getElementById('order-paytype-transfer');
+    const transferFilterGroup = document.getElementById('transfer-status-filter-group');
+
+    if (btnPaytypeAll && btnPaytypeTransfer) {
+      btnPaytypeAll.addEventListener('click', () => {
+        selectedPayTypeFilter = 'all';
+        btnPaytypeAll.className = 'btn-paytype-filter active';
+        btnPaytypeAll.style.background = '#fff';
+        btnPaytypeAll.style.color = '#0f172a';
+        btnPaytypeAll.style.fontWeight = '700';
+        btnPaytypeAll.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+
+        btnPaytypeTransfer.className = 'btn-paytype-filter';
+        btnPaytypeTransfer.style.background = 'transparent';
+        btnPaytypeTransfer.style.color = '#64748b';
+        btnPaytypeTransfer.style.fontWeight = '600';
+        btnPaytypeTransfer.style.boxShadow = 'none';
+
+        if (transferFilterGroup) transferFilterGroup.style.display = 'none';
+        renderOrdersView();
+      });
+
+      btnPaytypeTransfer.addEventListener('click', () => {
+        selectedPayTypeFilter = 'bank_transfer';
+        btnPaytypeTransfer.className = 'btn-paytype-filter active';
+        btnPaytypeTransfer.style.background = '#fff';
+        btnPaytypeTransfer.style.color = '#0f172a';
+        btnPaytypeTransfer.style.fontWeight = '700';
+        btnPaytypeTransfer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+
+        btnPaytypeAll.className = 'btn-paytype-filter';
+        btnPaytypeAll.style.background = 'transparent';
+        btnPaytypeAll.style.color = '#64748b';
+        btnPaytypeAll.style.fontWeight = '600';
+        btnPaytypeAll.style.boxShadow = 'none';
+
+        if (transferFilterGroup) transferFilterGroup.style.display = 'flex';
+        renderOrdersView();
+      });
+    }
+
+    // 계좌이체 상태 필터 (전체, 입금요청, 입금완료)
+    document.querySelectorAll('.btn-transfer-status-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-transfer-status-filter').forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'transparent';
+          b.style.color = '#64748b';
+          b.style.fontWeight = '600';
+          b.style.boxShadow = 'none';
+        });
+        btn.classList.add('active');
+        btn.style.background = '#fff';
+        btn.style.color = btn.dataset.tstatus === 'requested' ? '#b45309' : (btn.dataset.tstatus === 'paid' ? '#059669' : '#0f172a');
+        btn.style.fontWeight = '700';
+        btn.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+        selectedTransferStatusFilter = btn.dataset.tstatus;
+        renderOrdersView();
+      });
+    });
 
     // ── 서브 탭 전환 이벤트 (채팅관리 탭 표준 로직) ──
     const subTabBtns = contentArea.querySelectorAll('.order-sub-tab-btn');

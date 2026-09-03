@@ -722,10 +722,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 입금 완료 알림 전송 버튼
     modalEl.querySelector('#btn-notify-deposit-done')?.addEventListener('click', async () => {
-      if (typeof sendMessage === 'function') {
-        sendMessage(`[입금 완료] ${targetNick} 입금 완료했습니다! (주문금액: ${totalPrice.toLocaleString()}원)`);
+      const notifyBtn = modalEl.querySelector('#btn-notify-deposit-done');
+      if (notifyBtn) {
+        notifyBtn.disabled = true;
+        notifyBtn.textContent = '전송 중...';
       }
-      alert('관리자에게 입금 완료 알림이 전송되었습니다.');
+
+      const orderNumber = 'TR-' + Date.now().toString().slice(-8);
+      const orderPayload = {
+        live_id: LIVE_ID,
+        pg_receipt_id: orderNumber,
+        customer_name: targetNick,
+        total_amount: totalPrice,
+        items: currentCart,
+        payment_status: 'transfer_requested', // 계좌이체 입금요청(대기)
+        pg_provider: 'bank_transfer', // 계좌이체
+        created_at: Date.now()
+      };
+
+      try {
+        if (db) {
+          await db.from('live_orders').insert([orderPayload]);
+        }
+      } catch (e) {
+        console.warn('live_orders insert failed:', e);
+      }
+
+      try {
+        const localOrders = JSON.parse(localStorage.getItem(`ryzin_live_orders_${LIVE_ID}`) || '[]');
+        localOrders.unshift(orderPayload);
+        localStorage.setItem(`ryzin_live_orders_${LIVE_ID}`, JSON.stringify(localOrders));
+      } catch (e) {}
+
+      if (typeof sendMessage === 'function') {
+        sendMessage(`[계좌이체 입금 완료] ${targetNick} 입금 완료했습니다! (주문금액: ${totalPrice.toLocaleString()}원)`);
+      }
+      alert('관리자에게 입금 완료 알림이 전송되었습니다. 관리자 입금 확인 후 주문이 최종 완료됩니다.');
       closeModal();
     });
   }
