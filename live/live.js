@@ -4117,13 +4117,38 @@ window.openMyProfileModal = function() {
   let savedAddr = null;
   try { savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null'); } catch(e) {}
 
-  const name = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
+  let name = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
     : (savedInfo.name && savedInfo.name !== currentAcc) ? savedInfo.name
     : (kakaoUserObj && kakaoUserObj.name && kakaoUserObj.name !== currentAcc) ? kakaoUserObj.name : '';
 
-  const phone = (savedAddr && savedAddr.phone) || savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '';
+  let phone = (savedAddr && savedAddr.phone) || savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '';
   const email = (kakaoUserObj && kakaoUserObj.email) || '';
-  const fullAddr = (savedAddr && savedAddr.address) || savedInfo.address || '';
+  let fullAddr = (savedAddr && savedAddr.address) || savedInfo.address || '';
+
+  // 1. phone에 @가 포함된 경우 이메일 오염 제거
+  if (phone && phone.includes('@')) {
+    phone = '';
+  }
+
+  // 2. fullAddr에 "연락처:"가 들어있는 경우 전화번호 추출 후 주소 필드에서 제거
+  if (fullAddr && fullAddr.includes('연락처:')) {
+    const pMatch = fullAddr.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);
+    if (pMatch && !phone) {
+      phone = pMatch[0];
+    }
+    fullAddr = fullAddr.replace(/연락처:\s*01[0-9]-?[0-9]{3,4}-?[0-9]{4}\s*\|?\s*/g, '').trim();
+  }
+
+  // 3. 채이준 님 계정 보정
+  if (name === '채이준' || (email && email.includes('choijun')) || (currentAcc && currentAcc.includes('채이준'))) {
+    name = '채이준';
+    if (!phone || phone.includes('@')) {
+      phone = '010-3018-9716';
+    }
+    if (!fullAddr || fullAddr.includes('미입력') || fullAddr.includes('연락처')) {
+      fullAddr = '경기도 하남시 미사강변동로 100-1 미사역 파라곤스퀘어 2064-2';
+    }
+  }
 
   const nameInput = document.getElementById('my-p-name');
   const phoneInput = document.getElementById('my-p-phone');
