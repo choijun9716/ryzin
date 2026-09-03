@@ -76,7 +76,7 @@ export default async function handler(req, res) {
   if (id) {
     const liveTargetUrl = `https://ryzincorp.com/live/${id}`;
     const manifestUrl = `/api/manifest?id=${id}`;
-    html = html.replace('<head>', `<head>\n  <script>window.INJECTED_LIVE_ID = "${id}";</script>\n  <meta name="apple-mobile-web-app-title" content="${title}">\n  <link rel="apple-touch-icon" href="${thumbnail}">\n  <link rel="canonical" href="${liveTargetUrl}">\n  <link rel="manifest" href="${manifestUrl}">`);
+    html = html.replace('<head>', `<head>\n  <script>window.INJECTED_LIVE_ID = "${id}";</script>\n  <meta name="apple-mobile-web-app-title" content="RYZIN STUDIO">\n  <link rel="apple-touch-icon" href="/assets/app_icon.png">\n  <link rel="canonical" href="${liveTargetUrl}">\n  <link rel="manifest" href="${manifestUrl}">`);
   }
   
   // 정규식으로 meta 속성 교체

@@ -1,6 +1,6 @@
 {
-  "name": "RYZIN STUDIO LIVE",
-  "short_name": "RYZIN",
+  "name": "RYZIN STUDIO",
+  "short_name": "RYZIN STUDIO",
   "description": "라이브커머스 실시간 방송 및 쇼핑",
   "start_url": "/live/",
   "display": "standalone",
@@ -8,9 +8,10 @@
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "/admin/assets/ryzin_studio_white.png",
+      "src": "/assets/app_icon.png",
       "sizes": "192x192 512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "scope": "/live/"

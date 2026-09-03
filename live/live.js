@@ -19,8 +19,8 @@
       || 'https://i.ibb.co/GQN2NXgR/image.jpg';
 
     const dynamicManifest = {
-      name: ogTitle,
-      short_name: ogTitle.length > 12 ? ogTitle.substring(0, 10) + '..' : ogTitle,
+      name: "RYZIN STUDIO",
+      short_name: "RYZIN STUDIO",
       description: "라이브커머스 실시간 방송 및 쇼핑",
       start_url: currentUrl,
       scope: "/live/",
@@ -29,9 +29,10 @@
       theme_color: "#000000",
       icons: [
         {
-          src: ogImage,
+          src: "/assets/app_icon.png",
           sizes: "192x192 512x512",
-          type: "image/png"
+          type: "image/png",
+          purpose: "any maskable"
         }
       ]
     };
@@ -53,7 +54,7 @@
       appleIcon.rel = 'apple-touch-icon';
       document.head.appendChild(appleIcon);
     }
-    appleIcon.href = ogImage;
+    appleIcon.href = '/assets/app_icon.png';
   } catch (e) {
     console.warn('Dynamic manifest init error:', e);
   }

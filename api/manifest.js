@@ -41,8 +41,8 @@ export default async function handler(req, res) {
   const thumbnail = (liveData && (liveData.share_image || liveData.thumbnail_url)) || 'https://i.ibb.co/GQN2NXgR/image.jpg';
 
   const manifest = {
-    name: title,
-    short_name: title.length > 10 ? title.substring(0, 10) : title,
+    name: "RYZIN STUDIO",
+    short_name: "RYZIN STUDIO",
     description: "라이브커머스 실시간 방송 및 쇼핑",
     start_url: `/live/${id}`,
     scope: `/live/${id}`,
@@ -51,9 +51,10 @@ export default async function handler(req, res) {
     theme_color: "#000000",
     icons: [
       {
-        src: thumbnail,
+        src: "/assets/app_icon.png",
         sizes: "192x192 512x512",
-        type: "image/png"
+        type: "image/png",
+        purpose: "any maskable"
       }
     ]
   };
