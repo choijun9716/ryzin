@@ -2658,11 +2658,23 @@ function renderLiveEditView(container, liveId, showView) {
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
           <div style="display:flex; align-items:center; gap:10px;">
-            <span style="font-size:12px; color:#10b981; font-weight:700; background:#ecfdf5; padding:6px 12px; border-radius:8px; border:1px solid #a7f3d0;">실시간 자동 반영</span>
+            <span style="font-size:12px; color:#10b981; font-weight:700; background:#ecfdf5; padding:6px 12px; border-radius:8px; border:1px solid #a7f3d0; display:flex; align-items:center; gap:5px;">
+              <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10b981;"></span>
+              실시간 자동 반영
+            </span>
             <button id="btn-add-product" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
+            <button id="btn-save-products-manual" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15); transition:all 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+              저장
+            </button>
           </div>
         </div>
         <div id="product-list-container">${renderProductList()}</div>
+        <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
+          <button id="btn-add-product-bottom" class="action-btn btn-secondary" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
+          <button id="btn-save-products-bottom" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15);">
+            저장
+          </button>
+        </div>
       </div>
     `;
 
@@ -2919,12 +2931,46 @@ function renderLiveEditView(container, liveId, showView) {
     };
     bindProductEvents();
 
-    document.getElementById('btn-add-product').addEventListener('click', () => {
+    const handleAddProduct = () => {
       products.push({ id: Date.now(), name: '새 상품', price: '', normalPrice: '', discountRate: 0, image: 'https://via.placeholder.com/72', url: '#' });
       saveProducts(true);
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
-    });
+    };
+
+    document.getElementById('btn-add-product')?.addEventListener('click', handleAddProduct);
+    document.getElementById('btn-add-product-bottom')?.addEventListener('click', handleAddProduct);
+
+    // [NEW] 관리자 수동 [저장] 버튼 동작 (자동반영 + 명시적 확정 저장)
+    const handleManualProductSave = async (btn) => {
+      if (!btn) return;
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = '저장 중...';
+
+      if (typeof autoSaveAllProducts === 'function') {
+        autoSaveAllProducts();
+      } else {
+        saveProducts(true);
+      }
+
+      try {
+        if (typeof syncToSheetDB === 'function') {
+          await syncToSheetDB(liveId, config, stats, products, true);
+        }
+      } catch(e) {}
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '저장 완료';
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 1500);
+      }, 250);
+    };
+
+    document.getElementById('btn-save-products-manual')?.addEventListener('click', (e) => handleManualProductSave(e.currentTarget));
+    document.getElementById('btn-save-products-bottom')?.addEventListener('click', (e) => handleManualProductSave(e.currentTarget));
     // 모든 상품 변경사항 실시간 자동 저장 및 Supabase 즉시 반영 함수
     const autoSaveAllProducts = () => {
       const plc = document.getElementById('product-list-container');
