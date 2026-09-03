@@ -38,6 +38,12 @@ const saveLiveStats = (liveId, data) => {
   localStorage.setItem(`ryzin_live_stats_${liveId}`, JSON.stringify(data));
 };
 
+const getLiveTimeline = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_stats_timeline_${liveId}`), []);
+const saveLiveTimeline = (liveId, list) => {
+  localStorage.setItem(`ryzin_stats_timeline_${liveId}`, JSON.stringify(list));
+  localStorage.setItem(`ryzin_live_stats_timeline_${liveId}`, JSON.stringify(list));
+};
+
 const getLiveProducts = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_products_${liveId}`), []);
 const saveLiveProductsLocal = (liveId, data) => {
   localStorage.setItem(`ryzin_products_${liveId}`, JSON.stringify(data));
@@ -810,6 +816,7 @@ function renderLiveEditView(container, liveId, showView) {
       <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">${isLiveStreamOnly ? '채팅 관리' : '채팅 / 봇 관리'}</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상품 관리</button>
       <button class="tab-btn" data-tab="orders" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">주문 관리</button>
+      <button class="tab-btn" data-tab="stats" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">통계</button>
       <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상담 DB</button>
     `;
 
@@ -820,7 +827,7 @@ function renderLiveEditView(container, liveId, showView) {
       <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; line-height:1.2;" title="${config.brandName || ''}">${config.brandName || ''}</span>
       ${statusBadge}
     </div>
-    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:540px; margin:0 auto;">
+    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:620px; margin:0 auto;">
       ${tabBtnsHtml}
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
@@ -3495,6 +3502,10 @@ function renderLiveEditView(container, liveId, showView) {
               style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:8px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
               제품별 모아보기
             </button>
+            <button id="btn-view-mode-ranking" type="button"
+              style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:8px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
+              판매 순위 랭킹
+            </button>
           </div>
 
           <!-- 2. 검색 및 제품 드롭다운 필터 -->
@@ -4163,6 +4174,13 @@ function renderLiveEditView(container, liveId, showView) {
 
         renderActiveView();
       });
+
+      const btnViewRanking = document.getElementById('btn-view-mode-ranking');
+      if (btnViewRanking) {
+        btnViewRanking.addEventListener('click', () => {
+          switchTab('stats');
+        });
+      }
     }
 
     if (filterSelect) {
@@ -4175,6 +4193,752 @@ function renderLiveEditView(container, liveId, showView) {
     if (searchInput) {
       searchInput.addEventListener('input', renderActiveView);
     }
+  };
+
+  // ── 통계 (상품 판매 순위 & 1분 단위 시청자 수 트래킹) 탭 렌더링 ──────────────────
+  const renderStatsTab = () => {
+    let statsOrders = [];
+    let rankingSortBy = 'qty'; // 'qty' | 'amount'
+    let statsTimer = null;
+
+    contentArea.innerHTML = `
+      <div class="section-card" style="margin-bottom:24px;">
+        <!-- 상단 헤더 & 컨트롤 바 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">
+              라이브 방송 종합 통계
+            </h2>
+            <span id="stats-live-status-badge" style="font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:12px; background:#eff6ff; color:#2563eb; border:1px solid #dbeafe;">
+              통계 집계 중
+            </span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button id="btn-stats-download-csv" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>통계 CSV 추출</span>
+            </button>
+            <button id="btn-refresh-stats" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
+          </div>
+        </div>
+
+        <!-- 핵심 요약 메트릭 카드 4종 -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:14px; margin-bottom:26px;">
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
+            <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">총 결제 금액 (매출)</div>
+            <div id="stat-card-total-sales" style="font-size:22px; font-weight:800; color:#0f172a;">0원</div>
+            <div id="stat-card-order-count" style="font-size:11.5px; color:#64748b; margin-top:2px;">총 0건 결제</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
+            <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">총 판매 수량</div>
+            <div id="stat-card-total-qty" style="font-size:22px; font-weight:800; color:#0f172a;">0개</div>
+            <div id="stat-card-item-types" style="font-size:11.5px; color:#64748b; margin-top:2px;">판매 품목 0종</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
+            <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">최고 동시 시청자 (Peak)</div>
+            <div id="stat-card-peak-viewers" style="font-size:22px; font-weight:800; color:#ef4444;">0명</div>
+            <div id="stat-card-peak-time" style="font-size:11.5px; color:#64748b; margin-top:2px;">기록 없음</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
+            <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">평균 시청자 수</div>
+            <div id="stat-card-avg-viewers" style="font-size:22px; font-weight:800; color:#2563eb;">0명</div>
+            <div id="stat-card-cum-viewers" style="font-size:11.5px; color:#64748b; margin-top:2px;">누적 0명 방문</div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             1. 상품 판매 순위 랭킹 (어떤 상품이 가장 많이 팔렸는지)
+             ═══════════════════════════════════════════════════════════ -->
+        <div style="margin-bottom:32px; padding:20px; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="display:inline-block; width:4px; height:16px; background:#0f172a; border-radius:2px;"></span>
+                <h3 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">상품 판매 순위 랭킹</h3>
+              </div>
+              <p style="font-size:12px; color:#64748b; margin:4px 0 0 12px;">라이브 방송 중 발생한 실제 결제 데이터를 바탕으로 어떤 상품이 가장 인기 있었는지 순위별로 집계합니다.</p>
+            </div>
+            <!-- 순위 정렬 기준 버튼 (수량순 vs 매출순) -->
+            <div style="display:flex; background:#f1f5f9; padding:3px; border-radius:8px; gap:2px;">
+              <button id="btn-rank-sort-qty" type="button" style="padding:6px 14px; font-size:12px; font-weight:700; border-radius:6px; border:none; background:#ffffff; color:#0f172a; box-shadow:0 1px 2px rgba(0,0,0,0.06); cursor:pointer;">
+                판매 수량순
+              </button>
+              <button id="btn-rank-sort-amount" type="button" style="padding:6px 14px; font-size:12px; font-weight:600; border-radius:6px; border:none; background:transparent; color:#64748b; cursor:pointer;">
+                결제 금액순
+              </button>
+            </div>
+          </div>
+
+          <!-- 판매 랭킹 테이블 컨테이너 -->
+          <div id="stats-ranking-container" style="overflow-x:auto;">
+            <div style="text-align:center; padding:30px; color:#64748b; font-size:13px;">판매 데이터를 불러오는 중...</div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             2. 방송 시작 후 1분마다 시청자 수 체크 (시계열 트래킹)
+             ═══════════════════════════════════════════════════════════ -->
+        <div style="padding:20px; background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="display:inline-block; width:4px; height:16px; background:#2563eb; border-radius:2px;"></span>
+                <h3 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">방송 시작 후 1분 단위 시청자 수 추이</h3>
+              </div>
+              <p style="font-size:12px; color:#64748b; margin:4px 0 0 12px;">방송 시작 후 1분마다 실시간 시청자 수를 정밀하게 체크하여 기록한 시계열 통계입니다.</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="stats-timeline-duration" style="font-size:12px; font-weight:700; color:#475569; background:#f1f5f9; padding:4px 10px; border-radius:6px; font-family:monospace;">방송 시간: 00:00:00</span>
+              <button id="btn-download-timeline-csv" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px;">시청자 기록 CSV</button>
+            </div>
+          </div>
+
+          <!-- 인터랙티브 SVG 시청자 그래프 -->
+          <div id="stats-chart-wrapper" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px 16px 10px 16px; margin-bottom:20px; min-height:220px; position:relative;">
+            <div id="stats-chart-content" style="width:100%; height:190px; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:13px;">
+              시청자 타임라인 데이터를 생성 중...
+            </div>
+          </div>
+
+          <!-- 1분 단위 상세 시청자 기록 테이블 -->
+          <div style="margin-top:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:13px; font-weight:700; color:#334155;">1분 단위 상세 시청자 로그</span>
+              <span id="stats-timeline-count-badge" style="font-size:11.5px; font-weight:600; color:#64748b;">총 0개 기록</span>
+            </div>
+            <div id="stats-timeline-table-container" style="max-height:280px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:10px;">
+              <div style="text-align:center; padding:24px; color:#94a3b8; font-size:13px;">시청자 로그 기록을 불러오는 중...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    // ── 1. 데이터 로드 및 종합 분석 ──
+    const loadStatsData = async () => {
+      // 1-1. 라이브 상태 및 타이머 뱃지
+      const liveStatusBadge = document.getElementById('stats-live-status-badge');
+      if (liveStatusBadge) {
+        if (config.isLive) {
+          liveStatusBadge.textContent = '실시간 방송 중';
+          liveStatusBadge.style.background = '#fef2f2';
+          liveStatusBadge.style.color = '#ef4444';
+          liveStatusBadge.style.borderColor = '#fecaca';
+        } else {
+          liveStatusBadge.textContent = '방송 대기 / 종료';
+          liveStatusBadge.style.background = '#f1f5f9';
+          liveStatusBadge.style.color = '#64748b';
+          liveStatusBadge.style.borderColor = '#e2e8f0';
+        }
+      }
+
+      // 1-2. 주문 데이터 가져오기
+      try {
+        let dbList = [];
+        if (db) {
+          try {
+            const { data: ordData } = await db.from('live_orders')
+              .select('*')
+              .eq('live_id', liveId)
+              .order('created_at', { ascending: false });
+            if (Array.isArray(ordData)) dbList.push(...ordData);
+          } catch(e) {}
+
+          try {
+            const { data: winData } = await db.from('live_winners')
+              .select('*')
+              .eq('live_id', liveId)
+              .order('created_at', { ascending: false });
+            if (Array.isArray(winData)) {
+              winData.forEach(w => {
+                if (!dbList.some(o => (o.receipt_id && o.receipt_id === w.receipt_id) || (o.id && o.id === w.id))) {
+                  dbList.push({
+                    id: w.id,
+                    live_id: w.live_id,
+                    order_number: w.receipt_id || `WIN-${w.id}`,
+                    receipt_id: w.receipt_id || '',
+                    buyer_name: w.nickname || w.buyer_name || '익명',
+                    buyer_phone: w.phone || '',
+                    shipping_address: w.address || '',
+                    items: w.item_name || '당첨/주문 상품',
+                    total_amount: parseInt(w.amount) || 0,
+                    status: w.status || 'paid',
+                    created_at: w.created_at || new Date().toISOString()
+                  });
+                }
+              });
+            }
+          } catch(e) {}
+        }
+        statsOrders = dbList;
+      } catch (err) {
+        console.warn('Failed to load orders for stats:', err);
+        statsOrders = [];
+      }
+
+      // 1-3. 상품별 판매 데이터 집계 및 순위 랭킹 렌더링
+      renderRanking();
+
+      // 1-4. 1분 단위 시청자 타임라인 분석 및 차트/테이블 렌더링
+      renderTimeline();
+    };
+
+    // ── 2. 상품 판매 순위 랭킹 렌더링 ──
+    const renderRanking = () => {
+      const container = document.getElementById('stats-ranking-container');
+      if (!container) return;
+
+      const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
+      const validOrders = statsOrders.filter(o => !cancelStatuses.includes((o.status || '').toLowerCase()));
+      const cancelledOrders = statsOrders.filter(o => cancelStatuses.includes((o.status || '').toLowerCase()));
+
+      // 상품별 집계 맵
+      const productMap = {};
+
+      // 주문 품목 파싱 헬퍼
+      const extractItems = (ord) => {
+        let list = [];
+        if (Array.isArray(ord.items) && ord.items.length > 0) list = ord.items;
+        else if (typeof ord.items === 'string') {
+          try {
+            const p = JSON.parse(ord.items);
+            if (Array.isArray(p) && p.length > 0) list = p;
+          } catch(e) {
+            list = [{ name: ord.items, price: ord.total_amount || 0, quantity: 1 }];
+          }
+        }
+        if (list.length === 0) {
+          list = [{ name: ord.goodname || '라이브 상품', price: ord.total_amount || 0, quantity: 1 }];
+        }
+        return list;
+      };
+
+      let grandTotalSales = 0;
+      let grandTotalQty = 0;
+
+      // 정상 결제 주문 품목 집계
+      validOrders.forEach(ord => {
+        const items = extractItems(ord);
+        items.forEach(it => {
+          const name = (it.name || it.goodname || '기타 상품').trim();
+          const qty = parseInt(it.quantity || it.qty || 1) || 1;
+          const price = parseInt(it.price || 0) || Math.round((parseInt(ord.total_amount) || 0) / Math.max(1, items.length));
+          const lineTotal = price * qty;
+
+          grandTotalSales += lineTotal;
+          grandTotalQty += qty;
+
+          if (!productMap[name]) {
+            productMap[name] = {
+              name,
+              code: it.product_code || it.code || '-',
+              unitPrice: price,
+              totalQty: 0,
+              totalAmount: 0,
+              orderCount: 0,
+              cancelCount: 0
+            };
+          }
+          productMap[name].totalQty += qty;
+          productMap[name].totalAmount += lineTotal;
+          productMap[name].orderCount += 1;
+        });
+      });
+
+      // 취소 주문 품목 카운트 반영
+      cancelledOrders.forEach(ord => {
+        const items = extractItems(ord);
+        items.forEach(it => {
+          const name = (it.name || it.goodname || '기타 상품').trim();
+          if (productMap[name]) {
+            productMap[name].cancelCount += 1;
+          }
+        });
+      });
+
+      const rankingList = Object.values(productMap);
+
+      // 정렬 (수량순 vs 매출액순)
+      if (rankingSortBy === 'qty') {
+        rankingList.sort((a, b) => b.totalQty - a.totalQty || b.totalAmount - a.totalAmount);
+      } else {
+        rankingList.sort((a, b) => b.totalAmount - a.totalAmount || b.totalQty - a.totalQty);
+      }
+
+      // 상단 요약 카드 반영
+      const totalSalesEl = document.getElementById('stat-card-total-sales');
+      const orderCountEl = document.getElementById('stat-card-order-count');
+      const totalQtyEl = document.getElementById('stat-card-total-qty');
+      const itemTypesEl = document.getElementById('stat-card-item-types');
+
+      if (totalSalesEl) totalSalesEl.textContent = `${grandTotalSales.toLocaleString()}원`;
+      if (orderCountEl) orderCountEl.textContent = `총 ${validOrders.length}건 결제 (취소 ${cancelledOrders.length}건)`;
+      if (totalQtyEl) totalQtyEl.textContent = `${grandTotalQty.toLocaleString()}개`;
+      if (itemTypesEl) itemTypesEl.textContent = `판매 품목 ${rankingList.length}종`;
+
+      if (rankingList.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:40px 20px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:10px;">
+            결제 완료된 주문 내역이 아직 없습니다.<br>
+            <span style="font-size:12px; color:#cbd5e1; margin-top:4px; display:inline-block;">라이브 방송 중 주문이 접수되면 실시간으로 순위가 집계됩니다.</span>
+          </div>
+        `;
+        return;
+      }
+
+      // 랭킹 테이블 렌더링
+      let tableHtml = `
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13px;">
+          <thead>
+            <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; color:#64748b; font-size:12px;">
+              <th style="padding:10px 12px; font-weight:700; width:70px; text-align:center;">순위</th>
+              <th style="padding:10px 14px; font-weight:700;">상품명</th>
+              <th style="padding:10px 12px; font-weight:700; width:110px; text-align:right;">판매 단가</th>
+              <th style="padding:10px 12px; font-weight:700; width:100px; text-align:right;">판매 수량</th>
+              <th style="padding:10px 14px; font-weight:700; width:130px; text-align:right;">총 결제 금액</th>
+              <th style="padding:10px 14px; font-weight:700; width:170px;">매출 점유율</th>
+              <th style="padding:10px 12px; font-weight:700; width:100px; text-align:center;">주문 상태</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      rankingList.forEach((item, idx) => {
+        const rank = idx + 1;
+        let rankBadgeStyle = 'background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;';
+        let rankLabel = `${rank}위`;
+
+        if (rank === 1) {
+          rankBadgeStyle = 'background:#fef3c7; color:#b45309; border:1px solid #fde68a; font-weight:800;';
+          rankLabel = '1위 TOP';
+        } else if (rank === 2) {
+          rankBadgeStyle = 'background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:800;';
+          rankLabel = '2위';
+        } else if (rank === 3) {
+          rankBadgeStyle = 'background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; font-weight:800;';
+          rankLabel = '3위';
+        }
+
+        const sharePercent = grandTotalSales > 0 ? ((item.totalAmount / grandTotalSales) * 100).toFixed(1) : 0;
+
+        tableHtml += `
+          <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding:12px; text-align:center;">
+              <span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; ${rankBadgeStyle}">
+                ${rankLabel}
+              </span>
+            </td>
+            <td style="padding:12px 14px;">
+              <div style="font-weight:700; color:#0f172a; line-height:1.35;">${item.name}</div>
+              ${item.code && item.code !== '-' ? `<div style="font-size:11px; color:#94a3b8; font-family:monospace; margin-top:2px;">코드: ${item.code}</div>` : ''}
+            </td>
+            <td style="padding:12px; text-align:right; font-weight:600; color:#475569;">
+              ${item.unitPrice.toLocaleString()}원
+            </td>
+            <td style="padding:12px; text-align:right; font-weight:800; color:#0f172a; font-size:14px;">
+              ${item.totalQty.toLocaleString()}개
+            </td>
+            <td style="padding:12px 14px; text-align:right; font-weight:800; color:#2563eb; font-size:14px;">
+              ${item.totalAmount.toLocaleString()}원
+            </td>
+            <td style="padding:12px 14px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="flex:1; height:7px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
+                  <div style="width:${sharePercent}%; height:100%; background:#2563eb; border-radius:4px;"></div>
+                </div>
+                <span style="font-size:11.5px; font-weight:700; color:#64748b; width:40px; text-align:right;">${sharePercent}%</span>
+              </div>
+            </td>
+            <td style="padding:12px; text-align:center; font-size:11.5px;">
+              <span style="color:#0f172a; font-weight:600;">완료 ${item.orderCount}건</span>
+              ${item.cancelCount > 0 ? `<br><span style="color:#ef4444; font-size:10.5px;">취소 ${item.cancelCount}건</span>` : ''}
+            </td>
+          </tr>
+        `;
+      });
+
+      tableHtml += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = tableHtml;
+    };
+
+    // ── 3. 방송 시작 후 1분 단위 시청자 타임라인 렌더링 (SVG 그래프 + 테이블) ──
+    const renderTimeline = () => {
+      let timeline = getLiveTimeline(liveId);
+
+      // 현재 총 시청자 수치
+      const currentTotalViewers = (parseInt(stats.viewers) || 0) + (parseInt(stats.cumViewers) || 0);
+
+      // 타임라인 보정: 비어있거나 부족할 때 현재 뷰어 기준으로 베이스 로그 생성
+      if (!Array.isArray(timeline) || timeline.length === 0) {
+        const nowStr = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        timeline = [
+          { minute: 0, time: nowStr, viewers: currentTotalViewers, delta: 0 }
+        ];
+        saveLiveTimeline(liveId, timeline);
+      }
+
+      // 최고 시청자 (Peak) & 평균 시청자 (Avg) 계산
+      let peakViewers = 0;
+      let peakMinute = 0;
+      let peakTime = '';
+      let sumViewers = 0;
+
+      timeline.forEach(item => {
+        const v = parseInt(item.viewers) || 0;
+        sumViewers += v;
+        if (v >= peakViewers) {
+          peakViewers = v;
+          peakMinute = item.minute;
+          peakTime = item.time;
+        }
+      });
+
+      const avgViewers = timeline.length > 0 ? Math.round(sumViewers / timeline.length) : currentTotalViewers;
+
+      // 카드 반영
+      const peakViewersEl = document.getElementById('stat-card-peak-viewers');
+      const peakTimeEl = document.getElementById('stat-card-peak-time');
+      const avgViewersEl = document.getElementById('stat-card-avg-viewers');
+      const cumViewersEl = document.getElementById('stat-card-cum-viewers');
+
+      if (peakViewersEl) peakViewersEl.textContent = `${peakViewers.toLocaleString()}명`;
+      if (peakTimeEl) peakTimeEl.textContent = peakViewers > 0 ? `방송 ${peakMinute}분 후 (${peakTime})` : '기록 없음';
+      if (avgViewersEl) avgViewersEl.textContent = `${avgViewers.toLocaleString()}명`;
+      if (cumViewersEl) cumViewersEl.textContent = `누적 ${(stats.cumViewers || 0).toLocaleString()}명 방문`;
+
+      // 방송 진행 시간 표기
+      const durationEl = document.getElementById('stats-timeline-duration');
+      if (durationEl) {
+        const lastMin = timeline.length > 0 ? timeline[timeline.length - 1].minute : 0;
+        durationEl.textContent = `분석 기록: 총 ${lastMin}분 (${timeline.length}회 측정)`;
+      }
+
+      const countBadge = document.getElementById('stats-timeline-count-badge');
+      if (countBadge) countBadge.textContent = `총 ${timeline.length}분 기록`;
+
+      // 3-1. SVG 인터랙티브 시계열 차트 렌더링
+      renderSvgChart(timeline, peakViewers);
+
+      // 3-2. 1분 단위 상세 타임라인 테이블 렌더링
+      renderTimelineTable(timeline);
+    };
+
+    // ── 3-1. SVG 인터랙티브 시계열 차트 생성기 ──
+    const renderSvgChart = (timeline, peakViewers) => {
+      const chartWrapper = document.getElementById('stats-chart-content');
+      if (!chartWrapper) return;
+
+      if (!timeline || timeline.length === 0) {
+        chartWrapper.innerHTML = `<div style="color:#94a3b8; font-size:13px;">시청자 수 기록이 아직 없습니다.</div>`;
+        return;
+      }
+
+      // 차트 좌표 계산
+      const width = 800;
+      const height = 180;
+      const padLeft = 50;
+      const padRight = 30;
+      const padTop = 25;
+      const padBottom = 35;
+
+      const plotWidth = width - padLeft - padRight;
+      const plotHeight = height - padTop - padBottom;
+
+      const maxVal = Math.max(10, Math.ceil(peakViewers * 1.15));
+      const minVal = 0;
+
+      const pointsCount = timeline.length;
+      const getX = (index) => {
+        if (pointsCount <= 1) return padLeft + plotWidth / 2;
+        return padLeft + (index / (pointsCount - 1)) * plotWidth;
+      };
+
+      const getY = (val) => {
+        return padTop + plotHeight - ((val - minVal) / (maxVal - minVal)) * plotHeight;
+      };
+
+      let pathD = '';
+      let areaD = `M ${getX(0)} ${padTop + plotHeight}`;
+
+      const coords = timeline.map((item, idx) => {
+        const x = getX(idx);
+        const y = getY(parseInt(item.viewers) || 0);
+        return { x, y, item, idx };
+      });
+
+      coords.forEach((pt, i) => {
+        if (i === 0) {
+          pathD += `M ${pt.x} ${pt.y}`;
+          areaD += ` L ${pt.x} ${pt.y}`;
+        } else {
+          pathD += ` L ${pt.x} ${pt.y}`;
+          areaD += ` L ${pt.x} ${pt.y}`;
+        }
+      });
+
+      areaD += ` L ${coords[coords.length - 1].x} ${padTop + plotHeight} Z`;
+
+      // 가로 가이드 라인 (Y축 3개)
+      const guideLines = [0, Math.round(maxVal / 2), maxVal];
+      let guidesSvg = '';
+      guideLines.forEach(val => {
+        const y = getY(val);
+        guidesSvg += `
+          <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="${padLeft - 8}" y="${y + 4}" text-anchor="end" font-size="10.5" fill="#94a3b8" font-family="monospace">${val}명</text>
+        `;
+      });
+
+      // 데이터 도트 및 최고점 핀
+      let dotsSvg = '';
+      coords.forEach(pt => {
+        const isPeak = parseInt(pt.item.viewers) === peakViewers && peakViewers > 0;
+        const dotColor = isPeak ? '#ef4444' : '#2563eb';
+        const radius = isPeak ? 5.5 : 3.5;
+
+        dotsSvg += `
+          <circle cx="${pt.x}" cy="${pt.y}" r="${radius}" fill="${dotColor}" stroke="#ffffff" stroke-width="2" style="cursor:pointer; transition:transform 0.15s;" data-min="${pt.item.minute}" data-viewers="${pt.item.viewers}" data-time="${pt.item.time}">
+            <title>방송 ${pt.item.minute}분 후 (${pt.item.time}): ${pt.item.viewers.toLocaleString()}명 시청</title>
+          </circle>
+        `;
+
+        if (isPeak) {
+          dotsSvg += `
+            <g transform="translate(${pt.x}, ${pt.y - 12})">
+              <rect x="-30" y="-16" width="60" height="18" rx="4" fill="#ef4444" />
+              <text x="0" y="-4" text-anchor="middle" font-size="10.5" font-weight="800" fill="#ffffff">최고 ${pt.item.viewers}명</text>
+            </g>
+          `;
+        }
+      });
+
+      // X축 라벨 (최대 6개 균등 표기)
+      let xLabelsSvg = '';
+      const step = Math.max(1, Math.floor(pointsCount / 5));
+      for (let i = 0; i < pointsCount; i += step) {
+        const pt = coords[i];
+        xLabelsSvg += `
+          <text x="${pt.x}" y="${height - 10}" text-anchor="middle" font-size="10.5" fill="#64748b" font-family="monospace">${pt.item.minute}분</text>
+        `;
+      }
+      if ((pointsCount - 1) % step !== 0) {
+        const lastPt = coords[pointsCount - 1];
+        xLabelsSvg += `
+          <text x="${lastPt.x}" y="${height - 10}" text-anchor="middle" font-size="10.5" fill="#64748b" font-family="monospace">${lastPt.item.minute}분</text>
+        `;
+      }
+
+      chartWrapper.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; display:block; overflow:visible;">
+          <defs>
+            <linearGradient id="statsAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2563eb" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          ${guidesSvg}
+          <path d="${areaD}" fill="url(#statsAreaGrad)" />
+          <path d="${pathD}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          ${dotsSvg}
+          ${xLabelsSvg}
+        </svg>
+      `;
+    };
+
+    // ── 3-2. 1분 단위 상세 타임라인 기록 테이블 ──
+    const renderTimelineTable = (timeline) => {
+      const container = document.getElementById('stats-timeline-table-container');
+      if (!container) return;
+
+      if (!timeline || timeline.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">기록된 데이터가 없습니다.</div>`;
+        return;
+      }
+
+      let rowsHtml = '';
+      // 최신 분이 위로 오도록 역순 복사
+      const reversed = [...timeline].reverse();
+
+      reversed.forEach((item, idx) => {
+        // 직전 분 대비 증감
+        const currViewers = parseInt(item.viewers) || 0;
+        const originalIndex = timeline.findIndex(t => t.minute === item.minute);
+        let diffText = '<span style="color:#94a3b8;">-</span>';
+
+        if (originalIndex > 0) {
+          const prevViewers = parseInt(timeline[originalIndex - 1].viewers) || 0;
+          const diff = currViewers - prevViewers;
+          if (diff > 0) {
+            diffText = `<span style="color:#ef4444; font-weight:700;">+${diff.toLocaleString()}명 ▲</span>`;
+          } else if (diff < 0) {
+            diffText = `<span style="color:#2563eb; font-weight:700;">${diff.toLocaleString()}명 ▼</span>`;
+          } else {
+            diffText = `<span style="color:#64748b;">0명 (유지)</span>`;
+          }
+        }
+
+        rowsHtml += `
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:12.5px;">
+            <td style="padding:8px 14px; font-weight:700; color:#0f172a; font-family:monospace;">
+              ${item.minute === 0 ? '방송 시작 (0분)' : `방송 ${item.minute}분 후`}
+            </td>
+            <td style="padding:8px 14px; color:#64748b; font-family:monospace;">
+              ${item.time || '-'}
+            </td>
+            <td style="padding:8px 14px; font-weight:800; color:#0f172a; text-align:right;">
+              ${currViewers.toLocaleString()}명
+            </td>
+            <td style="padding:8px 14px; text-align:right;">
+              ${diffText}
+            </td>
+          </tr>
+        `;
+      });
+
+      container.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; text-align:left;">
+          <thead style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px; color:#64748b; position:sticky; top:0; z-index:2;">
+            <tr>
+              <th style="padding:8px 14px; font-weight:700;">방송 경과</th>
+              <th style="padding:8px 14px; font-weight:700;">체크 시각</th>
+              <th style="padding:8px 14px; font-weight:700; text-align:right;">실시간 시청자 수</th>
+              <th style="padding:8px 14px; font-weight:700; text-align:right;">직전 1분 대비</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      `;
+    };
+
+    // ── 4. CSV 다운로드 기능 ──
+    const downloadStatsCsv = () => {
+      // 4-1. 상품 판매 순위 CSV
+      const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
+      const validOrders = statsOrders.filter(o => !cancelStatuses.includes((o.status || '').toLowerCase()));
+
+      let csv = '순위,상품명,판매단가,판매수량,총결제금액\n';
+
+      // 품목별 집계
+      const pMap = {};
+      validOrders.forEach(ord => {
+        let items = [];
+        if (Array.isArray(ord.items) && ord.items.length > 0) items = ord.items;
+        else if (typeof ord.items === 'string') {
+          try {
+            const p = JSON.parse(ord.items);
+            if (Array.isArray(p)) items = p;
+          } catch(e) {
+            items = [{ name: ord.items, price: ord.total_amount || 0, quantity: 1 }];
+          }
+        }
+        if (items.length === 0) items = [{ name: ord.goodname || '라이브 상품', price: ord.total_amount || 0, quantity: 1 }];
+
+        items.forEach(it => {
+          const name = (it.name || it.goodname || '상품').trim();
+          const qty = parseInt(it.quantity || it.qty || 1) || 1;
+          const price = parseInt(it.price || 0) || Math.round((parseInt(ord.total_amount) || 0) / Math.max(1, items.length));
+          if (!pMap[name]) pMap[name] = { name, price, qty: 0, amount: 0 };
+          pMap[name].qty += qty;
+          pMap[name].amount += price * qty;
+        });
+      });
+
+      const list = Object.values(pMap).sort((a, b) => b.qty - a.qty);
+      list.forEach((item, idx) => {
+        const safeName = `"${item.name.replace(/"/g, '""')}"`;
+        csv += `${idx + 1},${safeName},${item.price},${item.qty},${item.amount}\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `상품판매순위_${liveId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    const downloadTimelineCsv = () => {
+      const timeline = getLiveTimeline(liveId);
+      let csv = '방송경과(분),기록시각,시청자수(명)\n';
+      timeline.forEach(item => {
+        csv += `${item.minute},${item.time},${item.viewers}\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `시청자_1분단위_타임라인_${liveId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    // ── 5. 이벤트 리스너 등록 & 1분 주기 타이머 ──
+    loadStatsData();
+
+    document.getElementById('btn-refresh-stats')?.addEventListener('click', loadStatsData);
+    document.getElementById('btn-stats-download-csv')?.addEventListener('click', downloadStatsCsv);
+    document.getElementById('btn-download-timeline-csv')?.addEventListener('click', downloadTimelineCsv);
+
+    const btnSortQty = document.getElementById('btn-rank-sort-qty');
+    const btnSortAmt = document.getElementById('btn-rank-sort-amount');
+
+    if (btnSortQty && btnSortAmt) {
+      btnSortQty.addEventListener('click', () => {
+        rankingSortBy = 'qty';
+        btnSortQty.style.background = '#ffffff';
+        btnSortQty.style.color = '#0f172a';
+        btnSortQty.style.fontWeight = '700';
+        btnSortQty.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+
+        btnSortAmt.style.background = 'transparent';
+        btnSortAmt.style.color = '#64748b';
+        btnSortAmt.style.fontWeight = '600';
+        btnSortAmt.style.boxShadow = 'none';
+
+        renderRanking();
+      });
+
+      btnSortAmt.addEventListener('click', () => {
+        rankingSortBy = 'amount';
+        btnSortAmt.style.background = '#ffffff';
+        btnSortAmt.style.color = '#0f172a';
+        btnSortAmt.style.fontWeight = '700';
+        btnSortAmt.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+
+        btnSortQty.style.background = 'transparent';
+        btnSortQty.style.color = '#64748b';
+        btnSortQty.style.fontWeight = '600';
+        btnSortQty.style.boxShadow = 'none';
+
+        renderRanking();
+      });
+    }
+
+    // 30초마다 통계 실시간 자동 갱신
+    statsTimer = setInterval(() => {
+      renderTimeline();
+    }, 30000);
+
+    contentArea.addEventListener('adminTabLeave', () => {
+      if (statsTimer) clearInterval(statsTimer);
+    }, { once: true });
   };
   // ── 탭 전환 로직 ──────────────────────────────────────────
   const btnBack = layout.querySelector('#btn-back');
@@ -4373,15 +5137,17 @@ function renderLiveEditView(container, liveId, showView) {
   };
   subscribeAdminSync();
 
-  // ── 전역 실시간 통계 폴링 (어느 탭에 있든 통계 수치 2.5초 주기 실시간 자동 갱신) ──
+  // ── 전역 실시간 통계 및 1분 단위 시청자 타임라인 자동 로깅 ──
   let globalStatsPollingInterval = null;
+  let lastTimelineMinuteLogged = -1;
+
   const startGlobalStatsPolling = () => {
     if (!db) return;
     globalStatsPollingInterval = setInterval(async () => {
       try {
         const { data, error } = await db
           .from('live_control')
-          .select('viewers, cum_viewers, hearts')
+          .select('viewers, cum_viewers, hearts, status')
           .eq('live_id', liveId)
           .maybeSingle();
         if (data && !error) {
@@ -4391,6 +5157,28 @@ function renderLiveEditView(container, liveId, showView) {
           saveLiveStats(liveId, stats);
           if (typeof window.updateAdminViewersDisplay === 'function') {
             window.updateAdminViewersDisplay();
+          }
+
+          // 방송 중일 때 1분마다 시청자 타임라인 자동 로깅 (정확도 높은 시계열 기록)
+          if (config.isLive || data.status === 'ON') {
+            const startedAt = config.liveStartedAt ? new Date(config.liveStartedAt).getTime() : Date.now();
+            const elapsedMin = Math.max(0, Math.floor((Date.now() - startedAt) / 60000));
+
+            if (elapsedMin !== lastTimelineMinuteLogged) {
+              lastTimelineMinuteLogged = elapsedMin;
+              const timeline = getLiveTimeline(liveId);
+              const nowStr = new Date().toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              const currentTotal = stats.viewers + (stats.cumViewers || 0);
+
+              const existingIdx = timeline.findIndex(t => t.minute === elapsedMin);
+              if (existingIdx >= 0) {
+                timeline[existingIdx].viewers = Math.max(timeline[existingIdx].viewers, currentTotal);
+                timeline[existingIdx].time = nowStr;
+              } else {
+                timeline.push({ minute: elapsedMin, time: nowStr, viewers: currentTotal });
+              }
+              saveLiveTimeline(liveId, timeline);
+            }
           }
         }
       } catch (e) {}
@@ -4406,6 +5194,7 @@ function renderLiveEditView(container, liveId, showView) {
     else if (tabName === 'chat') renderChatTab();
     else if (tabName === 'product') renderProductTab();
     else if (tabName === 'orders') renderOrdersTab();
+    else if (tabName === 'stats') renderStatsTab();
     else if (tabName === 'leads') renderLeadsTab();
   };
 

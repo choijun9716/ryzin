@@ -643,6 +643,21 @@ document.addEventListener('DOMContentLoaded', () => {
             .from('live_control')
             .update(updateData)
             .eq('live_id', targetLiveId);
+
+          // 시청자 탭 닫을 때 실시간 시청자 수 안전 차감 (정확도 향상)
+          window.addEventListener('beforeunload', () => {
+            try {
+              if (data.status === 'ON') {
+                const payload = JSON.stringify({ live_id: targetLiveId, action: 'leave' });
+                // beacon 또는 직접 DB 패치 시도 (네트워크 환경 지원 시)
+                db.from('live_control').select('viewers').eq('live_id', targetLiveId).maybeSingle().then(({ data: vRow }) => {
+                  if (vRow && parseInt(vRow.viewers) > 0) {
+                    db.from('live_control').update({ viewers: Math.max(0, parseInt(vRow.viewers) - 1) }).eq('live_id', targetLiveId);
+                  }
+                });
+              }
+            } catch(e) {}
+          });
         }
       } catch (e) {
         console.warn('Viewer count increment failed:', e);
