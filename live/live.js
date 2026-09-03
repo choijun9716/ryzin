@@ -516,11 +516,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 standbyYtWrap.innerHTML = `
                   <iframe
                     data-yt-id="${ytId}"
-                    src="https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${ytId}&playsinline=1&rel=0&modestbranding=1&disablekb=1&iv_load_policy=3&fs=0"
-                    allow="autoplay; encrypted-media"
-                    style="position:absolute; top:50%; left:50%; width:100vw; height:100vh; min-width:177.78vh; min-height:56.25vw; transform:translate(-50%, -50%); border:none; pointer-events:none;"
+                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowfullscreen
+                    style="position:absolute; top:50%; left:50%; width:100%; height:100%; min-width:178vh; min-height:100%; transform:translate(-50%, -50%) scale(1.08); border:none; pointer-events:none; -webkit-backface-visibility:hidden; image-rendering:-webkit-optimize-contrast;"
                   ></iframe>
                 `;
+
+                // 유튜브 음소거 해제 및 볼륨 100% 강제 적용 (소리 ON)
+                [300, 800, 1500, 2500, 4000].forEach(delay => {
+                  setTimeout(() => {
+                    const ifr = standbyYtWrap.querySelector('iframe');
+                    if (ifr && ifr.contentWindow) {
+                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                    }
+                  }, delay);
+                });
               }
             }
           } else {
@@ -2306,12 +2318,22 @@ window.toggleStreamSound = function() {
       }), '*');
     }
   }
+
+  const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
+  if (standbyIfr && standbyIfr.contentWindow) {
+    const cmd = isStreamMuted ? 'mute' : 'unMute';
+    standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd }), '*');
+    if (!isStreamMuted) {
+      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+    }
+  }
 };
 
 // 사용자가 화면을 첫 터치/클릭할 때 강제 소리 ON 확실 보장
 function forceSoundOn() {
   const video = document.getElementById('live-video');
   const ytPlayer = document.getElementById('youtube-player');
+  const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
   if (video) {
     video.muted = false;
     video.volume = 1.0;
@@ -2319,6 +2341,10 @@ function forceSoundOn() {
   if (ytPlayer && ytPlayer.contentWindow) {
     ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
     ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+  }
+  if (standbyIfr && standbyIfr.contentWindow) {
+    standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+    standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
   }
 }
 ['click', 'touchstart', 'touchend'].forEach(evtType => {
