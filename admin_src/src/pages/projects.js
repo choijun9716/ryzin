@@ -477,6 +477,9 @@ export function renderProjects() {
 
 function openProjectCreateModal(onSave) {
   const brands = store.getAll('brands');
+  const role = store.getCurrentRole();
+  const currentUser = store.getCurrentUser();
+  const isPD = role === 'pd';
 
   const content = `
     <div class="form-grid">

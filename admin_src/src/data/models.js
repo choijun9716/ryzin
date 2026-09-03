@@ -77,7 +77,7 @@ export const CHECKLIST_ITEMS = [
 
 export const ROLES = {
   admin: { label: '대표', permissions: ['*'] },
-  pd: { label: 'PD', permissions: ['dashboard', 'projects', 'products', 'hosts', 'brands', 'marketing'] },
+  pd: { label: 'PD', permissions: ['dashboard', 'projects', 'products', 'hosts', 'brands'] },
   designer: { label: '디자이너', permissions: ['dashboard', 'projects.design'] },
   accountant: { label: '회계', permissions: ['dashboard', 'finance', 'settlement', 'projects.finance'] },
   demo: { label: '데모 계정', permissions: ['*'] },
