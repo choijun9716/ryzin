@@ -9,8 +9,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('push', function(event) {
   let data = {
-    title: 'RYZIN STUDIO LIVE',
-    body: '라이브 방송이 시작되었습니다! 지금 바로 시청하세요.',
+    title: '',
+    body: '',
     url: '/live/'
   };
 
@@ -25,20 +25,17 @@ self.addEventListener('push', function(event) {
     }
   }
 
+  // 알림 제목과 알림 내용만 깔끔하게 표시
   const options = {
-    body: data.body,
+    body: data.body || '',
     icon: data.icon || 'https://i.ibb.co/GQN2NXgR/image.jpg',
-    badge: data.badge || 'https://i.ibb.co/GQN2NXgR/image.jpg',
     data: {
       url: data.url || '/live/'
-    },
-    tag: 'ryzin-live-push',
-    renotify: true,
-    vibrate: [200, 100, 200]
+    }
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(data.title || '', options)
   );
 });
 
