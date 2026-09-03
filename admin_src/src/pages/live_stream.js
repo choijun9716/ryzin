@@ -810,14 +810,13 @@ function renderLiveEditView(container, liveId, showView) {
     : '';
 
   const tabBtnsHtml = isRestricted
-    ? `<button class="tab-btn active" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>`
+    ? `<button class="tab-btn active" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅관리</button>`
     : `
-      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
-      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">${isLiveStreamOnly ? '채팅 관리' : '채팅 / 봇 관리'}</button>
-      <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상품 관리</button>
-      <button class="tab-btn" data-tab="orders" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">주문 관리</button>
-      <button class="tab-btn" data-tab="stats" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">통계</button>
-      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상담 DB</button>
+      <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">기본설정</button>
+      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅관리</button>
+      <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상품관리</button>
+      <button class="tab-btn" data-tab="orders" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">주문 통계</button>
+      <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">상담 DB</button>
     `;
 
   topBar.innerHTML = `
@@ -827,7 +826,7 @@ function renderLiveEditView(container, liveId, showView) {
       <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px; line-height:1.2;" title="${config.brandName || ''}">${config.brandName || ''}</span>
       ${statusBadge}
     </div>
-    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:620px; margin:0 auto;">
+    <div style="display:flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:10px; flex:1; justify-content:center; max-width:560px; margin:0 auto;">
       ${tabBtnsHtml}
     </div>
     <div style="display:flex; align-items:center; gap:8px; padding:6px 0; flex-shrink:0;">
@@ -3457,7 +3456,7 @@ function renderLiveEditView(container, liveId, showView) {
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">
-              주문 관리 (결제 내역)
+              주문 통계 (결제 내역 & 판매 랭킹)
             </h2>
             <span id="orders-count-badge" style="font-size:12px; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 8px; border-radius:12px; border:1px solid #dbeafe;">0건</span>
           </div>
@@ -3492,7 +3491,7 @@ function renderLiveEditView(container, liveId, showView) {
 
         <!-- 보기 모드 전환 및 검색/필터 바 -->
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; background:#f8fafc; padding:12px 14px; border-radius:12px; border:1px solid #e2e8f0;">
-          <!-- 1. 보기 모드 전환 탭 (전체 주문별 vs 제품별 모아보기) -->
+          <!-- 1. 보기 모드 전환 탭 (전체 주문별 vs 제품별 모아보기 vs 판매 순위 vs 시청자 통계) -->
           <div style="display:flex; background:#e2e8f0; padding:3px; border-radius:10px; gap:2px;">
             <button id="btn-view-mode-orders" type="button"
               style="padding:6px 14px; font-size:12.5px; font-weight:700; border-radius:8px; border:none; background:#ffffff; color:#0f172a; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer; transition:all 0.15s;">
@@ -3505,6 +3504,10 @@ function renderLiveEditView(container, liveId, showView) {
             <button id="btn-view-mode-ranking" type="button"
               style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:8px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
               판매 순위 랭킹
+            </button>
+            <button id="btn-view-mode-timeline" type="button"
+              style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:8px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
+              시청자 통계 (1분 단위)
             </button>
           </div>
 
@@ -4196,6 +4199,13 @@ function renderLiveEditView(container, liveId, showView) {
       const btnViewRanking = document.getElementById('btn-view-mode-ranking');
       if (btnViewRanking) {
         btnViewRanking.addEventListener('click', () => {
+          switchTab('stats');
+        });
+      }
+
+      const btnViewTimeline = document.getElementById('btn-view-mode-timeline');
+      if (btnViewTimeline) {
+        btnViewTimeline.addEventListener('click', () => {
           switchTab('stats');
         });
       }
