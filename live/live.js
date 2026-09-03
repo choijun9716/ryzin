@@ -2736,10 +2736,22 @@ function updateCartShippingPreview() {
 const btnChangeShipping = document.getElementById('btn-change-shipping');
 if (btnChangeShipping) {
   btnChangeShipping.addEventListener('click', () => {
+    window.__checkoutModalMode = 'shipping_only';
     if (cartModal) cartModal.style.display = 'none';
     if (checkoutModal) {
       checkoutModal.style.display = 'flex';
       prefillCheckoutForm();
+
+      // [주소 변경 모드] UI 문구 및 버튼 전환
+      const titleSpan = checkoutModal.querySelector('h3 span');
+      if (titleSpan) titleSpan.textContent = '배송지 정보 변경';
+      const descP = checkoutModal.querySelector('p');
+      if (descP) descP.textContent = '상품을 배송받을 기본 주소와 수령인 정보를 입력해 주세요.';
+
+      const submitBtnSpan = document.querySelector('#btn-submit-payment span');
+      if (submitBtnSpan) submitBtnSpan.textContent = '배송지 저장';
+      const submitBtnSvg = document.querySelector('#btn-submit-payment svg');
+      if (submitBtnSvg) submitBtnSvg.style.display = 'none';
     }
   });
 }
@@ -2747,6 +2759,19 @@ if (btnChangeShipping) {
 if (btnCheckout) {
   btnCheckout.addEventListener('click', () => {
     if (cartItems.length === 0) return;
+    window.__checkoutModalMode = 'checkout';
+
+    // [결제 모드] UI 문구 및 버튼 전환
+    const titleSpan = checkoutModal?.querySelector('h3 span');
+    if (titleSpan) titleSpan.textContent = '주문 정보 입력';
+    const descP = checkoutModal?.querySelector('p');
+    if (descP) descP.textContent = '상품을 배송받을 주소와 연락처를 입력해 주세요.';
+
+    const submitBtnSpan = document.querySelector('#btn-submit-payment span');
+    if (submitBtnSpan) submitBtnSpan.textContent = '결제 진행하기';
+    const submitBtnSvg = document.querySelector('#btn-submit-payment svg');
+    if (submitBtnSvg) submitBtnSvg.style.display = 'inline-block';
+
     if (cartModal) cartModal.style.display = 'none';
 
     // 저장된 주문/배송 정보 불러오기
@@ -2783,10 +2808,15 @@ if (btnKakaoFillCheckout) {
 
 if (btnCloseCheckoutModal) btnCloseCheckoutModal.addEventListener('click', () => {
   if (checkoutModal) checkoutModal.style.display = 'none';
+  if (window.__checkoutModalMode === 'shipping_only' && cartModal) {
+    cartModal.style.display = 'flex';
+    updateCartShippingPreview();
+  }
 });
 
 if (btnSubmitPayment) {
   btnSubmitPayment.addEventListener('click', async () => {
+    if (typeof updateFullAddressFromInputs === 'function') updateFullAddressFromInputs();
     const name = document.getElementById('checkout-name').value.trim();
     const phone = document.getElementById('checkout-phone').value.trim();
     const address = document.getElementById('checkout-address').value.trim();
@@ -2798,6 +2828,31 @@ if (btnSubmitPayment) {
 
     // 주문 정보 영구 저장
     saveCheckoutForm();
+
+    // ── 주소 변경 모드인 경우: 배송지 저장 후 장바구니로 복귀 ──
+    if (window.__checkoutModalMode === 'shipping_only') {
+      try {
+        const clientDb = db || window.supabaseClient;
+        if (clientDb) {
+          let kakaoUserObj = null;
+          try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+          const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+          const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+          const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : ('USER-' + phone.replace(/[^0-9]/g, '')));
+          if (userCode) {
+            clientDb.from('shop_users').update({
+              name: name,
+              default_address: address
+            }).eq('user_code', userCode).then(() => {});
+          }
+        }
+      } catch(e) {}
+
+      if (checkoutModal) checkoutModal.style.display = 'none';
+      updateCartShippingPreview();
+      if (cartModal) cartModal.style.display = 'flex';
+      return;
+    }
 
     // ── Supabase shop_users 테이블에 실명, 연락처, 배송지 주소 실시간 동기화 ──
     try {
