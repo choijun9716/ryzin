@@ -1317,8 +1317,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     user_code: userCode,
                     name: realName,
                     email: userEmail,
-                    points: 3000,
-                    coupons_count: 1,
+                    points: 0,
+                    coupons_count: 0,
                     membership_active: true,
                     default_address: userAddress
                   }).then(({ error: insertErr }) => {
@@ -2383,6 +2383,7 @@ function openCartModal() {
   }
 
   if (cartModal) {
+    if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
     cartModal.style.display = 'flex';
     renderCartItems();
     if (typeof updateCartShippingPreview === 'function') {
@@ -2892,8 +2893,8 @@ if (btnSubmitPayment) {
                 clientDb.from('shop_users').insert({
                   user_code: userCode,
                   ...userPayload,
-                  points: 3000,
-                  coupons_count: 1
+                  points: 0,
+                  coupons_count: 0
                 }).then(() => {});
               }
             }).catch(e => console.warn('shop_users checkout sync error:', e));
@@ -3704,6 +3705,7 @@ window.claimGiveawayItem = async function() {
 // ====================================================
 
 window.openMyMenuModal = function() {
+  if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
   const modal = document.getElementById('my-menu-modal');
   const profileBox = document.getElementById('my-menu-profile-box');
   const logoutRow = document.getElementById('my-menu-logout-row');
@@ -3949,8 +3951,8 @@ window.__cartCouponDiscount = 0;
 window.__cartPointsUsed = 0;
 
 window.getUserAvailableBenefits = function() {
-  let points = 3000;
-  let coupons = 1;
+  let points = 0;
+  let coupons = 0;
   try {
     const savedPoints = localStorage.getItem('ryzin_user_points');
     if (savedPoints !== null) points = Number(savedPoints);
@@ -3958,6 +3960,45 @@ window.getUserAvailableBenefits = function() {
     if (savedCoupons !== null) coupons = Number(savedCoupons);
   } catch(e) {}
   return { points: Math.max(0, points), coupons: Math.max(0, coupons) };
+};
+
+// Supabase shop_users에서 관리자가 부여한 실제 포인트와 쿠폰 실시간 동기화
+window.fetchUserBenefitsFromDB = async function() {
+  try {
+    const clientDb = db || window.supabaseClient;
+    if (!clientDb) return;
+
+    let kakaoUserObj = null;
+    try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+    const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+    let savedInfo = {};
+    try { savedInfo = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
+    const phone = (savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '').replace(/[^0-9]/g, '');
+
+    const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : (phone ? ('USER-' + phone) : null));
+    if (!userCode) return;
+
+    const { data: userRow } = await clientDb
+      .from('shop_users')
+      .select('points, coupons_count')
+      .eq('user_code', userCode)
+      .maybeSingle();
+
+    if (userRow) {
+      const dbPoints = Number(userRow.points) || 0;
+      const dbCoupons = Number(userRow.coupons_count) || 0;
+      localStorage.setItem('ryzin_user_points', dbPoints.toString());
+      localStorage.setItem('ryzin_user_coupons', dbCoupons.toString());
+
+      // 장바구니 열려있을 시 UI 실시간 재계산
+      if (typeof calculateCartBenefits === 'function') {
+        calculateCartBenefits();
+      }
+    }
+  } catch(e) {
+    console.warn('fetchUserBenefitsFromDB error:', e);
+  }
 };
 
 window.calculateCartBenefits = function() {
@@ -3984,6 +4025,23 @@ window.calculateCartBenefits = function() {
   window.__cartSubtotalAmount = subtotal;
   if (subtotalEl) subtotalEl.textContent = `${subtotal.toLocaleString()}원`;
 
+  // 쿠폰 옵션 동적 렌더링 (보유 쿠폰이 없으면 0원 비활성화)
+  if (couponSelect) {
+    if (availCoupons <= 0) {
+      couponSelect.innerHTML = '<option value="0">보유 쿠폰 없음 (0장)</option>';
+      couponSelect.disabled = true;
+      couponSelect.style.color = '#94a3b8';
+    } else {
+      const currentSelected = couponSelect.value;
+      couponSelect.disabled = false;
+      couponSelect.style.color = '#0f172a';
+      couponSelect.innerHTML = `
+        <option value="0">쿠폰 선택 안함</option>
+        <option value="2000" ${currentSelected === '2000' ? 'selected' : ''}>라이브 2,000원 할인 쿠폰 (${availCoupons}장 보유)</option>
+      `;
+    }
+  }
+
   // 쿠폰 할인 계산
   let couponDiscount = 0;
   if (couponSelect && availCoupons > 0) {
@@ -3992,16 +4050,24 @@ window.calculateCartBenefits = function() {
   }
   window.__cartCouponDiscount = couponDiscount;
 
-  // 포인트 사용 계산
+  // 포인트 사용 계산 (0P면 비활성화)
   let remainForPoints = Math.max(0, subtotal - couponDiscount);
   let pointsUsed = 0;
   if (pointsInput) {
-    let inputVal = Number(pointsInput.value) || 0;
-    if (inputVal < 0) inputVal = 0;
-    if (inputVal > availPoints) inputVal = availPoints;
-    if (inputVal > remainForPoints) inputVal = remainForPoints;
-    pointsInput.value = inputVal > 0 ? inputVal : (pointsInput.value === '' ? '' : 0);
-    pointsUsed = inputVal;
+    if (availPoints <= 0) {
+      pointsInput.value = '0';
+      pointsInput.disabled = true;
+      pointsInput.style.color = '#94a3b8';
+    } else {
+      pointsInput.disabled = false;
+      pointsInput.style.color = '#0f172a';
+      let inputVal = Number(pointsInput.value) || 0;
+      if (inputVal < 0) inputVal = 0;
+      if (inputVal > availPoints) inputVal = availPoints;
+      if (inputVal > remainForPoints) inputVal = remainForPoints;
+      pointsInput.value = inputVal > 0 ? inputVal : (pointsInput.value === '' ? '' : 0);
+      pointsUsed = inputVal;
+    }
   }
   window.__cartPointsUsed = pointsUsed;
 

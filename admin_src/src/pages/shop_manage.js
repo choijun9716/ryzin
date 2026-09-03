@@ -1225,7 +1225,8 @@ async function renderUsersPanel(panel, wrapper) {
             <th style="width:110px; font-weight:800;">이름</th>
             <th style="width:130px; font-weight:800;">연락처</th>
             <th style="font-weight:800;">배송지 주소</th>
-            <th style="width:90px; text-align:right;">포인트</th>
+            <th style="width:85px; text-align:right;">포인트</th>
+            <th style="width:75px; text-align:right;">쿠폰</th>
             <th style="width:145px; text-align:center; font-weight:800;">가입일시</th>
             <th style="width:80px; text-align:center;">관리</th>
           </tr>
@@ -1264,7 +1265,8 @@ async function renderUsersPanel(panel, wrapper) {
                 <td style="font-weight:800; color:#0f172a; font-size:13px;">${esc(displayName)}</td>
                 <td style="font-weight:700; color:#2563eb; font-size:12.5px;">${esc(displayPhone)}</td>
                 <td style="font-size:12.5px; color:#334155; font-weight:500;">${esc(displayAddress)}</td>
-                <td style="font-weight:700; color:#059669; text-align:right; font-family:monospace;">${(u.points || 0).toLocaleString()}P</td>
+                <td style="font-weight:700; color:#059669; text-align:right; font-family:inherit;">${(u.points || 0).toLocaleString()}P</td>
+                <td style="font-weight:700; color:#2563eb; text-align:right; font-family:inherit;">${(u.coupons_count || 0)}장</td>
                 <td style="font-size:11px; color:#64748b; text-align:center;">${regDate}</td>
                 <td style="text-align:center;">
                   <button class="sm-action-btn sm-btn-primary user-edit-btn" data-id="${u.id}" style="padding:4px 8px; font-size:11px;">수정</button>
@@ -1324,11 +1326,11 @@ function openUserModal(userObj, wrapper, panel) {
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <div>
               <label class="sm-label">보유 포인트 (P)</label>
-              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 3000}" style="font-weight:800; color:#FF8730;">
+              <input class="sm-input" id="um-points" type="number" value="${userObj ? (userObj.points || 0) : 0}" style="font-weight:800; color:#FF8730;">
             </div>
             <div>
               <label class="sm-label">보유 쿠폰 수 (장)</label>
-              <input class="sm-input" id="um-coupons" type="number" value="${userObj ? (userObj.coupons_count || 0) : 1}" style="font-weight:800;">
+              <input class="sm-input" id="um-coupons" type="number" value="${userObj ? (userObj.coupons_count || 0) : 0}" style="font-weight:800; color:#2563eb;">
             </div>
           </div>
           ${formField('기본 배송지 주소','um-addr', userObj ? userObj.default_address : '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2')}
