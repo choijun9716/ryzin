@@ -371,12 +371,14 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const productsList = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
         localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(productsList));
+        localStorage.setItem(`ryzin_products_${LIVE_ID}`, JSON.stringify(productsList));
         loadLiveProducts();
       } catch (e) {}
     }
 
     loadLiveConfig();
     loadLiveStats();
+    loadLiveProducts();
   }
 
   // 3. 초기 채팅 로드 (최초 1회 실행)
@@ -997,9 +999,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('storage', (e) => {
-    if (e.key === `ryzin_live_config_${LIVE_ID}`) loadLiveConfig();
-    if (e.key === `ryzin_live_stats_${LIVE_ID}`) loadLiveStats();
-    if (e.key === `ryzin_live_products_${LIVE_ID}`) loadLiveProducts();
+    if (!e.key) return;
+    if (e.key.includes('config')) loadLiveConfig();
+    if (e.key.includes('stats')) loadLiveStats();
+    if (e.key.includes('products')) loadLiveProducts();
     if (e.key === 'ryzin_admin_chat_trigger') {
       try {
         const msg = JSON.parse(e.newValue);

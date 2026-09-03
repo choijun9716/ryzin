@@ -703,16 +703,33 @@ function renderLiveEditView(container, liveId, showView) {
     window[`live_loaded_${liveId}`] = true;
   }
 
+  const postMessageToPreview = () => {
+    try {
+      const iframe = layout.querySelector('#live-preview-iframe') || document.getElementById('live-preview-iframe');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+          type: 'sync_preview',
+          config: config,
+          stats: stats,
+          products: products
+        }, '*');
+      }
+    } catch(e) {}
+  };
+
   const saveConfig = () => {
     saveLiveConfig(liveId, config);
-    syncToSheetDB(liveId, config, stats, products);
+    postMessageToPreview();
+    syncToSheetDB(liveId, config, stats, products, true);
   };
   const saveStats = () => {
     saveLiveStats(liveId, stats);
-    syncToSheetDB(liveId, config, stats, products);
+    postMessageToPreview();
+    syncToSheetDB(liveId, config, stats, products, true);
   };
   const saveProducts = (force = true) => {
     saveLiveProductsLocal(liveId, products);
+    postMessageToPreview();
     syncToSheetDB(liveId, config, stats, products, force);
   };
   const saveBotCfg = () => saveBotConfig(liveId, botCfg);
