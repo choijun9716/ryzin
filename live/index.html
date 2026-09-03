@@ -428,24 +428,6 @@
 
       <!-- 하단 플로팅 롤링 상품 배너 -->
       <div id="bottom-product-banner" class="bottom-product-banner" style="display:none;">
-        <!-- [NEW] 직사각형 테두리를 완벽하게 따라 흐르는 유려한 엠비언트 라이트 프레임 -->
-        <svg class="banner-ambient-light" width="100%" height="100%" viewBox="0 0 250 72" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="ambientBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#2563eb" stop-opacity="0.85" />
-              <stop offset="40%" stop-color="#60a5fa" stop-opacity="1" />
-              <stop offset="70%" stop-color="#93c5fd" stop-opacity="1" />
-              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.85" />
-            </linearGradient>
-            <filter id="ambientGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="2.2" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
-          <rect class="ambient-base-track" x="1" y="1" width="248" height="70" rx="9" ry="9" />
-          <rect class="ambient-flowing-beam" x="1" y="1" width="248" height="70" rx="9" ry="9" />
-        </svg>
-
         <div class="banner-product-viewport">
           <div class="banner-product-track" id="banner-product-track">
             <!-- JS로 동적 렌더링 -->

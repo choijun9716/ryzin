@@ -919,12 +919,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 지금소개중 상품이 있으면 하단 롤링 배너에 해당 상품을 최우선 고정 표출!
             const displayProducts = featuredProduct ? [featuredProduct] : activeProducts;
 
-            // 지금소개중 상품 활성화 시 흰 모달에 파란 라이트 은은한 띠 클래스 부여
-            if (featuredProduct) {
-              bottomBanner.classList.add('featured-active');
-            } else {
-              bottomBanner.classList.remove('featured-active');
-            }
+            // 엠비언트 라이트 제거 및 기본 클래스 유지
+            bottomBanner.classList.remove('featured-active');
 
             track.innerHTML = '';
             displayProducts.forEach((item) => {
