@@ -1104,16 +1104,22 @@ Minimum version required to store current data is: `+c+`.
             </div>
           </div>
 
-          <!-- 검색 & 제품 필터 바 (채팅관리 영역 스타일) -->
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-            <div style="display:flex; gap:8px; align-items:center;">
-              <select id="subtab-product-filter" class="modern-input" style="height:36px; padding:6px 12px; font-size:12.5px; background:#fff; cursor:pointer;">
+          <!-- 검색 & 제품 필터 바 (미니멀 툴바 스타일) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:12px 14px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <select id="subtab-product-filter" style="height:35px; padding:0 12px; font-size:12.5px; font-weight:500; background:#ffffff; border:1px solid #cbd5e1; border-radius:7px; color:#0f172a; outline:none; cursor:pointer;">
                 <option value="all">전체 제품 보기</option>
               </select>
-              <span id="orders-count-badge" style="font-size:12px; color:#64748b; font-weight:600;">총 0건</span>
+              <span id="orders-count-badge" style="font-size:12px; color:#64748b; font-weight:500;">총 0건</span>
             </div>
             <div style="display:flex; gap:8px;">
-              <input type="text" id="subtab-order-search" class="modern-input" placeholder="주문자, 연락처, 상품명 검색" style="height:36px; width:220px; font-size:12.5px;">
+              <div style="position:relative; display:flex; align-items:center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:11px; pointer-events:none;">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="subtab-order-search" placeholder="주문자, 영수증번호, 상품명 검색" style="height:35px; width:230px; padding:0 12px 0 32px; border:1px solid #cbd5e1; border-radius:7px; font-size:12px; outline:none; background:#ffffff; color:#0f172a;">
+              </div>
             </div>
           </div>
 
@@ -1199,36 +1205,34 @@ Minimum version required to store current data is: `+c+`.
           <div style="text-align:center; padding:50px 20px; color:#94a3b8; font-size:13.5px;">
             조회된 주문 내역이 없습니다.
           </div>
-        `;return}let u=``;r.forEach((e,t)=>{let n=(e.payment_status||`payapp_requested`).toLowerCase(),r=n===`paid`,i=c.includes(n),a=``;a=r?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #d1fae5;">결제완료</span>`:i?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fef2f2; color:#ef4444; border:1px solid #fee2e2;">취소/환불</span>`:`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">결제대기</span>`;let o=`-`;if(e.created_at){let t=new Date(e.created_at);if(isNaN(t.getTime())){let n=Number(e.created_at);isNaN(n)||(t=new Date(n))}o=isNaN(t.getTime())?String(e.created_at):`${t.getFullYear()}.${String(t.getMonth()+1).padStart(2,`0`)}.${String(t.getDate()).padStart(2,`0`)} ${String(t.getHours()).padStart(2,`0`)}:${String(t.getMinutes()).padStart(2,`0`)}`}let l=s(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),d=e.customer_name||e.buyer_name||`(미입력)`;u+=`
-          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+        `;return}let u=``;r.forEach((e,t)=>{let n=(e.payment_status||`payapp_requested`).toLowerCase(),r=n===`paid`,i=c.includes(n),a=``;a=r?`<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981;"></span>결제완료</span>`:i?`<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444;"></span>취소/환불</span>`:`<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b;"></span>결제대기</span>`;let o=`-`,l=``;if(e.created_at){let t=new Date(e.created_at);if(isNaN(t.getTime())){let n=Number(e.created_at);isNaN(n)||(t=new Date(n))}if(isNaN(t.getTime()))o=String(e.created_at);else{let e=t.getFullYear(),n=String(t.getMonth()+1).padStart(2,`0`),r=String(t.getDate()).padStart(2,`0`),i=String(t.getHours()).padStart(2,`0`),a=String(t.getMinutes()).padStart(2,`0`);o=`${e}.${n}.${r}`,l=`${i}:${a}`}}let d=s(e).map(e=>{let t=e.quantity||1;return`${e.name||e.goodname||`상품`}${t>1?` (${t}개)`:``}`}).join(`, `),f=e.customer_name||e.buyer_name||`(미입력)`;u+=`
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <!-- 1. 상태 -->
-            <td style="padding:12px 14px; text-align:center;">${a}</td>
+            <td style="padding:13px 14px; text-align:center;">${a}</td>
             <!-- 2. 영수증번호 -->
-            <td style="padding:12px 14px; color:#64748b; font-size:11.5px; font-family:monospace;">${e.pg_receipt_id||e.receipt_id||e.order_number||`-`}</td>
-            <!-- 3. 주문일시 (똑바른 날짜 표기) -->
-            <td style="padding:12px 14px; color:#334155; font-family:monospace; font-size:12px; font-weight:600; white-space:nowrap;">${o}</td>
-            <!-- 4. 주문자 (클릭 시 모달) -->
-            <td style="padding:12px 14px;">
+            <td style="padding:13px 14px; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums;">${e.pg_receipt_id||e.receipt_id||e.order_number||`-`}</td>
+            <!-- 3. 주문일시 (자연스러운 날짜와 시간) -->
+            <td style="padding:13px 14px; color:#334155; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap;">
+              <span style="font-weight:500;">${o}</span>
+              ${l?`<span style="color:#94a3b8; font-size:11.5px; margin-left:5px;">${l}</span>`:``}
+            </td>
+            <!-- 4. 주문자 (우아한 텍스트 링크) -->
+            <td style="padding:13px 14px;">
               <button type="button" class="btn-customer-detail" data-order-idx="${t}"
-                style="display:inline-flex; align-items:center; gap:4px; background:#f1f5f9; border:1px solid #e2e8f0; padding:4px 9px; border-radius:6px; font-size:12.5px; font-weight:700; color:#2563eb; cursor:pointer; transition:all 0.12s;"
-                onmouseover="this.style.background='#dbeafe'; this.style.borderColor='#93c5fd';"
-                onmouseout="this.style.background='#f1f5f9'; this.style.borderColor='#e2e8f0';">
-                <span>${d}</span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
+                style="background:transparent; border:none; padding:0; font-size:13px; font-weight:600; color:#0f172a; cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:3px; transition:all 0.15s;"
+                onmouseover="this.style.color='#2563eb'; this.style.textDecorationColor='#2563eb';"
+                onmouseout="this.style.color='#0f172a'; this.style.textDecorationColor='#cbd5e1';">
+                ${f}
               </button>
             </td>
-            <!-- 5. 주문 상품 (길면 ... 말줄임표 처리) -->
-            <td style="padding:12px 14px; max-width:260px;">
-              <div style="font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${l.replace(/"/g,`&quot;`)}">
-                ${l}
+            <!-- 5. 주문 상품 (자연스러운 폰트 + 말줄임표) -->
+            <td style="padding:13px 14px; max-width:320px;">
+              <div style="color:#1e293b; font-weight:500; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.4;" title="${d.replace(/"/g,`&quot;`)}">
+                ${d}
               </div>
             </td>
-            <!-- 6. 결제금액 (검은색 굵게 표기) -->
-            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${i?`#94a3b8; text-decoration:line-through;`:`#000000;`}">
+            <!-- 6. 결제금액 (정갈한 블랙 폰트) -->
+            <td style="padding:13px 20px 13px 14px; text-align:right; font-weight:700; font-size:13.5px; font-variant-numeric:tabular-nums; color:${i?`#94a3b8; text-decoration:line-through;`:`#0f172a;`}">
               ${(parseInt(e.total_amount)||0).toLocaleString()}원
             </td>
           </tr>
@@ -1236,13 +1240,13 @@ Minimum version required to store current data is: `+c+`.
         <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; text-align:left;">
             <thead>
-              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b;">
-                <th style="padding:11px 14px; font-weight:700; width:90px; text-align:center;">상태</th>
-                <th style="padding:11px 14px; font-weight:700; width:125px;">영수증번호</th>
-                <th style="padding:11px 14px; font-weight:700; width:125px;">주문일시</th>
-                <th style="padding:11px 14px; font-weight:700; width:110px;">주문자</th>
-                <th style="padding:11px 14px; font-weight:700;">주문 상품</th>
-                <th style="padding:11px 14px; font-weight:700; width:120px; text-align:right;">결제금액</th>
+              <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px; color:#64748b;">
+                <th style="padding:11px 14px; font-weight:600; width:95px; text-align:center;">상태</th>
+                <th style="padding:11px 14px; font-weight:600; width:120px;">영수증번호</th>
+                <th style="padding:11px 14px; font-weight:600; width:140px;">주문일시</th>
+                <th style="padding:11px 14px; font-weight:600; width:100px;">주문자</th>
+                <th style="padding:11px 14px; font-weight:600;">주문 상품</th>
+                <th style="padding:11px 20px 11px 14px; font-weight:600; width:120px; text-align:right;">결제금액</th>
               </tr>
             </thead>
             <tbody>

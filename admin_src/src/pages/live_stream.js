@@ -3511,16 +3511,22 @@ function renderLiveEditView(container, liveId, showView) {
             </div>
           </div>
 
-          <!-- 검색 & 제품 필터 바 (채팅관리 영역 스타일) -->
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-            <div style="display:flex; gap:8px; align-items:center;">
-              <select id="subtab-product-filter" class="modern-input" style="height:36px; padding:6px 12px; font-size:12.5px; background:#fff; cursor:pointer;">
+          <!-- 검색 & 제품 필터 바 (미니멀 툴바 스타일) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; padding:12px 14px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <select id="subtab-product-filter" style="height:35px; padding:0 12px; font-size:12.5px; font-weight:500; background:#ffffff; border:1px solid #cbd5e1; border-radius:7px; color:#0f172a; outline:none; cursor:pointer;">
                 <option value="all">전체 제품 보기</option>
               </select>
-              <span id="orders-count-badge" style="font-size:12px; color:#64748b; font-weight:600;">총 0건</span>
+              <span id="orders-count-badge" style="font-size:12px; color:#64748b; font-weight:500;">총 0건</span>
             </div>
             <div style="display:flex; gap:8px;">
-              <input type="text" id="subtab-order-search" class="modern-input" placeholder="주문자, 연락처, 상품명 검색" style="height:36px; width:220px; font-size:12.5px;">
+              <div style="position:relative; display:flex; align-items:center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:11px; pointer-events:none;">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="subtab-order-search" placeholder="주문자, 영수증번호, 상품명 검색" style="height:35px; width:230px; padding:0 12px 0 32px; border:1px solid #cbd5e1; border-radius:7px; font-size:12px; outline:none; background:#ffffff; color:#0f172a;">
+              </div>
             </div>
           </div>
 
@@ -3897,17 +3903,19 @@ function renderLiveEditView(container, liveId, showView) {
         const isPaid = pStatus === 'paid';
         const isCancel = cancelStatuses.includes(pStatus);
 
+        // 세련된 소프트 닷 뱃지
         let statusBadge = '';
         if (isPaid) {
-          statusBadge = '<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #d1fae5;">결제완료</span>';
+          statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#ecfdf5; color:#059669;"><span style="width:5px; height:5px; border-radius:50%; background:#10b981;"></span>결제완료</span>';
         } else if (isCancel) {
-          statusBadge = '<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fef2f2; color:#ef4444; border:1px solid #fee2e2;">취소/환불</span>';
+          statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fef2f2; color:#dc2626;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444;"></span>취소/환불</span>';
         } else {
-          statusBadge = '<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">결제대기</span>';
+          statusBadge = '<span style="display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b;"></span>결제대기</span>';
         }
 
-        // 똑바른 날짜 포맷 (YYYY.MM.DD HH:mm)
-        let dateStr = '-';
+        // 자연스러운 날짜/시간 분리 포맷
+        let datePart = '-';
+        let timePart = '';
         if (ord.created_at) {
           let d = new Date(ord.created_at);
           if (isNaN(d.getTime())) {
@@ -3920,46 +3928,48 @@ function renderLiveEditView(container, liveId, showView) {
             const D = String(d.getDate()).padStart(2, '0');
             const h = String(d.getHours()).padStart(2, '0');
             const m = String(d.getMinutes()).padStart(2, '0');
-            dateStr = `${Y}.${M}.${D} ${h}:${m}`;
+            datePart = `${Y}.${M}.${D}`;
+            timePart = `${h}:${m}`;
           } else {
-            dateStr = String(ord.created_at);
+            datePart = String(ord.created_at);
           }
         }
 
         const items = parseItems(ord);
-        const itemsText = items.map(it => `${it.name || it.goodname} (${it.quantity || 1}개)`).join(', ');
+        const itemsSummary = items.map(it => {
+          const qty = it.quantity || 1;
+          return `${it.name || it.goodname || '상품'}${qty > 1 ? ` (${qty}개)` : ''}`;
+        }).join(', ');
         const customerName = ord.customer_name || ord.buyer_name || '(미입력)';
 
         rowsHtml += `
-          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.1s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
             <!-- 1. 상태 -->
-            <td style="padding:12px 14px; text-align:center;">${statusBadge}</td>
+            <td style="padding:13px 14px; text-align:center;">${statusBadge}</td>
             <!-- 2. 영수증번호 -->
-            <td style="padding:12px 14px; color:#64748b; font-size:11.5px; font-family:monospace;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
-            <!-- 3. 주문일시 (똑바른 날짜 표기) -->
-            <td style="padding:12px 14px; color:#334155; font-family:monospace; font-size:12px; font-weight:600; white-space:nowrap;">${dateStr}</td>
-            <!-- 4. 주문자 (클릭 시 모달) -->
-            <td style="padding:12px 14px;">
+            <td style="padding:13px 14px; color:#64748b; font-size:12px; font-variant-numeric:tabular-nums;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
+            <!-- 3. 주문일시 (자연스러운 날짜와 시간) -->
+            <td style="padding:13px 14px; color:#334155; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap;">
+              <span style="font-weight:500;">${datePart}</span>
+              ${timePart ? `<span style="color:#94a3b8; font-size:11.5px; margin-left:5px;">${timePart}</span>` : ''}
+            </td>
+            <!-- 4. 주문자 (우아한 텍스트 링크) -->
+            <td style="padding:13px 14px;">
               <button type="button" class="btn-customer-detail" data-order-idx="${idx}"
-                style="display:inline-flex; align-items:center; gap:4px; background:#f1f5f9; border:1px solid #e2e8f0; padding:4px 9px; border-radius:6px; font-size:12.5px; font-weight:700; color:#2563eb; cursor:pointer; transition:all 0.12s;"
-                onmouseover="this.style.background='#dbeafe'; this.style.borderColor='#93c5fd';"
-                onmouseout="this.style.background='#f1f5f9'; this.style.borderColor='#e2e8f0';">
-                <span>${customerName}</span>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7;">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
+                style="background:transparent; border:none; padding:0; font-size:13px; font-weight:600; color:#0f172a; cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:3px; transition:all 0.15s;"
+                onmouseover="this.style.color='#2563eb'; this.style.textDecorationColor='#2563eb';"
+                onmouseout="this.style.color='#0f172a'; this.style.textDecorationColor='#cbd5e1';">
+                ${customerName}
               </button>
             </td>
-            <!-- 5. 주문 상품 (길면 ... 말줄임표 처리) -->
-            <td style="padding:12px 14px; max-width:260px;">
-              <div style="font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${itemsText.replace(/"/g, '&quot;')}">
-                ${itemsText}
+            <!-- 5. 주문 상품 (자연스러운 폰트 + 말줄임표) -->
+            <td style="padding:13px 14px; max-width:320px;">
+              <div style="color:#1e293b; font-weight:500; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.4;" title="${itemsSummary.replace(/"/g, '&quot;')}">
+                ${itemsSummary}
               </div>
             </td>
-            <!-- 6. 결제금액 (검은색 굵게 표기) -->
-            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : '#000000;'}">
+            <!-- 6. 결제금액 (정갈한 블랙 폰트) -->
+            <td style="padding:13px 20px 13px 14px; text-align:right; font-weight:700; font-size:13.5px; font-variant-numeric:tabular-nums; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : '#0f172a;'}">
               ${(parseInt(ord.total_amount) || 0).toLocaleString()}원
             </td>
           </tr>
@@ -3970,13 +3980,13 @@ function renderLiveEditView(container, liveId, showView) {
         <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; text-align:left;">
             <thead>
-              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b;">
-                <th style="padding:11px 14px; font-weight:700; width:90px; text-align:center;">상태</th>
-                <th style="padding:11px 14px; font-weight:700; width:125px;">영수증번호</th>
-                <th style="padding:11px 14px; font-weight:700; width:125px;">주문일시</th>
-                <th style="padding:11px 14px; font-weight:700; width:110px;">주문자</th>
-                <th style="padding:11px 14px; font-weight:700;">주문 상품</th>
-                <th style="padding:11px 14px; font-weight:700; width:120px; text-align:right;">결제금액</th>
+              <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:12px; color:#64748b;">
+                <th style="padding:11px 14px; font-weight:600; width:95px; text-align:center;">상태</th>
+                <th style="padding:11px 14px; font-weight:600; width:120px;">영수증번호</th>
+                <th style="padding:11px 14px; font-weight:600; width:140px;">주문일시</th>
+                <th style="padding:11px 14px; font-weight:600; width:100px;">주문자</th>
+                <th style="padding:11px 14px; font-weight:600;">주문 상품</th>
+                <th style="padding:11px 20px 11px 14px; font-weight:600; width:120px; text-align:right;">결제금액</th>
               </tr>
             </thead>
             <tbody>
