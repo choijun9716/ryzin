@@ -12,7 +12,7 @@
     (function() {
       var idMatch = window.location.pathname.match(/\/live\/([^\/?#]+)/);
       var qMatch = new URLSearchParams(window.location.search).get('id');
-      var lid = (idMatch && idMatch[1] && idMatch[1] !== 'index.html') ? idMatch[1] : (qMatch || 'live01');
+      var lid = (idMatch && idMatch[1] && idMatch[1] !== 'index.html') ? idMatch[1] : (qMatch || 'N45ZMPL');
       var mLink = document.createElement('link');
       mLink.rel = 'manifest';
       mLink.href = '/api/manifest?id=' + encodeURIComponent(lid);
@@ -225,7 +225,7 @@
         document.documentElement.classList.add('embed-mode-active');
       }
 
-      const liveId = window.INJECTED_LIVE_ID || urlParams.get('id') || 'live01';
+      const liveId = window.INJECTED_LIVE_ID || urlParams.get('id') || 'N45ZMPL';
       const cached = JSON.parse(localStorage.getItem(`ryzin_live_config_${liveId}`) || '{}');
 
       if (isAdminPreview || cached.showSplash === false || isEmbedParam || isWidgetParam) {

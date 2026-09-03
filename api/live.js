@@ -40,9 +40,11 @@ export default async function handler(req, res) {
   let id = req.query.id;
   
   if (!id) {
-    // URL 매칭 fallback
     const match = req.url.match(/\/live\/([^\/?]+)/);
     if (match) id = match[1];
+  }
+  if (!id || id === 'index.html') {
+    id = 'N45ZMPL';
   }
 
   // 기본 OG 설정

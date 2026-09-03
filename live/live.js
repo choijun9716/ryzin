@@ -67,7 +67,7 @@ function extractYouTubeId(url) {
   return m ? m[1] : null;
 }
 let db = null;
-let LIVE_ID = 'live01';
+let LIVE_ID = 'N45ZMPL';
 
 
 // ── [무정전 자동 재생 가드 엔진] 어떤 일이 있어도 영상 재생 유지 ──
@@ -493,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     const config = {
-      liveId: row.live_id || 'live01',
+      liveId: row.live_id || 'N45ZMPL',
       brandName: row.title || 'Ryzin Corp',
       title: row.subtitle || '단독 특가 라이브 방송 중!',
       logoUrl: cleanLogoUrl || 'https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff',
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // === 페이지 로드(새로고침 포함) 시마다 누적 시청자수 +1 ===
   setTimeout(async () => {
     try {
-      const targetLiveId = LIVE_ID || 'live01';
+      const targetLiveId = LIVE_ID || 'N45ZMPL';
       if (!db) return;
 
         const { data, error } = await db
@@ -1070,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 클릭 수 동기화
             try {
-              const targetLiveId = LIVE_ID || 'live01';
+              const targetLiveId = LIVE_ID || 'N45ZMPL';
               if (!targetLiveId || !db) return;
               const { data } = await db.from('live_control').select('products').eq('live_id', targetLiveId).maybeSingle();
               if (data && data.products) {
@@ -1116,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
 
               try {
-                const targetLiveId = LIVE_ID || 'live01';
+                const targetLiveId = LIVE_ID || 'N45ZMPL';
                 if (!targetLiveId || !db) return;
                 const { data } = await db.from('live_control').select('products').eq('live_id', targetLiveId).maybeSingle();
                 if (data && data.products) {
@@ -1210,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   card.target = '_blank';
                 }
                 try {
-                  const targetLiveId = LIVE_ID || 'live01';
+                  const targetLiveId = LIVE_ID || 'N45ZMPL';
                   if (!targetLiveId || !db) return;
 
                   const { data, error } = await db
@@ -3322,7 +3322,7 @@ if (btnSubmitPayment) {
           buyerName: name,
           address: address,
           returnurl: returnUrl,
-          var1: LIVE_ID || 'live01',
+          var1: LIVE_ID || 'N45ZMPL',
           var2: JSON.stringify(cartItems.map(i => ({ name: i.name, price: i.price })))
         })
       });
@@ -3332,7 +3332,7 @@ if (btnSubmitPayment) {
       if (result.success && result.payurl) {
         const orderData = {
           id: 'ord_' + Date.now(),
-          live_id: LIVE_ID || 'live01',
+          live_id: LIVE_ID || 'N45ZMPL',
           customer_name: name,
           customer_phone: phone,
           customer_address: address,
@@ -3355,9 +3355,9 @@ if (btnSubmitPayment) {
 
         // 로컬 스토리지 즉시 캐시 백업 및 내 주문 히스토리 저장
         try {
-          const localOrders = JSON.parse(localStorage.getItem(`ryzin_live_orders_${LIVE_ID || 'live01'}`) || '[]');
+          const localOrders = JSON.parse(localStorage.getItem(`ryzin_live_orders_${LIVE_ID || 'N45ZMPL'}`) || '[]');
           localOrders.unshift(orderData);
-          localStorage.setItem(`ryzin_live_orders_${LIVE_ID || 'live01'}`, JSON.stringify(localOrders));
+          localStorage.setItem(`ryzin_live_orders_${LIVE_ID || 'N45ZMPL'}`, JSON.stringify(localOrders));
 
           // 내 주문 전용 로컬 히스토리 누적 보존
           const myOrders = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');

@@ -32,8 +32,8 @@ function fetchLiveControl(id) {
 }
 
 export default async function handler(req, res) {
-  let id = req.query.id || 'live01';
-  if (id === 'index.html' || id === '') id = 'live01';
+  let id = req.query.id || 'N45ZMPL';
+  if (id === 'index.html' || id === '') id = 'N45ZMPL';
 
   const liveData = await fetchLiveControl(id);
 
