@@ -105,7 +105,10 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
                      `#widgetImageUrl=${config.widgetImageUrl || ''}` +
                      `#showOnMain=${config.showOnMain === true}` +
                      `#standbyImageUrl=${encodeURIComponent(config.standbyImageUrl || '')}` +
-                     `#useStandbyImage=${config.useStandbyImage === true}`,
+                     `#useStandbyImage=${config.useStandbyImage === true}` +
+                     `#showNoticeNote=${config.showNoticeNote !== false}` +
+                     `#noticeNoteTitle=${encodeURIComponent(config.noticeNoteTitle || '')}` +
+                     `#noticeNoteContent=${encodeURIComponent(config.noticeNoteContent || '')}`,
       stream_url: config.streamUrl || '',
       viewers: parseInt(stats.viewers) || 0,
       hearts: parseInt(stats.hearts) || 0,
@@ -642,6 +645,9 @@ function renderLiveEditView(container, liveId, showView) {
           let showOnMain = false;
           let standbyImageUrl = '';
           let useStandbyImage = false;
+          let showNoticeNote = true;
+          let noticeNoteTitle = '';
+          let noticeNoteContent = '';
 
           const hashParts = rawLogoUrl.split('#');
           let cleanLogoUrl = hashParts[0];
@@ -661,6 +667,12 @@ function renderLiveEditView(container, liveId, showView) {
               standbyImageUrl = decodeURIComponent(part.replace('standbyImageUrl=', ''));
             } else if (part.startsWith('useStandbyImage=')) {
               useStandbyImage = part.replace('useStandbyImage=', '') === 'true';
+            } else if (part.startsWith('showNoticeNote=')) {
+              showNoticeNote = part.replace('showNoticeNote=', '') !== 'false';
+            } else if (part.startsWith('noticeNoteTitle=')) {
+              noticeNoteTitle = decodeURIComponent(part.replace('noticeNoteTitle=', ''));
+            } else if (part.startsWith('noticeNoteContent=')) {
+              noticeNoteContent = decodeURIComponent(part.replace('noticeNoteContent=', ''));
             }
           });
 
@@ -672,6 +684,9 @@ function renderLiveEditView(container, liveId, showView) {
           config.showOnMain = showOnMain;
           config.standbyImageUrl = standbyImageUrl;
           config.useStandbyImage = useStandbyImage;
+          config.showNoticeNote = showNoticeNote;
+          config.noticeNoteTitle = noticeNoteTitle;
+          config.noticeNoteContent = noticeNoteContent;
           config.thumbnailUrl = data.thumbnail_url || '';
           config.liveStartTime = data.start_time || '';
           config.showViewers = data.show_viewers !== false;
@@ -948,7 +963,7 @@ function renderLiveEditView(container, liveId, showView) {
 
   const isLocal = window.location.origin.includes('localhost:5173');
   const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
-  const previewUrl = `${previewBase}?id=${liveId}&v=202608121330`;
+  const previewUrl = `${previewBase}?id=${liveId}&admin=1&v=202609032320`;
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
   const embedUrlWithParam = `${viewerUrl}?embed=1&v=202608121330`;
@@ -1459,6 +1474,29 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
       </div>
 
+      <div class="section-card" id="notice-memo-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <h3 style="margin:0; border:none; padding:0;">좌측 포스트잇 공지 메모장 설정</h3>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="cfg-showNoticeNote" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;" ${config.showNoticeNote !== false ? 'checked' : ''}>
+            <label for="cfg-showNoticeNote" style="font-size:13px; font-weight:700; color:#0f172a; cursor:pointer;">메모장 노출 (ON)</label>
+          </div>
+        </div>
+        <p style="margin:0 0 16px 0; font-size:12px; color:#64748b; line-height:1.5;">라이브 시청 화면 좌측에 노란색 포스트잇(메모장) 형태로 공지사항을 노출합니다. 시청자가 클릭하면 부드럽게 커지면서 긴 공지 내용도 스크롤하여 확인할 수 있습니다.</p>
+        
+        <div style="display:grid; grid-template-columns: 240px 1fr; gap:16px;">
+          <div>
+            <label class="modern-label">메모장 제목 (요약 문구)</label>
+            <input type="text" class="modern-input" id="cfg-noticeNoteTitle" value="${config.noticeNoteTitle || 'Show Notes'}" placeholder="예: Show Notes 또는 방송 공지">
+            <div style="font-size:11px; color:#94a3b8; margin-top:4px;">축소 상태 및 상단에 노출되는 제목입니다.</div>
+          </div>
+          <div>
+            <label class="modern-label">공지 내용 (펼침 시 스크롤 표시)</label>
+            <textarea class="modern-input" id="cfg-noticeNoteContent" style="height:90px; resize:vertical; padding:10px 14px; font-size:13px; line-height:1.5;" placeholder="방송 중 안내할 공지사항이나 이벤트 참여 방법, 배송 일정 등을 입력하세요.">${config.noticeNoteContent || '방송 공지사항\n\n* 방송 중 특가 혜택이 적용됩니다.\n* 실시간 채팅 및 라이브 이벤트에 참여해보세요!\n* 공지 내용은 관리자 페이지에서 실시간으로 수정하실 수 있습니다.'}</textarea>
+          </div>
+        </div>
+      </div>
+
       <div class="section-card" id="share-og-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
           <h3 style="margin:0; border:none; padding:0;">임베드 관리</h3>
@@ -1581,6 +1619,20 @@ function renderLiveEditView(container, liveId, showView) {
       }
       config.shareTitle = document.getElementById('cfg-shareTitle').value;
       config.shareDesc = document.getElementById('cfg-shareDesc').value;
+
+      const noticeNoteCb = document.getElementById('cfg-showNoticeNote');
+      if (noticeNoteCb) {
+        config.showNoticeNote = noticeNoteCb.checked;
+      }
+      const noticeNoteTitleInput = document.getElementById('cfg-noticeNoteTitle');
+      if (noticeNoteTitleInput) {
+        config.noticeNoteTitle = noticeNoteTitleInput.value;
+      }
+      const noticeNoteContentInput = document.getElementById('cfg-noticeNoteContent');
+      if (noticeNoteContentInput) {
+        config.noticeNoteContent = noticeNoteContentInput.value;
+      }
+
       saveConfig();
       saveStats();
       syncToSheetDB(liveId, config, stats, products, true);
@@ -1588,7 +1640,7 @@ function renderLiveEditView(container, liveId, showView) {
 
       saveBtn.disabled = false;
       saveBtn.textContent = '설정 저장';
-      alert('✅ 설정 저장 완료!');
+      alert('설정 저장 완료');
     });
 
 
@@ -4200,6 +4252,9 @@ function renderLiveEditView(container, liveId, showView) {
         let widgetPosition = 'right';
         let widgetImageUrl = '';
         let showOnMain = false;
+        let showNoticeNote = true;
+        let noticeNoteTitle = '';
+        let noticeNoteContent = '';
 
         const hashParts = logoStr.split('#');
         let cleanLogoUrl = hashParts[0];
@@ -4215,6 +4270,12 @@ function renderLiveEditView(container, liveId, showView) {
             widgetImageUrl = part.replace('widgetImageUrl=', '');
           } else if (part.startsWith('showOnMain=')) {
             showOnMain = part.replace('showOnMain=', '') === 'true';
+          } else if (part.startsWith('showNoticeNote=')) {
+            showNoticeNote = part.replace('showNoticeNote=', '') !== 'false';
+          } else if (part.startsWith('noticeNoteTitle=')) {
+            noticeNoteTitle = decodeURIComponent(part.replace('noticeNoteTitle=', ''));
+          } else if (part.startsWith('noticeNoteContent=')) {
+            noticeNoteContent = decodeURIComponent(part.replace('noticeNoteContent=', ''));
           }
         });
 
@@ -4224,6 +4285,9 @@ function renderLiveEditView(container, liveId, showView) {
         config.widgetPosition = widgetPosition;
         config.widgetImageUrl = widgetImageUrl;
         config.showOnMain = showOnMain;
+        config.showNoticeNote = showNoticeNote;
+        config.noticeNoteTitle = noticeNoteTitle;
+        config.noticeNoteContent = noticeNoteContent;
         config.streamUrl = newData.stream_url || '';
         config.showViewers = newData.show_viewers !== false;
         config.thumbnailUrl = newData.thumbnail_url || '';

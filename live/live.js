@@ -469,6 +469,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let widgetImageUrl = '';
     let standbyImageUrl = '';
     let useStandbyImage = false;
+    let showNoticeNote = true;
+    let noticeNoteTitle = '';
+    let noticeNoteContent = '';
     
     const hashParts = rawLogoUrl.split('#');
     const cleanLogoUrl = hashParts[0];
@@ -486,6 +489,12 @@ document.addEventListener('DOMContentLoaded', () => {
         standbyImageUrl = decodeURIComponent(part.replace('standbyImageUrl=', ''));
       } else if (part.startsWith('useStandbyImage=')) {
         useStandbyImage = part.replace('useStandbyImage=', '') === 'true';
+      } else if (part.startsWith('showNoticeNote=')) {
+        showNoticeNote = part.replace('showNoticeNote=', '') !== 'false';
+      } else if (part.startsWith('noticeNoteTitle=')) {
+        noticeNoteTitle = decodeURIComponent(part.replace('noticeNoteTitle=', ''));
+      } else if (part.startsWith('noticeNoteContent=')) {
+        noticeNoteContent = decodeURIComponent(part.replace('noticeNoteContent=', ''));
       }
     });
     window.currentWidgetPosition = widgetPosition;
@@ -508,7 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
       widgetPosition: widgetPosition,
       widgetImageUrl: widgetImageUrl,
       standbyImageUrl: standbyImageUrl,
-      useStandbyImage: useStandbyImage
+      useStandbyImage: useStandbyImage,
+      showNoticeNote: showNoticeNote,
+      noticeNoteTitle: noticeNoteTitle,
+      noticeNoteContent: noticeNoteContent
     };
 
     const stats = {
@@ -636,6 +648,86 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('Viewer count increment failed:', e);
       }
     }, 800);
+
+  // ── 좌측 포스트잇 공지 메모장 (Sticky Note Memo) 제어 ──
+  window.updateNoticeMemo = function(c) {
+    const memoEl = document.getElementById('live-notice-memo');
+    if (!memoEl) return;
+
+    if (!c || c.showNoticeNote === false) {
+      memoEl.style.display = 'none';
+      return;
+    }
+    memoEl.style.display = 'flex';
+
+    const titleEl = document.getElementById('memo-title');
+    const contentEl = document.getElementById('memo-content');
+    const hintEl = document.getElementById('memo-hint');
+
+    const defaultTitle = 'Show Notes';
+    const defaultContent = '방송 공지사항\n\n' +
+      '* 방송 중 특가 혜택이 적용됩니다.\n' +
+      '* 실시간 채팅 및 라이브 이벤트에 참여해보세요!\n' +
+      '* 공지 내용은 관리자 페이지에서 실시간으로 수정하실 수 있습니다.';
+
+    if (titleEl) {
+      titleEl.textContent = (c.noticeNoteTitle && c.noticeNoteTitle.trim()) ? c.noticeNoteTitle.trim() : defaultTitle;
+    }
+    if (contentEl) {
+      contentEl.textContent = (c.noticeNoteContent && c.noticeNoteContent.trim()) ? c.noticeNoteContent.trim() : defaultContent;
+    }
+    if (hintEl) {
+      hintEl.textContent = '클릭하여 펼치기';
+    }
+  };
+
+  // 포스트잇 메모장 클릭 및 인터랙션 리스너 등록
+  (function initNoticeMemo() {
+    const memoEl = document.getElementById('live-notice-memo');
+    if (!memoEl) return;
+
+    // 메모장 클릭 시 (축소 상태일 때 펼침)
+    memoEl.addEventListener('click', (e) => {
+      if (!memoEl.classList.contains('expanded')) {
+        memoEl.classList.add('expanded');
+      }
+    });
+
+    // 키보드 접근성 지원
+    memoEl.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && !memoEl.classList.contains('expanded')) {
+        e.preventDefault();
+        memoEl.classList.add('expanded');
+      }
+    });
+
+    // 닫기/접기 버튼
+    const closeBtn = document.getElementById('memo-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        memoEl.classList.remove('expanded');
+      });
+    }
+
+    // 본문 클릭/스크롤 시 메모장 접힘 방지
+    const contentEl = document.getElementById('memo-content');
+    if (contentEl) {
+      contentEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+      contentEl.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+      }, { passive: true });
+    }
+
+    // 메모장 바깥 클릭 시 접기
+    document.addEventListener('click', (e) => {
+      if (memoEl.classList.contains('expanded') && !memoEl.contains(e.target)) {
+        memoEl.classList.remove('expanded');
+      }
+    });
+  })();
 
   function loadLiveConfig() {
     try {
@@ -833,6 +925,11 @@ document.addEventListener('DOMContentLoaded', () => {
             closeBtn.style.left = isLeft ? 'auto' : '-4px';
             closeBtn.style.right = isLeft ? '-4px' : 'auto';
           }
+        }
+
+        // [NEW] 좌측 포스트잇 공지 메모장 업데이트
+        if (typeof window.updateNoticeMemo === 'function') {
+          window.updateNoticeMemo(c);
         }
 
 

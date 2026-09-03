@@ -1176,3 +1176,195 @@ video::-webkit-media-controls-overlay-play-button {
   align-items: center;
   justify-content: center;
 }
+
+/* ─── 좌측 포스트잇 공지 메모장 (Sticky Note Memo) ─── */
+.live-notice-memo {
+  position: absolute;
+  top: 106px;
+  left: 14px;
+  z-index: 85;
+  width: 88px;
+  min-height: 82px;
+  max-height: 82px;
+  background: linear-gradient(135deg, #fef9c3 0%, #fef08a 65%, #fde047 100%);
+  border-radius: 10px 10px 0 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.12);
+  padding: 9px 8px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  cursor: pointer;
+  pointer-events: auto !important;
+  user-select: none;
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  transition: width 0.32s cubic-bezier(0.34, 1.25, 0.64, 1),
+              height 0.32s cubic-bezier(0.34, 1.25, 0.64, 1),
+              max-height 0.32s cubic-bezier(0.34, 1.25, 0.64, 1),
+              transform 0.2s ease,
+              box-shadow 0.25s ease;
+}
+
+.live-notice-memo:hover:not(.expanded) {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.live-notice-memo:active:not(.expanded) {
+  transform: scale(0.98);
+}
+
+/* 포스트잇 우측 하단 접힌 귀 효과 (Folded Corner) */
+.live-notice-memo .memo-fold {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 18px 18px;
+  border-color: transparent transparent #ca8a04 transparent;
+  box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.2);
+  border-bottom-right-radius: 4px;
+  pointer-events: none;
+  transition: all 0.25s ease;
+}
+
+/* 메모장 헤더 */
+.memo-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+}
+
+.memo-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.memo-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  word-break: break-word;
+}
+
+/* 닫기 버튼 */
+.memo-close-btn {
+  display: none;
+  background: rgba(0, 0, 0, 0.08);
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.memo-close-btn:hover {
+  background: rgba(0, 0, 0, 0.18);
+  color: #0f172a;
+  transform: scale(1.1);
+}
+
+/* 축소 상태에서의 힌트 */
+.memo-hint {
+  margin-top: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #854d0e;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  opacity: 0.85;
+}
+
+/* 본문 내용 */
+.memo-content {
+  display: none;
+  margin-top: 8px;
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #1e293b;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  padding-right: 4px;
+  cursor: text;
+  user-select: text;
+}
+
+/* 본문 커스텀 스크롤바 */
+.memo-content::-webkit-scrollbar {
+  width: 4px;
+}
+.memo-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.memo-content::-webkit-scrollbar-thumb {
+  background: rgba(202, 138, 4, 0.45);
+  border-radius: 4px;
+}
+.memo-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(202, 138, 4, 0.8);
+}
+
+/* ─── 펼쳐진(확장된) 상태 ─── */
+.live-notice-memo.expanded {
+  width: 235px;
+  max-width: calc(100vw - 32px);
+  min-height: 190px;
+  max-height: 230px;
+  height: 200px;
+  padding: 12px 12px 10px 14px;
+  cursor: default;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.15);
+  animation: memoExpandPop 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.live-notice-memo.expanded .memo-fold {
+  border-width: 0 0 22px 22px;
+}
+
+.live-notice-memo.expanded .memo-header {
+  padding-bottom: 7px;
+  border-bottom: 1.5px dashed rgba(161, 98, 7, 0.28);
+}
+
+.live-notice-memo.expanded .memo-title {
+  font-size: 14px;
+}
+
+.live-notice-memo.expanded .memo-close-btn {
+  display: flex;
+}
+
+.live-notice-memo.expanded .memo-hint {
+  display: none;
+}
+
+.live-notice-memo.expanded .memo-content {
+  display: block;
+}
+
+@keyframes memoExpandPop {
+  0% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
