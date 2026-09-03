@@ -776,12 +776,19 @@ document.addEventListener('DOMContentLoaded', () => {
           el.href = item.url || "#";
           el.className = 'product-card';
           let priceHtml = '';
-          const currentPriceStr = item.price ? item.price.toString().replace(/[^0-9]/g, '') : '';
-          const normalPriceStr = item.normalPrice ? item.normalPrice.toString().replace(/[^0-9]/g, '') : '';
+          const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+          const npNum = Number((item.normalPrice || '').toString().replace(/[^0-9]/g, ''));
 
-          if (currentPriceStr) {
-            const current = Number(currentPriceStr);
-            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:15px;">${current.toLocaleString()}원</span><span class="live-benefit-tag" style="background:#fff1f2; border:1.5px solid #ffe4e6; color:#f43f5e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
+          if (pNum > 0) {
+            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:15px;">${pNum.toLocaleString()}원</span>`;
+            if (npNum > pNum) {
+              priceHtml += `<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through; margin-left:5px;">${npNum.toLocaleString()}원</span>`;
+            }
+            priceHtml += `<span class="live-benefit-tag" style="background:#fff1f2; border:1.5px solid #ffe4e6; color:#f43f5e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-left:6px; vertical-align:middle; display:inline-block; line-height:1.2;">라이브 혜택가</span>`;
+          } else if (item.price === '0' || item.price === 0) {
+            priceHtml = `<span class="discounted-price" style="font-weight:800; color:#16a34a; font-size:15px;">무료나눔</span>`;
+          } else {
+            priceHtml = `<span style="font-size:13px; color:#94a3b8; font-weight:600;">가격 준비중</span>`;
           }
           el.innerHTML = `
             <img src="${item.image}" alt="product" class="product-image">
@@ -872,11 +879,8 @@ document.addEventListener('DOMContentLoaded', () => {
               card.href = item.url || "#";
               card.className = 'banner-product-card';
               
-              const currentPriceStr = item.price ? item.price.toString().replace(/[^0-9]/g, '') : '';
-              const normalPriceStr = item.normalPrice ? item.normalPrice.toString().replace(/[^0-9]/g, '') : '';
-              const current = Number(currentPriceStr) || 0;
-              
-
+              const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+              let priceDisplay = pNum > 0 ? `${pNum.toLocaleString()}원` : (item.price === '0' || item.price === 0 ? '무료' : '가격 준비중');
 
               card.innerHTML = `
                 <div class="banner-img-box">
@@ -886,7 +890,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="banner-info-box">
                   <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
                   <div class="banner-price-row">
-                    <span class="banner-price">${current.toLocaleString()}원</span>
+                    <span class="banner-price">${priceDisplay}</span>
                   </div>
                 </div>
               `;

@@ -2710,52 +2710,26 @@ function renderLiveEditView(container, liveId, showView) {
 
     const bindProductEvents = () => {
       const plc = document.getElementById('product-list-container');
+      if (!plc) return;
 
-      // 실시간 타이핑 디바운스 자동 저장 타이머
       let typingTimer = null;
       const triggerRealtimeSave = () => {
         if (typingTimer) clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
           saveProducts(true);
-        }, 300);
+        }, 250);
       };
 
-      // 실시간 숫자 콤마 포맷팅 및 입력 즉시 반영
-      plc.querySelectorAll('.price-input').forEach(input => {
-        input.addEventListener('input', (e) => {
-          let val = e.target.value.replace(/[^0-9]/g, '');
-          e.target.value = val ? Number(val).toLocaleString() : '';
-          const idx = parseInt(e.target.dataset.idx);
-          const field = e.target.dataset.field;
-          if (products[idx]) {
-            products[idx][field] = val;
-            const n = Number((products[idx].normalPrice || '').toString().replace(/[^0-9]/g, ''));
-            const p = Number((products[idx].price || '').toString().replace(/[^0-9]/g, ''));
-            if (n > 0 && n >= p) {
-              products[idx].discountRate = Math.floor(((n - p) / n) * 100);
-              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
-              if (ri) ri.value = products[idx].discountRate;
-            } else {
-              products[idx].discountRate = 0;
-              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
-              if (ri) ri.value = 0;
-            }
-            triggerRealtimeSave();
-          }
-        });
-        input.addEventListener('blur', () => {
-          saveProducts(true);
-        });
-      });
-
       plc.querySelectorAll('input[data-field]').forEach(input => {
-        const handleAutoSave = (e) => {
-          const idx = parseInt(e.target.dataset.idx);
-          const field = e.target.dataset.field;
-          if (e.target.type === 'checkbox') {
-            products[idx][field] = e.target.checked;
+        const onFieldUpdate = (e) => {
+          const idx = parseInt(input.dataset.idx, 10);
+          const field = input.dataset.field;
+          if (!products[idx]) return;
+
+          if (input.type === 'checkbox') {
+            products[idx][field] = input.checked;
             if (field === 'isFreeGiveaway') {
-              if (e.target.checked) {
+              if (input.checked) {
                 products[idx].price = '0';
                 products[idx].hideByDefault = true;
                 products[idx].isGiveawayActive = true;
@@ -2770,7 +2744,7 @@ function renderLiveEditView(container, liveId, showView) {
               return;
             }
             if (field === 'isLeadForm') {
-              if (e.target.checked) {
+              if (input.checked) {
                 products[idx].url = '__LEAD_FORM__';
               } else if (products[idx].url === '__LEAD_FORM__') {
                 products[idx].url = '';
@@ -2780,46 +2754,40 @@ function renderLiveEditView(container, liveId, showView) {
               bindProductEvents();
               return;
             }
-          } else {
-            if (field === 'price' || field === 'normalPrice') {
-              products[idx][field] = e.target.value.replace(/[^0-9]/g, '');
-            } else {
-              products[idx][field] = e.target.value;
-            }
+            saveProducts(true);
+            return;
           }
+
           if (field === 'price' || field === 'normalPrice') {
-            const n = Number((products[idx].normalPrice || '').toString().replace(/[^0-9]/g, ''));
-            const p = Number((products[idx].price || '').toString().replace(/[^0-9]/g, ''));
-            if (n > 0 && n >= p) {
+            const rawDigits = input.value.replace(/[^0-9]/g, '');
+            products[idx][field] = rawDigits;
+            // 콤마 포맷팅
+            input.value = rawDigits ? Number(rawDigits).toLocaleString() : '';
+
+            // 할인율 자동 계산
+            const n = Number(products[idx].normalPrice || 0);
+            const p = Number(products[idx].price || 0);
+            if (n > 0 && n >= p && p > 0) {
               products[idx].discountRate = Math.floor(((n - p) / n) * 100);
-              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
-              if (ri) ri.value = products[idx].discountRate;
             } else {
               products[idx].discountRate = 0;
-              const ri = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
-              if (ri) ri.value = 0;
             }
+            const rateEl = plc.querySelector(`input[data-idx="${idx}"][data-field="discountRate"]`);
+            if (rateEl) rateEl.value = products[idx].discountRate;
+          } else if (field === 'name') {
+            products[idx].name = input.value;
+          } else if (field === 'url') {
+            products[idx].url = input.value.trim();
+          } else if (field === 'giveawayStock') {
+            products[idx].giveawayStock = parseInt(input.value, 10) || 3;
           }
-          saveProducts(true);
+
+          triggerRealtimeSave();
         };
-        input.addEventListener('input', (e) => {
-          const idx = parseInt(e.target.dataset.idx);
-          const field = e.target.dataset.field;
-          if (products[idx]) {
-            if (field === 'name') {
-              products[idx].name = e.target.value.trim();
-              triggerRealtimeSave();
-            } else if (field === 'url') {
-              products[idx].url = e.target.value.trim();
-              triggerRealtimeSave();
-            } else if (field === 'giveawayStock') {
-              products[idx].giveawayStock = parseInt(e.target.value) || 3;
-              triggerRealtimeSave();
-            }
-          }
-        });
-        input.addEventListener('change', handleAutoSave);
-        input.addEventListener('blur', handleAutoSave);
+
+        input.addEventListener('input', onFieldUpdate);
+        input.addEventListener('change', onFieldUpdate);
+        input.addEventListener('blur', () => saveProducts(true));
       });
       plc.querySelectorAll('.prod-img-upload').forEach(input => {
         input.addEventListener('change', async (e) => {
