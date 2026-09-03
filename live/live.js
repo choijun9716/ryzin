@@ -3390,10 +3390,10 @@ window.openMyOrdersModal = async function() {
     }).join('') : `<div style="font-size:11.5px; color:#64748b; padding:4px 0;">${itemsSummary}</div>`;
 
     return `
-      <!-- 미니멀 게시판 리스트 아이템 -->
-      <div class="my-order-item" style="border-bottom:1px solid #f1f5f9; padding:13px 0;">
+      <!-- 미니멀 게시판 리스트 아이템 (시원하고 여유로운 상하 여백) -->
+      <div class="my-order-item" style="border-bottom:1px solid #f1f5f9; padding:18px 0;">
         <!-- 리스트 헤더 행 (클릭 시 아코디언 토글) -->
-        <div onclick="toggleOrderDetail(${idx})" style="cursor:pointer; display:flex; flex-direction:column; gap:5px;" title="클릭하여 상세 정보 확인">
+        <div onclick="toggleOrderDetail(${idx})" style="cursor:pointer; display:flex; flex-direction:column; gap:8px;" title="클릭하여 상세 정보 확인">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-size:11px; color:#94a3b8; font-weight:500;">${dateStr}</span>
             <div style="display:flex; align-items:center; gap:5px;">
@@ -3411,8 +3411,8 @@ window.openMyOrdersModal = async function() {
           </div>
         </div>
 
-        <!-- 클릭 시 펼쳐지는 미니멀 상세 정보 -->
-        <div id="order-detail-${idx}" style="display:none; padding-top:10px; margin-top:8px; border-top:1px dashed #f1f5f9; flex-direction:column; gap:8px;">
+        <!-- 클릭 시 펼쳐지는 미니멀 상세 정보 (여유로운 간격) -->
+        <div id="order-detail-${idx}" style="display:none; padding-top:14px; margin-top:12px; border-top:1px dashed #f1f5f9; flex-direction:column; gap:10px;">
           <!-- 품목 리스트 -->
           <div style="display:flex; flex-direction:column; gap:2px;">
             ${itemsDetailHtml}

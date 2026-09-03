@@ -1239,17 +1239,17 @@
             style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:19px; color:#94a3b8; cursor:pointer; outline:none; transition:color 0.15s;"
             onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
 
-          <div style="margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #f1f5f9;">
-            <h3 style="margin:0 0 3px 0; font-size:16.5px; font-weight:800; color:#0f172a;">내 주문목록</h3>
+          <div style="margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #f1f5f9;">
+            <h3 style="margin:0 0 4px 0; font-size:17px; font-weight:800; color:#0f172a;">내 주문목록</h3>
             <span id="my-orders-count-text" style="font-size:11.5px; color:#64748b; font-weight:500;">주문하신 내역을 확인합니다.</span>
           </div>
 
-          <!-- 주문 리스트 스크롤 영역 (미니멀 게시판 리스트 형태) -->
+          <!-- 주문 리스트 스크롤 영역 (미니멀 게시판 리스트 형태 & 여유로운 여백) -->
           <div id="my-orders-list" style="flex:1; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column;">
             <!-- 주문 내역 리스트 항목들이 여기에 렌더링됨 -->
           </div>
 
-          <div style="margin-top:14px; padding-top:12px; border-top:1px solid #f1f5f9;">
+          <div style="margin-top:20px; padding-top:15px; border-top:1px solid #f1f5f9;">
             <button id="btn-confirm-my-orders" type="button" onclick="document.getElementById('my-orders-modal').style.display='none'; document.getElementById('my-menu-modal').style.display='flex';"
               style="width:100%; padding:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; transition:all 0.15s; outline:none;"
               onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
