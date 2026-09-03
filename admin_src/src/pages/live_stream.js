@@ -2736,7 +2736,7 @@ function renderLiveEditView(container, liveId, showView) {
 
     const addAdminChatItem = (name, text, isHistory = false) => {
       // 시스템 주문서 요청 메시지는 일반 채팅 목록에 노출하지 않음
-      if (name === 'SYSTEM_DIRECT_ORDER_REQUEST') return;
+      if (!name || name === 'SYSTEM_DIRECT_ORDER_REQUEST' || name.startsWith('SYSTEM_') || (typeof text === 'string' && (text.startsWith('{"type":"direct_order_request"') || text.startsWith('{"type": "direct_order_request"')))) return;
 
       if (chatList.innerHTML.includes('실시간 채팅 내역이 여기에')) chatList.innerHTML = '';
       const div = document.createElement('div');

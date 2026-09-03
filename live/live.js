@@ -565,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (chats && Array.isArray(chats)) {
         chats.reverse().forEach(c => {
           const nick = c.nickname || '';
+          if (nick.startsWith('SYSTEM_') || nick === 'SYSTEM_DIRECT_ORDER_REQUEST') return;
           if (blockedList.includes(nick)) return;
           const isAdmin = adminList.includes(nick);
           addMessage(nick, c.content, isAdmin, true);
@@ -2013,6 +2014,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addMessage(name, text, isAdmin = false, isHistory = false) {
+    if (!name || name.startsWith('SYSTEM_') || name === 'SYSTEM_DIRECT_ORDER_REQUEST' || (typeof text === 'string' && (text.startsWith('{"type":"direct_order_request"') || text.startsWith('{"type": "direct_order_request"')))) {
+      return;
+    }
     const parsed = parseNick(name);
     const displayName = parsed.name;
     const nameColor = parsed.color;
