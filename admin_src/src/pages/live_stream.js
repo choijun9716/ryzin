@@ -187,7 +187,15 @@ export function renderLiveStream() {
     }
   };
 
-  renderListView(container, showView);
+  const role = store.getCurrentRole();
+  const isLiveStreamOnly = role && role.startsWith('live_stream:');
+  const targetLiveId = isLiveStreamOnly ? role.split(':')[1] : null;
+
+  if (isLiveStreamOnly && targetLiveId) {
+    showView(targetLiveId);
+  } else {
+    renderListView(container, showView);
+  }
   return container;
 }
 
@@ -419,7 +427,7 @@ function renderLiveEditView(container, liveId, showView) {
   const role = store.getCurrentRole();
   const isLiveStreamOnly = role && role.startsWith('live_stream:');
   const isBrandPartner = role && role.startsWith('brand:');
-  const isRestricted = isLiveStreamOnly || isBrandPartner;
+  const isRestricted = isBrandPartner;
 
   const base64ToBlob = (base64Data) => {
     let contentType = 'image/png';
@@ -756,7 +764,7 @@ function renderLiveEditView(container, liveId, showView) {
     ? `<button class="tab-btn active" data-tab="chat" style="flex:1; text-align:center; padding:6px 12px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>`
     : `
       <button class="tab-btn active" data-tab="config" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">라이브 기본설정</button>
-      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">채팅 / 봇 관리</button>
+      <button class="tab-btn" data-tab="chat" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">${isLiveStreamOnly ? '채팅 관리' : '채팅 / 봇 관리'}</button>
       <button class="tab-btn" data-tab="product" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상품 관리</button>
       <button class="tab-btn" data-tab="orders" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">주문 관리</button>
       <button class="tab-btn" data-tab="leads" style="flex:1; text-align:center; padding:6px 10px; font-size:13px; border-radius:8px;">상담 DB</button>
