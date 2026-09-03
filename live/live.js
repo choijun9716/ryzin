@@ -4769,8 +4769,8 @@ window.handlePushSubscribeClick = async function() {
 const BASE_FAN_COUNT = 341746;
 
 window.openSellerChannelView = function() {
-  const channelView = document.getElementById('seller-channel-view');
-  if (!channelView) return;
+  // 사용자 요청으로 일시 비활성화 (숨김)
+  return;
 
   const cfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
 
