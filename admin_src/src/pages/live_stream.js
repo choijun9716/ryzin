@@ -3519,7 +3519,16 @@ function renderLiveEditView(container, liveId, showView) {
 
         <!-- 주문/제품 리스트 컨테이너 -->
         <div id="orders-list-container">
-          <div style="text-align:center; padding:30px; color:#64748b; font-size:13px;">주문 내역을 불러오는 중...</div>
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px;">
+            <div style="width:34px; height:34px; border:3.5px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
+            <div style="font-size:13.5px; font-weight:600; color:#475569;">주문 내역을 불러오는 중입니다...</div>
+          </div>
+          <style>
+            @keyframes ordersSpin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          </style>
         </div>
       </div>
     `;
@@ -3550,6 +3559,15 @@ function renderLiveEditView(container, liveId, showView) {
     };
 
     const loadOrders = async () => {
+      const container = document.getElementById('orders-list-container');
+      if (container) {
+        container.innerHTML = `
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px;">
+            <div style="width:34px; height:34px; border:3.5px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
+            <div style="font-size:13.5px; font-weight:600; color:#475569;">주문 내역을 불러오는 중입니다...</div>
+          </div>
+        `;
+      }
       try {
         let dbList = [];
         if (db) {
@@ -4275,7 +4293,10 @@ function renderLiveEditView(container, liveId, showView) {
 
           <!-- 판매 랭킹 테이블 컨테이너 -->
           <div id="stats-ranking-container" style="overflow-x:auto;">
-            <div style="text-align:center; padding:30px; color:#64748b; font-size:13px;">판매 데이터를 불러오는 중...</div>
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:45px 20px;">
+              <div style="width:32px; height:32px; border:3px solid #e2e8f0; border-top-color:#0f172a; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
+              <div style="font-size:13px; font-weight:600; color:#64748b;">판매 순위 데이터를 분석 중입니다...</div>
+            </div>
           </div>
         </div>
 
@@ -4299,8 +4320,9 @@ function renderLiveEditView(container, liveId, showView) {
 
           <!-- 인터랙티브 SVG 시청자 그래프 -->
           <div id="stats-chart-wrapper" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px 16px 10px 16px; margin-bottom:20px; min-height:220px; position:relative;">
-            <div id="stats-chart-content" style="width:100%; height:190px; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:13px;">
-              시청자 타임라인 데이터를 생성 중...
+            <div id="stats-chart-content" style="width:100%; height:190px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; font-size:13px;">
+              <div style="width:30px; height:30px; border:3px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:10px;"></div>
+              <div style="font-size:13px; font-weight:600; color:#64748b;">시청자 타임라인 데이터를 생성 중입니다...</div>
             </div>
           </div>
 
@@ -4311,7 +4333,10 @@ function renderLiveEditView(container, liveId, showView) {
               <span id="stats-timeline-count-badge" style="font-size:11.5px; font-weight:600; color:#64748b;">총 0개 기록</span>
             </div>
             <div id="stats-timeline-table-container" style="max-height:280px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:10px;">
-              <div style="text-align:center; padding:24px; color:#94a3b8; font-size:13px;">시청자 로그 기록을 불러오는 중...</div>
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:35px 20px;">
+                <div style="width:28px; height:28px; border:3px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:10px;"></div>
+                <div style="font-size:12.5px; font-weight:600; color:#94a3b8;">시청자 로그 기록을 불러오는 중입니다...</div>
+              </div>
             </div>
           </div>
         </div>
