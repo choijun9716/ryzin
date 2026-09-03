@@ -919,6 +919,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 지금소개중 상품이 있으면 하단 롤링 배너에 해당 상품을 최우선 고정 표출!
             const displayProducts = featuredProduct ? [featuredProduct] : activeProducts;
 
+            // 지금소개중 상품 활성화 시 흰 모달에 파란 라이트 은은한 띠 클래스 부여
+            if (featuredProduct) {
+              bottomBanner.classList.add('featured-active');
+            } else {
+              bottomBanner.classList.remove('featured-active');
+            }
+
             track.innerHTML = '';
             displayProducts.forEach((item) => {
               const card = document.createElement('a');
@@ -936,13 +943,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 badgeHtml = '<span class="banner-badge" style="background:#e11d48; color:#ffffff;">깜짝딜</span>';
               }
 
+              // 텍스트에 [지금소개중]을 빼고, 원래 상품명만 깔끔하게 노출
               card.innerHTML = `
                 <div class="banner-img-box">
                   <img src="${item.image}" alt="product">
                   ${badgeHtml}
                 </div>
                 <div class="banner-info-box">
-                  <div class="banner-title">${isCurrentlyFeatured ? '<span style="color:#2563eb; font-weight:800; margin-right:4px;">[지금 소개중]</span>' : (item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '')}${item.name}</div>
+                  <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
                   <div class="banner-price-row">
                     <span class="banner-price">${priceDisplay}</span>
                   </div>

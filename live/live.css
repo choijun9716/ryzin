@@ -745,11 +745,30 @@ body.ui-hidden .bottom-product-banner {
   justify-content: space-between;
   overflow: hidden;
   pointer-events: auto; /* 클릭 가능하도록 */
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  /* 페이드 아웃/인 전환 효과 */
-  transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  /* 페이드 아웃/인 전환 효과 및 테두리/그림자 전환 */
+  transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out, border 0.3s ease, box-shadow 0.3s ease;
   transform: translateY(0);
   opacity: 1;
+}
+
+/* [NEW] 지금소개중 활성화 시: 흰 모달에 파란 라이트 은은한 띠 효과 */
+.bottom-product-banner.featured-active {
+  background-color: #ffffff !important;
+  border: 1.5px solid rgba(59, 130, 246, 0.8) !important;
+  box-shadow: 0 0 0 1.5px rgba(59, 130, 246, 0.25), 0 0 16px rgba(37, 99, 235, 0.35), 0 6px 20px rgba(0, 0, 0, 0.14) !important;
+  animation: featuredBluePulse 2.4s infinite ease-in-out;
+}
+
+@keyframes featuredBluePulse {
+  0%, 100% {
+    border-color: rgba(59, 130, 246, 0.75);
+    box-shadow: 0 0 0 1.5px rgba(59, 130, 246, 0.25), 0 0 14px rgba(37, 99, 235, 0.3), 0 6px 20px rgba(0, 0, 0, 0.14);
+  }
+  50% {
+    border-color: rgba(96, 165, 250, 0.95);
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.45), 0 0 22px rgba(59, 130, 246, 0.5), 0 8px 24px rgba(0, 0, 0, 0.18);
+  }
 }
 
 /* 채팅 호버 시 상품 배너 페이드 아웃 */
