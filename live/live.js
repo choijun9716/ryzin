@@ -2460,7 +2460,12 @@ function renderCartItems() {
     cartItemsContainer.appendChild(div);
   });
 
-  if (cartTotalPrice) cartTotalPrice.textContent = `${total.toLocaleString()}원`;
+  window.__cartSubtotalAmount = total;
+  if (typeof calculateCartBenefits === 'function') {
+    calculateCartBenefits();
+  } else {
+    if (cartTotalPrice) cartTotalPrice.textContent = `${total.toLocaleString()}원`;
+  }
   if (typeof updateCartShippingPreview === 'function') {
     updateCartShippingPreview();
   }
@@ -2896,13 +2901,73 @@ if (btnSubmitPayment) {
       }
     } catch(syncErr) {}
 
-    let total = 0;
-    cartItems.forEach(item => {
-      const qty = item.quantity || 1;
-      const unit = item.price ? Number(item.price.toString().replace(/[^0-9]/g, '')) : 0;
-      total += unit * qty;
-    });
+    // 포인트 및 쿠폰 할인 적용 금액 최종 계산
+    if (typeof calculateCartBenefits === 'function') calculateCartBenefits();
+    const subtotal = window.__cartSubtotalAmount || 0;
+    const finalAmount = (typeof window.__cartFinalPaymentAmount !== 'undefined') ? window.__cartFinalPaymentAmount : subtotal;
+    const pointsUsed = window.__cartPointsUsed || 0;
+    const couponDiscount = window.__cartCouponDiscount || 0;
 
+    // 0원 전액 포인트/쿠폰 결제 완결 처리
+    if (finalAmount <= 0 && (pointsUsed > 0 || couponDiscount > 0)) {
+      const isConfirmed = confirm(`포인트/쿠폰 혜택으로 전액 결제(0원)를 완료하시겠습니까?`);
+      if (!isConfirmed) return;
+
+      // 포인트 및 쿠폰 차감
+      try {
+        const { points: curP, coupons: curC } = getUserAvailableBenefits();
+        if (pointsUsed > 0) localStorage.setItem('ryzin_user_points', Math.max(0, curP - pointsUsed));
+        if (couponDiscount > 0) localStorage.setItem('ryzin_user_coupons', Math.max(0, curC - 1));
+      } catch(e) {}
+
+      // 로컬 및 DB 주문 완료 저장
+      const completedOrder = {
+        id: 'ORDER-FREE-' + Date.now(),
+        items: [...cartItems],
+        totalPrice: 0,
+        subtotalPrice: subtotal,
+        discountPrice: (pointsUsed + couponDiscount),
+        customer_name: name,
+        customer_phone: phone,
+        address: address,
+        created_at: new Date().toISOString(),
+        paymentMethod: '포인트/쿠폰 전액결제',
+        status: '결제완료'
+      };
+
+      try {
+        let history = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');
+        history.unshift(completedOrder);
+        localStorage.setItem('ryzin_my_orders_history', JSON.stringify(history));
+      } catch(e) {}
+
+      const clientDb = db || window.supabaseClient;
+      if (clientDb) {
+        clientDb.from('live_orders').insert({
+          order_id: completedOrder.id,
+          live_id: LIVE_ID,
+          customer_name: name,
+          customer_phone: phone,
+          address: address,
+          items: completedOrder.items,
+          total_price: 0,
+          status: '결제완료'
+        }).then(() => {});
+      }
+
+      // 장바구니 비우기
+      cartItems = [];
+      syncCartStorage();
+      updateCartUI();
+      if (checkoutModal) checkoutModal.style.display = 'none';
+      if (cartModal) cartModal.style.display = 'none';
+
+      alert('포인트/쿠폰 혜택으로 결제가 정상 완료되었습니다!');
+      if (typeof openMyOrdersModal === 'function') openMyOrdersModal();
+      return;
+    }
+
+    const total = finalAmount;
     if (total <= 0) {
       alert('결제 금액이 0원입니다.');
       return;
@@ -2962,6 +3027,15 @@ if (btnSubmitPayment) {
           pg_receipt_id: String(result.mul_no || ''),
           created_at: new Date().toISOString()
         };
+
+        // 포인트 및 쿠폰 차감 저장
+        try {
+          if (typeof getUserAvailableBenefits === 'function') {
+            const { points: curP, coupons: curC } = getUserAvailableBenefits();
+            if (pointsUsed > 0) localStorage.setItem('ryzin_user_points', Math.max(0, curP - pointsUsed));
+            if (couponDiscount > 0) localStorage.setItem('ryzin_user_coupons', Math.max(0, curC - 1));
+          }
+        } catch(e) {}
 
         // 로컬 스토리지 즉시 캐시 백업 및 내 주문 히스토리 저장
         try {
@@ -3664,11 +3738,11 @@ window.openMyMenuModal = function() {
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px; padding:12px 14px; margin-top:12px;">
         <div style="text-align:center; border-right:1px solid #e2e8f0;">
           <div style="font-size:11px; font-weight:500; color:#64748b; margin-bottom:3px;">보유 포인트</div>
-          <div style="font-size:15px; font-weight:700; color:#0f172a;">3,000P</div>
+          <div style="font-size:15px; font-weight:700; color:#0f172a;">${(typeof getUserAvailableBenefits === 'function' ? getUserAvailableBenefits().points : 3000).toLocaleString()}P</div>
         </div>
         <div style="text-align:center;">
           <div style="font-size:11px; font-weight:500; color:#64748b; margin-bottom:3px;">할인 쿠폰</div>
-          <div style="font-size:15px; font-weight:700; color:#0f172a;">1장</div>
+          <div style="font-size:15px; font-weight:700; color:#0f172a;">${(typeof getUserAvailableBenefits === 'function' ? getUserAvailableBenefits().coupons : 1)}장</div>
         </div>
       </div>
     `;
@@ -3862,4 +3936,102 @@ window.handleMyLogout = function() {
   closeMyMenuModal();
   if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
   alert('로그아웃되었습니다.');
+};
+
+
+// ====================================================
+// [NEW] 장바구니 포인트 및 쿠폰 실시간 계산 및 차감 엔진
+// ====================================================
+
+window.__cartSubtotalAmount = 0;
+window.__cartFinalPaymentAmount = 0;
+window.__cartCouponDiscount = 0;
+window.__cartPointsUsed = 0;
+
+window.getUserAvailableBenefits = function() {
+  let points = 3000;
+  let coupons = 1;
+  try {
+    const savedPoints = localStorage.getItem('ryzin_user_points');
+    if (savedPoints !== null) points = Number(savedPoints);
+    const savedCoupons = localStorage.getItem('ryzin_user_coupons');
+    if (savedCoupons !== null) coupons = Number(savedCoupons);
+  } catch(e) {}
+  return { points: Math.max(0, points), coupons: Math.max(0, coupons) };
+};
+
+window.calculateCartBenefits = function() {
+  const subtotalEl = document.getElementById('cart-subtotal-price');
+  const discountRow = document.getElementById('cart-discount-row');
+  const discountEl = document.getElementById('cart-discount-price');
+  const totalEl = document.getElementById('cart-total-price');
+  const couponSelect = document.getElementById('cart-coupon-select');
+  const pointsInput = document.getElementById('cart-points-input');
+  const availablePointsEl = document.getElementById('cart-available-points');
+
+  const { points: availPoints, coupons: availCoupons } = getUserAvailableBenefits();
+  if (availablePointsEl) availablePointsEl.textContent = availPoints.toLocaleString();
+
+  // 소계 금액 산출
+  let subtotal = 0;
+  if (Array.isArray(cartItems)) {
+    cartItems.forEach(item => {
+      const qty = item.quantity || 1;
+      const unit = item.price ? Number(item.price.toString().replace(/[^0-9]/g, '')) : 0;
+      subtotal += unit * qty;
+    });
+  }
+  window.__cartSubtotalAmount = subtotal;
+  if (subtotalEl) subtotalEl.textContent = `${subtotal.toLocaleString()}원`;
+
+  // 쿠폰 할인 계산
+  let couponDiscount = 0;
+  if (couponSelect && availCoupons > 0) {
+    couponDiscount = Number(couponSelect.value) || 0;
+    couponDiscount = Math.min(couponDiscount, subtotal);
+  }
+  window.__cartCouponDiscount = couponDiscount;
+
+  // 포인트 사용 계산
+  let remainForPoints = Math.max(0, subtotal - couponDiscount);
+  let pointsUsed = 0;
+  if (pointsInput) {
+    let inputVal = Number(pointsInput.value) || 0;
+    if (inputVal < 0) inputVal = 0;
+    if (inputVal > availPoints) inputVal = availPoints;
+    if (inputVal > remainForPoints) inputVal = remainForPoints;
+    pointsInput.value = inputVal > 0 ? inputVal : (pointsInput.value === '' ? '' : 0);
+    pointsUsed = inputVal;
+  }
+  window.__cartPointsUsed = pointsUsed;
+
+  // 총 할인 및 최종 결제 금액
+  const totalDiscount = couponDiscount + pointsUsed;
+  const finalTotal = Math.max(0, subtotal - totalDiscount);
+  window.__cartFinalPaymentAmount = finalTotal;
+
+  if (discountRow && discountEl) {
+    if (totalDiscount > 0) {
+      discountRow.style.display = 'flex';
+      discountEl.textContent = `-${totalDiscount.toLocaleString()}원`;
+    } else {
+      discountRow.style.display = 'none';
+    }
+  }
+
+  if (totalEl) {
+    totalEl.textContent = `${finalTotal.toLocaleString()}원`;
+  }
+};
+
+window.applyAllPoints = function() {
+  const pointsInput = document.getElementById('cart-points-input');
+  if (!pointsInput) return;
+  const { points: availPoints } = getUserAvailableBenefits();
+  const subtotal = window.__cartSubtotalAmount || 0;
+  const couponDiscount = window.__cartCouponDiscount || 0;
+  const maxUsable = Math.max(0, subtotal - couponDiscount);
+  const toUse = Math.min(availPoints, maxUsable);
+  pointsInput.value = toUse;
+  calculateCartBenefits();
 };
