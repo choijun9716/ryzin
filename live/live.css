@@ -1184,13 +1184,13 @@ video::-webkit-media-controls-overlay-play-button {
   right: 14px;
   left: auto;
   z-index: 85;
-  width: 72px;
-  min-height: 68px;
-  max-height: 68px;
+  width: 54px;
+  min-height: 50px;
+  max-height: 50px;
   background: linear-gradient(135deg, #fef9c3 0%, #fef08a 65%, #fde047 100%);
-  border-radius: 8px 8px 0 8px;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 7px 6px 6px 8px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+  padding: 5px 4px 4px 5px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -1198,24 +1198,24 @@ video::-webkit-media-controls-overlay-play-button {
   pointer-events: auto !important;
   user-select: none;
   overflow: hidden;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
-  transition: width 0.3s cubic-bezier(0.34, 1.25, 0.64, 1),
-              height 0.3s cubic-bezier(0.34, 1.25, 0.64, 1),
-              max-height 0.3s cubic-bezier(0.34, 1.25, 0.64, 1),
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  transition: width 0.28s cubic-bezier(0.34, 1.25, 0.64, 1),
+              height 0.28s cubic-bezier(0.34, 1.25, 0.64, 1),
+              max-height 0.28s cubic-bezier(0.34, 1.25, 0.64, 1),
               transform 0.2s ease,
               box-shadow 0.25s ease;
 }
 
 .live-notice-memo:hover:not(.expanded) {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.28), 0 2px 4px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1.5px) scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .live-notice-memo:active:not(.expanded) {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
-/* 포스트잇 우측 하단 접힌 귀 효과 (Folded Corner) */
+/* 포스트잇 우측 하단 접힌 귀 효과 (Folded Corner - 입체감 그림자 원복) */
 .live-notice-memo .memo-fold {
   position: absolute;
   bottom: 0;
@@ -1223,9 +1223,10 @@ video::-webkit-media-controls-overlay-play-button {
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 0 0 14px 14px;
-  border-color: transparent transparent #eab308 transparent;
-  border-bottom-right-radius: 4px;
+  border-width: 0 0 10px 10px;
+  border-color: transparent transparent #ca8a04 transparent;
+  box-shadow: -2px -2px 3px rgba(0, 0, 0, 0.18);
+  border-bottom-right-radius: 2px;
   pointer-events: none;
   transition: all 0.25s ease;
 }
@@ -1235,22 +1236,22 @@ video::-webkit-media-controls-overlay-play-button {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 3px;
+  gap: 2px;
   width: 100%;
 }
 
 .memo-title-wrap {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
 }
 
 .memo-title {
-  font-size: 11.5px;
+  font-size: 9px;
   font-weight: 800;
   color: #0f172a;
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: -0.02em;
   word-break: break-word;
 }
@@ -1261,8 +1262,8 @@ video::-webkit-media-controls-overlay-play-button {
   background: rgba(0, 0, 0, 0.08);
   border: none;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   align-items: center;
   justify-content: center;
@@ -1281,12 +1282,13 @@ video::-webkit-media-controls-overlay-play-button {
 /* 축소 상태에서의 힌트 */
 .memo-hint {
   margin-top: auto;
-  font-size: 8.5px;
+  font-size: 6.5px;
   font-weight: 700;
   color: #854d0e;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  opacity: 0.85;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  opacity: 0.9;
+  white-space: nowrap;
 }
 
 /* 본문 내용 */
@@ -1294,7 +1296,7 @@ video::-webkit-media-controls-overlay-play-button {
   display: none;
   margin-top: 6px;
   flex: 1;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 500;
   color: #1e293b;
   line-height: 1.5;
@@ -1308,7 +1310,7 @@ video::-webkit-media-controls-overlay-play-button {
 
 /* 본문 커스텀 스크롤바 */
 .memo-content::-webkit-scrollbar {
-  width: 4px;
+  width: 3.5px;
 }
 .memo-content::-webkit-scrollbar-track {
   background: transparent;
@@ -1323,29 +1325,30 @@ video::-webkit-media-controls-overlay-play-button {
 
 /* ─── 펼쳐진(확장된) 상태 ─── */
 .live-notice-memo.expanded {
-  width: 215px;
+  width: 195px;
   max-width: calc(100vw - 28px);
-  min-height: 175px;
-  max-height: 210px;
-  height: 185px;
-  padding: 10px 10px 8px 12px;
+  min-height: 165px;
+  max-height: 200px;
+  height: 175px;
+  padding: 9px 8px 8px 10px;
+  border-radius: 8px;
   cursor: default;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.12);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28), 0 2px 5px rgba(0, 0, 0, 0.1);
   animation: memoExpandPop 0.28s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 .live-notice-memo.expanded .memo-fold {
-  border-width: 0 0 18px 18px;
+  border-width: 0 0 14px 14px;
 }
 
 .live-notice-memo.expanded .memo-header {
-  padding-bottom: 6px;
-  border-bottom: 1.5px dashed rgba(161, 98, 7, 0.28);
+  padding-bottom: 5px;
+  border-bottom: 1px dashed rgba(161, 98, 7, 0.28);
 }
 
 .live-notice-memo.expanded .memo-title {
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .live-notice-memo.expanded .memo-close-btn {
