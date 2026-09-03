@@ -812,26 +812,52 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
 
-          // 상세 버튼 클릭 시 상세 모달 오픈
+          // 상세 버튼 및 이미지/상품명 클릭 시 등록된 제품 상세 URL로 즉시 이동
+          const handleDetailUrlNavigation = async (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            if (item.url === '__LEAD_FORM__') {
+              if (typeof openLeadModal === 'function') openLeadModal(item.name);
+              return;
+            }
+
+            if (item.url && item.url !== '#' && (item.url.startsWith('http://') || item.url.startsWith('https://'))) {
+              window.open(item.url, '_blank');
+            } else if (item.url && item.url !== '#') {
+              window.open('https://' + item.url, '_blank');
+            } else {
+              alert('등록된 제품 상세 URL 링크가 없습니다.');
+              return;
+            }
+
+            // 클릭 수 동기화
+            try {
+              const targetLiveId = LIVE_ID || 'live01';
+              if (!targetLiveId || !db) return;
+              const { data } = await db.from('live_control').select('products').eq('live_id', targetLiveId).maybeSingle();
+              if (data && data.products) {
+                const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+                const targetProd = remoteProducts.find(p => p.name === item.name);
+                if (targetProd) {
+                  targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
+                  localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(remoteProducts));
+                  await db.from('live_control').update({ products: remoteProducts, updated_at: new Date().toISOString() }).eq('live_id', targetLiveId);
+                }
+              }
+            } catch(err) {}
+          };
+
           const btnDetail = el.querySelector('.btn-card-detail');
           if (btnDetail) {
-            btnDetail.addEventListener('click', (ev) => {
-              ev.preventDefault();
-              ev.stopPropagation();
-              openProductDetailModal(item);
-            });
+            btnDetail.addEventListener('click', handleDetailUrlNavigation);
           }
 
-          // 이미지 및 상품명 클릭 시에도 상세 모달 오픈
           const imgEl = el.querySelector('.product-image');
           const infoEl = el.querySelector('.product-info');
           [imgEl, infoEl].forEach(targetEl => {
             if (targetEl) {
-              targetEl.addEventListener('click', (ev) => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                openProductDetailModal(item);
-              });
+              targetEl.addEventListener('click', handleDetailUrlNavigation);
             }
           });
 
