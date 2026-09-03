@@ -2577,11 +2577,13 @@ function renderLiveEditView(container, liveId, showView) {
 
   const renderProductList = () => products.map((p, idx) => {
     const clickCount = p.clicks || 0;
+    const isFeatured = p.isFeatured === true || p.isFeatured === 'true';
     return `
-    <div class="product-row">
-      <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경">
+    <div class="product-row" style="${isFeatured ? 'border: 2px solid #2563eb; background: #f8faff; box-shadow:0 4px 12px rgba(37,99,235,0.08);' : ''}">
+      <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative;">
         <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}">
         <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
+        ${isFeatured ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-size:10px; font-weight:800; text-align:center; border-radius:4px; padding:1px 0;">소개중</span>` : ''}
       </div>
       <div class="product-inputs">
         <div style="display:flex; align-items:center; gap:8px;">
@@ -2592,6 +2594,10 @@ function renderLiveEditView(container, liveId, showView) {
         </div>
         <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
           <input type="text" class="modern-input" style="flex:1;" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL" ${p.isLeadForm ? 'disabled' : ''}>
+          <label style="font-size:12px; color:${isFeatured ? '#1d4ed8' : '#334155'}; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:${isFeatured ? '#eff6ff' : '#f8fafc'}; padding:8px 12px; border:${isFeatured ? '1.5px solid #2563eb' : '1px solid #cbd5e1'}; border-radius:8px; transition:all 0.15s;">
+            <input type="checkbox" data-idx="${idx}" data-field="isFeatured" class="chk-featured-product" ${isFeatured ? 'checked' : ''} style="width:14px; height:14px; accent-color:#2563eb; cursor:pointer;">
+            지금소개중
+          </label>
           <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
             <input type="checkbox" data-idx="${idx}" data-field="isLeadForm" ${p.isLeadForm === true || p.isLeadForm === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#3b82f6;">
             상담문의
@@ -2741,6 +2747,16 @@ function renderLiveEditView(container, liveId, showView) {
           if (!products[idx]) return;
 
           if (input.type === 'checkbox') {
+            if (field === 'isFeatured') {
+              const isChecked = input.checked;
+              products.forEach((prod, pIdx) => {
+                prod.isFeatured = (pIdx === idx && isChecked);
+              });
+              saveProducts(true);
+              plc.innerHTML = renderProductList();
+              bindProductEvents();
+              return;
+            }
             products[idx][field] = input.checked;
             if (field === 'isFreeGiveaway') {
               if (input.checked) {
@@ -2983,7 +2999,9 @@ function renderLiveEditView(container, liveId, showView) {
           const normalPriceInput = row.querySelector('input[data-field="normalPrice"]');
           const urlInput = row.querySelector('input[data-field="url"]');
           const isLeadForm = row.querySelector('input[data-field="isLeadForm"]');
+          const isFeatured = row.querySelector('input[data-field="isFeatured"]');
           const hideByDefault = row.querySelector('input[data-field="hideByDefault"]');
+          if (isFeatured) products[idx].isFeatured = isFeatured.checked;
           const isFreeGiveaway = row.querySelector('input[data-field="isFreeGiveaway"]');
           const giveawayStockInput = row.querySelector('input[data-field="giveawayStock"]');
 

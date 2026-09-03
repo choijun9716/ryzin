@@ -914,22 +914,35 @@ document.addEventListener('DOMContentLoaded', () => {
             if (chatSection) chatSection.classList.add('banner-active');
             moreCount.textContent = activeProducts.length;
 
+            // [NEW] 관리자가 상품관리에서 '지금소개중' 체크한 상품 탐색
+            const featuredProduct = activeProducts.find(item => item.isFeatured === true || item.isFeatured === 'true');
+            // 지금소개중 상품이 있으면 하단 롤링 배너에 해당 상품을 최우선 고정 표출!
+            const displayProducts = featuredProduct ? [featuredProduct] : activeProducts;
+
             track.innerHTML = '';
-            activeProducts.forEach((item) => {
+            displayProducts.forEach((item) => {
               const card = document.createElement('a');
               card.href = item.url || "#";
               card.className = 'banner-product-card';
               
+              const isCurrentlyFeatured = item.isFeatured === true || item.isFeatured === 'true';
               const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
               let priceDisplay = pNum > 0 ? `${pNum.toLocaleString()}원` : (item.price === '0' || item.price === 0 ? '무료' : '가격 준비중');
+
+              let badgeHtml = '<span class="banner-badge">특가</span>';
+              if (isCurrentlyFeatured) {
+                badgeHtml = '<span class="banner-badge" style="background:#2563eb; color:#ffffff; font-weight:800;">소개중</span>';
+              } else if (item.dealEndTime && item.dealEndTime > Date.now()) {
+                badgeHtml = '<span class="banner-badge" style="background:#e11d48; color:#ffffff;">깜짝딜</span>';
+              }
 
               card.innerHTML = `
                 <div class="banner-img-box">
                   <img src="${item.image}" alt="product">
-                  <span class="banner-badge">특가</span>
+                  ${badgeHtml}
                 </div>
                 <div class="banner-info-box">
-                  <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
+                  <div class="banner-title">${isCurrentlyFeatured ? '<span style="color:#2563eb; font-weight:800; margin-right:4px;">[지금 소개중]</span>' : (item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '')}${item.name}</div>
                   <div class="banner-price-row">
                     <span class="banner-price">${priceDisplay}</span>
                   </div>
@@ -991,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (rollingInterval) clearInterval(rollingInterval);
-            if (activeProducts.length > 1) {
+            if (displayProducts.length > 1) {
               // Clone the first card for seamless infinite loop
               const firstCardClone = track.firstElementChild.cloneNode(true);
               track.appendChild(firstCardClone);
@@ -1002,13 +1015,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 track.classList.remove('no-transition');
                 track.style.transform = `translateY(-${currentIdx * 72}px)`;
                 
-                if (currentIdx === activeProducts.length) {
+                if (currentIdx === displayProducts.length) {
                   // After transition ends, instantly reset to first item
                   setTimeout(() => {
                     track.classList.add('no-transition');
                     currentIdx = 0;
                     track.style.transform = 'translateY(0)';
-                  }, 300); // matches the 0.3s CSS transition
+                  }, 300);
                 }
               }, 1500);
             } else {
