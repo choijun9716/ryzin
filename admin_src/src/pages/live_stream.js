@@ -3133,11 +3133,11 @@ function renderLiveEditView(container, liveId, showView) {
     document.getElementById('btn-download-csv-leads').addEventListener('click', downloadCsv);
   };
 
-  // ── 주문 관리 (결제 내역) 탭 렌더링 ──────────────────────────────────
+  // ── 주문 관리 (결제 내역 & 제품별 모아보기 & CSV 추출) 탭 렌더링 ──────────────────
   const renderOrdersTab = () => {
     contentArea.innerHTML = `
       <div class="section-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <h2 style="font-size:16px; font-weight:800; color:#0f172a; margin:0;">
               주문 관리 (결제 내역)
@@ -3145,35 +3145,88 @@ function renderLiveEditView(container, liveId, showView) {
             <span id="orders-count-badge" style="font-size:12px; font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 8px; border-radius:12px; border:1px solid #dbeafe;">0건</span>
           </div>
           <div style="display:flex; gap:8px;">
-            <button id="btn-download-csv-orders" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none;">CSV 다운로드</button>
+            <button id="btn-download-csv-orders" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px; display:none; display:flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>CSV 다운로드</span>
+            </button>
             <button id="btn-refresh-orders" class="action-btn btn-neutral" style="padding:8px 16px; font-size:13px;">새로고침</button>
           </div>
         </div>
 
         <!-- 핵심 요약 카드 -->
-        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-bottom:20px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:20px;">
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
             <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">총 주문 건수</div>
-            <div id="stat-orders-count" style="font-size:22px; font-weight:800; color:#0f172a;">0건</div>
+            <div id="stat-orders-count" style="font-size:20px; font-weight:800; color:#0f172a;">0건</div>
           </div>
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
             <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">총 결제 금액</div>
-            <div id="stat-orders-total" style="font-size:22px; font-weight:800; color:#0f172a;">0원</div>
+            <div id="stat-orders-total" style="font-size:20px; font-weight:800; color:#0f172a;">0원</div>
+          </div>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px;">
+            <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">총 판매 제품 종류</div>
+            <div id="stat-products-count" style="font-size:20px; font-weight:800; color:#2563eb;">0종</div>
           </div>
         </div>
 
-        <!-- 검색 필터 -->
-        <div style="margin-bottom:16px; display:flex; gap:10px; align-items:center;">
-          <input type="text" id="order-search-input" placeholder="주문자명, 전화번호, 상품명 검색" class="modern-input" style="max-width:320px; font-size:13px; padding:8px 12px;">
+        <!-- 보기 모드 전환 및 검색/필터 바 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; background:#f8fafc; padding:12px 14px; border-radius:12px; border:1px solid #e2e8f0;">
+          <!-- 1. 보기 모드 전환 탭 (전체 주문별 vs 제품별 모아보기) -->
+          <div style="display:flex; background:#e2e8f0; padding:3px; border-radius:10px; gap:2px;">
+            <button id="btn-view-mode-orders" type="button"
+              style="padding:6px 14px; font-size:12.5px; font-weight:700; border-radius:8px; border:none; background:#ffffff; color:#0f172a; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer; transition:all 0.15s;">
+              전체 주문별 보기
+            </button>
+            <button id="btn-view-mode-products" type="button"
+              style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:8px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
+              제품별 모아보기
+            </button>
+          </div>
+
+          <!-- 2. 검색 및 제품 드롭다운 필터 -->
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select id="product-filter-select" style="display:none; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:12.5px; color:#0f172a; background:#ffffff; outline:none; cursor:pointer;">
+              <option value="all">전체 제품 보기</option>
+            </select>
+            <input type="text" id="order-search-input" placeholder="주문자, 전화번호, 상품명 검색" class="modern-input" style="max-width:240px; font-size:13px; padding:7px 12px;">
+          </div>
         </div>
 
+        <!-- 주문/제품 리스트 컨테이너 -->
         <div id="orders-list-container">
-          <div style="text-align:center; padding:20px; color:#64748b; font-size:13px;">주문 내역을 불러오는 중...</div>
+          <div style="text-align:center; padding:30px; color:#64748b; font-size:13px;">주문 내역을 불러오는 중...</div>
         </div>
       </div>
     `;
 
     let currentOrders = [];
+    let currentViewMode = 'orders'; // 'orders' | 'products'
+    let selectedProductFilter = 'all';
+
+    const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
+
+    // ── 주문 아이템 품목 파싱 헬퍼 ──
+    const parseOrderItems = (ord) => {
+      let itemsList = [];
+      if (Array.isArray(ord.items) && ord.items.length > 0) {
+        itemsList = ord.items;
+      } else if (typeof ord.items === 'string') {
+        try {
+          const parsed = JSON.parse(ord.items);
+          if (Array.isArray(parsed) && parsed.length > 0) itemsList = parsed;
+        } catch(e) {
+          itemsList = [{ name: ord.items, price: ord.total_amount || 0, quantity: 1 }];
+        }
+      }
+      if (itemsList.length === 0) {
+        itemsList = [{ name: ord.goodname || '라이브 상품', price: ord.total_amount || 0, quantity: 1 }];
+      }
+      return itemsList;
+    };
 
     const loadOrders = async () => {
       try {
@@ -3227,11 +3280,9 @@ function renderLiveEditView(container, liveId, showView) {
           localList = JSON.parse(localStorage.getItem(`ryzin_live_orders_${liveId}`) || '[]');
         } catch(e) {}
 
-        // 중복 제거 및 병합 (취소/환불 상태가 나중에 업데이트된 경우 덮어쓰기)
         const mergedMap = new Map();
         [...dbList, ...localList].forEach(ord => {
           const key = (ord.pg_receipt_id && ord.pg_receipt_id !== 'undefined' ? ord.pg_receipt_id : null) || ord.id || (ord.created_at + '_' + ord.customer_phone);
-          const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
           const existing = mergedMap.get(key);
           if (!existing) {
             mergedMap.set(key, ord);
@@ -3246,10 +3297,11 @@ function renderLiveEditView(container, liveId, showView) {
 
         currentOrders = Array.from(mergedMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-        // 1차 렌더링
-        renderOrdersTable();
+        // 필터 옵션 업데이트 및 렌더링
+        updateProductFilterOptions();
+        renderActiveView();
 
-        // 4. 페이앱(PayApp) 본사 서버와 실시간 결제/취소 상태 동기화
+        // 4. 페이앱 실시간 상태 동기화
         const receiptIds = currentOrders
           .map(ord => ord.pg_receipt_id)
           .filter(id => id && id !== 'undefined' && id !== '-');
@@ -3283,12 +3335,13 @@ function renderLiveEditView(container, liveId, showView) {
                   try {
                     localStorage.setItem(`ryzin_live_orders_${liveId}`, JSON.stringify(currentOrders));
                   } catch(e) {}
-                  renderOrdersTable();
+                  updateProductFilterOptions();
+                  renderActiveView();
                 }
               }
             }
           } catch(syncErr) {
-            console.warn('PayApp 실시간 상태 동기화 중 오류 (일반 조회 계속 유지):', syncErr);
+            console.warn('PayApp 실시간 상태 동기화 실패 (로컬 조회 유지):', syncErr);
           }
         }
       } catch (err) {
@@ -3298,9 +3351,7 @@ function renderLiveEditView(container, liveId, showView) {
       }
     };
 
-    const cancelStatuses = ['cancelled', 'canceled', 'payapp_cancelled', 'refunded', 'cancel'];
-
-    // ── 결제요청(미결제)은 완전히 제외하고 결제완료(paid) 및 취소(cancelled) 건만 반환 ──
+    // 결제요청(미결제)은 완전히 제외하고 결제완료(paid) 및 취소(cancelled) 건만 반환
     const getPaidAndCancelledOrders = () => {
       return currentOrders.filter(ord => {
         const isPaid = (ord.payment_status || '').toLowerCase() === 'paid';
@@ -3309,17 +3360,132 @@ function renderLiveEditView(container, liveId, showView) {
       });
     };
 
-    const renderOrdersTable = () => {
-      const container = document.getElementById('orders-list-container');
-      const btnCsv = document.getElementById('btn-download-csv-orders');
-      const countBadge = document.getElementById('orders-count-badge');
+    // ── 제품별 그룹핑 데이터 산출 ──
+    const getGroupedProductsData = (ordersList) => {
+      const productMap = new Map();
+
+      ordersList.forEach(ord => {
+        const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
+        const isPaid = (ord.payment_status || '').toLowerCase() === 'paid';
+        const items = parseOrderItems(ord);
+
+        items.forEach(it => {
+          const pName = (it.name || '미지정 상품').trim();
+          const qty = Number(it.quantity || 1);
+          const unitPrice = Number((it.price || 0).toString().replace(/[^0-9]/g, ''));
+          const subTotal = unitPrice * qty;
+
+          if (!productMap.has(pName)) {
+            productMap.set(pName, {
+              name: pName,
+              image: it.image || '',
+              totalQty: 0,
+              totalAmount: 0,
+              paidCount: 0,
+              cancelCount: 0,
+              orders: []
+            });
+          }
+
+          const group = productMap.get(pName);
+          if (isPaid) {
+            group.totalQty += qty;
+            group.totalAmount += subTotal;
+            group.paidCount += 1;
+          } else if (isCancelled) {
+            group.cancelCount += 1;
+          }
+
+          group.orders.push({
+            ordId: ord.id,
+            createdAt: ord.created_at,
+            customerName: ord.customer_name || '-',
+            customerPhone: ord.customer_phone || '-',
+            customerAddress: ord.customer_address || '-',
+            quantity: qty,
+            unitPrice: unitPrice,
+            subTotal: subTotal,
+            totalAmount: ord.total_amount || 0,
+            paymentStatus: ord.payment_status,
+            statusDetail: ord.status_detail,
+            isCancelled: isCancelled,
+            isPaid: isPaid,
+            pgReceiptId: ord.pg_receipt_id || '-'
+          });
+        });
+      });
+
+      // 총 판매 수량 내림차순 정렬
+      return Array.from(productMap.values()).sort((a, b) => b.totalQty - a.totalQty);
+    };
+
+    // ── 제품 필터 옵션 채우기 ──
+    const updateProductFilterOptions = () => {
+      const select = document.getElementById('product-filter-select');
+      if (!select) return;
+      const targetOrders = getPaidAndCancelledOrders();
+      const grouped = getGroupedProductsData(targetOrders);
+
+      let optionsHtml = '<option value="all">전체 제품 보기</option>';
+      grouped.forEach(g => {
+        const isSelected = selectedProductFilter === g.name ? 'selected' : '';
+        optionsHtml += `<option value="${g.name}" ${isSelected}>${g.name} (${g.totalQty}개)</option>`;
+      });
+      select.innerHTML = optionsHtml;
+    };
+
+    // ── 통계 업데이트 ──
+    const updateStats = (targetOrders, groupedProducts) => {
       const statCount = document.getElementById('stat-orders-count');
       const statTotal = document.getElementById('stat-orders-total');
+      const statProducts = document.getElementById('stat-products-count');
+      const countBadge = document.getElementById('orders-count-badge');
+      const btnCsv = document.getElementById('btn-download-csv-orders');
+
+      const paidOrders = targetOrders.filter(ord => (ord.payment_status || '').toLowerCase() === 'paid');
+      const cancelledOrders = targetOrders.filter(ord => cancelStatuses.includes((ord.payment_status || '').toLowerCase()));
+      const totalAmountSum = paidOrders.reduce((sum, ord) => sum + (Number(ord.total_amount) || 0), 0);
+
+      if (statCount) {
+        if (cancelledOrders.length > 0) {
+          statCount.innerHTML = `${targetOrders.length.toLocaleString()}건 <span style="font-size:11.5px; color:#64748b; font-weight:600;">(완료 ${paidOrders.length} / 취소 ${cancelledOrders.length})</span>`;
+        } else {
+          statCount.textContent = `${targetOrders.length.toLocaleString()}건`;
+        }
+      }
+      if (statTotal) statTotal.textContent = `${totalAmountSum.toLocaleString()}원`;
+      if (statProducts) statProducts.textContent = `${groupedProducts.length}종`;
+      if (countBadge) {
+        countBadge.textContent = currentViewMode === 'orders' ? `${targetOrders.length}건` : `${groupedProducts.length}개 제품`;
+      }
+      if (btnCsv) {
+        btnCsv.style.display = targetOrders.length > 0 ? 'flex' : 'none';
+      }
+    };
+
+    // ── 뷰 렌더링 라우터 ──
+    const renderActiveView = () => {
+      const targetOrders = getPaidAndCancelledOrders();
+      const groupedProducts = getGroupedProductsData(targetOrders);
+      updateStats(targetOrders, groupedProducts);
+
+      const filterSelect = document.getElementById('product-filter-select');
+      if (filterSelect) {
+        filterSelect.style.display = currentViewMode === 'products' ? 'block' : 'none';
+      }
+
+      if (currentViewMode === 'orders') {
+        renderOrdersTable(targetOrders);
+      } else {
+        renderProductsGroupedView(groupedProducts);
+      }
+    };
+
+    // ── 1. 전체 주문별 목록 렌더링 ──
+    const renderOrdersTable = (targetOrders) => {
+      const container = document.getElementById('orders-list-container');
       const searchInput = document.getElementById('order-search-input');
       const keyword = (searchInput ? searchInput.value : '').trim().toLowerCase();
-
-      // 결제요청은 제외하고 '결제완료' 및 '취소' 건만 필터
-      const targetOrders = getPaidAndCancelledOrders();
 
       let filtered = targetOrders;
       if (keyword) {
@@ -3327,34 +3493,9 @@ function renderLiveEditView(container, liveId, showView) {
           const nameMatch = (ord.customer_name || '').toLowerCase().includes(keyword);
           const phoneMatch = (ord.customer_phone || '').includes(keyword);
           const addrMatch = (ord.customer_address || '').toLowerCase().includes(keyword);
-          let itemsStr = '';
-          if (Array.isArray(ord.items)) {
-            itemsStr = ord.items.map(i => i.name).join(' ');
-          } else if (typeof ord.items === 'string') {
-            itemsStr = ord.items;
-          }
-          const itemMatch = itemsStr.toLowerCase().includes(keyword);
-          return nameMatch || phoneMatch || addrMatch || itemMatch;
+          const itemsStr = parseOrderItems(ord).map(i => i.name).join(' ').toLowerCase();
+          return nameMatch || phoneMatch || addrMatch || itemsStr.includes(keyword);
         });
-      }
-
-      // 통계 계산: 순수 결제완료 건의 금액만 합산 (취소 건은 금액 제외)
-      const paidOrders = targetOrders.filter(ord => (ord.payment_status || '').toLowerCase() === 'paid');
-      const cancelledOrders = targetOrders.filter(ord => cancelStatuses.includes((ord.payment_status || '').toLowerCase()));
-      const totalAmountSum = paidOrders.reduce((sum, ord) => sum + (Number(ord.total_amount) || 0), 0);
-
-      if (statCount) {
-        if (cancelledOrders.length > 0) {
-          statCount.innerHTML = `${targetOrders.length.toLocaleString()}건 <span style="font-size:12px; color:#64748b; font-weight:600;">(완료 ${paidOrders.length} / 취소 ${cancelledOrders.length})</span>`;
-        } else {
-          statCount.textContent = `${targetOrders.length.toLocaleString()}건`;
-        }
-      }
-      if (statTotal) statTotal.textContent = `${totalAmountSum.toLocaleString()}원`;
-      if (countBadge) countBadge.textContent = `${filtered.length}건`;
-
-      if (btnCsv) {
-        btnCsv.style.display = targetOrders.length > 0 ? 'block' : 'none';
       }
 
       if (!container) return;
@@ -3384,20 +3525,8 @@ function renderLiveEditView(container, liveId, showView) {
 
       filtered.forEach(ord => {
         const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR') : '-';
-        let itemsSummary = '상품 정보 없음';
-        if (Array.isArray(ord.items) && ord.items.length > 0) {
-          itemsSummary = ord.items.length > 1 ? `${ord.items[0].name} 외 ${ord.items.length - 1}건` : ord.items[0].name;
-        } else if (typeof ord.items === 'string') {
-          try {
-            const parsed = JSON.parse(ord.items);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              itemsSummary = parsed.length > 1 ? `${parsed[0].name} 외 ${parsed.length - 1}건` : parsed[0].name;
-            }
-          } catch(e) {
-            itemsSummary = ord.items;
-          }
-        }
-
+        const items = parseOrderItems(ord);
+        const itemsSummary = items.length > 1 ? `${items[0].name} 외 ${items.length - 1}건` : items[0].name;
         const price = Number(ord.total_amount) || 0;
         const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
         const statusText = isCancelled ? (ord.status_detail || '결제승인취소') : '결제완료';
@@ -3428,50 +3557,315 @@ function renderLiveEditView(container, liveId, showView) {
       container.innerHTML = html;
     };
 
-    const downloadCsv = () => {
-      const targetOrders = getPaidAndCancelledOrders();
-      if (targetOrders.length === 0) return;
-      let csv = '주문일시,대표상품명,결제금액,주문자이름,연락처,배송지주소,결제상태,결제요청번호\n';
-      targetOrders.forEach(ord => {
-        const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR').replace(/,/g, '') : '';
-        let itemsSummary = '';
-        if (Array.isArray(ord.items) && ord.items.length > 0) {
-          itemsSummary = ord.items.length > 1 ? `${ord.items[0].name} 외 ${ord.items.length - 1}건` : ord.items[0].name;
-        } else if (typeof ord.items === 'string') {
-          itemsSummary = ord.items;
-        }
-        itemsSummary = itemsSummary.replace(/,/g, ' ');
-        const amount = Number(ord.total_amount) || 0;
-        const name = (ord.customer_name || '').replace(/,/g, ' ');
-        const phone = (ord.customer_phone || '').replace(/,/g, ' ');
-        const addr = (ord.customer_address || '').replace(/,/g, ' ');
-        const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
-        const status = isCancelled ? (ord.status_detail || '결제취소') : '결제완료';
-        const receipt = ord.pg_receipt_id || '';
+    // ── 2. 제품별 모아보기 렌더링 ──
+    const renderProductsGroupedView = (groupedProducts) => {
+      const container = document.getElementById('orders-list-container');
+      const searchInput = document.getElementById('order-search-input');
+      const keyword = (searchInput ? searchInput.value : '').trim().toLowerCase();
 
-        csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${addr},${status},${receipt}\n`;
+      let filteredGroups = groupedProducts;
+
+      // 1. 드롭다운 필터 적용
+      if (selectedProductFilter && selectedProductFilter !== 'all') {
+        filteredGroups = filteredGroups.filter(g => g.name === selectedProductFilter);
+      }
+
+      // 2. 검색어 필터 적용 (제품명 or 주문자명 or 전화번호)
+      if (keyword) {
+        filteredGroups = filteredGroups.map(g => {
+          const nameMatch = g.name.toLowerCase().includes(keyword);
+          if (nameMatch) return g;
+          // 주문자 명단 검색
+          const matchedOrders = g.orders.filter(o =>
+            o.customerName.toLowerCase().includes(keyword) ||
+            o.customerPhone.includes(keyword) ||
+            o.customerAddress.toLowerCase().includes(keyword)
+          );
+          if (matchedOrders.length > 0) {
+            return { ...g, orders: matchedOrders };
+          }
+          return null;
+        }).filter(Boolean);
+      }
+
+      if (!container) return;
+
+      if (filteredGroups.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8; font-size:14px; background:#f8fafc; border-radius:12px;">선택한 조건의 제품별 주문 내역이 없습니다.</div>`;
+        return;
+      }
+
+      let html = `<div style="display:flex; flex-direction:column; gap:20px;">`;
+
+      filteredGroups.forEach((g, gIdx) => {
+        const imgTag = g.image
+          ? `<img src="${g.image}" alt="thumb" style="width:48px; height:48px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">`
+          : `<div style="width:48px; height:48px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:11px; flex-shrink:0; font-weight:700;">No Img</div>`;
+
+        html += `
+          <div style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+            <!-- 제품 요약 헤더 (아코디언 토글 & 단독 CSV 추출) -->
+            <div style="padding:16px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+              <div style="display:flex; align-items:center; gap:14px; min-width:0; flex:1;">
+                ${imgTag}
+                <div style="min-width:0;">
+                  <h3 style="margin:0 0 4px 0; font-size:15.5px; font-weight:800; color:#0f172a; word-break:break-all;">
+                    ${g.name}
+                  </h3>
+                  <div style="display:flex; align-items:center; gap:10px; font-size:12.5px; flex-wrap:wrap;">
+                    <span style="color:#2563eb; font-weight:800;">총 판매 수량: ${g.totalQty.toLocaleString()}개</span>
+                    <span style="color:#cbd5e1;">|</span>
+                    <span style="color:#0f172a; font-weight:700;">판매 총액: ${g.totalAmount.toLocaleString()}원</span>
+                    <span style="color:#cbd5e1;">|</span>
+                    <span style="color:#64748b;">주문 ${g.orders.length}건 ${g.cancelCount > 0 ? `(취소 ${g.cancelCount})` : ''}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" class="btn-export-single-product" data-product-idx="${gIdx}"
+                  style="padding:7px 14px; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#0f172a; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.15s; outline:none;"
+                  onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>이 제품 CSV 추출</span>
+                </button>
+                <button type="button" class="btn-toggle-product-orders" data-product-idx="${gIdx}"
+                  style="padding:7px 12px; background:#0f172a; color:#ffffff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; outline:none;">
+                  <span id="toggle-label-${gIdx}">주문자 명단 닫기</span>
+                  <span id="toggle-arrow-${gIdx}" style="font-size:10px;">▲</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 해당 제품을 구매한 주문자 명단 테이블 -->
+            <div id="product-orders-table-${gIdx}" style="display:block; overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12.5px; min-width:800px;">
+                <thead style="background:#ffffff; color:#64748b; border-bottom:1px solid #e2e8f0;">
+                  <tr>
+                    <th style="padding:10px 14px; font-weight:700; width:130px;">주문일시</th>
+                    <th style="padding:10px 14px; font-weight:700; width:80px; text-align:center;">주문수량</th>
+                    <th style="padding:10px 14px; font-weight:700; width:100px; text-align:right;">금액</th>
+                    <th style="padding:10px 14px; font-weight:700; width:90px;">주문자</th>
+                    <th style="padding:10px 14px; font-weight:700; width:120px;">연락처</th>
+                    <th style="padding:10px 14px; font-weight:700;">배송지 주소</th>
+                    <th style="padding:10px 14px; font-weight:700; width:80px; text-align:center;">상태</th>
+                    <th style="padding:10px 14px; font-weight:700; width:110px; text-align:center;">결제번호</th>
+                  </tr>
+                </thead>
+                <tbody>
+        `;
+
+        g.orders.forEach(ordRow => {
+          const dateStr = ordRow.createdAt ? new Date(ordRow.createdAt).toLocaleString('ko-KR') : '-';
+          const statusText = ordRow.isCancelled ? (ordRow.statusDetail || '결제승인취소') : '결제완료';
+
+          const statusBadge = ordRow.isCancelled
+            ? `<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#fef2f2; color:#dc2626; border:1px solid #fecaca;">${statusText}</span>`
+            : `<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">${statusText}</span>`;
+
+          const amountStyle = ordRow.isCancelled
+            ? 'padding:10px 14px; font-weight:700; color:#94a3b8; text-align:right; font-family:monospace; text-decoration:line-through;'
+            : 'padding:10px 14px; font-weight:800; color:#0f172a; text-align:right; font-family:monospace;';
+
+          html += `
+            <tr style="border-bottom:1px solid #f1f5f9; ${ordRow.isCancelled ? 'background:#fafafa;' : ''} transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='${ordRow.isCancelled ? '#fafafa' : 'transparent'}'">
+              <td style="padding:10px 14px; color:#64748b; white-space:nowrap; font-size:12px;">${dateStr}</td>
+              <td style="padding:10px 14px; text-align:center; font-weight:800; color:#2563eb;">${ordRow.quantity}개</td>
+              <td style="${amountStyle}">${ordRow.subTotal.toLocaleString()}원</td>
+              <td style="padding:10px 14px; font-weight:700; color:#0f172a;">${ordRow.customerName}</td>
+              <td style="padding:10px 14px; font-family:monospace; color:#3b82f6;">${ordRow.customerPhone}</td>
+              <td style="padding:10px 14px; color:#475569; max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ordRow.customerAddress}">${ordRow.customerAddress}</td>
+              <td style="padding:10px 14px; text-align:center;">${statusBadge}</td>
+              <td style="padding:10px 14px; font-family:monospace; font-size:11px; color:#64748b; text-align:center;">${ordRow.pgReceiptId}</td>
+            </tr>
+          `;
+        });
+
+        html += `
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
       });
 
+      html += `</div>`;
+      container.innerHTML = html;
+
+      // 아코디언 토글 이벤트 연결
+      container.querySelectorAll('.btn-toggle-product-orders').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = btn.getAttribute('data-product-idx');
+          const tableWrap = document.getElementById(`product-orders-table-${idx}`);
+          const label = document.getElementById(`toggle-label-${idx}`);
+          const arrow = document.getElementById(`toggle-arrow-${idx}`);
+          if (!tableWrap) return;
+
+          const isHidden = tableWrap.style.display === 'none';
+          tableWrap.style.display = isHidden ? 'block' : 'none';
+          if (label) label.textContent = isHidden ? '주문자 명단 닫기' : '주문자 명단 열기';
+          if (arrow) arrow.textContent = isHidden ? '▲' : '▼';
+        });
+      });
+
+      // 개별 제품 CSV 다운로드 버튼 이벤트 연결
+      container.querySelectorAll('.btn-export-single-product').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = Number(btn.getAttribute('data-product-idx'));
+          const group = filteredGroups[idx];
+          if (group) downloadSingleProductCsv(group);
+        });
+      });
+    };
+
+    // ── 단일 제품 주문자 명단 CSV 다운로드 ──
+    const downloadSingleProductCsv = (productGroup) => {
+      let csv = '제품명,주문수량,금액,주문일시,주문자명,연락처,배송지주소,결제상태,결제번호\n';
+      productGroup.orders.forEach(o => {
+        const dateStr = o.createdAt ? new Date(o.createdAt).toLocaleString('ko-KR').replace(/,/g, '') : '';
+        const pName = (productGroup.name || '').replace(/,/g, ' ');
+        const name = (o.customerName || '').replace(/,/g, ' ');
+        const phone = (o.customerPhone || '').replace(/,/g, ' ');
+        const addr = (o.customerAddress || '').replace(/,/g, ' ');
+        const status = o.isCancelled ? (o.statusDetail || '결제취소') : '결제완료';
+        const receipt = o.pgReceiptId || '';
+
+        csv += `${pName},${o.quantity},${o.subTotal},${dateStr},${name},${phone},${addr},${status},${receipt}\n`;
+      });
+
+      const safeName = productGroup.name.replace(/[/\\?%*:|"<>]/g, '_').slice(0, 20);
       const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `주문내역_${liveId}.csv`;
+      a.download = `제품주문_${safeName}_${liveId}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     };
 
+    // ── 통합 CSV 다운로드 (현재 보기 모드에 맞춰 최적화 추출) ──
+    const downloadCsv = () => {
+      const targetOrders = getPaidAndCancelledOrders();
+      if (targetOrders.length === 0) return;
+
+      if (currentViewMode === 'products') {
+        // 제품별 모아보기 모드일 때: 제품별 집계 및 전체 품목 상세 CSV 추출
+        const grouped = getGroupedProductsData(targetOrders);
+        let csv = '제품명,총판매수량,총판매금액,주문일시,개별주문수량,주문금액,주문자명,연락처,배송지주소,상태,결제번호\n';
+        grouped.forEach(g => {
+          const pName = g.name.replace(/,/g, ' ');
+          g.orders.forEach(o => {
+            const dateStr = o.createdAt ? new Date(o.createdAt).toLocaleString('ko-KR').replace(/,/g, '') : '';
+            const name = (o.customerName || '').replace(/,/g, ' ');
+            const phone = (o.customerPhone || '').replace(/,/g, ' ');
+            const addr = (o.customerAddress || '').replace(/,/g, ' ');
+            const status = o.isCancelled ? (o.statusDetail || '결제취소') : '결제완료';
+            const receipt = o.pgReceiptId || '';
+
+            csv += `${pName},${g.totalQty},${g.totalAmount},${dateStr},${o.quantity},${o.subTotal},${name},${phone},${addr},${status},${receipt}\n`;
+          });
+        });
+
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `제품별_주문집계_${liveId}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        // 전체 주문별 목록일 때: 주문 건별 상세 CSV 추출
+        let csv = '주문일시,주문상품목록,결제금액,주문자명,연락처,배송지주소,결제상태,결제번호\n';
+        targetOrders.forEach(ord => {
+          const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR').replace(/,/g, '') : '';
+          const items = parseOrderItems(ord);
+          const itemsSummary = items.map(i => `${i.name}(${i.quantity || 1}개)`).join(' + ').replace(/,/g, ' ');
+          const amount = Number(ord.total_amount) || 0;
+          const name = (ord.customer_name || '').replace(/,/g, ' ');
+          const phone = (ord.customer_phone || '').replace(/,/g, ' ');
+          const addr = (ord.customer_address || '').replace(/,/g, ' ');
+          const isCancelled = cancelStatuses.includes((ord.payment_status || '').toLowerCase());
+          const status = isCancelled ? (ord.status_detail || '결제취소') : '결제완료';
+          const receipt = ord.pg_receipt_id || '';
+
+          csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${addr},${status},${receipt}\n`;
+        });
+
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `전체주문내역_${liveId}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    };
+
+    // ── 이벤트 리스너 등록 ──
     loadOrders();
+
     document.getElementById('btn-refresh-orders').addEventListener('click', loadOrders);
     document.getElementById('btn-download-csv-orders').addEventListener('click', downloadCsv);
+
+    const btnViewOrders = document.getElementById('btn-view-mode-orders');
+    const btnViewProducts = document.getElementById('btn-view-mode-products');
+    const filterSelect = document.getElementById('product-filter-select');
     const searchInput = document.getElementById('order-search-input');
+
+    if (btnViewOrders && btnViewProducts) {
+      btnViewOrders.addEventListener('click', () => {
+        currentViewMode = 'orders';
+        btnViewOrders.style.background = '#ffffff';
+        btnViewOrders.style.color = '#0f172a';
+        btnViewOrders.style.fontWeight = '700';
+        btnViewOrders.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+        btnViewProducts.style.background = 'transparent';
+        btnViewProducts.style.color = '#64748b';
+        btnViewProducts.style.fontWeight = '600';
+        btnViewProducts.style.boxShadow = 'none';
+
+        renderActiveView();
+      });
+
+      btnViewProducts.addEventListener('click', () => {
+        currentViewMode = 'products';
+        btnViewProducts.style.background = '#ffffff';
+        btnViewProducts.style.color = '#0f172a';
+        btnViewProducts.style.fontWeight = '700';
+        btnViewProducts.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+        btnViewOrders.style.background = 'transparent';
+        btnViewOrders.style.color = '#64748b';
+        btnViewOrders.style.fontWeight = '600';
+        btnViewOrders.style.boxShadow = 'none';
+
+        renderActiveView();
+      });
+    }
+
+    if (filterSelect) {
+      filterSelect.addEventListener('change', (e) => {
+        selectedProductFilter = e.target.value;
+        renderActiveView();
+      });
+    }
+
     if (searchInput) {
-      searchInput.addEventListener('input', renderOrdersTable);
+      searchInput.addEventListener('input', renderActiveView);
     }
   };
-
   // ── 탭 전환 로직 ──────────────────────────────────────────
   const btnBack = layout.querySelector('#btn-back');
   if (btnBack) {
