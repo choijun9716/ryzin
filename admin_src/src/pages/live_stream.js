@@ -2105,25 +2105,35 @@ function renderLiveEditView(container, liveId, showView) {
           </div>
         </div>
         
-        <!-- 관리자 닉네임 / 컬러 설정 영역 -->
-        <div style="display:flex; gap:16px; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0; align-items:flex-end;">
-          <div style="flex:1;">
-            <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">관리자 닉네임</label>
-            <input type="text" id="admin-nickname-input" class="modern-input" value="${localStorage.getItem('ryzin_admin_nickname') || '관리자'}" placeholder="관리자 닉네임..." style="padding:8px 12px; font-size:13px; height:36px; box-sizing:border-box;">
-          </div>
-          <div style="width:110px;">
-            <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">닉네임 컬러</label>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <input type="color" id="admin-color-input" value="${localStorage.getItem('ryzin_admin_color') || '#ffca28'}" style="width:36px; height:36px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:0; background:none; box-sizing:border-box; flex-shrink:0;">
-              <span id="admin-color-code" style="font-size:11px; font-family:monospace; font-weight:700; color:#475569;">${localStorage.getItem('ryzin_admin_color') || '#ffca28'}</span>
+        <!-- 관리자 닉네임 / 컬러 및 고객 전송용 입금 계좌 설정 영역 -->
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0;">
+          <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;">
+            <div style="flex:1; min-width:180px;">
+              <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">관리자 닉네임</label>
+              <input type="text" id="admin-nickname-input" class="modern-input" value="${localStorage.getItem('ryzin_admin_nickname') || '관리자'}" placeholder="관리자 닉네임..." style="padding:8px 12px; font-size:13px; height:36px; box-sizing:border-box;">
+            </div>
+            <div style="width:110px;">
+              <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">닉네임 컬러</label>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="color" id="admin-color-input" value="${localStorage.getItem('ryzin_admin_color') || '#ffca28'}" style="width:36px; height:36px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:0; background:none; box-sizing:border-box; flex-shrink:0;">
+                <span id="admin-color-code" style="font-size:11px; font-family:monospace; font-weight:700; color:#475569;">${localStorage.getItem('ryzin_admin_color') || '#ffca28'}</span>
+              </div>
+            </div>
+            <div style="width:110px;">
+              <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">말풍선 배경색</label>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="color" id="admin-bg-color-input" value="${localStorage.getItem('ryzin_admin_bg_color') || '#e50914'}" style="width:36px; height:36px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:0; background:none; box-sizing:border-box; flex-shrink:0;">
+                <span id="admin-bg-color-code" style="font-size:11px; font-family:monospace; font-weight:700; color:#475569;">${localStorage.getItem('ryzin_admin_bg_color') || '#e50914'}</span>
+              </div>
             </div>
           </div>
-          <div style="width:110px;">
-            <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">말풍선 배경색</label>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <input type="color" id="admin-bg-color-input" value="${localStorage.getItem('ryzin_admin_bg_color') || '#e50914'}" style="width:36px; height:36px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; padding:0; background:none; box-sizing:border-box; flex-shrink:0;">
-              <span id="admin-bg-color-code" style="font-size:11px; font-family:monospace; font-weight:700; color:#475569;">${localStorage.getItem('ryzin_admin_bg_color') || '#e50914'}</span>
-            </div>
+          <!-- 고객 전송용 입금 계좌번호 -->
+          <div>
+            <label style="font-size:11px; font-weight:700; color:#64748b; display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span>고객 전송용 입금 계좌번호 (채팅창에서 고객 클릭 시 전송)</span>
+              <span style="font-weight:500; color:#94a3b8;">라이브 화면에 장바구니 주문서와 함께 알림</span>
+            </label>
+            <input type="text" id="admin-deposit-account-input" class="modern-input" value="${localStorage.getItem('ryzin_deposit_account') || '기업은행 010-3018-9716 (채이준)'}" placeholder="예: 기업은행 010-3018-9716 (채이준)" style="padding:8px 12px; font-size:13px; height:36px; box-sizing:border-box; width:100%;">
           </div>
         </div>
 
@@ -2388,6 +2398,12 @@ function renderLiveEditView(container, liveId, showView) {
       bgColorInput.addEventListener('input', () => {
         localStorage.setItem('ryzin_admin_bg_color', bgColorInput.value);
         if (bgColorCode) bgColorCode.textContent = bgColorInput.value;
+      });
+    }
+    const depositAccountInput = document.getElementById('admin-deposit-account-input');
+    if (depositAccountInput) {
+      depositAccountInput.addEventListener('input', () => {
+        localStorage.setItem('ryzin_deposit_account', depositAccountInput.value.trim());
       });
     }
 
@@ -2668,11 +2684,64 @@ function renderLiveEditView(container, liveId, showView) {
     let adminChatLoaded = false;
     let chatChannel = null;
 
+    // ── 고객 라이브 화면으로 주문서 및 입금 계좌 알림 전송 함수 ──
+    const sendDirectOrderRequestToCustomer = async (targetNick) => {
+      const accInput = document.getElementById('admin-deposit-account-input');
+      const depositAccount = (accInput ? accInput.value.trim() : '') || localStorage.getItem('ryzin_deposit_account') || '기업은행 010-3018-9716 (채이준)';
+
+      if (!confirm(`[${targetNick}] 고객님의 라이브 화면에\n담아놓은 장바구니 주문서와 입금 계좌를 띄우시겠습니까?\n\n입금 계좌: ${depositAccount}`)) {
+        return;
+      }
+
+      const payload = {
+        type: 'direct_order_request',
+        targetNickname: targetNick,
+        depositAccount: depositAccount,
+        adminName: (document.getElementById('admin-nickname-input')?.value || '관리자').trim(),
+        timestamp: Date.now()
+      };
+
+      try {
+        // 1. live_chats 테이블에 시스템 전송 메시지 저장 (실시간 감지 트리거)
+        if (db) {
+          await db.from('live_chats').insert([{
+            live_id: liveId,
+            created_at: Date.now(),
+            nickname: 'SYSTEM_DIRECT_ORDER_REQUEST',
+            content: JSON.stringify(payload)
+          }]);
+        }
+
+        // 2. Realtime Broadcast도 병행 송신
+        if (chatChannel) {
+          chatChannel.send({
+            type: 'broadcast',
+            event: 'direct_order_request',
+            payload: payload
+          });
+        }
+
+        // 3. 관리자 채팅창에 안내 메시지 표기
+        const infoDiv = document.createElement('div');
+        infoDiv.style.cssText = 'margin:6px 0; padding:6px 12px; background:#eff6ff; border-radius:6px; font-size:12px; color:#1d4ed8; font-weight:600; text-align:center; border:1px solid #bfdbfe;';
+        infoDiv.textContent = `[${targetNick}] 고객님 라이브 화면에 주문서 & 입금 계좌 알림을 전송했습니다.`;
+        chatList.appendChild(infoDiv);
+        chatList.scrollTop = chatList.scrollHeight;
+
+        alert(`[${targetNick}] 고객님의 라이브 화면으로 주문서 및 입금 계좌 알림을 성공적으로 전송했습니다!`);
+      } catch (err) {
+        alert('전송 중 오류가 발생했습니다: ' + err.message);
+      }
+    };
+
     const addAdminChatItem = (name, text, isHistory = false) => {
+      // 시스템 주문서 요청 메시지는 일반 채팅 목록에 노출하지 않음
+      if (name === 'SYSTEM_DIRECT_ORDER_REQUEST') return;
+
       if (chatList.innerHTML.includes('실시간 채팅 내역이 여기에')) chatList.innerHTML = '';
       const div = document.createElement('div');
       div.style.cssText = 'margin-bottom:8px; padding:6px 0; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;' + (isHistory ? 'opacity:0.72;' : '');
-      const nameColor = name === '관리자' || name.includes('|') ? '#3b82f6' : '#64748b';
+      const nameColor = name === '관리자' || name.includes('|') ? '#3b82f6' : '#0f172a';
       
       let cleanName = name;
       let isAdmin = false;
@@ -2683,23 +2752,48 @@ function renderLiveEditView(container, liveId, showView) {
         isAdmin = true;
       }
 
-      const banBtnHtml = (!isAdmin && cleanName !== '?') 
-        ? `<button class="btn-ban-user" data-nickname="${cleanName}" style="background:#ef4444; color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer; margin-left:8px; line-height:1.4; flex-shrink:0;">차단</button>` 
-        : '';
+      const isCustomer = (!isAdmin && cleanName !== '?' && cleanName !== 'SYSTEM');
+
+      const actionBtnsHtml = isCustomer ? `
+        <div style="display:inline-flex; align-items:center; gap:4px; margin-left:8px; flex-shrink:0;">
+          <button class="btn-send-order-alert" data-nickname="${cleanName}" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; border-radius:5px; padding:3px 8px; font-size:11px; font-weight:700; cursor:pointer; line-height:1.4; transition:all 0.12s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" title="클릭 시 [${cleanName}] 고객 화면에 주문서 & 계좌 팝업 알럿 전송">
+            주문서&계좌 전송
+          </button>
+          <button class="btn-ban-user" data-nickname="${cleanName}" style="background:#fff5f5; color:#ef4444; border:1px solid #fee2e2; border-radius:5px; padding:3px 6px; font-size:11px; font-weight:600; cursor:pointer; line-height:1.4;">
+            차단
+          </button>
+        </div>
+      ` : '';
 
       div.innerHTML = `
-        <div style="flex:1; min-width:0; word-break:break-all; font-size:13px;">
-          <span style="font-weight:700; color:${nameColor};">${cleanName}:</span> ${text}
+        <div style="flex:1; min-width:0; word-break:break-all; font-size:13px; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px;">
+          ${isCustomer ? `
+            <button type="button" class="btn-customer-name-click" data-nickname="${cleanName}" style="background:none; border:none; padding:0; font-weight:700; color:#0f172a; cursor:pointer; text-decoration:underline; text-decoration-color:#cbd5e1; text-underline-offset:2px; font-size:13px; transition:color 0.12s;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#0f172a'" title="클릭 시 [${cleanName}] 고객 화면에 주문서 & 계좌 팝업 알럿 전송">
+              ${cleanName}
+            </button>:
+          ` : `
+            <span style="font-weight:700; color:${nameColor};">${cleanName}:</span>
+          `}
+          <span style="color:#1e293b;">${text}</span>
         </div>
-        ${banBtnHtml}
+        ${actionBtnsHtml}
       `;
+
+      // 고객 닉네임 클릭 및 전송 버튼 이벤트 바인딩
+      div.querySelectorAll('.btn-customer-name-click, .btn-send-order-alert').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetNick = btn.dataset.nickname;
+          if (targetNick) sendDirectOrderRequestToCustomer(targetNick);
+        });
+      });
 
       const banBtn = div.querySelector('.btn-ban-user');
       if (banBtn) {
         banBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           const targetNick = banBtn.dataset.nickname;
-          if (confirm(`📡 [${targetNick}] 시청자를 차단하시겠습니까?\n차단 이후에는 이 시청자의 채팅 전송이 제한됩니다.`)) {
+          if (confirm(`[${targetNick}] 시청자를 차단하시겠습니까?\n차단 이후에는 이 시청자의 채팅 전송이 제한됩니다.`)) {
             let bans = config.bannedUsers ? config.bannedUsers.split(',').map(u => u.trim()).filter(u => u) : [];
             if (!bans.includes(targetNick)) {
               bans.push(targetNick);

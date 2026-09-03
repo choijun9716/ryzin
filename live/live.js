@@ -581,6 +581,164 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ── [고객 맞춤형] 장바구니 주문서 & 입금 계좌 안내 모달 팝업 ──
+  function handleDirectOrderNotification(req) {
+    if (!req || !req.targetNickname) return;
+
+    // 현재 사용자의 닉네임 확인
+    const currentNick = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+    let kakaoUser = null;
+    try { kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    const kakaoNick = (kakaoUser?.properties?.nickname || kakaoUser?.nickname || '').trim();
+
+    const targetNick = req.targetNickname.trim();
+    const isTarget = (currentNick && targetNick === currentNick) || (kakaoNick && targetNick === kakaoNick);
+
+    if (!isTarget) return; // 타겟 고객이 아니면 실행하지 않음
+
+    // 최신 장바구니 품목 불러오기
+    let currentCart = [];
+    if (typeof loadCartFromStorage === 'function') {
+      currentCart = loadCartFromStorage();
+    } else {
+      try {
+        currentCart = JSON.parse(localStorage.getItem('ryzin_live_cart_items') || '[]');
+      } catch(e) {}
+    }
+
+    const depositAccount = req.depositAccount || '기업은행 010-3018-9716 (채이준)';
+    const adminName = req.adminName || '관리자';
+
+    // 기존 모달 제거 후 새로 렌더링
+    document.getElementById('direct-order-notice-modal')?.remove();
+
+    // 총 결제 금액 계산
+    const totalPrice = currentCart.reduce((sum, it) => sum + (parseInt(it.price) || 0) * (it.quantity || 1), 0);
+
+    const itemsHtml = currentCart.length > 0 ? currentCart.map(it => {
+      const pPrice = parseInt(it.price) || 0;
+      const qty = it.quantity || 1;
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid #f1f5f9; font-size:13px;">
+          <div style="flex:1; min-width:0; padding-right:12px;">
+            <div style="font-weight:600; color:#0f172a; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${it.name || '상품'}</div>
+            <div style="font-size:11.5px; color:#64748b; margin-top:2px;">수량: ${qty}개 (${pPrice.toLocaleString()}원)</div>
+          </div>
+          <div style="font-weight:700; color:#0f172a; font-variant-numeric:tabular-nums; flex-shrink:0;">
+            ${(pPrice * qty).toLocaleString()}원
+          </div>
+        </div>
+      `;
+    }).join('') : `
+      <div style="text-align:center; padding:24px 10px; color:#94a3b8; font-size:13px;">
+        현재 장바구니에 담긴 상품이 없습니다. 라이브 방송 상품을 담아주세요.
+      </div>
+    `;
+
+    const modalEl = document.createElement('div');
+    modalEl.id = 'direct-order-notice-modal';
+    modalEl.style.cssText = 'position:fixed; inset:0; background:rgba(15,23,42,0.72); z-index:100000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); padding:16px; box-sizing:border-box; animation:orderModalIn 0.2s ease-out;';
+
+    modalEl.innerHTML = `
+      <div style="background:#ffffff; border-radius:16px; width:440px; max-width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; border:1px solid #e2e8f0; display:flex; flex-direction:column;">
+        <!-- 헤더 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #f1f5f9; background:#ffffff;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h4 style="margin:0; font-size:15px; font-weight:700; color:#0f172a;">주문서 확인 및 계좌 입금 안내</h4>
+            <span style="display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:5px; font-size:11.5px; font-weight:600; background:#fffbeb; color:#b45309;">
+              <span style="width:5px; height:5px; border-radius:50%; background:#f59e0b;"></span>결제대기
+            </span>
+          </div>
+          <button type="button" id="btn-close-direct-order" style="background:none; border:none; color:#94a3b8; font-size:20px; line-height:1; cursor:pointer; padding:4px;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
+        </div>
+
+        <!-- 바디 -->
+        <div style="padding:20px; max-height:75vh; overflow-y:auto;">
+          <!-- 1. 안내 배너 -->
+          <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+            <div style="font-size:12.5px; color:#1e40af; font-weight:600; line-height:1.5;">
+              ${adminName}님이 [${targetNick}] 고객님의 장바구니 주문서와 입금 계좌를 확인하도록 요청했습니다.
+            </div>
+          </div>
+
+          <!-- 2. 장바구니 주문서 요약 -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;">
+              <span style="font-size:12px; font-weight:700; color:#475569;">장바구니 주문 상품</span>
+              <span style="font-size:12px; color:#64748b;">총 ${currentCart.length}개 품목</span>
+            </div>
+            <div style="max-height:180px; overflow-y:auto; margin-bottom:12px;">
+              ${itemsHtml}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1.5px solid #e2e8f0;">
+              <span style="font-size:13px; font-weight:700; color:#334155;">총 결제 예정 금액</span>
+              <span style="font-size:16px; font-weight:800; color:#0f172a; font-variant-numeric:tabular-nums;">${totalPrice.toLocaleString()}원</span>
+            </div>
+          </div>
+
+          <!-- 3. 입금 계좌번호 카드 -->
+          <div style="background:#ffffff; border:1.5px solid #cbd5e1; border-radius:10px; padding:16px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:8px;">입금 계좌 안내</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:8px;">
+              <span id="direct-order-bank-text" style="font-size:13.5px; font-weight:700; color:#0f172a; font-variant-numeric:tabular-nums; word-break:break-all;">
+                ${depositAccount}
+              </span>
+              <button type="button" id="btn-copy-deposit-bank" style="flex-shrink:0; margin-left:8px; padding:5px 10px; font-size:11.5px; font-weight:700; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; color:#2563eb; cursor:pointer; transition:all 0.12s;">
+                계좌 복사
+              </button>
+            </div>
+            <div style="font-size:11.5px; color:#64748b; line-height:1.5;">
+              정확한 주문 확인을 위해 입금 시 입금자명을 <b>[${targetNick}]</b> 으로 입력해 주세요.
+            </div>
+          </div>
+        </div>
+
+        <!-- 푸터 -->
+        <div style="display:flex; justify-content:flex-end; gap:8px; padding:14px 20px; background:#f8fafc; border-top:1px solid #e2e8f0;">
+          <button type="button" id="btn-cancel-direct-order" style="padding:8px 16px; font-size:12.5px; font-weight:600; border:1px solid #cbd5e1; background:#ffffff; color:#64748b; border-radius:7px; cursor:pointer;">닫기</button>
+          <button type="button" id="btn-notify-deposit-done" style="padding:8px 18px; font-size:12.5px; font-weight:700; border:none; background:#0f172a; color:#ffffff; border-radius:7px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1);">입금 완료 알림</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modalEl);
+
+    // 닫기 이벤트
+    const closeModal = () => modalEl.remove();
+    modalEl.querySelector('#btn-close-direct-order')?.addEventListener('click', closeModal);
+    modalEl.querySelector('#btn-cancel-direct-order')?.addEventListener('click', closeModal);
+    modalEl.addEventListener('click', (e) => {
+      if (e.target === modalEl) closeModal();
+    });
+
+    // 계좌 복사 버튼
+    modalEl.querySelector('#btn-copy-deposit-bank')?.addEventListener('click', () => {
+      const text = depositAccount;
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = modalEl.querySelector('#btn-copy-deposit-bank');
+        if (copyBtn) {
+          copyBtn.textContent = '복사완료';
+          copyBtn.style.color = '#059669';
+          copyBtn.style.borderColor = '#059669';
+          setTimeout(() => {
+            copyBtn.textContent = '계좌 복사';
+            copyBtn.style.color = '#2563eb';
+            copyBtn.style.borderColor = '#cbd5e1';
+          }, 1500);
+        }
+      });
+    });
+
+    // 입금 완료 알림 전송 버튼
+    modalEl.querySelector('#btn-notify-deposit-done')?.addEventListener('click', async () => {
+      if (typeof sendMessage === 'function') {
+        sendMessage(`[입금 완료] ${targetNick} 입금 완료했습니다! (주문금액: ${totalPrice.toLocaleString()}원)`);
+      }
+      alert('관리자에게 입금 완료 알림이 전송되었습니다.');
+      closeModal();
+    });
+  }
+
   // 4. 실시간 채팅 감지 설정 (구독)
   function subscribeChat() {
     if (!db) return;
@@ -588,6 +746,15 @@ document.addEventListener('DOMContentLoaded', () => {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_chats', filter: `live_id=eq.${LIVE_ID}` }, payload => {
         const c = payload.new;
         if (!c) return;
+
+        // 시스템 직송 주문서 & 입금 계좌 알림 처리
+        if (c.nickname === 'SYSTEM_DIRECT_ORDER_REQUEST') {
+          try {
+            const req = JSON.parse(c.content);
+            handleDirectOrderNotification(req);
+          } catch(e) {}
+          return;
+        }
 
         const blockedList = JSON.parse(localStorage.getItem(`ryzin_blocked_${LIVE_ID}`) || '[]');
         const adminList = JSON.parse(localStorage.getItem(`ryzin_admins_${LIVE_ID}`) || '["관리자"]');
@@ -609,6 +776,9 @@ document.addEventListener('DOMContentLoaded', () => {
           addMessage(nick, c.content, isAdmin, false);
         }
         lastChatTime = parseInt(c.created_at) || 0;
+      })
+      .on('broadcast', { event: 'direct_order_request' }, ({ payload }) => {
+        if (payload) handleDirectOrderNotification(payload);
       })
       .subscribe();
   }
