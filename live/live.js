@@ -655,14 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <!-- 바디 -->
         <div style="padding:20px; max-height:75vh; overflow-y:auto;">
-          <!-- 1. 안내 배너 -->
-          <div style="background:#eff6ff; border:1px solid #dbeafe; border-radius:10px; padding:12px 14px; margin-bottom:16px;">
-            <div style="font-size:12.5px; color:#1e40af; font-weight:600; line-height:1.5;">
-              ${adminName}님이 ${targetNick} 고객님의 장바구니 주문서와 입금 계좌를 확인하도록 요청했습니다.
-            </div>
-          </div>
-
-          <!-- 2. 장바구니 주문서 요약 -->
+          <!-- 1. 장바구니 주문서 요약 -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #e2e8f0;">
               <span style="font-size:12px; font-weight:700; color:#475569;">장바구니 주문 상품</span>
