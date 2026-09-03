@@ -516,11 +516,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const thumbImg = document.getElementById('thumbnail-img');
         const startText = document.getElementById('live-start-text');
 
-        if (c.thumbnailUrl && thumbImg) {
-          thumbImg.src = c.thumbnailUrl;
-          thumbImg.style.display = 'block';
-        } else if (thumbImg) {
-          thumbImg.style.display = 'none';
+        if (!c.isLive) {
+          // [방송 대기/종료 상태] 썸네일 오버레이 활성화
+          if (overlay) {
+            overlay.style.display = 'flex';
+            overlay.classList.remove('hidden');
+          }
+          if (thumbImg) {
+            if (c.thumbnailUrl && c.thumbnailUrl.trim()) {
+              thumbImg.src = c.thumbnailUrl.trim();
+              thumbImg.style.display = 'block';
+            } else {
+              thumbImg.style.display = 'none';
+            }
+          }
+        } else {
+          // [방송 진행 중] 썸네일 오버레이 숨김
+          if (overlay) {
+            overlay.style.display = 'none';
+            overlay.classList.add('hidden');
+          }
         }
 
         // [NEW] 라이브 위젯 UI 업데이트 (위치, 이미지, 문구)
@@ -588,11 +603,18 @@ document.addEventListener('DOMContentLoaded', () => {
           clearInterval(window.liveCountdownInterval);
         }
 
-        if (c.liveStartTime && startText) {
-          const targetTime = new Date(c.liveStartTime).getTime();
+        if (c.liveStartTime && startText && !c.isLive) {
+          let rawStart = String(c.liveStartTime).trim();
+          if (rawStart.length === 16 && !rawStart.includes('Z') && !rawStart.includes('+')) {
+            rawStart += ':00';
+          }
+          let targetTime = new Date(rawStart).getTime();
+          if (isNaN(targetTime)) {
+            targetTime = new Date(rawStart.replace('T', ' ')).getTime();
+          }
 
           const updateCountdown = () => {
-            const now = new Date().getTime();
+            const now = Date.now();
             const diff = targetTime - now;
 
             if (diff <= 0) {
@@ -607,14 +629,15 @@ document.addEventListener('DOMContentLoaded', () => {
               let countStr = '라이브 시작까지\n';
               if (days > 0) countStr += `${days}일 `;
               countStr += `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
               startText.innerText = countStr;
             }
           };
 
-          if (!isNaN(targetTime)) {
+          if (!isNaN(targetTime) && targetTime > Date.now()) {
             updateCountdown();
             window.liveCountdownInterval = setInterval(updateCountdown, 1000);
+          } else if (!isNaN(targetTime) && targetTime <= Date.now()) {
+            startText.textContent = '곧 라이브가 시작됩니다!';
           } else {
             startText.textContent = c.liveStartTime;
           }
