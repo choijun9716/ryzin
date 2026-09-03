@@ -3,7 +3,7 @@ import { router } from '../router.js';
 import { store } from '../data/store.js';
 import { ROLES } from '../data/models.js';
 import { getAccessibleMenus } from '../utils/permissions.js';
-import ryzinLogo from '../assets/Ryzin.png';
+import ryzinLogo from '../assets/ryzin_studio_white.png';
 
 // SVG 아이콘
 const icons = {
@@ -54,7 +54,7 @@ export function renderSidebar() {
   sidebar.innerHTML = `
     <div class="sidebar-header" style="padding: var(--space-4) var(--space-4); margin-bottom: var(--space-2);">
       <div id="sidebar-logo-container" style="display: flex; align-items: center; justify-content: flex-start; width: 100%; cursor: pointer;">
-        <img src="${ryzinLogo}" alt="Ryzin Logo" style="height: 32px; object-fit: contain; margin-bottom: 4px;" />
+        <img src="${ryzinLogo}" alt="Ryzin Logo" style="height: 36px; max-width: 140px; object-fit: contain; margin-bottom: 2px;" />
       </div>
     </div>
     <nav class="sidebar-nav">

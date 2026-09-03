@@ -1,7 +1,7 @@
 import { store } from '../data/store.js';
 import { router } from '../router.js';
 import { showSuccess, showError } from '../components/toast.js';
-import ryzinLogo from '../assets/Ryzin.png';
+import ryzinLogo from '../assets/ryzin_studio_black.png';
 import * as OTPAuth from 'otpauth';
 import QRCode from 'qrcode';
 
