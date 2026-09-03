@@ -1051,238 +1051,266 @@ Minimum version required to store current data is: `+c+`.
               <td style="padding:10px; font-family:monospace; color:#3b82f6;">${e.phone}</td>
             </tr>
           `}),o+=`</tbody></table>`,i.innerHTML=o}catch(e){console.warn(`Failed to load leads`,e);let t=document.getElementById(`leads-list-container`);t&&(t.innerHTML=`<div style="text-align:center; padding:20px; color:#ef4444; font-size:13px;">데이터를 불러오는 데 실패했습니다. (테이블 생성 여부를 확인하세요)</div>`)}};n(),document.getElementById(`btn-refresh-leads`).addEventListener(`click`,n),document.getElementById(`btn-download-csv-leads`).addEventListener(`click`,()=>{if(e.length===0)return;let n=`접수일시,이름,전화번호
-`;e.forEach(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`).replace(/,/g,``),r=(e.name||``).replace(/,/g,` `),i=(e.phone||``).replace(/,/g,` `);n+=`${t},${r},${i}\n`});let r=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),i=URL.createObjectURL(r),a=document.createElement(`a`);a.href=i,a.download=`상담DB_${t}.csv`,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(i)})},ve=(e=`orders`)=>{let n=e,r=[],i=`qty`,a=`all`,o=``,s=null;A.innerHTML=`
-      <div class="section-card" style="margin-bottom:20px; padding:20px 22px;">
-        <!-- 1. 상단 미니멀 헤더 & 3분할 세그먼트 네비게이션 -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; border-bottom:1px solid #f1f5f9; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
-          <!-- 좌측: 타이틀 & 상태 뱃지 -->
-          <div style="display:flex; align-items:center; gap:8px;">
-            <h2 style="font-size:15.5px; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.01em;">
-              주문 통계
-            </h2>
-            <span id="orders-status-badge" style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; background:#f1f5f9; color:#64748b;">
-              집계 중
-            </span>
-          </div>
-
-          <!-- 중앙: 미니멀 캡슐형 세그먼트 서브 탭 -->
-          <div style="display:flex; background:#f1f5f9; padding:3px; border-radius:9px; gap:2px;">
-            <button id="subtab-btn-orders" type="button" class="subtab-item" data-subtab="orders"
-              style="padding:6px 14px; font-size:12.5px; font-weight:700; border-radius:7px; border:none; background:#ffffff; color:#0f172a; box-shadow:0 1px 2px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.15s;">
-              주문 내역
-            </button>
-            <button id="subtab-btn-ranking" type="button" class="subtab-item" data-subtab="ranking"
-              style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:7px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
-              판매 랭킹
-            </button>
-            <button id="subtab-btn-timeline" type="button" class="subtab-item" data-subtab="timeline"
-              style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:7px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
-              시청자 추이 (1분)
-            </button>
-          </div>
-
-          <!-- 우측: 액션 버튼 그룹 (CSV 추출 & 새로고침) -->
-          <div style="display:flex; gap:8px; align-items:center;">
-            <button id="btn-export-csv" class="action-btn btn-primary-solid" style="padding:7px 14px; font-size:12.5px; display:flex; align-items:center; gap:5px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span id="btn-export-csv-text">CSV 추출</span>
-            </button>
-            <button id="btn-refresh-unified" class="action-btn btn-neutral" style="padding:7px 12px; font-size:12.5px;">새로고침</button>
-          </div>
-        </div>
-
-        <!-- 2. 슬림 미니멀 KPI 핵심 지표 행 (4개 카드) -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:20px;">
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">총 결제 금액</div>
-            <div id="kpi-total-sales" style="font-size:19px; font-weight:800; color:#0f172a; font-family:monospace, -apple-system;">0원</div>
-            <div id="kpi-orders-count" style="font-size:11px; color:#64748b; margin-top:2px;">0건 결제 완료</div>
-          </div>
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">총 판매 수량</div>
-            <div id="kpi-total-qty" style="font-size:19px; font-weight:800; color:#0f172a; font-family:monospace, -apple-system;">0개</div>
-            <div id="kpi-product-types" style="font-size:11px; color:#64748b; margin-top:2px;">0종 품목</div>
-          </div>
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">최고 시청자 (Peak)</div>
-            <div id="kpi-peak-viewers" style="font-size:19px; font-weight:800; color:#ef4444; font-family:monospace, -apple-system;">0명</div>
-            <div id="kpi-peak-time" style="font-size:11px; color:#64748b; margin-top:2px;">기록 없음</div>
-          </div>
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">평균 시청자</div>
-            <div id="kpi-avg-viewers" style="font-size:19px; font-weight:800; color:#2563eb; font-family:monospace, -apple-system;">0명</div>
-            <div id="kpi-cum-viewers" style="font-size:11px; color:#64748b; margin-top:2px;">누적 0명</div>
-          </div>
-        </div>
-
-        <!-- 3. 서브 탭 뷰 동적 컨테이너 -->
-        <div id="subtab-dynamic-container">
-          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 20px;">
-            <div style="width:30px; height:30px; border:3px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
-            <div style="font-size:13px; font-weight:600; color:#475569;">주문 및 통계 데이터를 불러오는 중입니다...</div>
-          </div>
-          <style>@keyframes ordersSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-        </div>
-
+`;e.forEach(e=>{let t=new Date(e.created_at).toLocaleString(`ko-KR`).replace(/,/g,``),r=(e.name||``).replace(/,/g,` `),i=(e.phone||``).replace(/,/g,` `);n+=`${t},${r},${i}\n`});let r=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),i=URL.createObjectURL(r),a=document.createElement(`a`);a.href=i,a.download=`상담DB_${t}.csv`,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(i)})},ve=(e=`orders`)=>{let n=[],r=`qty`,i=`all`,a=``,o=null;A.innerHTML=`
+      <!-- 서브 탭 네비게이션 (채팅관리 탭 표준 디자인) -->
+      <div style="display:flex; gap:8px; margin-bottom:16px; background:#f1f5f9; padding:4px; border-radius:10px;">
+        <button class="order-sub-tab-btn active" data-subtab="orders" style="flex:1; padding:8px 0; font-size:13px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">주문 관리</button>
+        <button class="order-sub-tab-btn" data-subtab="ranking" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">판매 순위 랭킹</button>
+        <button class="order-sub-tab-btn" data-subtab="timeline" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">1분 단위 시청자 통계</button>
       </div>
-    `;let c=e=>{let t=[];if(Array.isArray(e.items)&&e.items.length>0)t=e.items;else if(typeof e.items==`string`)try{let n=JSON.parse(e.items);Array.isArray(n)&&(t=n)}catch{t=[{name:e.items,price:e.total_amount||0,quantity:1}]}return t.length===0&&(t=[{name:e.goodname||e.item_name||`라이브 상품`,price:e.total_amount||0,quantity:1}]),t},d=[`cancelled`,`canceled`,`payapp_cancelled`,`refunded`,`cancel`],f=async()=>{let e=document.getElementById(`orders-status-badge`);e&&(l.isLive?(e.textContent=`실시간 방송 중`,e.style.background=`#fef2f2`,e.style.color=`#ef4444`):(e.textContent=`방송 대기 / 종료`,e.style.background=`#f1f5f9`,e.style.color=`#64748b`));try{let e=[];if(X){try{let{data:n,error:r}=await X.from(`live_orders`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});Array.isArray(n)&&!r&&n.forEach(t=>{e.push({id:t.id,live_id:t.live_id,customer_name:t.customer_name||t.buyer_name||t.name||``,customer_phone:t.customer_phone||t.buyer_phone||t.phone||``,customer_address:t.customer_address||t.shipping_address||t.address||``,total_amount:Number(t.total_amount)||0,items:t.items,payment_status:(t.payment_status||`payapp_requested`).toLowerCase(),pg_provider:t.pg_provider||`payapp`,pg_receipt_id:t.pg_receipt_id||t.receipt_id||``,created_at:t.created_at})})}catch{}try{let{data:n,error:r}=await X.from(`live_winners`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});Array.isArray(n)&&!r&&n.forEach(t=>{if(t.nickname&&(t.nickname.startsWith(`{"type":"order"`)||t.nickname.startsWith(`{"type": "order"`)))try{let n=JSON.parse(t.nickname);e.push({id:t.id,live_id:t.live_id,customer_name:t.name||``,customer_phone:t.phone||``,customer_address:t.address||``,total_amount:Number(n.total)||0,items:n.items||[{name:n.goodname||`상품`,price:Number(n.total)||0}],payment_status:(n.status||`payapp_requested`).toLowerCase(),pg_provider:n.pg_provider||`payapp`,pg_receipt_id:String(n.mul_no||``),created_at:t.created_at})}catch{}})}catch{}}try{let n=JSON.parse(localStorage.getItem(`ryzin_live_orders_${t}`)||`[]`);Array.isArray(n)&&n.forEach(n=>{e.push({id:n.id,live_id:n.live_id||t,customer_name:n.customer_name||n.buyer_name||n.name||``,customer_phone:n.customer_phone||n.buyer_phone||n.phone||``,customer_address:n.customer_address||n.shipping_address||n.address||``,total_amount:Number(n.total_amount)||0,items:n.items,payment_status:(n.payment_status||`payapp_requested`).toLowerCase(),pg_provider:n.pg_provider||`payapp`,pg_receipt_id:n.pg_receipt_id||n.receipt_id||``,created_at:n.created_at})})}catch{}let n=new Map;e.forEach(e=>{let t=(e.pg_receipt_id&&e.pg_receipt_id!==`undefined`&&e.pg_receipt_id!==`-`?e.pg_receipt_id:null)||e.id||`${e.created_at}_${e.customer_phone}`,r=n.get(t);r?e.payment_status===`paid`&&r.payment_status!==`paid`&&n.set(t,e):n.set(t,e)}),r=Array.from(n.values()).sort((e,t)=>new Date(t.created_at||0)-new Date(e.created_at||0));let i=r.map(e=>e.pg_receipt_id).filter(e=>e&&e!==`undefined`&&e!==`-`);if(i.length>0)try{let e=await fetch(`/api/payapp`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({cmd:`check_orders`,mul_nos:i})});if(e.ok){let n=await e.json();if(n.success&&n.results){let e=!1;if(r.forEach(t=>{let r=n.results[t.pg_receipt_id];r&&r.status&&r.status!==`unknown`&&t.payment_status!==r.status&&(t.payment_status=r.status,e=!0)}),e)try{localStorage.setItem(`ryzin_live_orders_${t}`,JSON.stringify(r))}catch{}}}}catch(e){console.warn(`PayApp status check failed:`,e)}}catch(e){console.warn(`Order loading error:`,e),r=[]}p(),m()},p=()=>{let e=r.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),n=r.filter(e=>(e.payment_status||``).toLowerCase()===`payapp_requested`),i=r.filter(e=>d.includes((e.payment_status||``).toLowerCase())),a=0,o=0,s=new Set;e.forEach(e=>{let t=c(e);t.forEach(n=>{let r=parseInt(n.quantity||n.qty||1)||1,i=parseInt(n.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,t.length));a+=i*r,o+=r;let c=(n.name||n.goodname||``).trim();c&&s.add(c)})});let l=en(t),f=0,p=`기록 없음`,m=0;l.forEach(e=>{let t=parseInt(e.viewers)||0;m+=t,t>=f&&(f=t,p=`방송 ${e.minute}분 후`)});let h=l.length>0?Math.round(m/l.length):(u.viewers||0)+(u.cumViewers||0),g=document.getElementById(`kpi-total-sales`),_=document.getElementById(`kpi-orders-count`),v=document.getElementById(`kpi-total-qty`),y=document.getElementById(`kpi-product-types`),b=document.getElementById(`kpi-peak-viewers`),x=document.getElementById(`kpi-peak-time`),S=document.getElementById(`kpi-avg-viewers`),C=document.getElementById(`kpi-cum-viewers`);g&&(g.textContent=`${a.toLocaleString()}원`),_&&(e.length===0&&n.length>0?_.innerHTML=`결제 0건 <span style="font-size:11px; color:#f59e0b; font-weight:600;">(대기 ${n.length}건)</span>`:_.textContent=`결제완료 ${e.length}건${i.length>0?` (취소 ${i.length})`:``}`),v&&(v.textContent=`${o.toLocaleString()}개`),y&&(y.textContent=`${s.size}종 품목`),b&&(b.textContent=`${f.toLocaleString()}명`),x&&(x.textContent=p),S&&(S.textContent=`${h.toLocaleString()}명`),C&&(C.textContent=`누적 ${(u.cumViewers||0).toLocaleString()}명`)},m=()=>{let e=document.getElementById(`subtab-dynamic-container`);if(!e)return;document.querySelectorAll(`.subtab-item`).forEach(e=>{let t=e.dataset.subtab===n;e.style.background=t?`#ffffff`:`transparent`,e.style.color=t?`#0f172a`:`#64748b`,e.style.fontWeight=t?`700`:`600`,e.style.boxShadow=t?`0 1px 2px rgba(0,0,0,0.06)`:`none`});let t=document.getElementById(`btn-export-csv-text`);t&&(n===`orders`?t.textContent=`주문내역 CSV`:n===`ranking`?t.textContent=`판매순위 CSV`:t.textContent=`시청자로그 CSV`),n===`orders`?h(e):n===`ranking`?g(e):n===`timeline`&&_(e)},h=e=>{let t=new Set;r.forEach(e=>{c(e).forEach(e=>{let n=(e.name||e.goodname||``).trim();n&&t.add(n)})});let n=r;if(a!==`all`&&(n=n.filter(e=>c(e).some(e=>(e.name||e.goodname||``).trim()===a))),o.trim()){let e=o.trim().toLowerCase();n=n.filter(t=>{let n=(t.customer_name||t.buyer_name||``).toLowerCase(),r=(t.customer_phone||t.buyer_phone||``).toLowerCase(),i=JSON.stringify(t.items||``).toLowerCase();return n.includes(e)||r.includes(e)||i.includes(e)})}let i=`<option value="all">전체 제품 보기</option>`;t.forEach(e=>{i+=`<option value="${e}" ${a===e?`selected`:``}>${e}</option>`});let s=``;n.length===0?s=`
-          <tr>
-            <td colspan="7" style="text-align:center; padding:35px 20px; color:#94a3b8; font-size:13px;">
-              조회된 실제 주문 내역이 없습니다.
-            </td>
-          </tr>
-        `:n.forEach(e=>{let t=(e.payment_status||`payapp_requested`).toLowerCase(),n=t===`paid`,r=d.includes(t),i=``;i=n?`<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#ecfdf5; color:#059669;">결제완료</span>`:r?`<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#fef2f2; color:#ef4444;">취소/환불</span>`:`<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#fffbeb; color:#d97706;">결제대기</span>`;let a=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`,{month:`2-digit`,day:`2-digit`,hour:`2-digit`,minute:`2-digit`}):`-`,o=c(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),l=e.customer_name||e.buyer_name||`-`;s+=`
-            <tr style="border-bottom:1px solid #f8fafc; font-size:12.5px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-              <td style="padding:10px 12px; color:#64748b; font-family:monospace;">${a}</td>
-              <td style="padding:10px 12px; font-weight:700; color:#0f172a; max-width:260px; line-height:1.35;">${o}</td>
-              <td style="padding:10px 12px; text-align:right; font-weight:800; color:${r?`#94a3b8; text-decoration:line-through;`:n?`#0f172a;`:`#d97706;`}">
-                ${(parseInt(e.total_amount)||0).toLocaleString()}원
-              </td>
-              <td style="padding:10px 12px; color:#334155; font-weight:600;">${l}</td>
-              <td style="padding:10px 12px; color:#64748b; font-family:monospace;">${e.customer_phone||e.buyer_phone||`-`}</td>
-              <td style="padding:10px 12px; text-align:center;">${i}</td>
-              <td style="padding:10px 12px; color:#94a3b8; font-size:11px; font-family:monospace;">${e.pg_receipt_id||e.receipt_id||e.order_number||`-`}</td>
-            </tr>
-          `}),e.innerHTML=`
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-          <div style="display:flex; gap:8px; align-items:center;">
-            <select id="subtab-product-filter" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; color:#0f172a; background:#ffffff; outline:none; cursor:pointer;">
-              ${i}
-            </select>
-            <span style="font-size:12px; color:#64748b; font-weight:600;">총 ${n.length}건</span>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <input type="text" id="subtab-order-search" value="${o}" placeholder="주문자, 연락처, 상품명 검색"
-              style="padding:6px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; width:210px; outline:none;">
-          </div>
-        </div>
 
-        <div style="overflow-x:auto; border:1px solid #f1f5f9; border-radius:10px;">
-          <table style="width:100%; border-collapse:collapse; text-align:left;">
-            <thead>
-              <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:11.5px; color:#64748b;">
-                <th style="padding:9px 12px; font-weight:700; width:110px;">일시</th>
-                <th style="padding:9px 12px; font-weight:700;">주문 상품</th>
-                <th style="padding:9px 12px; font-weight:700; width:100px; text-align:right;">금액</th>
-                <th style="padding:9px 12px; font-weight:700; width:90px;">주문자</th>
-                <th style="padding:9px 12px; font-weight:700; width:110px;">연락처</th>
-                <th style="padding:9px 12px; font-weight:700; width:85px; text-align:center;">상태</th>
-                <th style="padding:9px 12px; font-weight:700; width:110px;">영수증번호</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${s}
-            </tbody>
-          </table>
-        </div>
-      `,document.getElementById(`subtab-product-filter`)?.addEventListener(`change`,t=>{a=t.target.value,h(e)}),document.getElementById(`subtab-order-search`)?.addEventListener(`input`,t=>{o=t.target.value,h(e)})},g=e=>{let t=r.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),n={},a=0;t.forEach(e=>{c(e).forEach(t=>{let r=(t.name||t.goodname||`상품`).trim(),i=parseInt(t.quantity||t.qty||1)||1,o=parseInt(t.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,c(e).length)),s=o*i;a+=s,n[r]||(n[r]={name:r,code:t.product_code||t.code||`-`,unitPrice:o,totalQty:0,totalAmount:0,orderCount:0}),n[r].totalQty+=i,n[r].totalAmount+=s,n[r].orderCount+=1})});let o=Object.values(n);i===`qty`?o.sort((e,t)=>t.totalQty-e.totalQty||t.totalAmount-e.totalAmount):o.sort((e,t)=>t.totalAmount-e.totalAmount||t.totalQty-e.totalQty);let s=``;o.length===0?s=`
-          <tr>
-            <td colspan="6" style="text-align:center; padding:35px 20px; color:#94a3b8; font-size:13px;">
-              실제 결제 완료된 판매 데이터가 아직 없습니다.
-            </td>
-          </tr>
-        `:o.forEach((e,t)=>{let n=t+1,r=`<span style="display:inline-block; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:700; background:#f1f5f9; color:#64748b;">${n}위</span>`;n===1?r=`<span style="display:inline-block; padding:2px 8px; border-radius:5px; font-size:11px; font-weight:800; background:#0f172a; color:#ffffff;">1위 TOP</span>`:n===2?r=`<span style="display:inline-block; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:800; background:#e2e8f0; color:#1e293b;">2위</span>`:n===3&&(r=`<span style="display:inline-block; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:700; background:#f8fafc; color:#334155; border:1px solid #e2e8f0;">3위</span>`);let i=a>0?(e.totalAmount/a*100).toFixed(1):0;s+=`
-            <tr style="border-bottom:1px solid #f8fafc; font-size:12.5px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-              <td style="padding:10px 12px; text-align:center;">${r}</td>
-              <td style="padding:10px 12px;">
-                <span style="font-weight:700; color:#0f172a;">${e.name}</span>
-                ${e.code&&e.code!==`-`?`<span style="font-size:10.5px; color:#94a3b8; margin-left:6px; font-family:monospace;">${e.code}</span>`:``}
-              </td>
-              <td style="padding:10px 12px; text-align:right; color:#475569;">${e.unitPrice.toLocaleString()}원</td>
-              <td style="padding:10px 12px; text-align:right; font-weight:800; color:#0f172a; font-size:13.5px;">${e.totalQty.toLocaleString()}개</td>
-              <td style="padding:10px 12px; text-align:right; font-weight:800; color:#2563eb; font-size:13.5px;">${e.totalAmount.toLocaleString()}원</td>
-              <td style="padding:10px 12px; width:160px;">
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <div style="flex:1; height:5px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
-                    <div style="width:${i}%; height:100%; background:#2563eb; border-radius:3px;"></div>
-                  </div>
-                  <span style="font-size:11px; font-weight:600; color:#64748b; width:34px; text-align:right;">${i}%</span>
-                </div>
-              </td>
-            </tr>
-          `}),e.innerHTML=`
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <span style="font-size:12px; font-weight:600; color:#64748b;">실제 결제 완료 품목: 총 ${o.length}개</span>
-          <div style="display:flex; background:#f1f5f9; padding:2px; border-radius:7px; gap:2px;">
-            <button id="rank-sort-qty" type="button" style="padding:4px 10px; font-size:11.5px; font-weight:${i===`qty`?`700`:`600`}; border-radius:5px; border:none; background:${i===`qty`?`#ffffff`:`transparent`}; color:${i===`qty`?`#0f172a`:`#64748b`}; box-shadow:${i===`qty`?`0 1px 2px rgba(0,0,0,0.06)`:`none`}; cursor:pointer;">수량순</button>
-            <button id="rank-sort-amount" type="button" style="padding:4px 10px; font-size:11.5px; font-weight:${i===`amount`?`700`:`600`}; border-radius:5px; border:none; background:${i===`amount`?`#ffffff`:`transparent`}; color:${i===`amount`?`#0f172a`:`#64748b`}; box-shadow:${i===`amount`?`0 1px 2px rgba(0,0,0,0.06)`:`none`}; cursor:pointer;">금액순</button>
+      <!-- 1. 주문 관리 뷰 -->
+      <div id="order-sub-orders" class="order-sub-view">
+        <div class="section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3 style="margin:0; border:none; padding:0;">실시간 주문 내역</h3>
+              <span id="orders-status-badge" style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; background:#f1f5f9; color:#64748b;">집계 중</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button id="btn-download-orders-csv" class="action-btn btn-primary-solid" style="padding:6px 14px; font-size:12px; display:flex; align-items:center; gap:5px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>주문내역 CSV</span>
+              </button>
+              <button id="btn-refresh-orders" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px;">새로고침</button>
+            </div>
+          </div>
+
+          <!-- 4대 메트릭 요약 카드 -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:20px;">
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">총 결제 금액 (실매출)</div>
+              <div id="kpi-total-sales" style="font-size:22px; font-weight:800; color:#0f172a;">0원</div>
+              <div id="kpi-orders-count" style="font-size:11.5px; color:#64748b; margin-top:3px;">결제완료 0건</div>
+            </div>
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">총 판매 수량</div>
+              <div id="kpi-total-qty" style="font-size:22px; font-weight:800; color:#0f172a;">0개</div>
+              <div id="kpi-product-types" style="font-size:11.5px; color:#64748b; margin-top:3px;">0종 품목</div>
+            </div>
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">최고 시청자 (Peak)</div>
+              <div id="kpi-peak-viewers" style="font-size:22px; font-weight:800; color:#ef4444;">0명</div>
+              <div id="kpi-peak-time" style="font-size:11.5px; color:#64748b; margin-top:3px;">기록 없음</div>
+            </div>
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">평균 시청자</div>
+              <div id="kpi-avg-viewers" style="font-size:22px; font-weight:800; color:#2563eb;">0명</div>
+              <div id="kpi-cum-viewers" style="font-size:11.5px; color:#64748b; margin-top:3px;">누적 0명</div>
+            </div>
+          </div>
+
+          <!-- 검색 & 제품 필터 바 (채팅관리 영역 스타일) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="subtab-product-filter" class="modern-input" style="height:36px; padding:6px 12px; font-size:12.5px; background:#fff; cursor:pointer;">
+                <option value="all">전체 제품 보기</option>
+              </select>
+              <span id="orders-count-badge" style="font-size:12px; color:#64748b; font-weight:600;">총 0건</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="subtab-order-search" class="modern-input" placeholder="주문자, 연락처, 상품명 검색" style="height:36px; width:220px; font-size:12.5px;">
+            </div>
+          </div>
+
+          <!-- 주문 테이블 컨테이너 -->
+          <div id="orders-table-container" style="border:1.5px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 20px;">
+              <div style="width:30px; height:30px; border:3px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
+              <div style="font-size:13px; font-weight:600; color:#475569;">주문 내역을 불러오는 중입니다...</div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div style="overflow-x:auto; border:1px solid #f1f5f9; border-radius:10px;">
-          <table style="width:100%; border-collapse:collapse; text-align:left;">
-            <thead>
-              <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:11.5px; color:#64748b;">
-                <th style="padding:9px 12px; font-weight:700; width:70px; text-align:center;">순위</th>
-                <th style="padding:9px 12px; font-weight:700;">상품명</th>
-                <th style="padding:9px 12px; font-weight:700; width:100px; text-align:right;">판매단가</th>
-                <th style="padding:9px 12px; font-weight:700; width:90px; text-align:right;">판매수량</th>
-                <th style="padding:9px 12px; font-weight:700; width:120px; text-align:right;">총 결제금액</th>
-                <th style="padding:9px 12px; font-weight:700; width:160px;">매출 점유율</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${s}
-            </tbody>
-          </table>
+      <!-- 2. 판매 순위 랭킹 뷰 -->
+      <div id="order-sub-ranking" class="order-sub-view" style="display:none;">
+        <div class="section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="margin:0 0 4px 0; border:none; padding:0;">상품 판매 순위 랭킹</h3>
+              <p style="margin:0; font-size:12px; color:#64748b;">실제 결제 완료된 데이터를 바탕으로 어떤 상품이 가장 많이 팔렸는지 순위별로 집계합니다.</p>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div style="display:flex; background:#f1f5f9; padding:2px; border-radius:8px; gap:2px;">
+                <button id="rank-sort-qty" type="button" style="padding:6px 14px; font-size:12px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:6px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.06);">판매 수량순</button>
+                <button id="rank-sort-amount" type="button" style="padding:6px 14px; font-size:12px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:6px; cursor:pointer;">결제 금액순</button>
+              </div>
+              <button id="btn-download-ranking-csv" class="action-btn btn-primary-solid" style="padding:6px 14px; font-size:12px;">순위 CSV</button>
+            </div>
+          </div>
+
+          <!-- 판매 랭킹 테이블 컨테이너 -->
+          <div id="ranking-table-container" style="border:1.5px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 20px;">
+              <div style="width:30px; height:30px; border:3px solid #e2e8f0; border-top-color:#0f172a; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
+              <div style="font-size:13px; font-weight:600; color:#64748b;">판매 순위를 분석 중입니다...</div>
+            </div>
+          </div>
         </div>
-      `,document.getElementById(`rank-sort-qty`)?.addEventListener(`click`,()=>{i=`qty`,g(e)}),document.getElementById(`rank-sort-amount`)?.addEventListener(`click`,()=>{i=`amount`,g(e)})},_=e=>{let n=en(t),r=(u.viewers||0)+(u.cumViewers||0);(!Array.isArray(n)||n.length===0)&&(n=[{minute:0,time:new Date().toLocaleTimeString(`ko-KR`,{hour12:!1,hour:`2-digit`,minute:`2-digit`,second:`2-digit`}),viewers:r}],tn(t,n));let i=0;n.forEach(e=>{let t=parseInt(e.viewers)||0;t>i&&(i=t)});let a=Math.max(10,Math.ceil(i*1.15)),o=e=>n.length<=1?408:40+e/(n.length-1)*736,s=e=>114-e/a*96,c=``,l=`M ${o(0)} 114`,d=``;n.forEach((e,t)=>{let n=o(t),r=s(parseInt(e.viewers)||0);t===0?(c+=`M ${n} ${r}`,l+=` L ${n} ${r}`):(c+=` L ${n} ${r}`,l+=` L ${n} ${r}`);let a=parseInt(e.viewers)===i&&i>0;d+=`
-          <circle cx="${n}" cy="${r}" r="${a?4.5:2.5}" fill="${a?`#ef4444`:`#2563eb`}" stroke="#ffffff" stroke-width="1.5">
-            <title>방송 ${e.minute}분 후 (${e.time}): ${e.viewers}명 시청</title>
-          </circle>
-        `}),l+=` L ${o(n.length-1)} 114 Z`;let f=``;[...n].reverse().forEach(e=>{let t=n.findIndex(t=>t.minute===e.minute),r=`<span style="color:#94a3b8;">-</span>`;if(t>0){let i=(parseInt(e.viewers)||0)-(parseInt(n[t-1].viewers)||0);r=i>0?`<span style="color:#ef4444; font-weight:700;">+${i}명 ▲</span>`:i<0?`<span style="color:#2563eb; font-weight:700;">${i}명 ▼</span>`:`<span style="color:#64748b;">0명</span>`}f+=`
-          <tr style="border-bottom:1px solid #f8fafc; font-size:12px;">
-            <td style="padding:7px 12px; font-weight:700; color:#0f172a; font-family:monospace;">${e.minute===0?`방송 시작 (0분)`:`방송 ${e.minute}분 후`}</td>
-            <td style="padding:7px 12px; color:#64748b; font-family:monospace;">${e.time}</td>
-            <td style="padding:7px 12px; text-align:right; font-weight:800; color:#0f172a;">${(parseInt(e.viewers)||0).toLocaleString()}명</td>
-            <td style="padding:7px 12px; text-align:right;">${r}</td>
+      </div>
+
+      <!-- 3. 1분 단위 시청자 통계 뷰 -->
+      <div id="order-sub-timeline" class="order-sub-view" style="display:none;">
+        <div class="section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="margin:0 0 4px 0; border:none; padding:0;">방송 시작 후 1분 단위 시청자 수 추이</h3>
+              <p style="margin:0; font-size:12px; color:#64748b;">방송 시작 후 1분마다 실시간 시청자 수를 정밀하게 체크하여 기록한 통계입니다.</p>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span id="timeline-duration-badge" style="font-size:12px; font-weight:700; color:#475569; background:#f1f5f9; padding:5px 12px; border-radius:6px; font-family:monospace;">측정 기록: 0분</span>
+              <button id="btn-download-timeline-csv" class="action-btn btn-primary-solid" style="padding:6px 14px; font-size:12px;">시청자 기록 CSV</button>
+            </div>
+          </div>
+
+          <!-- 인터랙티브 SVG 시청자 그래프 -->
+          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:20px 16px 14px 16px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:12px; font-weight:700; color:#475569;">1분 단위 시계열 그래프</span>
+              <span id="timeline-chart-info" style="font-size:11.5px; color:#94a3b8;">총 0분 측정</span>
+            </div>
+            <div id="timeline-chart-content" style="width:100%; height:150px;">
+              <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:13px;">그래프 데이터를 불러오는 중...</div>
+            </div>
+          </div>
+
+          <!-- 1분 단위 상세 시청자 로그 테이블 -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:13px; font-weight:700; color:#334155;">1분 단위 상세 시청자 로그</span>
+              <span id="timeline-log-count-badge" style="font-size:11.5px; font-weight:600; color:#64748b;">총 0개 기록</span>
+            </div>
+            <div id="timeline-table-container" style="border:1.5px solid #e2e8f0; border-radius:12px; overflow:hidden; max-height:280px; overflow-y:auto; background:#fff;">
+              <div style="text-align:center; padding:30px; color:#94a3b8; font-size:13px;">시청자 로그 기록을 불러오는 중...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <style>@keyframes ordersSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+    `;let s=e=>{let t=[];if(Array.isArray(e.items)&&e.items.length>0)t=e.items;else if(typeof e.items==`string`)try{let n=JSON.parse(e.items);Array.isArray(n)&&(t=n)}catch{t=[{name:e.items,price:e.total_amount||0,quantity:1}]}return t.length===0&&(t=[{name:e.goodname||e.item_name||`라이브 상품`,price:e.total_amount||0,quantity:1}]),t},c=[`cancelled`,`canceled`,`payapp_cancelled`,`refunded`,`cancel`],d=async()=>{let e=document.getElementById(`orders-status-badge`);e&&(l.isLive?(e.textContent=`실시간 방송 중`,e.style.background=`#fef2f2`,e.style.color=`#ef4444`):(e.textContent=`방송 대기 / 종료`,e.style.background=`#f1f5f9`,e.style.color=`#64748b`));try{let e=[];if(X){try{let{data:n,error:r}=await X.from(`live_orders`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});Array.isArray(n)&&!r&&n.forEach(t=>{e.push({id:t.id,live_id:t.live_id,customer_name:t.customer_name||t.buyer_name||t.name||``,customer_phone:t.customer_phone||t.buyer_phone||t.phone||``,customer_address:t.customer_address||t.shipping_address||t.address||``,total_amount:Number(t.total_amount)||0,items:t.items,payment_status:(t.payment_status||`payapp_requested`).toLowerCase(),pg_provider:t.pg_provider||`payapp`,pg_receipt_id:t.pg_receipt_id||t.receipt_id||``,created_at:t.created_at})})}catch{}try{let{data:n,error:r}=await X.from(`live_winners`).select(`*`).eq(`live_id`,t).order(`created_at`,{ascending:!1});Array.isArray(n)&&!r&&n.forEach(t=>{if(t.nickname&&(t.nickname.startsWith(`{"type":"order"`)||t.nickname.startsWith(`{"type": "order"`)))try{let n=JSON.parse(t.nickname);e.push({id:t.id,live_id:t.live_id,customer_name:t.name||``,customer_phone:t.phone||``,customer_address:t.address||``,total_amount:Number(n.total)||0,items:n.items||[{name:n.goodname||`상품`,price:Number(n.total)||0}],payment_status:(n.status||`payapp_requested`).toLowerCase(),pg_provider:n.pg_provider||`payapp`,pg_receipt_id:String(n.mul_no||``),created_at:t.created_at})}catch{}})}catch{}}try{let n=JSON.parse(localStorage.getItem(`ryzin_live_orders_${t}`)||`[]`);Array.isArray(n)&&n.forEach(n=>{e.push({id:n.id,live_id:n.live_id||t,customer_name:n.customer_name||n.buyer_name||n.name||``,customer_phone:n.customer_phone||n.buyer_phone||n.phone||``,customer_address:n.customer_address||n.shipping_address||n.address||``,total_amount:Number(n.total_amount)||0,items:n.items,payment_status:(n.payment_status||`payapp_requested`).toLowerCase(),pg_provider:n.pg_provider||`payapp`,pg_receipt_id:n.pg_receipt_id||n.receipt_id||``,created_at:n.created_at})})}catch{}let r=new Map;e.forEach(e=>{let t=(e.pg_receipt_id&&e.pg_receipt_id!==`undefined`&&e.pg_receipt_id!==`-`?e.pg_receipt_id:null)||e.id||`${e.created_at}_${e.customer_phone}`,n=r.get(t);n?e.payment_status===`paid`&&n.payment_status!==`paid`&&r.set(t,e):r.set(t,e)}),n=Array.from(r.values()).sort((e,t)=>new Date(t.created_at||0)-new Date(e.created_at||0));let i=n.map(e=>e.pg_receipt_id).filter(e=>e&&e!==`undefined`&&e!==`-`);if(i.length>0)try{let e=await fetch(`/api/payapp`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({cmd:`check_orders`,mul_nos:i})});if(e.ok){let r=await e.json();if(r.success&&r.results){let e=!1;if(n.forEach(t=>{let n=r.results[t.pg_receipt_id];n&&n.status&&n.status!==`unknown`&&t.payment_status!==n.status&&(t.payment_status=n.status,e=!0)}),e)try{localStorage.setItem(`ryzin_live_orders_${t}`,JSON.stringify(n))}catch{}}}}catch(e){console.warn(`PayApp status check failed:`,e)}}catch(e){console.warn(`Order loading error:`,e),n=[]}f(),p(),m(),h()},f=()=>{let e=n.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),r=n.filter(e=>(e.payment_status||``).toLowerCase()===`payapp_requested`),i=n.filter(e=>c.includes((e.payment_status||``).toLowerCase())),a=0,o=0,l=new Set;e.forEach(e=>{let t=s(e);t.forEach(n=>{let r=parseInt(n.quantity||n.qty||1)||1,i=parseInt(n.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,t.length));a+=i*r,o+=r;let s=(n.name||n.goodname||``).trim();s&&l.add(s)})});let d=en(t),f=0,p=`기록 없음`,m=0;d.forEach(e=>{let t=parseInt(e.viewers)||0;m+=t,t>=f&&(f=t,p=`방송 ${e.minute}분 후`)});let h=d.length>0?Math.round(m/d.length):(u.viewers||0)+(u.cumViewers||0),g=document.getElementById(`kpi-total-sales`),_=document.getElementById(`kpi-orders-count`),v=document.getElementById(`kpi-total-qty`),y=document.getElementById(`kpi-product-types`),b=document.getElementById(`kpi-peak-viewers`),x=document.getElementById(`kpi-peak-time`),S=document.getElementById(`kpi-avg-viewers`),C=document.getElementById(`kpi-cum-viewers`);g&&(g.textContent=`${a.toLocaleString()}원`),_&&(e.length===0&&r.length>0?_.innerHTML=`결제 0건 <span style="font-size:11px; color:#f59e0b; font-weight:600;">(대기 ${r.length}건)</span>`:_.textContent=`결제완료 ${e.length}건${i.length>0?` (취소 ${i.length})`:``}`),v&&(v.textContent=`${o.toLocaleString()}개`),y&&(y.textContent=`${l.size}종 품목`),b&&(b.textContent=`${f.toLocaleString()}명`),x&&(x.textContent=p),S&&(S.textContent=`${h.toLocaleString()}명`),C&&(C.textContent=`누적 ${(u.cumViewers||0).toLocaleString()}명`)},p=()=>{let e=document.getElementById(`orders-table-container`);if(!e)return;let t=new Set;n.forEach(e=>{s(e).forEach(e=>{let n=(e.name||e.goodname||``).trim();n&&t.add(n)})});let r=n;if(i!==`all`&&(r=r.filter(e=>s(e).some(e=>(e.name||e.goodname||``).trim()===i))),a.trim()){let e=a.trim().toLowerCase();r=r.filter(t=>{let n=(t.customer_name||t.buyer_name||``).toLowerCase(),r=(t.customer_phone||t.buyer_phone||``).toLowerCase(),i=JSON.stringify(t.items||``).toLowerCase();return n.includes(e)||r.includes(e)||i.includes(e)})}let o=document.getElementById(`orders-count-badge`);o&&(o.textContent=`총 ${r.length}건`);let l=document.getElementById(`subtab-product-filter`);if(l&&l.options.length<=1){let e=`<option value="all">전체 제품 보기</option>`;t.forEach(t=>{e+=`<option value="${t}" ${i===t?`selected`:``}>${t}</option>`}),l.innerHTML=e}if(r.length===0){e.innerHTML=`
+          <div style="text-align:center; padding:50px 20px; color:#94a3b8; font-size:13.5px;">
+            조회된 주문 내역이 없습니다.
+          </div>
+        `;return}let u=``;r.forEach(e=>{let t=(e.payment_status||`payapp_requested`).toLowerCase(),n=t===`paid`,r=c.includes(t),i=``;i=n?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #d1fae5;">결제완료</span>`:r?`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fef2f2; color:#ef4444; border:1px solid #fee2e2;">취소/환불</span>`:`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">결제대기</span>`;let a=e.created_at?new Date(e.created_at).toLocaleString(`ko-KR`,{month:`2-digit`,day:`2-digit`,hour:`2-digit`,minute:`2-digit`}):`-`,o=s(e).map(e=>`${e.name||e.goodname} (${e.quantity||1}개)`).join(`, `),l=e.customer_name||e.buyer_name||`-`;u+=`
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding:12px 14px; color:#64748b; font-family:monospace; font-size:12px;">${a}</td>
+            <td style="padding:12px 14px; font-weight:700; color:#0f172a; max-width:280px; line-height:1.4;">${o}</td>
+            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${r?`#94a3b8; text-decoration:line-through;`:n?`#0f172a;`:`#d97706;`}">
+              ${(parseInt(e.total_amount)||0).toLocaleString()}원
+            </td>
+            <td style="padding:12px 14px; color:#334155; font-weight:600;">${l}</td>
+            <td style="padding:12px 14px; color:#64748b; font-family:monospace; font-size:12px;">${e.customer_phone||e.buyer_phone||`-`}</td>
+            <td style="padding:12px 14px; text-align:center;">${i}</td>
+            <td style="padding:12px 14px; color:#94a3b8; font-size:11.5px; font-family:monospace;">${e.pg_receipt_id||e.receipt_id||e.order_number||`-`}</td>
           </tr>
         `}),e.innerHTML=`
-        <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:14px 12px; margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span style="font-size:11.5px; font-weight:700; color:#475569;">1분 단위 시계열 그래프</span>
-            <span style="font-size:11px; color:#94a3b8;">총 ${n.length}분 측정 (최고 ${i.toLocaleString()}명)</span>
-          </div>
-          <div style="width:100%; height:130px;">
-            <svg viewBox="0 0 800 140" style="width:100%; height:100%; display:block; overflow:visible;">
-              <defs>
-                <linearGradient id="minGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#2563eb" stop-opacity="0.16"/>
-                  <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
-              <line x1="40" y1="114" x2="776" y2="114" stroke="#e2e8f0" stroke-width="1"/>
-              <line x1="40" y1="18" x2="776" y2="18" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="2 2"/>
-              <path d="${l}" fill="url(#minGrad)"/>
-              <path d="${c}" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              ${d}
-            </svg>
-          </div>
-        </div>
-
-        <div style="max-height:220px; overflow-y:auto; border:1px solid #f1f5f9; border-radius:10px;">
+        <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; text-align:left;">
-            <thead style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:11.5px; color:#64748b; position:sticky; top:0;">
-              <tr>
-                <th style="padding:7px 12px; font-weight:700;">방송 경과</th>
-                <th style="padding:7px 12px; font-weight:700;">측정 시각</th>
-                <th style="padding:7px 12px; font-weight:700; text-align:right;">시청자 수</th>
-                <th style="padding:7px 12px; font-weight:700; text-align:right;">직전 1분 대비</th>
+            <thead>
+              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b;">
+                <th style="padding:11px 14px; font-weight:700; width:110px;">주문일시</th>
+                <th style="padding:11px 14px; font-weight:700;">주문 상품</th>
+                <th style="padding:11px 14px; font-weight:700; width:110px; text-align:right;">결제금액</th>
+                <th style="padding:11px 14px; font-weight:700; width:95px;">주문자</th>
+                <th style="padding:11px 14px; font-weight:700; width:115px;">연락처</th>
+                <th style="padding:11px 14px; font-weight:700; width:90px; text-align:center;">상태</th>
+                <th style="padding:11px 14px; font-weight:700; width:115px;">영수증번호</th>
               </tr>
             </thead>
             <tbody>
-              ${f}
+              ${u}
             </tbody>
           </table>
         </div>
-      `};f(),document.getElementById(`btn-refresh-unified`)?.addEventListener(`click`,f),document.getElementById(`btn-export-csv`)?.addEventListener(`click`,()=>{if(n===`orders`){let e=`주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,영수증번호
-`;r.forEach(t=>{let n=t.created_at?new Date(t.created_at).toLocaleString():``,r=`"${c(t).map(e=>`${e.name}(${e.quantity}개)`).join(`, `)}"`,i=t.total_amount||0,a=`"${t.customer_name||t.buyer_name||``}"`,o=`"${t.customer_phone||t.buyer_phone||``}"`,s=(t.payment_status||`payapp_requested`).toLowerCase(),l=s===`paid`?`결제완료`:d.includes(s)?`취소/환불`:`결제대기`,u=`"${t.pg_receipt_id||t.receipt_id||t.order_number||``}"`;e+=`${n},${r},${i},${a},${o},${l},${u}\n`});let n=new Blob([`﻿`+e],{type:`text/csv;charset=utf-8;`}),i=URL.createObjectURL(n),a=document.createElement(`a`);a.href=i,a.download=`주문내역_${t}.csv`,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(i)}else if(n===`ranking`){let e=r.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),n={};e.forEach(e=>{c(e).forEach(t=>{let r=(t.name||t.goodname||`상품`).trim(),i=parseInt(t.quantity||t.qty||1)||1,a=parseInt(t.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,c(e).length));n[r]||(n[r]={name:r,price:a,qty:0,amount:0}),n[r].qty+=i,n[r].amount+=a*i})});let i=Object.values(n).sort((e,t)=>t.qty-e.qty),a=`순위,상품명,판매단가,총판매수량,총결제금액
-`;i.forEach((e,t)=>{a+=`${t+1},"${e.name.replace(/"/g,`""`)}",${e.price},${e.qty},${e.amount}\n`});let o=new Blob([`﻿`+a],{type:`text/csv;charset=utf-8;`}),s=URL.createObjectURL(o),l=document.createElement(`a`);l.href=s,l.download=`상품판매순위_${t}.csv`,document.body.appendChild(l),l.click(),document.body.removeChild(l),URL.revokeObjectURL(s)}else{let e=en(t),n=`방송경과(분),기록시각,실시간시청자수(명)
-`;e.forEach(e=>{n+=`${e.minute},${e.time},${e.viewers}\n`});let r=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),i=URL.createObjectURL(r),a=document.createElement(`a`);a.href=i,a.download=`시청자_1분단위_로그_${t}.csv`,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(i)}}),document.querySelectorAll(`.subtab-item`).forEach(e=>{e.addEventListener(`click`,()=>{n=e.dataset.subtab,m()})}),s=setInterval(()=>{if(p(),n===`timeline`){let e=document.getElementById(`subtab-dynamic-container`);e&&_(e)}},3e4),A.addEventListener(`adminTabLeave`,()=>{s&&clearInterval(s)},{once:!0})},ye=()=>ve(`ranking`),be=S.querySelector(`#btn-back`);be&&be.addEventListener(`click`,()=>{A.dispatchEvent(new Event(`adminTabLeave`)),k(),p&&clearInterval(p),Ce&&X.removeChannel(Ce),Se&&X.removeChannel(Se),n(null)});let xe=S.querySelector(`#btn-refresh-preview`);xe&&xe.addEventListener(`click`,()=>{let e=S.querySelector(`#live-preview-iframe`);e&&(e.src=M)});let Se=null;X&&(Se=X.channel(`bot-sync-${t}`).on(`postgres_changes`,{event:`INSERT`,schema:`public`,table:`live_chats`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(n&&f.autoReplyActive&&f.autoReplyRules&&f.autoReplyRules.length>0){let e=n.nickname||``;if(!e.includes(`|`)&&e!==`관리자`&&e!==`자동응답봇`){let e=(n.content||``).toLowerCase();for(let n of f.autoReplyRules)if(n.keywords.split(`,`).map(e=>e.trim().toLowerCase()).filter(e=>e).some(t=>e.includes(t))){setTimeout(async()=>{try{if(!X)return;await X.from(`live_chats`).insert([{live_id:t,nickname:`자동응답봇`,content:n.answer,created_at:Date.now().toString()}])}catch(e){console.warn(`Auto-reply failed`,e)}},600);break}}}}).subscribe());let Ce=null;X&&(Ce=X.channel(`admin-sync-${t}`).on(`postgres_changes`,{event:`UPDATE`,schema:`public`,table:`live_control`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(!n)return;l.brandName=n.title||``,l.title=n.subtitle||``;let r=n.profile_image||``,i=`라이브 보기`,a=`right`,o=``,s=!1,c=!0,f=``,p=``,m=r.split(`#`),h=m[0];m.slice(1).forEach(e=>{e===`nosplash`||(e.startsWith(`widgetText=`)?i=decodeURIComponent(e.replace(`widgetText=`,``)):e.startsWith(`widgetPosition=`)?a=e.replace(`widgetPosition=`,``):e.startsWith(`widgetImageUrl=`)?o=e.replace(`widgetImageUrl=`,``):e.startsWith(`showOnMain=`)?s=e.replace(`showOnMain=`,``)===`true`:e.startsWith(`showNoticeNote=`)?c=e.replace(`showNoticeNote=`,``)!==`false`:e.startsWith(`noticeNoteTitle=`)?f=decodeURIComponent(e.replace(`noticeNoteTitle=`,``)):e.startsWith(`noticeNoteContent=`)&&(p=decodeURIComponent(e.replace(`noticeNoteContent=`,``))))}),l.showSplash=!r.includes(`#nosplash`),l.logoUrl=h,l.widgetText=i,l.widgetPosition=a,l.widgetImageUrl=o,l.showOnMain=s,l.showNoticeNote=c,l.noticeNoteTitle=f,l.noticeNoteContent=p,l.streamUrl=n.stream_url||``,l.showViewers=n.show_viewers!==!1,l.thumbnailUrl=n.thumbnail_url||``,l.liveStartTime=n.start_time||``,l.isLive=n.status===`ON`,l.shareTitle=n.share_title||``,l.shareDesc=n.share_desc||``,l.shareImageUrl=n.share_image||``,l.likeImageUrl=n.like_image_url||``,l.bannedWords=n.banned_words||``,l.bannedUsers=n.banned_users||``,n.winner_name!==void 0&&(l.winner_name=n.winner_name),n.winner_timestamp!==void 0&&(l.winner_timestamp=n.winner_timestamp),n.viewers!==void 0&&(u.viewers=parseInt(n.viewers)||0),n.cum_viewers!==void 0&&(u.cumViewers=parseInt(n.cum_viewers)||0),n.hearts!==void 0&&(u.hearts=parseInt(n.hearts)||0),Zt(t,l),$t(t,u),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay();let g=(e,t)=>{let n=S.querySelector(`#`+e)||document.getElementById(e);n&&document.activeElement!==n&&(n.type===`checkbox`?n.checked=!!t:n.value=t)};g(`cfg-brandName`,l.brandName),g(`cfg-title`,l.title),g(`cfg-stream`,l.streamUrl),g(`cfg-showViewers`,l.showViewers),g(`cfg-liveStartTime`,l.liveStartTime),g(`cfg-shareTitle`,l.shareTitle),g(`cfg-shareDesc`,l.shareDesc),g(`cfg-bannedWords`,l.bannedWords),g(`cfg-bannedUsers`,l.bannedUsers);let _=S.querySelector(`#logo-preview`)||document.getElementById(`logo-preview`);_&&(_.src=l.logoUrl);let v=S.querySelector(`#thumbnail-preview`)||document.getElementById(`thumbnail-preview`);v&&(v.src=l.thumbnailUrl);let y=S.querySelector(`#like-preview`)||document.getElementById(`like-preview`);y&&(y.src=l.likeImageUrl,y.style.display=l.likeImageUrl?`block`:`none`);let b=S.querySelector(`#like-preview-placeholder`)||document.getElementById(`like-preview-placeholder`);b&&(b.style.display=l.likeImageUrl?`none`:`block`);let x=S.querySelector(`#btn-clear-like-icon`)||document.getElementById(`btn-clear-like-icon`);x&&(x.style.display=l.likeImageUrl?`block`:`none`);let C=S.querySelector(`#btn-toggle-live`)||document.getElementById(`btn-toggle-live`);if(C&&document.activeElement!==C&&(C.textContent=l.isLive?`라이브 종료`:`라이브 시작`,C.className=`action-btn ${l.isLive?`btn-danger-solid`:`btn-success-solid`}`),n.products&&Array.isArray(n.products)){let e=JSON.stringify(n.products);if(JSON.stringify(d)!==e){Array.isArray(d)||(d=[]),d.length=0,d.push(...n.products),rn(t,d);let e=S.querySelector(`#product-list-container`)||document.getElementById(`product-list-container`);e&&!e.contains(document.activeElement)&&typeof B==`function`&&(e.innerHTML=B())}}}).subscribe());let we=-1;X&&setInterval(async()=>{try{let{data:e,error:n}=await X.from(`live_control`).select(`viewers, cum_viewers, hearts, status`).eq(`live_id`,t).maybeSingle();if(e&&!n&&(u.viewers=parseInt(e.viewers)||0,u.cumViewers=parseInt(e.cum_viewers)||0,u.hearts=parseInt(e.hearts)||0,$t(t,u),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay(),l.isLive||e.status===`ON`)){let e=l.liveStartedAt?new Date(l.liveStartedAt).getTime():Date.now(),n=Math.max(0,Math.floor((Date.now()-e)/6e4));if(n!==we){we=n;let e=en(t),r=new Date().toLocaleTimeString(`ko-KR`,{hour12:!1,hour:`2-digit`,minute:`2-digit`,second:`2-digit`}),i=u.viewers+(u.cumViewers||0),a=e.findIndex(e=>e.minute===n);a>=0?(e[a].viewers=Math.max(e[a].viewers,i),e[a].time=r):e.push({minute:n,time:r,viewers:i}),tn(t,e)}}}catch{}},2500);let Te=w.querySelectorAll(`.tab-btn`),V=e=>{A.dispatchEvent(new Event(`adminTabLeave`)),Te.forEach(t=>t.classList.toggle(`active`,t.dataset.tab===e)),e===`config`?me():e===`chat`?he():e===`product`?ge():e===`orders`?ve():e===`stats`?ye():e===`leads`&&_e()};Te.forEach(e=>{e.addEventListener(`click`,()=>V(e.dataset.tab))}),a?he():me()}function hn(){let e=document.createElement(`div`),t=``,n=null,r=`desc`;function i(){let a=U.getCurrentRole()===`pd`,o=U.getAll(`hosts`);if(t){let e=t.toLowerCase();o=o.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let s=o.map(e=>{let t=U.getHostStats(e.id);return{...e,stats:t}});n&&s.sort((e,t)=>{let i=e.stats[n]||0,a=t.stats[n]||0;return i<a?r===`asc`?-1:1:i>a?r===`asc`?1:-1:0});let c=e=>n===e?r===`asc`?`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▲</span>`:`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▼</span>`:`<span style="color:#cbd5e1; font-size:10px; margin-left:4px;">↕</span>`,l=`
+      `},m=()=>{let e=document.getElementById(`ranking-table-container`);if(!e)return;let t=n.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),i={},a=0;t.forEach(e=>{s(e).forEach(t=>{let n=(t.name||t.goodname||`상품`).trim(),r=parseInt(t.quantity||t.qty||1)||1,o=parseInt(t.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,s(e).length)),c=o*r;a+=c,i[n]||(i[n]={name:n,code:t.product_code||t.code||`-`,unitPrice:o,totalQty:0,totalAmount:0,orderCount:0}),i[n].totalQty+=r,i[n].totalAmount+=c,i[n].orderCount+=1})});let o=Object.values(i);if(r===`qty`?o.sort((e,t)=>t.totalQty-e.totalQty||t.totalAmount-e.totalAmount):o.sort((e,t)=>t.totalAmount-e.totalAmount||t.totalQty-e.totalQty),o.length===0){e.innerHTML=`
+          <div style="text-align:center; padding:50px 20px; color:#94a3b8; font-size:13.5px;">
+            실제 결제 완료된 판매 데이터가 아직 없습니다.
+          </div>
+        `;return}let c=``;o.forEach((e,t)=>{let n=t+1,r=`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#f1f5f9; color:#64748b;">${n}위</span>`;n===1?r=`<span style="display:inline-block; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:800; background:#0f172a; color:#ffffff;">1위 TOP</span>`:n===2?r=`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:800; background:#e2e8f0; color:#1e293b;">2위</span>`:n===3&&(r=`<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#f8fafc; color:#334155; border:1px solid #e2e8f0;">3위</span>`);let i=a>0?(e.totalAmount/a*100).toFixed(1):0;c+=`
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding:12px 14px; text-align:center;">${r}</td>
+            <td style="padding:12px 14px;">
+              <span style="font-weight:700; color:#0f172a;">${e.name}</span>
+              ${e.code&&e.code!==`-`?`<span style="font-size:11px; color:#94a3b8; margin-left:6px; font-family:monospace;">${e.code}</span>`:``}
+            </td>
+            <td style="padding:12px 14px; text-align:right; color:#475569;">${e.unitPrice.toLocaleString()}원</td>
+            <td style="padding:12px 14px; text-align:right; font-weight:800; color:#0f172a; font-size:14px;">${e.totalQty.toLocaleString()}개</td>
+            <td style="padding:12px 14px; text-align:right; font-weight:800; color:#2563eb; font-size:14px;">${e.totalAmount.toLocaleString()}원</td>
+            <td style="padding:12px 14px; width:170px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                  <div style="width:${i}%; height:100%; background:#2563eb; border-radius:3px;"></div>
+                </div>
+                <span style="font-size:11.5px; font-weight:700; color:#64748b; width:40px; text-align:right;">${i}%</span>
+              </div>
+            </td>
+          </tr>
+        `}),e.innerHTML=`
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead>
+              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b;">
+                <th style="padding:11px 14px; font-weight:700; width:75px; text-align:center;">순위</th>
+                <th style="padding:11px 14px; font-weight:700;">상품명</th>
+                <th style="padding:11px 14px; font-weight:700; width:110px; text-align:right;">판매단가</th>
+                <th style="padding:11px 14px; font-weight:700; width:100px; text-align:right;">판매수량</th>
+                <th style="padding:11px 14px; font-weight:700; width:130px; text-align:right;">총 결제금액</th>
+                <th style="padding:11px 14px; font-weight:700; width:170px;">매출 점유율</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${c}
+            </tbody>
+          </table>
+        </div>
+      `},h=()=>{let e=en(t),n=(u.viewers||0)+(u.cumViewers||0);(!Array.isArray(e)||e.length===0)&&(e=[{minute:0,time:new Date().toLocaleTimeString(`ko-KR`,{hour12:!1,hour:`2-digit`,minute:`2-digit`,second:`2-digit`}),viewers:n}],tn(t,e));let r=0;e.forEach(e=>{let t=parseInt(e.viewers)||0;t>r&&(r=t)});let i=document.getElementById(`timeline-duration-badge`);i&&(i.textContent=`측정 기록: 총 ${e.length>0?e[e.length-1].minute:0}분 (${e.length}회)`);let a=document.getElementById(`timeline-chart-info`);a&&(a.textContent=`총 ${e.length}분 측정 (최고 ${r.toLocaleString()}명)`);let o=document.getElementById(`timeline-log-count-badge`);o&&(o.textContent=`총 ${e.length}개 기록`);let s=document.getElementById(`timeline-chart-content`);if(s){let t=Math.max(10,Math.ceil(r*1.15)),n=t=>e.length<=1?407.5:45+t/(e.length-1)*725,i=e=>124-e/t*104,a=``,o=`M ${n(0)} 124`,c=``;e.forEach((e,t)=>{let s=n(t),l=i(parseInt(e.viewers)||0);t===0?(a+=`M ${s} ${l}`,o+=` L ${s} ${l}`):(a+=` L ${s} ${l}`,o+=` L ${s} ${l}`);let u=parseInt(e.viewers)===r&&r>0;c+=`
+            <circle cx="${s}" cy="${l}" r="${u?5:3}" fill="${u?`#ef4444`:`#2563eb`}" stroke="#ffffff" stroke-width="1.5">
+              <title>방송 ${e.minute}분 후 (${e.time}): ${e.viewers}명 시청</title>
+            </circle>
+          `}),o+=` L ${n(e.length-1)} 124 Z`,s.innerHTML=`
+          <svg viewBox="0 0 800 150" style="width:100%; height:100%; display:block; overflow:visible;">
+            <defs>
+              <linearGradient id="chatTimelineGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <line x1="45" y1="124" x2="770" y2="124" stroke="#e2e8f0" stroke-width="1"/>
+            <line x1="45" y1="20" x2="770" y2="20" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="2 2"/>
+            <path d="${o}" fill="url(#chatTimelineGrad)"/>
+            <path d="${a}" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            ${c}
+          </svg>
+        `}let c=document.getElementById(`timeline-table-container`);if(c){let t=``;[...e].reverse().forEach(n=>{let r=e.findIndex(e=>e.minute===n.minute),i=`<span style="color:#94a3b8;">-</span>`;if(r>0){let t=(parseInt(n.viewers)||0)-(parseInt(e[r-1].viewers)||0);i=t>0?`<span style="color:#ef4444; font-weight:700;">+${t}명 ▲</span>`:t<0?`<span style="color:#2563eb; font-weight:700;">${t}명 ▼</span>`:`<span style="color:#64748b;">0명</span>`}t+=`
+            <tr style="border-bottom:1px solid #f1f5f9; font-size:12.5px;">
+              <td style="padding:10px 14px; font-weight:700; color:#0f172a; font-family:monospace;">${n.minute===0?`방송 시작 (0분)`:`방송 ${n.minute}분 후`}</td>
+              <td style="padding:10px 14px; color:#64748b; font-family:monospace;">${n.time}</td>
+              <td style="padding:10px 14px; text-align:right; font-weight:800; color:#0f172a;">${(parseInt(n.viewers)||0).toLocaleString()}명</td>
+              <td style="padding:10px 14px; text-align:right;">${i}</td>
+            </tr>
+          `}),c.innerHTML=`
+          <table style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b; position:sticky; top:0;">
+              <tr>
+                <th style="padding:10px 14px; font-weight:700;">방송 경과</th>
+                <th style="padding:10px 14px; font-weight:700;">측정 시각</th>
+                <th style="padding:10px 14px; font-weight:700; text-align:right;">시청자 수</th>
+                <th style="padding:10px 14px; font-weight:700; text-align:right;">직전 1분 대비</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${t}
+            </tbody>
+          </table>
+        `}};d(),document.getElementById(`btn-refresh-orders`)?.addEventListener(`click`,d),document.getElementById(`btn-download-orders-csv`)?.addEventListener(`click`,()=>{let e=`주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,영수증번호
+`;n.forEach(t=>{let n=t.created_at?new Date(t.created_at).toLocaleString():``,r=`"${s(t).map(e=>`${e.name}(${e.quantity}개)`).join(`, `)}"`,i=t.total_amount||0,a=`"${t.customer_name||t.buyer_name||``}"`,o=`"${t.customer_phone||t.buyer_phone||``}"`,l=(t.payment_status||`payapp_requested`).toLowerCase(),u=l===`paid`?`결제완료`:c.includes(l)?`취소/환불`:`결제대기`,d=`"${t.pg_receipt_id||t.receipt_id||t.order_number||``}"`;e+=`${n},${r},${i},${a},${o},${u},${d}\n`});let r=new Blob([`﻿`+e],{type:`text/csv;charset=utf-8;`}),i=URL.createObjectURL(r),a=document.createElement(`a`);a.href=i,a.download=`주문내역_${t}.csv`,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(i)}),document.getElementById(`btn-download-ranking-csv`)?.addEventListener(`click`,()=>{let e=n.filter(e=>(e.payment_status||``).toLowerCase()===`paid`),r={};e.forEach(e=>{s(e).forEach(t=>{let n=(t.name||t.goodname||`상품`).trim(),i=parseInt(t.quantity||t.qty||1)||1,a=parseInt(t.price||0)||Math.round((parseInt(e.total_amount)||0)/Math.max(1,s(e).length));r[n]||(r[n]={name:n,price:a,qty:0,amount:0}),r[n].qty+=i,r[n].amount+=a*i})});let i=Object.values(r).sort((e,t)=>t.qty-e.qty),a=`순위,상품명,판매단가,총판매수량,총결제금액
+`;i.forEach((e,t)=>{a+=`${t+1},"${e.name.replace(/"/g,`""`)}",${e.price},${e.qty},${e.amount}\n`});let o=new Blob([`﻿`+a],{type:`text/csv;charset=utf-8;`}),c=URL.createObjectURL(o),l=document.createElement(`a`);l.href=c,l.download=`상품판매순위_${t}.csv`,document.body.appendChild(l),l.click(),document.body.removeChild(l),URL.revokeObjectURL(c)}),document.getElementById(`btn-download-timeline-csv`)?.addEventListener(`click`,()=>{let e=en(t),n=`방송경과(분),기록시각,실시간시청자수(명)
+`;e.forEach(e=>{n+=`${e.minute},${e.time},${e.viewers}\n`});let r=new Blob([`﻿`+n],{type:`text/csv;charset=utf-8;`}),i=URL.createObjectURL(r),a=document.createElement(`a`);a.href=i,a.download=`시청자_1분단위_로그_${t}.csv`,document.body.appendChild(a),a.click(),document.body.removeChild(a),URL.revokeObjectURL(i)}),document.getElementById(`subtab-product-filter`)?.addEventListener(`change`,e=>{i=e.target.value,p()}),document.getElementById(`subtab-order-search`)?.addEventListener(`input`,e=>{a=e.target.value,p()});let g=document.getElementById(`rank-sort-qty`),_=document.getElementById(`rank-sort-amount`);g&&_&&(g.addEventListener(`click`,()=>{r=`qty`,g.style.background=`#fff`,g.style.color=`#0f172a`,g.style.fontWeight=`700`,g.style.boxShadow=`0 1px 2px rgba(0,0,0,0.06)`,_.style.background=`transparent`,_.style.color=`#64748b`,_.style.fontWeight=`600`,_.style.boxShadow=`none`,m()}),_.addEventListener(`click`,()=>{r=`amount`,_.style.background=`#fff`,_.style.color=`#0f172a`,_.style.fontWeight=`700`,_.style.boxShadow=`0 1px 2px rgba(0,0,0,0.06)`,g.style.background=`transparent`,g.style.color=`#64748b`,g.style.fontWeight=`600`,g.style.boxShadow=`none`,m()}));let v=A.querySelectorAll(`.order-sub-tab-btn`),y=A.querySelectorAll(`.order-sub-view`);if(v.forEach(e=>{e.addEventListener(`click`,()=>{v.forEach(e=>{e.classList.remove(`active`),e.style.background=`transparent`,e.style.color=`#64748b`,e.style.fontWeight=`600`,e.style.boxShadow=`none`}),e.classList.add(`active`),e.style.background=`#fff`,e.style.color=`#0f172a`,e.style.fontWeight=`700`,e.style.boxShadow=`0 1px 3px rgba(0,0,0,0.1)`,y.forEach(e=>e.style.display=`none`);let t=document.getElementById(`order-sub-${e.dataset.subtab}`);t&&(t.style.display=`block`),e.dataset.subtab===`timeline`&&h()})}),e&&e!==`orders`){let t=A.querySelector(`.order-sub-tab-btn[data-subtab="${e}"]`);t&&t.click()}o=setInterval(()=>{f(),h()},3e4),A.addEventListener(`adminTabLeave`,()=>{o&&clearInterval(o)},{once:!0})},ye=()=>ve(`ranking`),be=S.querySelector(`#btn-back`);be&&be.addEventListener(`click`,()=>{A.dispatchEvent(new Event(`adminTabLeave`)),k(),p&&clearInterval(p),Ce&&X.removeChannel(Ce),Se&&X.removeChannel(Se),n(null)});let xe=S.querySelector(`#btn-refresh-preview`);xe&&xe.addEventListener(`click`,()=>{let e=S.querySelector(`#live-preview-iframe`);e&&(e.src=M)});let Se=null;X&&(Se=X.channel(`bot-sync-${t}`).on(`postgres_changes`,{event:`INSERT`,schema:`public`,table:`live_chats`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(n&&f.autoReplyActive&&f.autoReplyRules&&f.autoReplyRules.length>0){let e=n.nickname||``;if(!e.includes(`|`)&&e!==`관리자`&&e!==`자동응답봇`){let e=(n.content||``).toLowerCase();for(let n of f.autoReplyRules)if(n.keywords.split(`,`).map(e=>e.trim().toLowerCase()).filter(e=>e).some(t=>e.includes(t))){setTimeout(async()=>{try{if(!X)return;await X.from(`live_chats`).insert([{live_id:t,nickname:`자동응답봇`,content:n.answer,created_at:Date.now().toString()}])}catch(e){console.warn(`Auto-reply failed`,e)}},600);break}}}}).subscribe());let Ce=null;X&&(Ce=X.channel(`admin-sync-${t}`).on(`postgres_changes`,{event:`UPDATE`,schema:`public`,table:`live_control`,filter:`live_id=eq.${t}`},e=>{let n=e.new;if(!n)return;l.brandName=n.title||``,l.title=n.subtitle||``;let r=n.profile_image||``,i=`라이브 보기`,a=`right`,o=``,s=!1,c=!0,f=``,p=``,m=r.split(`#`),h=m[0];m.slice(1).forEach(e=>{e===`nosplash`||(e.startsWith(`widgetText=`)?i=decodeURIComponent(e.replace(`widgetText=`,``)):e.startsWith(`widgetPosition=`)?a=e.replace(`widgetPosition=`,``):e.startsWith(`widgetImageUrl=`)?o=e.replace(`widgetImageUrl=`,``):e.startsWith(`showOnMain=`)?s=e.replace(`showOnMain=`,``)===`true`:e.startsWith(`showNoticeNote=`)?c=e.replace(`showNoticeNote=`,``)!==`false`:e.startsWith(`noticeNoteTitle=`)?f=decodeURIComponent(e.replace(`noticeNoteTitle=`,``)):e.startsWith(`noticeNoteContent=`)&&(p=decodeURIComponent(e.replace(`noticeNoteContent=`,``))))}),l.showSplash=!r.includes(`#nosplash`),l.logoUrl=h,l.widgetText=i,l.widgetPosition=a,l.widgetImageUrl=o,l.showOnMain=s,l.showNoticeNote=c,l.noticeNoteTitle=f,l.noticeNoteContent=p,l.streamUrl=n.stream_url||``,l.showViewers=n.show_viewers!==!1,l.thumbnailUrl=n.thumbnail_url||``,l.liveStartTime=n.start_time||``,l.isLive=n.status===`ON`,l.shareTitle=n.share_title||``,l.shareDesc=n.share_desc||``,l.shareImageUrl=n.share_image||``,l.likeImageUrl=n.like_image_url||``,l.bannedWords=n.banned_words||``,l.bannedUsers=n.banned_users||``,n.winner_name!==void 0&&(l.winner_name=n.winner_name),n.winner_timestamp!==void 0&&(l.winner_timestamp=n.winner_timestamp),n.viewers!==void 0&&(u.viewers=parseInt(n.viewers)||0),n.cum_viewers!==void 0&&(u.cumViewers=parseInt(n.cum_viewers)||0),n.hearts!==void 0&&(u.hearts=parseInt(n.hearts)||0),Zt(t,l),$t(t,u),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay();let g=(e,t)=>{let n=S.querySelector(`#`+e)||document.getElementById(e);n&&document.activeElement!==n&&(n.type===`checkbox`?n.checked=!!t:n.value=t)};g(`cfg-brandName`,l.brandName),g(`cfg-title`,l.title),g(`cfg-stream`,l.streamUrl),g(`cfg-showViewers`,l.showViewers),g(`cfg-liveStartTime`,l.liveStartTime),g(`cfg-shareTitle`,l.shareTitle),g(`cfg-shareDesc`,l.shareDesc),g(`cfg-bannedWords`,l.bannedWords),g(`cfg-bannedUsers`,l.bannedUsers);let _=S.querySelector(`#logo-preview`)||document.getElementById(`logo-preview`);_&&(_.src=l.logoUrl);let v=S.querySelector(`#thumbnail-preview`)||document.getElementById(`thumbnail-preview`);v&&(v.src=l.thumbnailUrl);let y=S.querySelector(`#like-preview`)||document.getElementById(`like-preview`);y&&(y.src=l.likeImageUrl,y.style.display=l.likeImageUrl?`block`:`none`);let b=S.querySelector(`#like-preview-placeholder`)||document.getElementById(`like-preview-placeholder`);b&&(b.style.display=l.likeImageUrl?`none`:`block`);let x=S.querySelector(`#btn-clear-like-icon`)||document.getElementById(`btn-clear-like-icon`);x&&(x.style.display=l.likeImageUrl?`block`:`none`);let C=S.querySelector(`#btn-toggle-live`)||document.getElementById(`btn-toggle-live`);if(C&&document.activeElement!==C&&(C.textContent=l.isLive?`라이브 종료`:`라이브 시작`,C.className=`action-btn ${l.isLive?`btn-danger-solid`:`btn-success-solid`}`),n.products&&Array.isArray(n.products)){let e=JSON.stringify(n.products);if(JSON.stringify(d)!==e){Array.isArray(d)||(d=[]),d.length=0,d.push(...n.products),rn(t,d);let e=S.querySelector(`#product-list-container`)||document.getElementById(`product-list-container`);e&&!e.contains(document.activeElement)&&typeof B==`function`&&(e.innerHTML=B())}}}).subscribe());let we=-1;X&&setInterval(async()=>{try{let{data:e,error:n}=await X.from(`live_control`).select(`viewers, cum_viewers, hearts, status`).eq(`live_id`,t).maybeSingle();if(e&&!n&&(u.viewers=parseInt(e.viewers)||0,u.cumViewers=parseInt(e.cum_viewers)||0,u.hearts=parseInt(e.hearts)||0,$t(t,u),typeof window.updateAdminViewersDisplay==`function`&&window.updateAdminViewersDisplay(),l.isLive||e.status===`ON`)){let e=l.liveStartedAt?new Date(l.liveStartedAt).getTime():Date.now(),n=Math.max(0,Math.floor((Date.now()-e)/6e4));if(n!==we){we=n;let e=en(t),r=new Date().toLocaleTimeString(`ko-KR`,{hour12:!1,hour:`2-digit`,minute:`2-digit`,second:`2-digit`}),i=u.viewers+(u.cumViewers||0),a=e.findIndex(e=>e.minute===n);a>=0?(e[a].viewers=Math.max(e[a].viewers,i),e[a].time=r):e.push({minute:n,time:r,viewers:i}),tn(t,e)}}}catch{}},2500);let Te=w.querySelectorAll(`.tab-btn`),V=e=>{A.dispatchEvent(new Event(`adminTabLeave`)),Te.forEach(t=>t.classList.toggle(`active`,t.dataset.tab===e)),e===`config`?me():e===`chat`?he():e===`product`?ge():e===`orders`?ve():e===`stats`?ye():e===`leads`&&_e()};Te.forEach(e=>{e.addEventListener(`click`,()=>V(e.dataset.tab))}),a?he():me()}function hn(){let e=document.createElement(`div`),t=``,n=null,r=`desc`;function i(){let a=U.getCurrentRole()===`pd`,o=U.getAll(`hosts`);if(t){let e=t.toLowerCase();o=o.filter(t=>t.name.toLowerCase().includes(e)||t.phone&&t.phone.includes(e))}let s=o.map(e=>{let t=U.getHostStats(e.id);return{...e,stats:t}});n&&s.sort((e,t)=>{let i=e.stats[n]||0,a=t.stats[n]||0;return i<a?r===`asc`?-1:1:i>a?r===`asc`?1:-1:0});let c=e=>n===e?r===`asc`?`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▲</span>`:`<span style="color:#3b82f6; font-size:10px; margin-left:4px;">▼</span>`:`<span style="color:#cbd5e1; font-size:10px; margin-left:4px;">↕</span>`,l=`
       <tr>
         <th>이름</th>
         <th>전화번호</th>

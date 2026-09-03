@@ -3449,7 +3449,7 @@ function renderLiveEditView(container, liveId, showView) {
     document.getElementById('btn-download-csv-leads').addEventListener('click', downloadCsv);
   };
 
-    // ── 주문 통계 (주문 내역 & 판매 랭킹 & 1분 단위 시청자 추이) 통합 미니멀 탭 ────────
+    // ── 주문 통계 (주문 관리 / 판매 순위 랭킹 / 1분 단위 시청자 통계) 탭 ────────
   const renderOrdersTab = (initialSubTab = 'orders') => {
     let currentSubTab = initialSubTab; // 'orders' | 'ranking' | 'timeline'
     let currentOrders = [];
@@ -3459,83 +3459,146 @@ function renderLiveEditView(container, liveId, showView) {
     let statsTimer = null;
 
     contentArea.innerHTML = `
-      <div class="section-card" style="margin-bottom:20px; padding:20px 22px;">
-        <!-- 1. 상단 미니멀 헤더 & 3분할 세그먼트 네비게이션 -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; border-bottom:1px solid #f1f5f9; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
-          <!-- 좌측: 타이틀 & 상태 뱃지 -->
-          <div style="display:flex; align-items:center; gap:8px;">
-            <h2 style="font-size:15.5px; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.01em;">
-              주문 통계
-            </h2>
-            <span id="orders-status-badge" style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; background:#f1f5f9; color:#64748b;">
-              집계 중
-            </span>
-          </div>
-
-          <!-- 중앙: 미니멀 캡슐형 세그먼트 서브 탭 -->
-          <div style="display:flex; background:#f1f5f9; padding:3px; border-radius:9px; gap:2px;">
-            <button id="subtab-btn-orders" type="button" class="subtab-item" data-subtab="orders"
-              style="padding:6px 14px; font-size:12.5px; font-weight:700; border-radius:7px; border:none; background:#ffffff; color:#0f172a; box-shadow:0 1px 2px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.15s;">
-              주문 내역
-            </button>
-            <button id="subtab-btn-ranking" type="button" class="subtab-item" data-subtab="ranking"
-              style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:7px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
-              판매 랭킹
-            </button>
-            <button id="subtab-btn-timeline" type="button" class="subtab-item" data-subtab="timeline"
-              style="padding:6px 14px; font-size:12.5px; font-weight:600; border-radius:7px; border:none; background:transparent; color:#64748b; cursor:pointer; transition:all 0.15s;">
-              시청자 추이 (1분)
-            </button>
-          </div>
-
-          <!-- 우측: 액션 버튼 그룹 (CSV 추출 & 새로고침) -->
-          <div style="display:flex; gap:8px; align-items:center;">
-            <button id="btn-export-csv" class="action-btn btn-primary-solid" style="padding:7px 14px; font-size:12.5px; display:flex; align-items:center; gap:5px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span id="btn-export-csv-text">CSV 추출</span>
-            </button>
-            <button id="btn-refresh-unified" class="action-btn btn-neutral" style="padding:7px 12px; font-size:12.5px;">새로고침</button>
-          </div>
-        </div>
-
-        <!-- 2. 슬림 미니멀 KPI 핵심 지표 행 (4개 카드) -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px; margin-bottom:20px;">
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">총 결제 금액</div>
-            <div id="kpi-total-sales" style="font-size:19px; font-weight:800; color:#0f172a; font-family:monospace, -apple-system;">0원</div>
-            <div id="kpi-orders-count" style="font-size:11px; color:#64748b; margin-top:2px;">0건 결제 완료</div>
-          </div>
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">총 판매 수량</div>
-            <div id="kpi-total-qty" style="font-size:19px; font-weight:800; color:#0f172a; font-family:monospace, -apple-system;">0개</div>
-            <div id="kpi-product-types" style="font-size:11px; color:#64748b; margin-top:2px;">0종 품목</div>
-          </div>
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">최고 시청자 (Peak)</div>
-            <div id="kpi-peak-viewers" style="font-size:19px; font-weight:800; color:#ef4444; font-family:monospace, -apple-system;">0명</div>
-            <div id="kpi-peak-time" style="font-size:11px; color:#64748b; margin-top:2px;">기록 없음</div>
-          </div>
-          <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:3px;">평균 시청자</div>
-            <div id="kpi-avg-viewers" style="font-size:19px; font-weight:800; color:#2563eb; font-family:monospace, -apple-system;">0명</div>
-            <div id="kpi-cum-viewers" style="font-size:11px; color:#64748b; margin-top:2px;">누적 0명</div>
-          </div>
-        </div>
-
-        <!-- 3. 서브 탭 뷰 동적 컨테이너 -->
-        <div id="subtab-dynamic-container">
-          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 20px;">
-            <div style="width:30px; height:30px; border:3px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
-            <div style="font-size:13px; font-weight:600; color:#475569;">주문 및 통계 데이터를 불러오는 중입니다...</div>
-          </div>
-          <style>@keyframes ordersSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-        </div>
-
+      <!-- 서브 탭 네비게이션 (채팅관리 탭 표준 디자인) -->
+      <div style="display:flex; gap:8px; margin-bottom:16px; background:#f1f5f9; padding:4px; border-radius:10px;">
+        <button class="order-sub-tab-btn active" data-subtab="orders" style="flex:1; padding:8px 0; font-size:13px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">주문 관리</button>
+        <button class="order-sub-tab-btn" data-subtab="ranking" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">판매 순위 랭킹</button>
+        <button class="order-sub-tab-btn" data-subtab="timeline" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">1분 단위 시청자 통계</button>
       </div>
+
+      <!-- 1. 주문 관리 뷰 -->
+      <div id="order-sub-orders" class="order-sub-view">
+        <div class="section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3 style="margin:0; border:none; padding:0;">실시간 주문 내역</h3>
+              <span id="orders-status-badge" style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; background:#f1f5f9; color:#64748b;">집계 중</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button id="btn-download-orders-csv" class="action-btn btn-primary-solid" style="padding:6px 14px; font-size:12px; display:flex; align-items:center; gap:5px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>주문내역 CSV</span>
+              </button>
+              <button id="btn-refresh-orders" class="action-btn btn-neutral" style="padding:6px 12px; font-size:12px;">새로고침</button>
+            </div>
+          </div>
+
+          <!-- 4대 메트릭 요약 카드 -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:20px;">
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">총 결제 금액 (실매출)</div>
+              <div id="kpi-total-sales" style="font-size:22px; font-weight:800; color:#0f172a;">0원</div>
+              <div id="kpi-orders-count" style="font-size:11.5px; color:#64748b; margin-top:3px;">결제완료 0건</div>
+            </div>
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">총 판매 수량</div>
+              <div id="kpi-total-qty" style="font-size:22px; font-weight:800; color:#0f172a;">0개</div>
+              <div id="kpi-product-types" style="font-size:11.5px; color:#64748b; margin-top:3px;">0종 품목</div>
+            </div>
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">최고 시청자 (Peak)</div>
+              <div id="kpi-peak-viewers" style="font-size:22px; font-weight:800; color:#ef4444;">0명</div>
+              <div id="kpi-peak-time" style="font-size:11.5px; color:#64748b; margin-top:3px;">기록 없음</div>
+            </div>
+            <div style="background:#f8fafc; padding:14px 18px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="font-size:11.5px; font-weight:700; color:#64748b; margin-bottom:4px;">평균 시청자</div>
+              <div id="kpi-avg-viewers" style="font-size:22px; font-weight:800; color:#2563eb;">0명</div>
+              <div id="kpi-cum-viewers" style="font-size:11.5px; color:#64748b; margin-top:3px;">누적 0명</div>
+            </div>
+          </div>
+
+          <!-- 검색 & 제품 필터 바 (채팅관리 영역 스타일) -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="subtab-product-filter" class="modern-input" style="height:36px; padding:6px 12px; font-size:12.5px; background:#fff; cursor:pointer;">
+                <option value="all">전체 제품 보기</option>
+              </select>
+              <span id="orders-count-badge" style="font-size:12px; color:#64748b; font-weight:600;">총 0건</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="subtab-order-search" class="modern-input" placeholder="주문자, 연락처, 상품명 검색" style="height:36px; width:220px; font-size:12.5px;">
+            </div>
+          </div>
+
+          <!-- 주문 테이블 컨테이너 -->
+          <div id="orders-table-container" style="border:1.5px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 20px;">
+              <div style="width:30px; height:30px; border:3px solid #e2e8f0; border-top-color:#2563eb; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
+              <div style="font-size:13px; font-weight:600; color:#475569;">주문 내역을 불러오는 중입니다...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 판매 순위 랭킹 뷰 -->
+      <div id="order-sub-ranking" class="order-sub-view" style="display:none;">
+        <div class="section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="margin:0 0 4px 0; border:none; padding:0;">상품 판매 순위 랭킹</h3>
+              <p style="margin:0; font-size:12px; color:#64748b;">실제 결제 완료된 데이터를 바탕으로 어떤 상품이 가장 많이 팔렸는지 순위별로 집계합니다.</p>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div style="display:flex; background:#f1f5f9; padding:2px; border-radius:8px; gap:2px;">
+                <button id="rank-sort-qty" type="button" style="padding:6px 14px; font-size:12px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:6px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.06);">판매 수량순</button>
+                <button id="rank-sort-amount" type="button" style="padding:6px 14px; font-size:12px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:6px; cursor:pointer;">결제 금액순</button>
+              </div>
+              <button id="btn-download-ranking-csv" class="action-btn btn-primary-solid" style="padding:6px 14px; font-size:12px;">순위 CSV</button>
+            </div>
+          </div>
+
+          <!-- 판매 랭킹 테이블 컨테이너 -->
+          <div id="ranking-table-container" style="border:1.5px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff;">
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:50px 20px;">
+              <div style="width:30px; height:30px; border:3px solid #e2e8f0; border-top-color:#0f172a; border-radius:50%; animation:ordersSpin 0.75s linear infinite; margin-bottom:12px;"></div>
+              <div style="font-size:13px; font-weight:600; color:#64748b;">판매 순위를 분석 중입니다...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 1분 단위 시청자 통계 뷰 -->
+      <div id="order-sub-timeline" class="order-sub-view" style="display:none;">
+        <div class="section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h3 style="margin:0 0 4px 0; border:none; padding:0;">방송 시작 후 1분 단위 시청자 수 추이</h3>
+              <p style="margin:0; font-size:12px; color:#64748b;">방송 시작 후 1분마다 실시간 시청자 수를 정밀하게 체크하여 기록한 통계입니다.</p>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span id="timeline-duration-badge" style="font-size:12px; font-weight:700; color:#475569; background:#f1f5f9; padding:5px 12px; border-radius:6px; font-family:monospace;">측정 기록: 0분</span>
+              <button id="btn-download-timeline-csv" class="action-btn btn-primary-solid" style="padding:6px 14px; font-size:12px;">시청자 기록 CSV</button>
+            </div>
+          </div>
+
+          <!-- 인터랙티브 SVG 시청자 그래프 -->
+          <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:12px; padding:20px 16px 14px 16px; margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:12px; font-weight:700; color:#475569;">1분 단위 시계열 그래프</span>
+              <span id="timeline-chart-info" style="font-size:11.5px; color:#94a3b8;">총 0분 측정</span>
+            </div>
+            <div id="timeline-chart-content" style="width:100%; height:150px;">
+              <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:13px;">그래프 데이터를 불러오는 중...</div>
+            </div>
+          </div>
+
+          <!-- 1분 단위 상세 시청자 로그 테이블 -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:13px; font-weight:700; color:#334155;">1분 단위 상세 시청자 로그</span>
+              <span id="timeline-log-count-badge" style="font-size:11.5px; font-weight:600; color:#64748b;">총 0개 기록</span>
+            </div>
+            <div id="timeline-table-container" style="border:1.5px solid #e2e8f0; border-radius:12px; overflow:hidden; max-height:280px; overflow-y:auto; background:#fff;">
+              <div style="text-align:center; padding:30px; color:#94a3b8; font-size:13px;">시청자 로그 기록을 불러오는 중...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <style>@keyframes ordersSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
     `;
 
     // ── 주문 아이템 품목 파싱 헬퍼 ──
@@ -3671,7 +3734,7 @@ function renderLiveEditView(container, liveId, showView) {
 
         currentOrders = Array.from(orderMap.values()).sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
-        // 1-5. PayApp 실시간 결제 상태 조회 동기화 (실제 결제 완료 여부 자동 검증!)
+        // 1-5. PayApp 실시간 결제 상태 조회 동기화
         const mulNos = currentOrders.map(o => o.pg_receipt_id).filter(m => m && m !== 'undefined' && m !== '-');
         if (mulNos.length > 0) {
           try {
@@ -3710,7 +3773,9 @@ function renderLiveEditView(container, liveId, showView) {
       }
 
       updateKpis();
-      renderActiveSubTab();
+      renderOrdersView();
+      renderRankingView();
+      renderTimelineView();
     };
 
     // ── KPI 계산 및 반영 (실제 결제 완료된 데이터만 매출 및 판매량에 집계!) ──
@@ -3723,7 +3788,6 @@ function renderLiveEditView(container, liveId, showView) {
       let totalQty = 0;
       const productTypesSet = new Set();
 
-      // 오직 실제 결제 완료(paid)된 주문만 집계!
       paidOrders.forEach(ord => {
         const items = parseItems(ord);
         items.forEach(it => {
@@ -3776,37 +3840,11 @@ function renderLiveEditView(container, liveId, showView) {
       if (elCumViewers) elCumViewers.textContent = `누적 ${(stats.cumViewers || 0).toLocaleString()}명`;
     };
 
-    // ── 2. 서브 탭 뷰 라우팅 ──
-    const renderActiveSubTab = () => {
-      const container = document.getElementById('subtab-dynamic-container');
+    // ── [서브 뷰 1] 주문 내역 렌더링 ──
+    const renderOrdersView = () => {
+      const container = document.getElementById('orders-table-container');
       if (!container) return;
 
-      document.querySelectorAll('.subtab-item').forEach(btn => {
-        const isActive = btn.dataset.subtab === currentSubTab;
-        btn.style.background = isActive ? '#ffffff' : 'transparent';
-        btn.style.color = isActive ? '#0f172a' : '#64748b';
-        btn.style.fontWeight = isActive ? '700' : '600';
-        btn.style.boxShadow = isActive ? '0 1px 2px rgba(0,0,0,0.06)' : 'none';
-      });
-
-      const csvTextEl = document.getElementById('btn-export-csv-text');
-      if (csvTextEl) {
-        if (currentSubTab === 'orders') csvTextEl.textContent = '주문내역 CSV';
-        else if (currentSubTab === 'ranking') csvTextEl.textContent = '판매순위 CSV';
-        else csvTextEl.textContent = '시청자로그 CSV';
-      }
-
-      if (currentSubTab === 'orders') {
-        renderOrdersView(container);
-      } else if (currentSubTab === 'ranking') {
-        renderRankingView(container);
-      } else if (currentSubTab === 'timeline') {
-        renderTimelineView(container);
-      }
-    };
-
-    // ── [서브 뷰 1] 주문 내역 목록 (실제 고객 정보 및 정확한 결제 상태 표기) ──
-    const renderOrdersView = (container) => {
       const allProductNames = new Set();
       currentOrders.forEach(ord => {
         parseItems(ord).forEach(it => {
@@ -3829,82 +3867,74 @@ function renderLiveEditView(container, liveId, showView) {
         });
       }
 
-      let optionsHtml = '<option value="all">전체 제품 보기</option>';
-      allProductNames.forEach(name => {
-        optionsHtml += `<option value="${name}" ${selectedProductFilter === name ? 'selected' : ''}>${name}</option>`;
-      });
+      const countBadge = document.getElementById('orders-count-badge');
+      if (countBadge) countBadge.textContent = `총 ${filtered.length}건`;
 
-      let rowsHtml = '';
-      if (filtered.length === 0) {
-        rowsHtml = `
-          <tr>
-            <td colspan="7" style="text-align:center; padding:35px 20px; color:#94a3b8; font-size:13px;">
-              조회된 실제 주문 내역이 없습니다.
-            </td>
-          </tr>
-        `;
-      } else {
-        filtered.forEach(ord => {
-          const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
-          const isPaid = pStatus === 'paid';
-          const isCancel = cancelStatuses.includes(pStatus);
-          const isPending = !isPaid && !isCancel;
-
-          let statusBadge = '';
-          if (isPaid) {
-            statusBadge = '<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#ecfdf5; color:#059669;">결제완료</span>';
-          } else if (isCancel) {
-            statusBadge = '<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#fef2f2; color:#ef4444;">취소/환불</span>';
-          } else {
-            statusBadge = '<span style="font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px; background:#fffbeb; color:#d97706;">결제대기</span>';
-          }
-
-          const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
-          const items = parseItems(ord);
-          const itemsText = items.map(it => `${it.name || it.goodname} (${it.quantity || 1}개)`).join(', ');
-          const customerName = ord.customer_name || ord.buyer_name || '-';
-
-          rowsHtml += `
-            <tr style="border-bottom:1px solid #f8fafc; font-size:12.5px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-              <td style="padding:10px 12px; color:#64748b; font-family:monospace;">${dateStr}</td>
-              <td style="padding:10px 12px; font-weight:700; color:#0f172a; max-width:260px; line-height:1.35;">${itemsText}</td>
-              <td style="padding:10px 12px; text-align:right; font-weight:800; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : isPaid ? '#0f172a;' : '#d97706;'}">
-                ${(parseInt(ord.total_amount) || 0).toLocaleString()}원
-              </td>
-              <td style="padding:10px 12px; color:#334155; font-weight:600;">${customerName}</td>
-              <td style="padding:10px 12px; color:#64748b; font-family:monospace;">${ord.customer_phone || ord.buyer_phone || '-'}</td>
-              <td style="padding:10px 12px; text-align:center;">${statusBadge}</td>
-              <td style="padding:10px 12px; color:#94a3b8; font-size:11px; font-family:monospace;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
-            </tr>
-          `;
+      const filterSelect = document.getElementById('subtab-product-filter');
+      if (filterSelect && filterSelect.options.length <= 1) {
+        let optionsHtml = '<option value="all">전체 제품 보기</option>';
+        allProductNames.forEach(name => {
+          optionsHtml += `<option value="${name}" ${selectedProductFilter === name ? 'selected' : ''}>${name}</option>`;
         });
+        filterSelect.innerHTML = optionsHtml;
       }
 
-      container.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-          <div style="display:flex; gap:8px; align-items:center;">
-            <select id="subtab-product-filter" style="padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; color:#0f172a; background:#ffffff; outline:none; cursor:pointer;">
-              ${optionsHtml}
-            </select>
-            <span style="font-size:12px; color:#64748b; font-weight:600;">총 ${filtered.length}건</span>
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:50px 20px; color:#94a3b8; font-size:13.5px;">
+            조회된 주문 내역이 없습니다.
           </div>
-          <div style="display:flex; gap:6px;">
-            <input type="text" id="subtab-order-search" value="${searchQuery}" placeholder="주문자, 연락처, 상품명 검색"
-              style="padding:6px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; width:210px; outline:none;">
-          </div>
-        </div>
+        `;
+        return;
+      }
 
-        <div style="overflow-x:auto; border:1px solid #f1f5f9; border-radius:10px;">
+      let rowsHtml = '';
+      filtered.forEach(ord => {
+        const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
+        const isPaid = pStatus === 'paid';
+        const isCancel = cancelStatuses.includes(pStatus);
+
+        let statusBadge = '';
+        if (isPaid) {
+          statusBadge = '<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #d1fae5;">결제완료</span>';
+        } else if (isCancel) {
+          statusBadge = '<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fef2f2; color:#ef4444; border:1px solid #fee2e2;">취소/환불</span>';
+        } else {
+          statusBadge = '<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">결제대기</span>';
+        }
+
+        const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '-';
+        const items = parseItems(ord);
+        const itemsText = items.map(it => `${it.name || it.goodname} (${it.quantity || 1}개)`).join(', ');
+        const customerName = ord.customer_name || ord.buyer_name || '-';
+
+        rowsHtml += `
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding:12px 14px; color:#64748b; font-family:monospace; font-size:12px;">${dateStr}</td>
+            <td style="padding:12px 14px; font-weight:700; color:#0f172a; max-width:280px; line-height:1.4;">${itemsText}</td>
+            <td style="padding:12px 14px; text-align:right; font-weight:800; font-size:14px; color:${isCancel ? '#94a3b8; text-decoration:line-through;' : isPaid ? '#0f172a;' : '#d97706;'}">
+              ${(parseInt(ord.total_amount) || 0).toLocaleString()}원
+            </td>
+            <td style="padding:12px 14px; color:#334155; font-weight:600;">${customerName}</td>
+            <td style="padding:12px 14px; color:#64748b; font-family:monospace; font-size:12px;">${ord.customer_phone || ord.buyer_phone || '-'}</td>
+            <td style="padding:12px 14px; text-align:center;">${statusBadge}</td>
+            <td style="padding:12px 14px; color:#94a3b8; font-size:11.5px; font-family:monospace;">${ord.pg_receipt_id || ord.receipt_id || ord.order_number || '-'}</td>
+          </tr>
+        `;
+      });
+
+      container.innerHTML = `
+        <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; text-align:left;">
             <thead>
-              <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:11.5px; color:#64748b;">
-                <th style="padding:9px 12px; font-weight:700; width:110px;">일시</th>
-                <th style="padding:9px 12px; font-weight:700;">주문 상품</th>
-                <th style="padding:9px 12px; font-weight:700; width:100px; text-align:right;">금액</th>
-                <th style="padding:9px 12px; font-weight:700; width:90px;">주문자</th>
-                <th style="padding:9px 12px; font-weight:700; width:110px;">연락처</th>
-                <th style="padding:9px 12px; font-weight:700; width:85px; text-align:center;">상태</th>
-                <th style="padding:9px 12px; font-weight:700; width:110px;">영수증번호</th>
+              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b;">
+                <th style="padding:11px 14px; font-weight:700; width:110px;">주문일시</th>
+                <th style="padding:11px 14px; font-weight:700;">주문 상품</th>
+                <th style="padding:11px 14px; font-weight:700; width:110px; text-align:right;">결제금액</th>
+                <th style="padding:11px 14px; font-weight:700; width:95px;">주문자</th>
+                <th style="padding:11px 14px; font-weight:700; width:115px;">연락처</th>
+                <th style="padding:11px 14px; font-weight:700; width:90px; text-align:center;">상태</th>
+                <th style="padding:11px 14px; font-weight:700; width:115px;">영수증번호</th>
               </tr>
             </thead>
             <tbody>
@@ -3913,20 +3943,13 @@ function renderLiveEditView(container, liveId, showView) {
           </table>
         </div>
       `;
-
-      document.getElementById('subtab-product-filter')?.addEventListener('change', (e) => {
-        selectedProductFilter = e.target.value;
-        renderOrdersView(container);
-      });
-      document.getElementById('subtab-order-search')?.addEventListener('input', (e) => {
-        searchQuery = e.target.value;
-        renderOrdersView(container);
-      });
     };
 
-    // ── [서브 뷰 2] 상품 판매 순위 랭킹 (오직 실제 결제 완료된 상품만 순위 산정!) ──
-    const renderRankingView = (container) => {
-      // 실제 결제 완료된 주문만 추출!
+    // ── [서브 뷰 2] 판매 순위 랭킹 렌더링 ──
+    const renderRankingView = () => {
+      const container = document.getElementById('ranking-table-container');
+      if (!container) return;
+
       const paidOrders = currentOrders.filter(o => (o.payment_status || '').toLowerCase() === 'paid');
 
       const pMap = {};
@@ -3956,71 +3979,62 @@ function renderLiveEditView(container, liveId, showView) {
         list.sort((a, b) => b.totalAmount - a.totalAmount || b.totalQty - a.totalQty);
       }
 
-      let rowsHtml = '';
       if (list.length === 0) {
-        rowsHtml = `
-          <tr>
-            <td colspan="6" style="text-align:center; padding:35px 20px; color:#94a3b8; font-size:13px;">
-              실제 결제 완료된 판매 데이터가 아직 없습니다.
+        container.innerHTML = `
+          <div style="text-align:center; padding:50px 20px; color:#94a3b8; font-size:13.5px;">
+            실제 결제 완료된 판매 데이터가 아직 없습니다.
+          </div>
+        `;
+        return;
+      }
+
+      let rowsHtml = '';
+      list.forEach((it, idx) => {
+        const rank = idx + 1;
+        let rankBadge = `<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#f1f5f9; color:#64748b;">${rank}위</span>`;
+        if (rank === 1) {
+          rankBadge = `<span style="display:inline-block; padding:3px 9px; border-radius:6px; font-size:11px; font-weight:800; background:#0f172a; color:#ffffff;">1위 TOP</span>`;
+        } else if (rank === 2) {
+          rankBadge = `<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:800; background:#e2e8f0; color:#1e293b;">2위</span>`;
+        } else if (rank === 3) {
+          rankBadge = `<span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; background:#f8fafc; color:#334155; border:1px solid #e2e8f0;">3위</span>`;
+        }
+
+        const share = grandTotalSales > 0 ? ((it.totalAmount / grandTotalSales) * 100).toFixed(1) : 0;
+
+        rowsHtml += `
+          <tr style="border-bottom:1px solid #f1f5f9; font-size:13px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+            <td style="padding:12px 14px; text-align:center;">${rankBadge}</td>
+            <td style="padding:12px 14px;">
+              <span style="font-weight:700; color:#0f172a;">${it.name}</span>
+              ${it.code && it.code !== '-' ? `<span style="font-size:11px; color:#94a3b8; margin-left:6px; font-family:monospace;">${it.code}</span>` : ''}
+            </td>
+            <td style="padding:12px 14px; text-align:right; color:#475569;">${it.unitPrice.toLocaleString()}원</td>
+            <td style="padding:12px 14px; text-align:right; font-weight:800; color:#0f172a; font-size:14px;">${it.totalQty.toLocaleString()}개</td>
+            <td style="padding:12px 14px; text-align:right; font-weight:800; color:#2563eb; font-size:14px;">${it.totalAmount.toLocaleString()}원</td>
+            <td style="padding:12px 14px; width:170px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="flex:1; height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                  <div style="width:${share}%; height:100%; background:#2563eb; border-radius:3px;"></div>
+                </div>
+                <span style="font-size:11.5px; font-weight:700; color:#64748b; width:40px; text-align:right;">${share}%</span>
+              </div>
             </td>
           </tr>
         `;
-      } else {
-        list.forEach((it, idx) => {
-          const rank = idx + 1;
-          let rankBadge = `<span style="display:inline-block; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:700; background:#f1f5f9; color:#64748b;">${rank}위</span>`;
-          if (rank === 1) {
-            rankBadge = `<span style="display:inline-block; padding:2px 8px; border-radius:5px; font-size:11px; font-weight:800; background:#0f172a; color:#ffffff;">1위 TOP</span>`;
-          } else if (rank === 2) {
-            rankBadge = `<span style="display:inline-block; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:800; background:#e2e8f0; color:#1e293b;">2위</span>`;
-          } else if (rank === 3) {
-            rankBadge = `<span style="display:inline-block; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:700; background:#f8fafc; color:#334155; border:1px solid #e2e8f0;">3위</span>`;
-          }
-
-          const share = grandTotalSales > 0 ? ((it.totalAmount / grandTotalSales) * 100).toFixed(1) : 0;
-
-          rowsHtml += `
-            <tr style="border-bottom:1px solid #f8fafc; font-size:12.5px; transition:background 0.12s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-              <td style="padding:10px 12px; text-align:center;">${rankBadge}</td>
-              <td style="padding:10px 12px;">
-                <span style="font-weight:700; color:#0f172a;">${it.name}</span>
-                ${it.code && it.code !== '-' ? `<span style="font-size:10.5px; color:#94a3b8; margin-left:6px; font-family:monospace;">${it.code}</span>` : ''}
-              </td>
-              <td style="padding:10px 12px; text-align:right; color:#475569;">${it.unitPrice.toLocaleString()}원</td>
-              <td style="padding:10px 12px; text-align:right; font-weight:800; color:#0f172a; font-size:13.5px;">${it.totalQty.toLocaleString()}개</td>
-              <td style="padding:10px 12px; text-align:right; font-weight:800; color:#2563eb; font-size:13.5px;">${it.totalAmount.toLocaleString()}원</td>
-              <td style="padding:10px 12px; width:160px;">
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <div style="flex:1; height:5px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
-                    <div style="width:${share}%; height:100%; background:#2563eb; border-radius:3px;"></div>
-                  </div>
-                  <span style="font-size:11px; font-weight:600; color:#64748b; width:34px; text-align:right;">${share}%</span>
-                </div>
-              </td>
-            </tr>
-          `;
-        });
-      }
+      });
 
       container.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <span style="font-size:12px; font-weight:600; color:#64748b;">실제 결제 완료 품목: 총 ${list.length}개</span>
-          <div style="display:flex; background:#f1f5f9; padding:2px; border-radius:7px; gap:2px;">
-            <button id="rank-sort-qty" type="button" style="padding:4px 10px; font-size:11.5px; font-weight:${rankingSortBy === 'qty' ? '700' : '600'}; border-radius:5px; border:none; background:${rankingSortBy === 'qty' ? '#ffffff' : 'transparent'}; color:${rankingSortBy === 'qty' ? '#0f172a' : '#64748b'}; box-shadow:${rankingSortBy === 'qty' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'}; cursor:pointer;">수량순</button>
-            <button id="rank-sort-amount" type="button" style="padding:4px 10px; font-size:11.5px; font-weight:${rankingSortBy === 'amount' ? '700' : '600'}; border-radius:5px; border:none; background:${rankingSortBy === 'amount' ? '#ffffff' : 'transparent'}; color:${rankingSortBy === 'amount' ? '#0f172a' : '#64748b'}; box-shadow:${rankingSortBy === 'amount' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'}; cursor:pointer;">금액순</button>
-          </div>
-        </div>
-
-        <div style="overflow-x:auto; border:1px solid #f1f5f9; border-radius:10px;">
+        <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; text-align:left;">
             <thead>
-              <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:11.5px; color:#64748b;">
-                <th style="padding:9px 12px; font-weight:700; width:70px; text-align:center;">순위</th>
-                <th style="padding:9px 12px; font-weight:700;">상품명</th>
-                <th style="padding:9px 12px; font-weight:700; width:100px; text-align:right;">판매단가</th>
-                <th style="padding:9px 12px; font-weight:700; width:90px; text-align:right;">판매수량</th>
-                <th style="padding:9px 12px; font-weight:700; width:120px; text-align:right;">총 결제금액</th>
-                <th style="padding:9px 12px; font-weight:700; width:160px;">매출 점유율</th>
+              <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b;">
+                <th style="padding:11px 14px; font-weight:700; width:75px; text-align:center;">순위</th>
+                <th style="padding:11px 14px; font-weight:700;">상품명</th>
+                <th style="padding:11px 14px; font-weight:700; width:110px; text-align:right;">판매단가</th>
+                <th style="padding:11px 14px; font-weight:700; width:100px; text-align:right;">판매수량</th>
+                <th style="padding:11px 14px; font-weight:700; width:130px; text-align:right;">총 결제금액</th>
+                <th style="padding:11px 14px; font-weight:700; width:170px;">매출 점유율</th>
               </tr>
             </thead>
             <tbody>
@@ -4029,13 +4043,10 @@ function renderLiveEditView(container, liveId, showView) {
           </table>
         </div>
       `;
-
-      document.getElementById('rank-sort-qty')?.addEventListener('click', () => { rankingSortBy = 'qty'; renderRankingView(container); });
-      document.getElementById('rank-sort-amount')?.addEventListener('click', () => { rankingSortBy = 'amount'; renderRankingView(container); });
     };
 
-    // ── [서브 뷰 3] 1분 단위 시청자 추이 ──
-    const renderTimelineView = (container) => {
+    // ── [서브 뷰 3] 1분 단위 시청자 통계 렌더링 ──
+    const renderTimelineView = () => {
       let timeline = getLiveTimeline(liveId);
       const currentTotal = (stats.viewers || 0) + (stats.cumViewers || 0);
 
@@ -4051,194 +4062,268 @@ function renderLiveEditView(container, liveId, showView) {
         if (v > peakViewers) peakViewers = v;
       });
 
-      const width = 800;
-      const height = 140;
-      const padLeft = 40;
-      const padRight = 24;
-      const padTop = 18;
-      const padBottom = 26;
+      const durEl = document.getElementById('timeline-duration-badge');
+      if (durEl) {
+        const lastMin = timeline.length > 0 ? timeline[timeline.length - 1].minute : 0;
+        durEl.textContent = `측정 기록: 총 ${lastMin}분 (${timeline.length}회)`;
+      }
+      const infoEl = document.getElementById('timeline-chart-info');
+      if (infoEl) infoEl.textContent = `총 ${timeline.length}분 측정 (최고 ${peakViewers.toLocaleString()}명)`;
+      const countEl = document.getElementById('timeline-log-count-badge');
+      if (countEl) countEl.textContent = `총 ${timeline.length}개 기록`;
 
-      const pW = width - padLeft - padRight;
-      const pH = height - padTop - padBottom;
-      const maxVal = Math.max(10, Math.ceil(peakViewers * 1.15));
+      // 차트 렌더링
+      const chartWrapper = document.getElementById('timeline-chart-content');
+      if (chartWrapper) {
+        const width = 800;
+        const height = 150;
+        const padLeft = 45;
+        const padRight = 30;
+        const padTop = 20;
+        const padBottom = 26;
 
-      const getX = (idx) => timeline.length <= 1 ? padLeft + pW / 2 : padLeft + (idx / (timeline.length - 1)) * pW;
-      const getY = (v) => padTop + pH - (v / maxVal) * pH;
+        const pW = width - padLeft - padRight;
+        const pH = height - padTop - padBottom;
+        const maxVal = Math.max(10, Math.ceil(peakViewers * 1.15));
 
-      let pathD = '';
-      let areaD = `M ${getX(0)} ${padTop + pH}`;
-      let dotsSvg = '';
+        const getX = (idx) => timeline.length <= 1 ? padLeft + pW / 2 : padLeft + (idx / (timeline.length - 1)) * pW;
+        const getY = (v) => padTop + pH - (v / maxVal) * pH;
 
-      timeline.forEach((pt, idx) => {
-        const x = getX(idx);
-        const y = getY(parseInt(pt.viewers) || 0);
-        if (idx === 0) {
-          pathD += `M ${x} ${y}`;
-          areaD += ` L ${x} ${y}`;
-        } else {
-          pathD += ` L ${x} ${y}`;
-          areaD += ` L ${x} ${y}`;
-        }
+        let pathD = '';
+        let areaD = `M ${getX(0)} ${padTop + pH}`;
+        let dotsSvg = '';
 
-        const isPeak = parseInt(pt.viewers) === peakViewers && peakViewers > 0;
-        dotsSvg += `
-          <circle cx="${x}" cy="${y}" r="${isPeak ? 4.5 : 2.5}" fill="${isPeak ? '#ef4444' : '#2563eb'}" stroke="#ffffff" stroke-width="1.5">
-            <title>방송 ${pt.minute}분 후 (${pt.time}): ${pt.viewers}명 시청</title>
-          </circle>
+        timeline.forEach((pt, idx) => {
+          const x = getX(idx);
+          const y = getY(parseInt(pt.viewers) || 0);
+          if (idx === 0) {
+            pathD += `M ${x} ${y}`;
+            areaD += ` L ${x} ${y}`;
+          } else {
+            pathD += ` L ${x} ${y}`;
+            areaD += ` L ${x} ${y}`;
+          }
+
+          const isPeak = parseInt(pt.viewers) === peakViewers && peakViewers > 0;
+          dotsSvg += `
+            <circle cx="${x}" cy="${y}" r="${isPeak ? 5 : 3}" fill="${isPeak ? '#ef4444' : '#2563eb'}" stroke="#ffffff" stroke-width="1.5">
+              <title>방송 ${pt.minute}분 후 (${pt.time}): ${pt.viewers}명 시청</title>
+            </circle>
+          `;
+        });
+        areaD += ` L ${getX(timeline.length - 1)} ${padTop + pH} Z`;
+
+        chartWrapper.innerHTML = `
+          <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; display:block; overflow:visible;">
+            <defs>
+              <linearGradient id="chatTimelineGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
+              </linearGradient>
+            </defs>
+            <line x1="${padLeft}" y1="${padTop + pH}" x2="${width - padRight}" y2="${padTop + pH}" stroke="#e2e8f0" stroke-width="1"/>
+            <line x1="${padLeft}" y1="${padTop}" x2="${width - padRight}" y2="${padTop}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="2 2"/>
+            <path d="${areaD}" fill="url(#chatTimelineGrad)"/>
+            <path d="${pathD}" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            ${dotsSvg}
+          </svg>
         `;
-      });
-      areaD += ` L ${getX(timeline.length - 1)} ${padTop + pH} Z`;
+      }
 
-      let rowsHtml = '';
-      const reversed = [...timeline].reverse();
-      reversed.forEach(it => {
-        const origIdx = timeline.findIndex(t => t.minute === it.minute);
-        let diffStr = '<span style="color:#94a3b8;">-</span>';
-        if (origIdx > 0) {
-          const diff = (parseInt(it.viewers) || 0) - (parseInt(timeline[origIdx - 1].viewers) || 0);
-          if (diff > 0) diffStr = `<span style="color:#ef4444; font-weight:700;">+${diff}명 ▲</span>`;
-          else if (diff < 0) diffStr = `<span style="color:#2563eb; font-weight:700;">${diff}명 ▼</span>`;
-          else diffStr = '<span style="color:#64748b;">0명</span>';
-        }
+      // 테이블 렌더링
+      const tableContainer = document.getElementById('timeline-table-container');
+      if (tableContainer) {
+        let rowsHtml = '';
+        const reversed = [...timeline].reverse();
+        reversed.forEach(it => {
+          const origIdx = timeline.findIndex(t => t.minute === it.minute);
+          let diffStr = '<span style="color:#94a3b8;">-</span>';
+          if (origIdx > 0) {
+            const diff = (parseInt(it.viewers) || 0) - (parseInt(timeline[origIdx - 1].viewers) || 0);
+            if (diff > 0) diffStr = `<span style="color:#ef4444; font-weight:700;">+${diff}명 ▲</span>`;
+            else if (diff < 0) diffStr = `<span style="color:#2563eb; font-weight:700;">${diff}명 ▼</span>`;
+            else diffStr = '<span style="color:#64748b;">0명</span>';
+          }
 
-        rowsHtml += `
-          <tr style="border-bottom:1px solid #f8fafc; font-size:12px;">
-            <td style="padding:7px 12px; font-weight:700; color:#0f172a; font-family:monospace;">${it.minute === 0 ? '방송 시작 (0분)' : `방송 ${it.minute}분 후`}</td>
-            <td style="padding:7px 12px; color:#64748b; font-family:monospace;">${it.time}</td>
-            <td style="padding:7px 12px; text-align:right; font-weight:800; color:#0f172a;">${(parseInt(it.viewers) || 0).toLocaleString()}명</td>
-            <td style="padding:7px 12px; text-align:right;">${diffStr}</td>
-          </tr>
-        `;
-      });
+          rowsHtml += `
+            <tr style="border-bottom:1px solid #f1f5f9; font-size:12.5px;">
+              <td style="padding:10px 14px; font-weight:700; color:#0f172a; font-family:monospace;">${it.minute === 0 ? '방송 시작 (0분)' : `방송 ${it.minute}분 후`}</td>
+              <td style="padding:10px 14px; color:#64748b; font-family:monospace;">${it.time}</td>
+              <td style="padding:10px 14px; text-align:right; font-weight:800; color:#0f172a;">${(parseInt(it.viewers) || 0).toLocaleString()}명</td>
+              <td style="padding:10px 14px; text-align:right;">${diffStr}</td>
+            </tr>
+          `;
+        });
 
-      container.innerHTML = `
-        <div style="background:#ffffff; border:1px solid #f1f5f9; border-radius:10px; padding:14px 12px; margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span style="font-size:11.5px; font-weight:700; color:#475569;">1분 단위 시계열 그래프</span>
-            <span style="font-size:11px; color:#94a3b8;">총 ${timeline.length}분 측정 (최고 ${peakViewers.toLocaleString()}명)</span>
-          </div>
-          <div style="width:100%; height:130px;">
-            <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; display:block; overflow:visible;">
-              <defs>
-                <linearGradient id="minGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#2563eb" stop-opacity="0.16"/>
-                  <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
-              <line x1="${padLeft}" y1="${padTop + pH}" x2="${width - padRight}" y2="${padTop + pH}" stroke="#e2e8f0" stroke-width="1"/>
-              <line x1="${padLeft}" y1="${padTop}" x2="${width - padRight}" y2="${padTop}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="2 2"/>
-              <path d="${areaD}" fill="url(#minGrad)"/>
-              <path d="${pathD}" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              ${dotsSvg}
-            </svg>
-          </div>
-        </div>
-
-        <div style="max-height:220px; overflow-y:auto; border:1px solid #f1f5f9; border-radius:10px;">
+        tableContainer.innerHTML = `
           <table style="width:100%; border-collapse:collapse; text-align:left;">
-            <thead style="background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:11.5px; color:#64748b; position:sticky; top:0;">
+            <thead style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; font-size:12px; color:#64748b; position:sticky; top:0;">
               <tr>
-                <th style="padding:7px 12px; font-weight:700;">방송 경과</th>
-                <th style="padding:7px 12px; font-weight:700;">측정 시각</th>
-                <th style="padding:7px 12px; font-weight:700; text-align:right;">시청자 수</th>
-                <th style="padding:7px 12px; font-weight:700; text-align:right;">직전 1분 대비</th>
+                <th style="padding:10px 14px; font-weight:700;">방송 경과</th>
+                <th style="padding:10px 14px; font-weight:700;">측정 시각</th>
+                <th style="padding:10px 14px; font-weight:700; text-align:right;">시청자 수</th>
+                <th style="padding:10px 14px; font-weight:700; text-align:right;">직전 1분 대비</th>
               </tr>
             </thead>
             <tbody>
               ${rowsHtml}
             </tbody>
           </table>
-        </div>
-      `;
-    };
-
-    // ── CSV 통합 다운로드 ──
-    const handleCsvExport = () => {
-      if (currentSubTab === 'orders') {
-        let csv = '주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,영수증번호\n';
-        currentOrders.forEach(ord => {
-          const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString() : '';
-          const itemsSummary = `"${parseItems(ord).map(it => `${it.name}(${it.quantity}개)`).join(', ')}"`;
-          const amount = ord.total_amount || 0;
-          const name = `"${ord.customer_name || ord.buyer_name || ''}"`;
-          const phone = `"${ord.customer_phone || ord.buyer_phone || ''}"`;
-          const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
-          const statusStr = pStatus === 'paid' ? '결제완료' : cancelStatuses.includes(pStatus) ? '취소/환불' : '결제대기';
-          const receipt = `"${ord.pg_receipt_id || ord.receipt_id || ord.order_number || ''}"`;
-          csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${statusStr},${receipt}\n`;
-        });
-        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `주문내역_${liveId}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } else if (currentSubTab === 'ranking') {
-        const paidOrders = currentOrders.filter(o => (o.payment_status || '').toLowerCase() === 'paid');
-        const pMap = {};
-        paidOrders.forEach(ord => {
-          parseItems(ord).forEach(it => {
-            const name = (it.name || it.goodname || '상품').trim();
-            const qty = parseInt(it.quantity || it.qty || 1) || 1;
-            const price = parseInt(it.price || 0) || Math.round((parseInt(ord.total_amount) || 0) / Math.max(1, parseItems(ord).length));
-            if (!pMap[name]) pMap[name] = { name, price, qty: 0, amount: 0 };
-            pMap[name].qty += qty;
-            pMap[name].amount += price * qty;
-          });
-        });
-        const list = Object.values(pMap).sort((a, b) => b.qty - a.qty);
-        let csv = '순위,상품명,판매단가,총판매수량,총결제금액\n';
-        list.forEach((it, idx) => {
-          csv += `${idx + 1},"${it.name.replace(/"/g, '""')}",${it.price},${it.qty},${it.amount}\n`;
-        });
-        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `상품판매순위_${liveId}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } else {
-        const timeline = getLiveTimeline(liveId);
-        let csv = '방송경과(분),기록시각,실시간시청자수(명)\n';
-        timeline.forEach(t => {
-          csv += `${t.minute},${t.time},${t.viewers}\n`;
-        });
-        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `시청자_1분단위_로그_${liveId}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        `;
       }
     };
 
+    // ── CSV 다운로드 핸들러 ──
+    const downloadOrdersCsv = () => {
+      let csv = '주문일시,주문상품목록,결제금액,주문자명,연락처,결제상태,영수증번호\n';
+      currentOrders.forEach(ord => {
+        const dateStr = ord.created_at ? new Date(ord.created_at).toLocaleString() : '';
+        const itemsSummary = `"${parseItems(ord).map(it => `${it.name}(${it.quantity}개)`).join(', ')}"`;
+        const amount = ord.total_amount || 0;
+        const name = `"${ord.customer_name || ord.buyer_name || ''}"`;
+        const phone = `"${ord.customer_phone || ord.buyer_phone || ''}"`;
+        const pStatus = (ord.payment_status || 'payapp_requested').toLowerCase();
+        const statusStr = pStatus === 'paid' ? '결제완료' : cancelStatuses.includes(pStatus) ? '취소/환불' : '결제대기';
+        const receipt = `"${ord.pg_receipt_id || ord.receipt_id || ord.order_number || ''}"`;
+        csv += `${dateStr},${itemsSummary},${amount},${name},${phone},${statusStr},${receipt}\n`;
+      });
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `주문내역_${liveId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    const downloadRankingCsv = () => {
+      const paidOrders = currentOrders.filter(o => (o.payment_status || '').toLowerCase() === 'paid');
+      const pMap = {};
+      paidOrders.forEach(ord => {
+        parseItems(ord).forEach(it => {
+          const name = (it.name || it.goodname || '상품').trim();
+          const qty = parseInt(it.quantity || it.qty || 1) || 1;
+          const price = parseInt(it.price || 0) || Math.round((parseInt(ord.total_amount) || 0) / Math.max(1, parseItems(ord).length));
+          if (!pMap[name]) pMap[name] = { name, price, qty: 0, amount: 0 };
+          pMap[name].qty += qty;
+          pMap[name].amount += price * qty;
+        });
+      });
+      const list = Object.values(pMap).sort((a, b) => b.qty - a.qty);
+      let csv = '순위,상품명,판매단가,총판매수량,총결제금액\n';
+      list.forEach((it, idx) => {
+        csv += `${idx + 1},"${it.name.replace(/"/g, '""')}",${it.price},${it.qty},${it.amount}\n`;
+      });
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `상품판매순위_${liveId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    const downloadTimelineCsv = () => {
+      const timeline = getLiveTimeline(liveId);
+      let csv = '방송경과(분),기록시각,실시간시청자수(명)\n';
+      timeline.forEach(t => {
+        csv += `${t.minute},${t.time},${t.viewers}\n`;
+      });
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `시청자_1분단위_로그_${liveId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    // ── 이벤트 바인딩 ──
     loadData();
 
-    document.getElementById('btn-refresh-unified')?.addEventListener('click', loadData);
-    document.getElementById('btn-export-csv')?.addEventListener('click', handleCsvExport);
+    document.getElementById('btn-refresh-orders')?.addEventListener('click', loadData);
+    document.getElementById('btn-download-orders-csv')?.addEventListener('click', downloadOrdersCsv);
+    document.getElementById('btn-download-ranking-csv')?.addEventListener('click', downloadRankingCsv);
+    document.getElementById('btn-download-timeline-csv')?.addEventListener('click', downloadTimelineCsv);
 
-    document.querySelectorAll('.subtab-item').forEach(btn => {
+    document.getElementById('subtab-product-filter')?.addEventListener('change', (e) => {
+      selectedProductFilter = e.target.value;
+      renderOrdersView();
+    });
+    document.getElementById('subtab-order-search')?.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderOrdersView();
+    });
+
+    const btnSortQty = document.getElementById('rank-sort-qty');
+    const btnSortAmt = document.getElementById('rank-sort-amount');
+    if (btnSortQty && btnSortAmt) {
+      btnSortQty.addEventListener('click', () => {
+        rankingSortBy = 'qty';
+        btnSortQty.style.background = '#fff';
+        btnSortQty.style.color = '#0f172a';
+        btnSortQty.style.fontWeight = '700';
+        btnSortQty.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+        btnSortAmt.style.background = 'transparent';
+        btnSortAmt.style.color = '#64748b';
+        btnSortAmt.style.fontWeight = '600';
+        btnSortAmt.style.boxShadow = 'none';
+        renderRankingView();
+      });
+      btnSortAmt.addEventListener('click', () => {
+        rankingSortBy = 'amount';
+        btnSortAmt.style.background = '#fff';
+        btnSortAmt.style.color = '#0f172a';
+        btnSortAmt.style.fontWeight = '700';
+        btnSortAmt.style.boxShadow = '0 1px 2px rgba(0,0,0,0.06)';
+        btnSortQty.style.background = 'transparent';
+        btnSortQty.style.color = '#64748b';
+        btnSortQty.style.fontWeight = '600';
+        btnSortQty.style.boxShadow = 'none';
+        renderRankingView();
+      });
+    }
+
+    // ── 서브 탭 전환 이벤트 (채팅관리 탭 표준 로직) ──
+    const subTabBtns = contentArea.querySelectorAll('.order-sub-tab-btn');
+    const subViews = contentArea.querySelectorAll('.order-sub-view');
+    subTabBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        currentSubTab = btn.dataset.subtab;
-        renderActiveSubTab();
+        subTabBtns.forEach(b => {
+          b.classList.remove('active');
+          b.style.background = 'transparent';
+          b.style.color = '#64748b';
+          b.style.fontWeight = '600';
+          b.style.boxShadow = 'none';
+        });
+        btn.classList.add('active');
+        btn.style.background = '#fff';
+        btn.style.color = '#0f172a';
+        btn.style.fontWeight = '700';
+        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+
+        subViews.forEach(v => v.style.display = 'none');
+        const targetView = document.getElementById(`order-sub-${btn.dataset.subtab}`);
+        if (targetView) targetView.style.display = 'block';
+
+        if (btn.dataset.subtab === 'timeline') renderTimelineView();
       });
     });
 
+    if (initialSubTab && initialSubTab !== 'orders') {
+      const initBtn = contentArea.querySelector(`.order-sub-tab-btn[data-subtab="${initialSubTab}"]`);
+      if (initBtn) initBtn.click();
+    }
+
     statsTimer = setInterval(() => {
       updateKpis();
-      if (currentSubTab === 'timeline') {
-        const c = document.getElementById('subtab-dynamic-container');
-        if (c) renderTimelineView(c);
-      }
+      renderTimelineView();
     }, 30000);
 
     contentArea.addEventListener('adminTabLeave', () => {
@@ -4248,7 +4333,8 @@ function renderLiveEditView(container, liveId, showView) {
 
   const renderStatsTab = () => renderOrdersTab('ranking');
 
-// ── 탭 전환 로직 ──────────────────────────────────────────
+
+  // ── 탭 전환 로직 ──────────────────────────────────────────
   const btnBack = layout.querySelector('#btn-back');
   if (btnBack) {
     btnBack.addEventListener('click', () => {
