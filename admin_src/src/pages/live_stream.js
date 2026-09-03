@@ -963,7 +963,7 @@ function renderLiveEditView(container, liveId, showView) {
 
   const isLocal = window.location.origin.includes('localhost:5173');
   const previewBase = isLocal ? 'http://localhost:8080/live/' : '/live/';
-  const previewUrl = `${previewBase}?id=${liveId}&admin=1&v=202609032320`;
+  const previewUrl = `${previewBase}?id=${liveId}&admin=1&v=202609032337`;
 
   const viewerUrl = `https://ryzincorp.com/live/${liveId}`;
   const embedUrlWithParam = `${viewerUrl}?embed=1&v=202608121330`;
