@@ -4,9 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="manifest" href="/manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <script>
+    (function() {
+      var idMatch = window.location.pathname.match(/\/live\/([^\/?#]+)/);
+      var qMatch = new URLSearchParams(window.location.search).get('id');
+      var lid = (idMatch && idMatch[1] && idMatch[1] !== 'index.html') ? idMatch[1] : (qMatch || 'live01');
+      var mLink = document.createElement('link');
+      mLink.rel = 'manifest';
+      mLink.href = '/api/manifest?id=' + encodeURIComponent(lid);
+      document.head.appendChild(mLink);
+
+      var cLink = document.createElement('link');
+      cLink.rel = 'canonical';
+      cLink.href = window.location.origin + '/live/' + lid;
+      document.head.appendChild(cLink);
+    })();
+  </script>
   <title>Ryzin Live Commerce</title>
   <link rel="icon" type="image/png" href="/favicon.png">
 
