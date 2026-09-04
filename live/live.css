@@ -1188,13 +1188,11 @@ video::-webkit-media-controls-overlay-play-button {
   top: calc(100% + 8px);
   right: 0;
   min-width: 140px;
-  background: rgba(15, 23, 42, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   padding: 6px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.18), 0 6px 12px -4px rgba(0, 0, 0, 0.1);
   z-index: 10000;
   display: flex;
   flex-direction: column;
@@ -1222,7 +1220,7 @@ video::-webkit-media-controls-overlay-play-button {
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #f8fafc;
+  color: #1e293b;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
@@ -1234,21 +1232,26 @@ video::-webkit-media-controls-overlay-play-button {
 }
 
 .live-more-item:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .live-more-item:active {
-  background: rgba(255, 255, 255, 0.2);
+  background: #e2e8f0;
 }
 
 .live-more-item svg {
   flex-shrink: 0;
+  stroke: #334155;
+}
+
+.live-more-item:hover svg {
+  stroke: #0f172a;
 }
 
 .live-more-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: #e2e8f0;
   margin: 3px 4px;
 }
 
