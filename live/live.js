@@ -2770,13 +2770,9 @@ function extractYoutubeVideoId(url) {
 // ── 스트리밍 소리 켜기 / 끄기 토글 제어 ──
 let isStreamMuted = false;
 
-window.toggleStreamSound = function() {
-  isStreamMuted = !isStreamMuted;
-  const video = document.getElementById('live-video');
-  const ytPlayer = document.getElementById('youtube-player');
+function updateSoundUI() {
   const iconOff = document.getElementById('icon-sound-off');
   const iconOn = document.getElementById('icon-sound-on');
-
   if (iconOff && iconOn) {
     iconOff.style.display = isStreamMuted ? 'block' : 'none';
     iconOn.style.display = isStreamMuted ? 'none' : 'block';
@@ -2785,6 +2781,78 @@ window.toggleStreamSound = function() {
   if (textStatus) {
     textStatus.textContent = isStreamMuted ? '소리 켜기' : '소리 끄기';
   }
+  const menuTextSound = document.getElementById('menu-text-sound');
+  if (menuTextSound) {
+    menuTextSound.textContent = isStreamMuted ? '소리 켜기' : '소리끔';
+  }
+  const menuIconSoundOn = document.getElementById('menu-icon-sound-on');
+  const menuIconSoundOff = document.getElementById('menu-icon-sound-off');
+  if (menuIconSoundOn && menuIconSoundOff) {
+    menuIconSoundOn.style.display = isStreamMuted ? 'none' : 'block';
+    menuIconSoundOff.style.display = isStreamMuted ? 'block' : 'none';
+  }
+}
+
+// ── 상단 더보기 (...) 메뉴 컨트롤러 ──
+window.toggleLiveMoreMenu = function(e) {
+  if (e) {
+    e.stopPropagation();
+  }
+  const dropdown = document.getElementById('live-more-dropdown');
+  if (!dropdown) return;
+  const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'block';
+  if (isVisible) {
+    dropdown.style.display = 'none';
+  } else {
+    updateSoundUI();
+    dropdown.style.display = 'flex';
+  }
+};
+
+window.handleMoreMenuAction = function(action, e) {
+  if (e) {
+    e.stopPropagation();
+  }
+  const dropdown = document.getElementById('live-more-dropdown');
+  if (dropdown) {
+    dropdown.style.display = 'none';
+  }
+
+  if (action === 'push') {
+    if (typeof window.handlePushSubscribeClick === 'function') {
+      window.handlePushSubscribeClick();
+    }
+  } else if (action === 'sound') {
+    if (typeof window.toggleStreamSound === 'function') {
+      window.toggleStreamSound();
+    }
+  }
+};
+
+// 외부 영역 클릭 또는 ESC 키 누를 때 드롭다운 닫기
+document.addEventListener('click', function(e) {
+  const wrap = document.querySelector('.live-more-menu-wrap');
+  const dropdown = document.getElementById('live-more-dropdown');
+  if (dropdown && dropdown.style.display !== 'none') {
+    if (!wrap || !wrap.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const dropdown = document.getElementById('live-more-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+});
+
+window.toggleStreamSound = function() {
+  isStreamMuted = !isStreamMuted;
+  const video = document.getElementById('live-video');
+  const ytPlayer = document.getElementById('youtube-player');
+
+  updateSoundUI();
 
   if (video) {
     video.muted = isStreamMuted;
@@ -2820,6 +2888,8 @@ function forceSoundOn() {
   const video = document.getElementById('live-video');
   const ytPlayer = document.getElementById('youtube-player');
   const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
+  isStreamMuted = false;
+  updateSoundUI();
   if (video) {
     video.muted = false;
     video.volume = 1.0;
