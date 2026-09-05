@@ -1358,12 +1358,16 @@ function renderSchemeTab(project, isSharedView = false) {
 
       try {
         if (isSharedView) {
-          const resp = await fetch(`/api/shared_scheme?id=${encodeURIComponent(project.id)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ scheme })
-          });
-          if (!resp.ok) throw new Error('서버 저장 실패');
+          const schemeStr = JSON.stringify(scheme || {});
+          if (window.supabaseClient) {
+            const { error } = await window.supabaseClient
+              .from('live_broadcasts')
+              .update({ scheme: schemeStr })
+              .eq('id', project.id);
+            if (error) throw error;
+          } else {
+            throw new Error('Supabase 클라이언트가 초기화되지 않았습니다.');
+          }
           showSuccess('스킴 정보가 정상적으로 저장되었습니다.');
         } else {
           store.update('projects', project.id, { scheme });
@@ -1436,15 +1440,40 @@ export function renderSharedScheme(params) {
   async function loadAndRender() {
     let project = store.getById('projects', params.id);
 
-    // 비로그인 상태이거나 스토어에 프로젝트가 없을 경우 전용 API로 실시간 조회
-    if (!project) {
+    // 비로그인 상태이거나 스토어에 프로젝트가 없을 경우 Supabase 클라이언트로 실시간 직접 조회
+    if (!project && window.supabaseClient) {
       try {
-        const resp = await fetch(`/api/shared_scheme?id=${encodeURIComponent(params.id)}`);
-        if (resp.ok) {
-          project = await resp.json();
+        const { data, error } = await window.supabaseClient
+          .from('live_broadcasts')
+          .select('id, brand_name, category, broadcast_date, broadcast_time, platform, pd, designer, host_a, host_b, live_url, scheme')
+          .eq('id', params.id)
+          .single();
+
+        if (!error && data) {
+          let parsedScheme = null;
+          if (data.scheme) {
+            try {
+              parsedScheme = typeof data.scheme === 'string' ? JSON.parse(data.scheme) : data.scheme;
+            } catch {
+              parsedScheme = null;
+            }
+          }
+          project = {
+            id: data.id,
+            brandName: data.brand_name || '',
+            category: data.category || '',
+            broadcastDate: data.broadcast_date || '',
+            broadcastTime: data.broadcast_time || '',
+            platform: data.platform || '',
+            pd: data.pd || '',
+            designer: data.designer || '',
+            hostNames: [data.host_a, data.host_b].filter(Boolean).join(', ') || '-',
+            liveUrl: data.live_url || '',
+            scheme: parsedScheme || {},
+          };
         }
       } catch (err) {
-        console.warn('[Shared Scheme] API 로드 실패:', err);
+        console.warn('[Shared Scheme] Supabase 로드 실패:', err);
       }
     }
 
