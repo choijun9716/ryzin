@@ -2410,8 +2410,44 @@ document.addEventListener('DOMContentLoaded', () => {
             window.updateCheckoutMemberUI();
           }
 
+          // ── 로그인 완료 후 모달 정리 및 라이브 화면 복귀 ──
           const nicknameModal = document.getElementById('nickname-modal');
           if (nicknameModal) nicknameModal.style.display = 'none';
+
+          if (typeof window.closeMyMenuModal === 'function') {
+            window.closeMyMenuModal();
+          }
+
+          // 주문서(checkout) 진입이 아닌 일반 로그인(채팅, 메뉴, 일반)인 경우 모든 덮개 모달 닫고 라이브 화면으로 복귀
+          if (source !== 'checkout') {
+            const checkoutModal = document.getElementById('checkout-modal');
+            if (checkoutModal) checkoutModal.style.display = 'none';
+            if (source !== 'cart') {
+              const cartModal = document.getElementById('cart-modal');
+              if (cartModal) cartModal.style.display = 'none';
+            }
+            if (typeof window.closeProductDetailSheet === 'function') {
+              window.closeProductDetailSheet();
+            }
+            document.body.classList.remove('pip-active');
+          }
+
+          // 멈춰있던 라이브 영상 및 오디오 즉각 강제 재개 (1초도 멈춤 없이 라이브 송출 복구)
+          if (typeof window.resumeAllMedia === 'function') {
+            window.resumeAllMedia();
+            setTimeout(window.resumeAllMedia, 150);
+            setTimeout(window.resumeAllMedia, 500);
+            setTimeout(window.resumeAllMedia, 1200);
+          }
+
+          // 라이브 화면 복귀 완료 토스트 안내
+          try {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:12px 22px; border-radius:30px; font-size:13.5px; font-weight:700; z-index:999999; animation: fadeOut 2.2s forwards; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.3); pointer-events:none; white-space:nowrap;';
+            toast.textContent = `${name || nickname}님 환영합니다! 라이브로 돌아왔습니다.`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2200);
+          } catch(e) {}
 
           if (source === 'chat') {
             if (typeof checkUserBanStatus === 'function') checkUserBanStatus();
@@ -2419,7 +2455,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const chatInput = document.getElementById('chat-input');
             if (chatInput && !chatInput.disabled) chatInput.focus();
           } else if (source === 'checkout') {
-            // 주문정보 입력 시 번거로운 alert 모달창 삭제
+            if (typeof updateCheckoutMemberUI === 'function') {
+              updateCheckoutMemberUI();
+            }
           }
 
           // 비회원 시 담아둔 장바구니 복원 및 보존
@@ -2456,19 +2494,21 @@ document.addEventListener('DOMContentLoaded', () => {
         fail: function(err) {
           console.warn('Kakao User Profile Error:', err);
           alert('카카오 프로필 정보를 가져오지 못했습니다: ' + (err.msg || JSON.stringify(err)));
+          // 에러 시에도 라이브 영상 복구
+          if (typeof window.resumeAllMedia === 'function') window.resumeAllMedia();
         }
       });
     };
 
     try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
+      // 모바일에서도 브라우저 세션 단절 없이 안정적인 팝업/웹 인증을 위해 throughTalk: false 사용
       Kakao.Auth.login({
-        throughTalk: isMobile,
+        throughTalk: false,
         persistAccessToken: true,
         success: handleKakaoSuccess,
         fail: function(err) {
           console.warn('Kakao Login Error:', err);
+          if (typeof window.resumeAllMedia === 'function') window.resumeAllMedia();
           if (err && err.error === 'access_denied') return; // 사용자가 창을 닫은 경우
           const errDetail = (err && (err.error_description || err.msg || err.error)) ? String(err.error_description || err.msg || err.error) : JSON.stringify(err);
           alert('카카오 로그인 실패:\n' + errDetail + '\n\n※ 카카오 디벨로퍼스 콘솔의 [플랫폼 > Web 사이트 도메인]에 현재 접속 주소가 등록되어 있는지 확인해 주세요.');
@@ -2477,6 +2517,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(err) {
       console.error('Kakao login exception:', err);
       alert('카카오 로그인 호출 중 오류가 발생했습니다: ' + err.message);
+      if (typeof window.resumeAllMedia === 'function') window.resumeAllMedia();
     }
   };
 
@@ -5041,7 +5082,7 @@ window.openMyMenuModal = function() {
         <div style="font-size:14.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">로그인</div>
         <div style="font-size:11.5px; color:#64748b; line-height:1.4;">로그인하고 주문 내역과 혜택을 확인하세요.</div>
       </div>
-      <button type="button" onclick="closeMyMenuModal(); loginWithKakao('checkout');"
+      <button type="button" onclick="closeMyMenuModal(); loginWithKakao('menu');"
         style="width:100%; padding:11px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; outline:none; transition:background 0.15s;"
         onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
