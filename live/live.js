@@ -6252,22 +6252,23 @@ window.openMyOrdersModal = async function() {
   const phone = (savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '').replace(/[^0-9]/g, '');
   const userName = (savedInfo.name || (kakaoUserObj && kakaoUserObj.name) || '').trim();
 
-  // 3. Supabase live_orders 테이블과 통합 조회
-  if (db) {
+  // 3. Supabase live_orders 테이블에서 본인 주문만 안전 조회 (개인정보 보호 전수 덤프 차단)
+  if (db && (phone || userName)) {
     try {
-      const { data: dbOrders } = await db
-        .from('live_orders')
-        .select('*')
+      let query = db.from('live_orders').select('*');
+      if (phone) {
+        query = query.eq('customer_phone', phone);
+      } else if (userName) {
+        query = query.eq('customer_name', userName);
+      }
+
+      const { data: dbOrders } = await query
         .order('created_at', { ascending: false })
-        .limit(30);
+        .limit(20);
 
       if (dbOrders && dbOrders.length > 0) {
         dbOrders.forEach(dbo => {
-          const dboPhone = (dbo.customer_phone || '').replace(/[^0-9]/g, '');
-          const isMyPhone = phone && dboPhone && (dboPhone === phone || dboPhone.endsWith(phone.slice(-8)));
-          const isMyName = userName && dbo.customer_name && dbo.customer_name === userName;
-
-          if ((isMyPhone || isMyName) && !orders.some(o => (o.pg_receipt_id && o.pg_receipt_id === dbo.pg_receipt_id) || o.id === dbo.id)) {
+          if (!orders.some(o => (o.pg_receipt_id && o.pg_receipt_id === dbo.pg_receipt_id) || o.id === dbo.id)) {
             orders.push(dbo);
           }
         });
@@ -7006,14 +7007,18 @@ window.fetchUserBenefitsFromDB = async function() {
     const SUPA_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
     const SUPA_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
 
-    // 1단계: user_code로 정확한 매칭 시도
+    // 1단계: 식별 정보(kakaoId, email, phone) 기준 1:1 안전 조회 (전체 회원 덤프 차단)
     let matchedUser = null;
-    const candidates = [];
-    if (kakaoId) candidates.push(`user_code.eq.KAKAO-${kakaoId}`);
-    if (currentAcc) candidates.push(`user_code.eq.USER-${currentAcc}`);
-    if (phone) candidates.push(`user_code.eq.USER-${phone}`);
+    const filterParts = [];
+    if (kakaoId) filterParts.push(`user_code.eq.KAKAO-${kakaoId}`);
+    if (kakaoEmail) filterParts.push(`email.eq.${encodeURIComponent(kakaoEmail)}`);
+    if (currentAcc) filterParts.push(`user_code.eq.USER-${currentAcc}`);
+    if (phone) filterParts.push(`user_code.eq.USER-${phone}`);
 
-    const res = await fetch(`${SUPA_URL}/rest/v1/shop_users?select=id,user_code,name,email,points,coupons_count&limit=100`, {
+    const filterParam = filterParts.length > 0 ? `&or=(${filterParts.join(',')})` : '';
+    if (!filterParam) return;
+
+    const res = await fetch(`${SUPA_URL}/rest/v1/shop_users?select=id,user_code,name,email,points,coupons_count${filterParam}&limit=1`, {
       headers: {
         'apikey': SUPA_KEY,
         'Authorization': `Bearer ${SUPA_KEY}`,
@@ -7022,16 +7027,9 @@ window.fetchUserBenefitsFromDB = async function() {
     });
 
     if (res.ok) {
-      const allUsers = await res.json();
-      if (Array.isArray(allUsers) && allUsers.length > 0) {
-        matchedUser = allUsers.find(u => {
-          if (kakaoId && u.user_code && u.user_code.includes(kakaoId)) return true;
-          if (kakaoEmail && u.email && u.email === kakaoEmail) return true;
-          if (phone && ((u.email && u.email.includes(phone)) || (u.default_address && u.default_address.includes(phone)))) return true;
-          if (userName && u.name && u.name === userName) return true;
-          if (currentAcc && ((u.name && u.name === currentAcc) || (u.user_code && u.user_code.includes(currentAcc)))) return true;
-          return false;
-        });
+      const usersData = await res.json();
+      if (Array.isArray(usersData) && usersData.length > 0) {
+        matchedUser = usersData[0];
       }
     }
 

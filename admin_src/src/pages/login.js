@@ -230,12 +230,6 @@ export function renderLogin() {
         const id = document.getElementById('login-id').value.trim();
         const pw = document.getElementById('login-pw').value;
 
-        // 데모 환경 다이렉트 패스
-        if (id.toLowerCase() === 'admin' && pw.trim() === '1234') {
-          store.loginAsDemo();
-          return;
-        }
-
         // 로그인 직전 Supabase 백엔드로부터 최신 계정 정보 실시간 갱신 동기화
         const submitBtn = loginForm.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.textContent : '로그인';

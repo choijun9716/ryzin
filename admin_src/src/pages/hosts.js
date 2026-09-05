@@ -203,7 +203,10 @@ function openHostModal(hostId = null) {
       </div>
       <div class="input-group">
         <label>주민등록번호</label>
-        <input class="input" id="host-ssn" value="${isPD ? '**' : (host.ssn || '')}" placeholder="마스킹 처리됨" ${isPD ? 'readonly style="background:#f1f5f9; cursor:not-allowed;"' : ''}>
+        <div style="position:relative; display:flex; align-items:center;">
+          <input class="input" type="password" id="host-ssn" value="${isPD ? '**' : (host.ssn || '')}" placeholder="주민등록번호" ${isPD ? 'readonly style="background:#f1f5f9; cursor:not-allowed;"' : ''} style="padding-right:45px;">
+          ${!isPD ? `<button type="button" id="btn-toggle-ssn-input" style="position:absolute; right:10px; background:none; border:none; color:#64748b; font-size:12px; cursor:pointer; font-weight:600;">보기</button>` : ''}
+        </div>
       </div>
       <div class="input-group">
         <label>은행명</label>
@@ -300,6 +303,20 @@ function openHostModal(hostId = null) {
     content,
     footer
   });
+
+  const toggleBtn = document.getElementById('btn-toggle-ssn-input');
+  if (toggleBtn) {
+    const ssnInp = document.getElementById('host-ssn');
+    toggleBtn.addEventListener('click', () => {
+      if (ssnInp.type === 'password') {
+        ssnInp.type = 'text';
+        toggleBtn.textContent = '숨김';
+      } else {
+        ssnInp.type = 'password';
+        toggleBtn.textContent = '보기';
+      }
+    });
+  }
 }
 
 // 쇼호스트 상세 페이지
@@ -388,7 +405,7 @@ export function renderHostDetail(params) {
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">주민등록번호</span>
-                <span class="detail-field-value ${isPD ? '' : 'ssn-toggle'}" data-ssn="${host.ssn || ''}" style="${isPD ? '' : 'cursor: pointer; text-decoration: underline;'}" title="${isPD ? '열람 권한 없음' : '클릭하여 확인'}">${isPD ? '**' : (host.ssn ? maskSSN(host.ssn) : '-')}</span>
+                <span class="detail-field-value ${isPD ? '' : 'ssn-toggle'}" style="${isPD ? '' : 'cursor: pointer; text-decoration: underline;'}" title="${isPD ? '열람 권한 없음' : '클릭하여 확인'}">${isPD ? '**' : (host.ssn ? maskSSN(host.ssn) : '-')}</span>
               </div>
               <div class="detail-field">
                 <span class="detail-field-label">은행</span>
@@ -467,11 +484,12 @@ export function renderHostDetail(params) {
 
   setTimeout(() => {
     const ssnToggle = container.querySelector('.ssn-toggle');
-    if (ssnToggle && ssnToggle.dataset.ssn && !isPD) {
+    const rawSSN = host.ssn || '';
+    if (ssnToggle && rawSSN && !isPD) {
       let isMasked = true;
       ssnToggle.addEventListener('click', () => {
         isMasked = !isMasked;
-        ssnToggle.textContent = isMasked ? maskSSN(ssnToggle.dataset.ssn) : ssnToggle.dataset.ssn;
+        ssnToggle.textContent = isMasked ? maskSSN(rawSSN) : rawSSN;
       });
     }
 
