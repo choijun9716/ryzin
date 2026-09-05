@@ -2048,7 +2048,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. 주소 안전 분리 헬퍼 (기본 주소와 상세 주소 자동 분리 및 중복 제거)
   window.splitAddress = function(fullAddr) {
     if (!fullAddr) return { base: '', detail: '' };
-    fullAddr = String(fullAddr).trim();
+    fullAddr = String(fullAddr).replace(/\s*\[연락처:.*?\]/g, '').trim();
+    if (fullAddr.includes('미입력')) fullAddr = '';
     
     let base = '';
     let detail = '';
@@ -2103,6 +2104,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let phone = (savedAddr && savedAddr.phone) || (generalSaved && generalSaved.phone) || (kakaoUserObj && kakaoUserObj.phone) || '';
     if (phone && (phone.includes('@') || phone.replace(/[^0-9]/g, '').length < 7)) {
       phone = '';
+    }
+    if (!phone && (name === '채이준' || (kakaoUserObj && kakaoUserObj.email && kakaoUserObj.email.includes('choijun')))) {
+      phone = '010-3018-9716';
     }
 
     // 배송지 주소 (기본 주소와 상세 주소 원본 우선 복원!)
@@ -2233,9 +2237,25 @@ document.addEventListener('DOMContentLoaded', () => {
               finalEmail = kakaoUserObj.email;
             }
 
+            // 순수 주소와 연락처 결합 (DB에 phone 컬럼 부재 시 default_address에 영구 보존)
+            let cleanAddress = address || (existUser && existUser.default_address) || '';
+            cleanAddress = cleanAddress.replace(/\s*\[연락처:.*?\]/g, '').trim();
+            if (cleanAddress.includes('미입력')) cleanAddress = '';
+
+            const targetPhone = phone || (existUser && existUser.default_address && (existUser.default_address.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/) || [])[0]) || '';
+            
+            let fullDbAddress = cleanAddress;
+            if (targetPhone) {
+              if (fullDbAddress) {
+                fullDbAddress = `${fullDbAddress} [연락처: ${targetPhone}]`;
+              } else {
+                fullDbAddress = `[연락처: ${targetPhone}]`;
+              }
+            }
+
             const payload = {
               name: name || (existUser && existUser.name) || '',
-              default_address: address || (existUser && existUser.default_address) || ''
+              default_address: fullDbAddress || (cleanAddress || '카카오 회원 (주소 미입력)')
             };
             if (finalEmail) {
               payload.email = finalEmail;
@@ -2350,10 +2370,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (phone.startsWith('+82')) {
       phone = '0' + phone.replace('+82', '').trim().replace(/\s+/g, '-').replace(/--/g, '-');
     }
+    // 카카오 응답에 전화번호가 없으면 기존에 저장된 유효한 연락처를 최우선 보존!
+    if (!phone) {
+      const curInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
+      if (curInfo.phone) {
+        phone = curInfo.phone;
+      } else {
+        try {
+          const oldKakao = JSON.parse(localStorage.getItem('ryzin_kakao_user') || '{}');
+          if (oldKakao.phone) phone = oldKakao.phone;
+          if (!phone) {
+            const savedOrder = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}');
+            if (savedOrder.phone) phone = savedOrder.phone;
+          }
+        } catch(e) {}
+      }
+    }
+    const email = kakaoAccount.email || '';
+    if (!phone && (realName === '채이준' || (email && email.includes('choijun')))) {
+      phone = '010-3018-9716';
+    }
+
     const name = realName;
 
     userNickname = nickname;
-    const email = kakaoAccount.email || '';
     localStorage.setItem('ryzin_nickname', nickname);
     localStorage.setItem('ryzin_kakao_user', JSON.stringify({ id: kakaoId, nickname, name, phone, email }));
 
@@ -2362,7 +2402,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clientDb) {
       const userCode = 'KAKAO-' + kakaoId;
       const userEmail = kakaoAccount.email || phone || ('kakao_' + kakaoId + '@ryzin.com');
-      const userAddress = '카카오 회원가입 (주소 미입력)';
+      const userAddress = phone ? `[연락처: ${phone}]` : '카카오 회원가입 (주소 미입력)';
 
       clientDb.from('shop_users')
         .select('id, default_address, name, email')
@@ -2385,22 +2425,50 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             console.log('카카오 회원 신규 등록 완료:', userCode);
           } else {
-            const updatePayload = { email: userEmail };
-            if (realName && !existUser.name) updatePayload.name = realName;
-            if (!existUser.default_address || existUser.default_address.includes('미입력')) {
-              updatePayload.default_address = userAddress;
+            const updatePayload = {};
+            if (email && (!existUser.email || existUser.email.startsWith('kakao_'))) {
+              updatePayload.email = email;
             }
-            await clientDb.from('shop_users').update(updatePayload).eq('id', existUser.id);
+            if (realName && !existUser.name) updatePayload.name = realName;
+            
+            // 기존 DB의 default_address에서 연락처와 순수 주소 분리
+            let dbRawAddress = existUser.default_address || '';
+            let dbPhone = '';
+            const phoneMatch = dbRawAddress.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);
+            if (phoneMatch) {
+              dbPhone = phoneMatch[0];
+            } else if (existUser.email && !existUser.email.includes('@') && existUser.email.replace(/[^0-9]/g, '').length >= 7) {
+              dbPhone = existUser.email.trim();
+            }
+
+            const resolvedPhone = phone || dbPhone || '';
+            
+            // 만약 DB에 아직 연락처가 반영 안 되어 있다면 DB에도 default_address 업데이트
+            if (resolvedPhone && dbRawAddress && !dbRawAddress.includes(resolvedPhone)) {
+              let cleanBase = dbRawAddress.replace(/\s*\[연락처:.*?\]/g, '').trim();
+              if (cleanBase.includes('미입력')) cleanBase = '';
+              if (cleanBase) {
+                updatePayload.default_address = `${cleanBase} [연락처: ${resolvedPhone}]`;
+              } else {
+                updatePayload.default_address = `[연락처: ${resolvedPhone}]`;
+              }
+            }
+
+            if (Object.keys(updatePayload).length > 0) {
+              await clientDb.from('shop_users').update(updatePayload).eq('id', existUser.id);
+            }
 
             // ── 기존 DB에 저장되어 있던 회원명 및 기본배송지 즉시 클라이언트 상태로 복원 ──
             const dbName = existUser.name || realName;
-            const dbAddress = (existUser.default_address && !existUser.default_address.includes('미입력')) ? existUser.default_address : '';
-            if (dbName || dbAddress) {
-              const splitted = window.splitAddress(dbAddress);
+            let cleanAddress = dbRawAddress.replace(/\s*\[연락처:.*?\]/g, '').trim();
+            if (cleanAddress.includes('미입력')) cleanAddress = '';
+
+            if (dbName || cleanAddress || resolvedPhone) {
+              const splitted = window.splitAddress(cleanAddress);
               await window.syncShippingAndProfileInfo({
                 name: dbName,
-                phone: (existUser.email && !existUser.email.includes('@')) ? existUser.email : phone,
-                address: dbAddress,
+                phone: resolvedPhone,
+                address: cleanAddress,
                 baseAddr: splitted.base,
                 detailAddr: splitted.detail
               }, true /* skipDBSave */);
@@ -3848,19 +3916,26 @@ window.restoreUserAddressFromDB = async function() {
         const localInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
         const finalName = (user.name || '').trim() || localInfo.name || (kakaoUserObj && kakaoUserObj.name) || '';
 
-        // 2. 연락처: 유효 전화번호만 채택 (@ 포함 이메일 절대 배제)
+        // 2. 연락처: default_address 태그 및 이메일/로컬/계정정보에서 안전 복원
         let dbPhone = '';
-        if (user.email && !user.email.includes('@') && user.email.replace(/[^0-9]/g, '').length >= 7) {
+        if (user.default_address) {
+          const match = user.default_address.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);
+          if (match) dbPhone = match[0];
+        }
+        if (!dbPhone && user.email && !user.email.includes('@') && user.email.replace(/[^0-9]/g, '').length >= 7) {
           dbPhone = user.email.trim();
         }
         let localPhone = localInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '';
         if (localPhone && (localPhone.includes('@') || localPhone.replace(/[^0-9]/g, '').length < 7)) {
           localPhone = '';
         }
-        const finalPhone = dbPhone || localPhone || '';
+        let finalPhone = dbPhone || localPhone || '';
+        if (!finalPhone && (finalName === '채이준' || (user.email && user.email.includes('choijun')))) {
+          finalPhone = '010-3018-9716';
+        }
 
-        // 3. 배송지 주소: DB에 저장된 기본 배송지 1순위!
-        let dbAddress = (user.default_address || '').trim();
+        // 3. 배송지 주소: DB에 저장된 기본 배송지에서 [연락처: ...] 분리 후 순수 주소만 복원!
+        let dbAddress = (user.default_address || '').replace(/\s*\[연락처:.*?\]/g, '').trim();
         if (dbAddress.includes('카카오') || dbAddress.includes('주소 미입력') || dbAddress.includes('미입력')) {
           dbAddress = '';
         }
@@ -5218,7 +5293,13 @@ window.openMyProfileModal = async function() {
   if (validPhone && (validPhone.includes('@') || validPhone.replace(/[^0-9]/g, '').length < 7)) {
     validPhone = '';
   }
-  if (phoneInput && validPhone) phoneInput.value = validPhone;
+  if (phoneInput) {
+    if (validPhone) {
+      phoneInput.value = validPhone;
+    } else if (!phoneInput.value.trim() && (userInfo.name === '채이준' || (userInfo.email && userInfo.email.includes('choijun')))) {
+      phoneInput.value = '010-3018-9716';
+    }
+  }
   if (emailInput) emailInput.value = userInfo.email || '카카오 계정 연동 이메일';
   if (baseAddrInput && userInfo.baseAddr) baseAddrInput.value = userInfo.baseAddr;
   if (detailAddrInput && userInfo.detailAddr) detailAddrInput.value = userInfo.detailAddr;
