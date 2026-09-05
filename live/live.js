@@ -81,6 +81,73 @@ function disableYtCaptions(ifr) {
 }
 window.disableYtCaptions = disableYtCaptions;
 
+// ── 유튜브 0초 무버퍼링 무한 연속 재생(Seamless Zero-Buffering Loop) 엔진 ──
+function setupSeamlessYouTubeLoop(ifr) {
+  if (!ifr) return;
+  if (ifr._seamlessLoopBound) return;
+  ifr._seamlessLoopBound = true;
+
+  let lastSeekTime = 0;
+  let duration = 0;
+
+  // 1. 유튜브에 리스닝 핸드셰이크 전송 (현재 시간/길이 실시간 통보 요청)
+  const sendListening = () => {
+    if (ifr && ifr.contentWindow) {
+      try {
+        ifr.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+      } catch(e) {}
+    }
+  };
+
+  [30, 100, 250, 500, 1000, 2000, 3500].forEach(d => setTimeout(sendListening, d));
+
+  const triggerSeamlessRewind = () => {
+    const now = Date.now();
+    if (now - lastSeekTime < 600) return; // 0.6초 이내 중복 트리거 방지
+    lastSeekTime = now;
+    if (ifr && ifr.contentWindow) {
+      try {
+        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }), '*');
+        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+        disableYtCaptions(ifr);
+      } catch(e) {}
+    }
+  };
+
+  const messageHandler = (e) => {
+    try {
+      const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+      if (!data) return;
+
+      // 실시간 재생 타임코드 감지: 영상이 완전히 끝나기 0.35초 전에 0초로 점프
+      // (버퍼링 스피너, 추천영상, 블랙 깜빡임 0초 회피 기법)
+      if (data.event === 'infoDelivery' && data.info) {
+        const cur = data.info.currentTime;
+        const dur = data.info.duration;
+        if (typeof dur === 'number' && dur > 0) {
+          duration = dur;
+        }
+        if (typeof cur === 'number' && duration > 0) {
+          if (cur >= duration - 0.38) {
+            triggerSeamlessRewind();
+          }
+        }
+      }
+
+      // 상태 변화 감지: 자막 해제 및 혹시라도 끝(0)에 도달했을 때 즉각 되감기
+      if (data.event === 'onStateChange') {
+        disableYtCaptions(ifr);
+        if (data.info === 0) {
+          triggerSeamlessRewind();
+        }
+      }
+    } catch(err) {}
+  };
+
+  window.addEventListener('message', messageHandler);
+}
+window.setupSeamlessYouTubeLoop = setupSeamlessYouTubeLoop;
+
 let db = null;
 let LIVE_ID = 'N45ZMPL';
 
@@ -1150,43 +1217,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 standbyYtWrap.innerHTML = `
                   <iframe
                     data-yt-id="${ytId}"
-                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none"
+                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowfullscreen
                     style="position:absolute; top:50%; left:50%; width:100%; height:100%; min-width:178vh; min-height:100%; transform:translate(-50%, -50%) scale(1.08); border:none; pointer-events:none; -webkit-backface-visibility:hidden; image-rendering:-webkit-optimize-contrast;"
                   ></iframe>
                 `;
 
+                // 0초 무버퍼링 무한 연속 재생 엔진 가동
+                const ifr = standbyYtWrap.querySelector('iframe');
+                if (ifr) setupSeamlessYouTubeLoop(ifr);
+
                 // 유튜브 무조건 자동 재생 보장 & 자막 강제 해제 (다단계 지연 호출)
-                [50, 150, 300, 600, 1200, 2500, 4000].forEach(delay => {
+                [30, 100, 250, 500, 1000, 2000, 3500].forEach(delay => {
                   setTimeout(() => {
-                    const ifr = standbyYtWrap.querySelector('iframe');
-                    if (ifr && ifr.contentWindow) {
-                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
-                      disableYtCaptions(ifr);
+                    const currentIfr = standbyYtWrap.querySelector('iframe');
+                    if (currentIfr && currentIfr.contentWindow) {
+                      currentIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                      disableYtCaptions(currentIfr);
                       if (window.__isMediaUnmuted) {
-                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                        currentIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                        currentIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
                       }
                     }
                   }, delay);
-                });
-
-                // 유튜브 반복 시 블랙 현상 방지 & 자막 강제 해제: 영상 종료(Ended:0) 및 재생 시
-                window.addEventListener('message', function ytStandbyLoopHandler(e) {
-                  try {
-                    const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                    if (data && data.event === 'onStateChange') {
-                      const ifr = standbyYtWrap.querySelector('iframe');
-                      if (ifr && ifr.contentWindow) {
-                        disableYtCaptions(ifr);
-                        if (data.info === 0) {
-                          ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }), '*');
-                          ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
-                        }
-                      }
-                    }
-                  } catch (err) {}
                 });
               }
             }
@@ -3993,10 +4047,14 @@ function playStreamUrl(url, isLive) {
       // [방송 ON] 유튜브 영상 재생
       if (ytBox) ytBox.style.display = 'block';
       if (ytPlayer) {
-        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none`;
+        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none`;
         if (!ytPlayer.src || !ytPlayer.src.includes(ytId)) {
           ytPlayer.src = targetSrc;
         }
+
+        // 0초 무버퍼링 무한 연속 재생 엔진 가동
+        setupSeamlessYouTubeLoop(ytPlayer);
+
         // 무조건 자동 재생 및 자동 자막 강제 차단 (다단계 지연 호출)
         [30, 100, 250, 500, 1000, 2000, 3500, 5000].forEach(delay => {
           setTimeout(() => {
