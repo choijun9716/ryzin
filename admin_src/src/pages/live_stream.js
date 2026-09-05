@@ -3125,7 +3125,14 @@ function renderLiveEditView(container, liveId, showView) {
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
           <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button id="btn-copy-shared-detail-url" class="action-btn" style="padding:8px 14px; font-size:12.5px; font-weight:700; background:#f1f5f9; color:#1e293b; border:1.5px solid #cbd5e1; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s ease;" title="브랜드사에 전달할 상세페이지 전용 등록 링크를 복사합니다.">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+              브랜드사 상세 링크 복사
+            </button>
             <span style="font-size:12px; color:#10b981; font-weight:700; background:#ecfdf5; padding:6px 12px; border-radius:8px; border:1px solid #a7f3d0; display:flex; align-items:center; gap:5px;">
               <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10b981;"></span>
               실시간 자동 반영
@@ -3624,6 +3631,17 @@ function renderLiveEditView(container, liveId, showView) {
 
     document.getElementById('btn-add-product')?.addEventListener('click', handleAddProduct);
     document.getElementById('btn-add-product-bottom')?.addEventListener('click', handleAddProduct);
+
+    // 브랜드사 전용 상세페이지 업로드 공유 URL 복사
+    document.getElementById('btn-copy-shared-detail-url')?.addEventListener('click', () => {
+      const shareUrl = `${window.location.origin}${window.location.pathname}#/shared_detail/${liveId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        if (typeof toast === 'function') toast('브랜드사 상세 업로드 링크가 복사되었습니다.');
+        else alert('브랜드사 상세 업로드 링크가 복사되었습니다:\n' + shareUrl);
+      }).catch(() => {
+        prompt('아래 링크를 복사하여 브랜드사에 전달하세요:', shareUrl);
+      });
+    });
 
     // [NEW] 관리자 수동 [저장] 버튼 동작 (자동반영 + 명시적 확정 저장)
     const handleManualProductSave = async (btn) => {

@@ -20,6 +20,7 @@ import { renderLiveStream } from './pages/live_stream.js';
 import { renderHosts, renderHostDetail } from './pages/hosts.js';
 import { renderBrands, renderBrandDetail } from './pages/brands.js';
 import { renderProjects, renderProjectDetail, renderSharedScheme } from './pages/projects.js';
+import { renderSharedDetail } from './pages/shared_detail.js';
 import { renderFinance } from './pages/finance.js';
 import { renderSettlement } from './pages/settlement.js';
 import { renderContracts } from './pages/contracts.js';
@@ -82,7 +83,7 @@ async function initApp() {
 
   // 라우터 권한 체크
   router.beforeEach((to) => {
-    const bypassAuth = to.startsWith('/shared_scheme/');
+    const bypassAuth = to.startsWith('/shared_scheme/') || to.startsWith('/shared_detail/');
     const isLoggedIn = !!store.getCurrentUser();
     
     if (!bypassAuth && !isLoggedIn && to !== '/login') {
@@ -116,7 +117,7 @@ async function initApp() {
       }
     }
 
-    if (to === '/login' || to.startsWith('/shared_scheme/')) {
+    if (to === '/login' || to.startsWith('/shared_scheme/') || to.startsWith('/shared_detail/')) {
       app.innerHTML = '';
       app.className = '';
       router.setContainer(app);
@@ -134,6 +135,7 @@ async function initApp() {
   router.register('/projects/new', () => renderProjects());
   router.register('/projects/:id', (params) => renderProjectDetail(params));
   router.register('/shared_scheme/:id', (params) => renderSharedScheme(params));
+  router.register('/shared_detail/:id', (params) => renderSharedDetail(params));
   router.register('/hosts', () => renderHosts());
   router.register('/hosts/:id', (params) => renderHostDetail(params));
   router.register('/brands', () => renderBrands());
