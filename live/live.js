@@ -1340,22 +1340,89 @@ document.addEventListener('DOMContentLoaded', () => {
     if (customPage) customPage.style.display = 'none';
 
     if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
-      // 자사몰 상품 웹페이지 프록시 로드
-      if (webviewContainer) webviewContainer.style.display = 'block';
       let cleanUrl = String(item.url).trim();
       if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
         cleanUrl = 'https://' + cleanUrl;
       }
-      const targetLiveId = LIVE_ID || 'N45ZMPL';
-      const proxyUrl = `/api/proxy?url=${encodeURIComponent(cleanUrl)}&live_id=${targetLiveId}&clean=true`;
-      
-      if (iframe) {
-        iframe.src = proxyUrl;
-        iframe.style.display = 'block';
+
+      // 네이버 쇼핑/스마트스토어 등 자체 iframe 보안 정책(X-Frame-Options/Frame-Busting) 적용 사이트
+      const isNaverStore = /naver\.com/i.test(cleanUrl) || /naver\.me/i.test(cleanUrl);
+      if (isNaverStore) {
+        // 1. 새 창으로 네이버스토어 즉시 열기
+        try {
+          window.open(cleanUrl, '_blank');
+        } catch (e) { }
+
+        // 2. 모달 내부는 흰 iframe 대신 상품 요약 카드 + [네이버스토어로 이동] 버튼 노출
+        if (webviewContainer) webviewContainer.style.display = 'block';
+        if (iframe) {
+          iframe.src = '';
+          iframe.style.display = 'none';
+        }
+        if (fallbackView) {
+          fallbackView.style.display = 'block';
+          const imgEl = document.getElementById('pdetail-img');
+          const titleEl = document.getElementById('pdetail-title');
+          const priceEl = document.getElementById('pdetail-price');
+          const origPriceEl = document.getElementById('pdetail-original-price');
+          const discRateEl = document.getElementById('pdetail-discount-rate');
+
+          if (imgEl) imgEl.src = item.image || '';
+          if (titleEl) titleEl.textContent = item.name || '상품명';
+
+          const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+          const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+
+          if (pNum > 0) {
+            if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
+            if (npNum > pNum) {
+              if (origPriceEl) {
+                origPriceEl.textContent = `${npNum.toLocaleString()}원`;
+                origPriceEl.style.display = 'inline';
+              }
+              if (discRateEl) {
+                const rate = Math.round(((npNum - pNum) / npNum) * 100);
+                discRateEl.textContent = `${rate}%`;
+                discRateEl.style.display = 'inline';
+              }
+            } else {
+              if (origPriceEl) origPriceEl.style.display = 'none';
+              if (discRateEl) discRateEl.style.display = 'none';
+            }
+          } else if (item.price === '0' || item.price === 0) {
+            if (priceEl) priceEl.textContent = '무료나눔';
+            if (origPriceEl) origPriceEl.style.display = 'none';
+            if (discRateEl) discRateEl.style.display = 'none';
+          } else {
+            if (priceEl) priceEl.textContent = '가격 준비중';
+            if (origPriceEl) origPriceEl.style.display = 'none';
+            if (discRateEl) discRateEl.style.display = 'none';
+          }
+
+          const naverBanner = document.getElementById('pdetail-naver-banner');
+          const naverBtn = document.getElementById('pdetail-naver-btn');
+          if (naverBanner) naverBanner.style.display = 'block';
+          if (naverBtn) naverBtn.href = cleanUrl;
+        }
+      } else {
+        // 일반 자사몰: 기존대로 프록시 웹뷰로 모달 로드
+        const naverBanner = document.getElementById('pdetail-naver-banner');
+        if (naverBanner) naverBanner.style.display = 'none';
+
+        if (webviewContainer) webviewContainer.style.display = 'block';
+        const targetLiveId = LIVE_ID || 'N45ZMPL';
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(cleanUrl)}&live_id=${targetLiveId}&clean=true`;
+        
+        if (iframe) {
+          iframe.src = proxyUrl;
+          iframe.style.display = 'block';
+        }
+        if (fallbackView) fallbackView.style.display = 'none';
       }
-      if (fallbackView) fallbackView.style.display = 'none';
     } else {
       // 3순위: 이미지와 URL 모두 없을 때의 기본 폴백 카드
+      const naverBanner = document.getElementById('pdetail-naver-banner');
+      if (naverBanner) naverBanner.style.display = 'none';
       if (customPage) customPage.style.display = 'none';
       if (webviewContainer) webviewContainer.style.display = 'block';
       if (iframe) {
