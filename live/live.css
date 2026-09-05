@@ -11,15 +11,24 @@
   /* 사파리 더블탭 확대 방지 */
 }
 
+html,
+body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 body {
   background-color: #000;
   color: #fff;
-  overflow: hidden;
-  /* 스크롤 방지 */
   position: fixed;
-  /* 모바일에서 바운스/스크롤 원천 차단 */
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   overscroll-behavior: none;
   /* 스와이프 바운스 현상만 차단 */
 }
@@ -29,6 +38,7 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -149,7 +159,7 @@ body {
 
 /* 상단 브랜드 정보 */
 .header {
-  padding: 16px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -386,8 +396,8 @@ body {
 .side-actions {
   position: absolute;
   right: 16px;
-  bottom: 110px;
-  /* 조금 더 위로 */
+  bottom: calc(122px + env(safe-area-inset-bottom, 0px));
+  /* 3mm(약 12px) 상향 조정 */
   display: flex;
   flex-direction: column;
   gap: 36px;
@@ -437,12 +447,12 @@ body {
 
 
 
-/* 입력 영역 */
+/* 입력 영역 (바닥에서 3mm 상향 조정) */
 .input-section {
-  padding: 8px 16px 16px;
+  padding: 8px 16px calc(28px + env(safe-area-inset-bottom, 0px));
   display: flex;
   align-items: center;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: auto;
   z-index: 5;
 }
@@ -551,7 +561,7 @@ body.embed-active-full .live-container {
 
 /* 채팅이 숨겨졌을 때 상품 배너를 화면 하단에 바짝 붙임 */
 body.ui-hidden .bottom-product-banner {
-  bottom: 12px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   transition: bottom 0.3s ease, opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
 }
 
@@ -731,10 +741,10 @@ body.ui-hidden .bottom-product-banner {
   display: none;
 }
 
-/* 하단 플로팅 롤링 상품 배너 */
+/* 하단 플로팅 롤링 상품 배너 (3mm 상향 조정) */
 .bottom-product-banner {
   position: absolute;
-  bottom: 80px; /* input-section 위에 안정적으로 안착하도록 높이 조절 */
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px)); /* input-section 위에 안정적으로 안착하도록 높이 조절 */
   left: 12px;
   width: 275px; /* 가로 너비 여유 조율 */
   max-width: calc(100% - 95px);
