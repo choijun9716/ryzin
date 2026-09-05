@@ -2301,10 +2301,60 @@ document.addEventListener('DOMContentLoaded', () => {
       // 슬라이더 노브 위치 초기화
       resetAuctionSlider();
     } else if (auctionData && auctionData.status === 'sold') {
-      // 낙찰 완료 모달 처리
+      // 낙찰 완료 처리: 주소지 입력창 대신 낙찰 알럿 및 장바구니 자동 담기
       window.__isAuctionActive = false;
       localStorage.removeItem(`ryzin_live_auction_${LIVE_ID}`);
       if (auctionBar) auctionBar.style.display = 'none';
+
+      // 내가 낙찰자인지 확인
+      const myId = localStorage.getItem('ryzin_live_userid');
+      const myName = localStorage.getItem('ryzin_live_username') || localStorage.getItem('ryzin_chat_user');
+      const isMyWin = !!((myId && auctionData.highestBidder && auctionData.highestBidder.userId === myId) || 
+                         (myName && auctionData.highestBidder && auctionData.highestBidder.userName === myName));
+
+      // 내가 낙찰자인 경우: 장바구니에 자동 추가 및 알럿 노출 (1회만 실행되도록 가드)
+      const soldTimestamp = auctionData.soldTime || auctionData.endTime || Date.now();
+      if (isMyWin && window.__lastWonAuctionSoldTime !== soldTimestamp) {
+        window.__lastWonAuctionSoldTime = soldTimestamp;
+
+        const wonProduct = {
+          id: 'auction_' + (auctionData.productId || Date.now()),
+          name: `[경매낙찰] ${auctionData.productName}`,
+          price: String(auctionData.currentPrice),
+          normalPrice: String(auctionData.currentPrice),
+          image: auctionData.productImage || 'https://via.placeholder.com/72',
+          quantity: 1,
+          isAuctionWon: true
+        };
+
+        if (typeof loadCartFromStorage === 'function') {
+          cartItems = loadCartFromStorage();
+        }
+        const existingIdx = cartItems.findIndex(item => item.name === wonProduct.name);
+        if (existingIdx >= 0) {
+          cartItems[existingIdx].price = wonProduct.price;
+          cartItems[existingIdx].quantity = (cartItems[existingIdx].quantity || 1) + 1;
+        } else {
+          cartItems.push(wonProduct);
+        }
+
+        if (typeof syncCartStorage === 'function') syncCartStorage();
+        if (typeof updateCartUI === 'function') updateCartUI();
+        if (typeof renderCartItems === 'function') renderCartItems();
+
+        // 장바구니 아이콘 바운스 효과
+        const btnCart = document.getElementById('btn-cart');
+        if (btnCart) {
+          btnCart.style.transition = 'transform 0.2s ease-out';
+          btnCart.style.transform = 'scale(1.35)';
+          setTimeout(() => { btnCart.style.transform = 'scale(1)'; }, 200);
+        }
+
+        // 사용자가 요청한 '낙찰됐다 알럿' 띄우기
+        setTimeout(() => {
+          alert(`축하합니다! [${auctionData.productName}] 경매에 ${Number(auctionData.currentPrice).toLocaleString()}원으로 낙찰되었습니다! 해당 상품이 장바구니에 담겼습니다.`);
+        }, 100);
+      }
 
       if (soldModal) {
         const soldTitle = document.getElementById('sold-product-title');
@@ -2315,10 +2365,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (soldTitle) soldTitle.textContent = auctionData.productName || '경매 상품';
         if (soldWinner) soldWinner.textContent = `${auctionData.highestBidder?.userName || '낙찰자'}님`;
         if (soldPrice) soldPrice.textContent = `${Number(auctionData.currentPrice || 0).toLocaleString()}원`;
-
-        // 내가 낙찰자인지 확인
-        const myId = localStorage.getItem('ryzin_live_userid');
-        const isMyWin = !!(myId && auctionData.highestBidder && auctionData.highestBidder.userId === myId);
         if (soldMyNotice) soldMyNotice.style.display = isMyWin ? 'block' : 'none';
 
         soldModal.style.display = 'flex';
@@ -2327,9 +2373,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirmBtn) {
           confirmBtn.onclick = () => {
             soldModal.style.display = 'none';
-            if (isMyWin) {
-              const addressModal = document.getElementById('winner-address-modal');
-              if (addressModal) addressModal.style.display = 'flex';
+            if (isMyWin && typeof openCartModal === 'function') {
+              openCartModal();
             }
             if (typeof loadLiveProducts === 'function') loadLiveProducts();
           };
