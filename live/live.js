@@ -2103,6 +2103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (chatSection) chatSection.classList.remove('banner-active');
           } else {
             bottomBanner.style.display = 'flex';
+            bottomBanner.classList.remove('banner-hidden');
             if (chatSection) chatSection.classList.add('banner-active');
             moreCount.textContent = activeProducts.length;
 
@@ -2396,8 +2397,16 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (auctionData && auctionData.status === 'sold') {
       // 낙찰 완료 처리: 주소지 입력창 대신 낙찰 알럿 및 장바구니 자동 담기
       window.__isAuctionActive = false;
+      window.__currentAuction = null;
       localStorage.removeItem(`ryzin_live_auction_${LIVE_ID}`);
       if (auctionBar) auctionBar.style.display = 'none';
+
+      // 경매 종료 즉시 상품 롤링 배너로 무조건 자동 전환
+      if (bottomBanner) {
+        bottomBanner.classList.remove('banner-hidden');
+        bottomBanner.style.display = 'flex';
+      }
+      if (typeof loadLiveProducts === 'function') loadLiveProducts();
 
       // 내가 낙찰자인지 확인
       const myId = localStorage.getItem('ryzin_live_userid');
@@ -2472,6 +2481,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isMyWin && typeof openCartModal === 'function') {
               openCartModal();
             }
+            if (bottomBanner) {
+              bottomBanner.classList.remove('banner-hidden');
+              bottomBanner.style.display = 'flex';
+            }
             if (typeof loadLiveProducts === 'function') loadLiveProducts();
           };
         }
@@ -2480,16 +2493,24 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           if (soldModal && soldModal.style.display !== 'none') {
             soldModal.style.display = 'none';
+            if (bottomBanner) {
+              bottomBanner.classList.remove('banner-hidden');
+              bottomBanner.style.display = 'flex';
+            }
             if (typeof loadLiveProducts === 'function') loadLiveProducts();
           }
         }, 6000);
       }
     } else {
-      // 경매 종료 또는 미진행
+      // 경매 종료 또는 미진행: 무조건 상품 롤링배너로 즉시 자동 전환
       window.__isAuctionActive = false;
       window.__currentAuction = null;
       localStorage.removeItem(`ryzin_live_auction_${LIVE_ID}`);
       if (auctionBar) auctionBar.style.display = 'none';
+      if (bottomBanner) {
+        bottomBanner.classList.remove('banner-hidden');
+        bottomBanner.style.display = 'flex';
+      }
       if (typeof loadLiveProducts === 'function') loadLiveProducts();
     }
   }
@@ -2709,9 +2730,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key.includes('products')) loadLiveProducts();
     if (e.key.includes('auction')) {
       try {
-        const aData = JSON.parse(e.newValue);
+        const aData = e.newValue ? JSON.parse(e.newValue) : null;
         handleAuctionSync(aData);
-      } catch(err) {}
+      } catch(err) {
+        handleAuctionSync(null);
+      }
     }
     if (e.key === 'ryzin_admin_chat_trigger') {
       try {
