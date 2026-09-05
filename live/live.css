@@ -1924,36 +1924,36 @@ video::-webkit-media-controls-overlay-play-button {
   cursor: default !important;
 }
 
-/* ─── 첫 접속 시 상단 '화면을 터치하여 소리를 켜세요' 유도 인터랙션 배너 ─── */
+/* ─── 첫 접속 시 상단 '화면을 터치하여 소리를 켜세요' 유도 인터랙션 배너 (화이트 미니멀) ─── */
 .unmute-toast-banner {
   position: absolute;
-  top: 68px;
+  top: 110px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px 8px 12px;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 8px 16px 8px 10px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 9999px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   pointer-events: auto !important;
   user-select: none;
   -webkit-user-select: none;
   animation: unmuteBannerSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards, unmuteBannerBounce 2.5s infinite 0.35s ease-in-out;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s, box-shadow 0.2s;
   white-space: nowrap;
 }
 
 .unmute-toast-banner:hover {
-  background: rgba(15, 23, 42, 0.96);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
 }
 
 .unmute-toast-banner:active {
@@ -1987,20 +1987,20 @@ video::-webkit-media-controls-overlay-play-button {
 }
 
 .unmute-toast-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
+  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: #0f172a;
   flex-shrink: 0;
 }
 
 .unmute-toast-text {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: -0.2px;
-  color: #ffffff;
+  letter-spacing: -0.3px;
+  color: #0f172a;
 }
