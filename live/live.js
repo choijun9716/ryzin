@@ -1317,8 +1317,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 1. 라이브 영상 PIP 모드 활성화 (화면 우측 상단 플로팅 미니 플레이어로 축소)
-    document.body.classList.add('pip-active');
+    // 1. PIP 화면 없이 전체화면 라이브 모달 형태로 표시
+    document.body.classList.remove('pip-active');
 
     // 2. 다른 모달창(상품 목록, 장바구니 등) 닫기
     const modalProducts = document.getElementById('modal-products');
@@ -1337,73 +1337,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const customPage = document.getElementById('pdetail-custom-page');
     const btnCart = document.getElementById('btn-pdetail-cart');
 
-    const detailImg = item.detailImage || item.detail_image || item.detailImages;
-    if (detailImg) {
-      // 1순위: 관리자가 별도로 등록/업로드한 상세페이지 뷰
-      if (webviewContainer) webviewContainer.style.display = 'none';
-      if (iframe) iframe.src = '';
-      if (customPage) {
-        customPage.style.display = 'block';
-        customPage.scrollTop = 0;
+    if (customPage) customPage.style.display = 'none';
 
-        const thumbEl = document.getElementById('pdetail-custom-thumb');
-        const titleEl = document.getElementById('pdetail-custom-title');
-        const priceEl = document.getElementById('pdetail-custom-price');
-        const origPriceEl = document.getElementById('pdetail-custom-orig');
-        const discEl = document.getElementById('pdetail-custom-disc');
-        const imagesContainer = document.getElementById('pdetail-custom-images-container');
-
-        if (thumbEl) thumbEl.src = item.image || '';
-        if (titleEl) titleEl.textContent = item.name || '상품 상세';
-
-        const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
-        const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
-
-        if (pNum > 0) {
-          if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
-          if (npNum > pNum) {
-            if (origPriceEl) {
-              origPriceEl.textContent = `${npNum.toLocaleString()}원`;
-              origPriceEl.style.display = 'inline';
-            }
-            if (discEl) {
-              const rate = Math.round(((npNum - pNum) / npNum) * 100);
-              discEl.textContent = `${rate}%`;
-              discEl.style.display = 'inline';
-            }
-          } else {
-            if (origPriceEl) origPriceEl.style.display = 'none';
-            if (discEl) discEl.style.display = 'none';
-          }
-        } else if (item.price === '0' || item.price === 0) {
-          if (priceEl) priceEl.textContent = '무료나눔';
-          if (origPriceEl) origPriceEl.style.display = 'none';
-          if (discEl) discEl.style.display = 'none';
-        } else {
-          if (priceEl) priceEl.textContent = '가격 준비중';
-          if (origPriceEl) origPriceEl.style.display = 'none';
-          if (discEl) discEl.style.display = 'none';
-        }
-
-        // 상세페이지 이미지 렌더링 (쉼표 또는 배열 지원)
-        if (imagesContainer) {
-          imagesContainer.innerHTML = '';
-          const imgList = Array.isArray(detailImg) ? detailImg : String(detailImg).split(',').map(s => s.trim()).filter(Boolean);
-          imgList.forEach(src => {
-            const img = document.createElement('img');
-            img.src = src;
-            img.alt = `${item.name || '상품'} 상세페이지`;
-            img.style.width = '100%';
-            img.style.height = 'auto';
-            img.style.display = 'block';
-            img.loading = 'lazy';
-            imagesContainer.appendChild(img);
-          });
-        }
-      }
-    } else if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
-      // 2순위: 상세 이미지가 없는 경우 기존 외부 쇼핑몰 링크 프록시 웹뷰
-      if (customPage) customPage.style.display = 'none';
+    if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
+      // 자사몰 상품 웹페이지 프록시 로드
       if (webviewContainer) webviewContainer.style.display = 'block';
       let cleanUrl = String(item.url).trim();
       if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {

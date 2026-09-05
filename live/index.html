@@ -1614,30 +1614,7 @@
         </button>
       </div>
 
-      <!-- 별도 등록된 상세페이지 뷰 (업로드한 상세페이지 이미지 + 상품 정보 카드) -->
-      <div id="pdetail-custom-page" style="display:none; flex:1; width:100%; height:100%; overflow-y:auto; -webkit-overflow-scrolling:touch; background:#ffffff; padding-bottom:80px;">
-        <!-- 상단 썸네일 & 기본 정보 요약 -->
-        <div style="padding:16px 16px 20px; border-bottom:1px solid #f1f5f9; background:#ffffff;">
-          <div style="width:100%; aspect-ratio:1/1; max-width:380px; margin:0 auto 16px; border-radius:16px; overflow:hidden; background:#f8fafc; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-            <img id="pdetail-custom-thumb" src="" alt="상품 썸네일" style="width:100%; height:100%; object-fit:cover; display:block;">
-          </div>
-          <h2 id="pdetail-custom-title" style="font-size:18px; font-weight:800; color:#0f172a; margin:0 0 10px; line-height:1.4; letter-spacing:-0.3px;">상품명</h2>
-          <div style="display:flex; align-items:baseline; gap:8px;">
-            <span id="pdetail-custom-disc" style="font-size:22px; font-weight:900; color:#ef4444;"></span>
-            <span id="pdetail-custom-price" style="font-size:24px; font-weight:900; color:#0f172a;">0원</span>
-            <span id="pdetail-custom-orig" style="font-size:14px; color:#94a3b8; text-decoration:line-through;"></span>
-          </div>
-        </div>
-        <!-- 상세페이지 구분 바 -->
-        <div style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; font-size:13px; font-weight:800; color:#475569; letter-spacing:-0.2px; display:flex; align-items:center; gap:6px;">
-          <span>상품 상세 정보</span>
-        </div>
-        <!-- 업로드된 상세 이미지 렌더링 컨테이너 (고해상도 100% 핏) -->
-        <div id="pdetail-custom-images-container" style="width:100%; display:flex; flex-direction:column; background:#ffffff;">
-        </div>
-      </div>
-
-      <!-- 외부 사이트 구매 링크 웹뷰 iframe 영역 -->
+      <!-- 자사몰 상품 상세 웹뷰 iframe 영역 -->
       <div id="pdetail-webview-container" style="flex:1; width:100%; height:100%; position:relative; background:#ffffff; overflow:hidden; padding-bottom:72px;">
         <iframe id="pdetail-webview-iframe" src="" style="width:100%; height:100%; border:none; display:block;" allow="autoplay; encrypted-media"></iframe>
         
@@ -1673,7 +1650,7 @@
     <!-- Supabase JS SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config.js"></script>
-    <script src="live.js?v=202609050021"></script>
+    <script src="live.js?v=202609050022"></script>
 
 
   <!-- iOS PWA 홈 화면 추가 가이드 모달 (화이트 미니멀 스타일 + 공유 아이콘) -->
