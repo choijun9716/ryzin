@@ -230,7 +230,6 @@ export function renderLogin() {
         const id = document.getElementById('login-id').value.trim();
         const pw = document.getElementById('login-pw').value;
 
-        // 로그인 직전 Supabase 백엔드로부터 최신 계정 정보 실시간 갱신 동기화
         const submitBtn = loginForm.querySelector('button[type="submit"]');
         const originalText = submitBtn ? submitBtn.textContent : '로그인';
         if (submitBtn) {
@@ -239,84 +238,94 @@ export function renderLogin() {
         }
 
         try {
-          await store.init();
+          // [보안] 로그인은 /api/admin/login 서버 엔드포인트를 통해 처리합니다.
+          // 비밀번호 검증 및 JWT 발급이 서버에서 service_role 키로 안전하게 처리됩니다.
+          const resp = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, password: pw }),
+          });
+
+          if (resp.ok) {
+            const result = await resp.json();
+            const { token, user } = result;
+
+            // JWT 토큰 저장 (이후 모든 어드민 API 요청에 자동으로 첨부됩니다)
+            localStorage.setItem('ryzin_admin_token', token);
+
+            // 데모 모드가 아닐 때 store 초기화 (토큰이 있으므로 이제 데이터 조회 가능)
+            if (!store.isDemoMode) {
+              try {
+                await store.init();
+              } catch (err) {
+                console.warn('init after login failed:', err);
+              }
+            }
+
+            // store에 로그인 상태 반영
+            store.completeLogin(user);
+
+            if (store.isDemoMode) {
+              showSuccess('데모 모드로 접속되었습니다.');
+            } else {
+              showSuccess('환영합니다.');
+            }
+
+            if (user.role && user.role.startsWith('live_stream:')) {
+              router.navigate('/live_stream');
+            } else if (user.role && user.role.startsWith('brand:')) {
+              router.navigate('/projects');
+            } else {
+              router.navigate('/');
+            }
+          } else {
+            // 서버 로그인 실패 시 fallback: 로컬 캐시 데이터로 검증 시도 (오프라인/서버 미배포 환경)
+            const errData = await resp.json().catch(() => ({}));
+            const errMsg = errData.error || '로그인 실패';
+
+            // 서버가 배포되지 않은 환경(로컬 개발) 또는 오프라인일 때 로컬 검증 fallback
+            if (resp.status >= 500 || resp.status === 404) {
+              console.warn('[Login] 서버 로그인 불가, 로컬 캐시 fallback 시도...');
+              try {
+                await store.init();
+              } catch (err) {
+                console.warn('store init failed:', err);
+              }
+              const user = store.verifyPassword(id, pw);
+              if (user) {
+                store.completeLogin(user);
+                showSuccess('환영합니다. (로컬 모드)');
+                if (user.role && user.role.startsWith('live_stream:')) {
+                  router.navigate('/live_stream');
+                } else if (user.role && user.role.startsWith('brand:')) {
+                  router.navigate('/projects');
+                } else {
+                  router.navigate('/');
+                }
+              } else {
+                showError('로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.');
+              }
+            } else {
+              showError(`로그인 실패: ${errMsg}`);
+            }
+          }
         } catch (err) {
-          console.warn('Failed to sync users from Supabase before login', err);
+          // 네트워크 오류 시 로컬 fallback
+          console.warn('[Login] 네트워크 오류, 로컬 캐시 fallback:', err);
+          try { await store.init(); } catch (_) {}
+          const user = store.verifyPassword(id, pw);
+          if (user) {
+            store.completeLogin(user);
+            showSuccess('환영합니다. (오프라인 모드)');
+            router.navigate('/');
+          } else {
+            showError('로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.');
+          }
         } finally {
           if (submitBtn) {
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
           }
-        }
-
-        const user = store.verifyPassword(id, pw);
-
-        if (user) {
-          if (store.isDemoMode) {
-            // 데모 모드에서는 OTP 생략
-            store.completeLogin(user);
-            showSuccess('데모 모드로 접속되었습니다.');
-            router.navigate('/');
-            return;
-          }
-          // [임시 OTP 해제] - OTP 인증 없이 바로 로그인
-          store.completeLogin(user);
-          showSuccess('환영합니다.');
-          if (user.role && user.role.startsWith('live_stream:')) {
-            router.navigate('/live_stream');
-          } else if (user.role && user.role.startsWith('brand:')) {
-            router.navigate('/projects');
-          } else {
-            router.navigate('/');
-          }
-          return;
-          /* ---- OTP 인증 (현재 비활성화) ----
-          const isTrusted = localStorage.getItem(`ryzin_otp_trusted_${user.id}`) === 'true';
-          if (isTrusted) {
-            store.completeLogin(user);
-            showSuccess('환영합니다.');
-            router.navigate('/');
-            return;
-          }
-          ---- */
-          pendingUser = user;
-          
-          const savedSecret = user.otpSecret || localStorage.getItem(`ryzin_otp_${id}`);
-          
-          if (!savedSecret) {
-            newSecret = new OTPAuth.Secret({ size: 20 }).base32;
-            let totp = new OTPAuth.TOTP({
-              issuer: 'Ryzin Admin',
-              label: id,
-              algorithm: 'SHA1',
-              digits: 6,
-              period: 30,
-              secret: OTPAuth.Secret.fromBase32(newSecret)
-            });
-            const otpauthUri = totp.toString();
-            
-            setupContainer.style.display = 'block';
-            
-            try {
-              const url = await QRCode.toDataURL(otpauthUri, { margin: 1, width: 150 });
-              qrcodeBox.innerHTML = `
-                <div style="margin-bottom: 8px;">
-                  <img src="${url}" alt="QR Code" style="width: 150px; height: 150px; border-radius: 8px;">
-                </div>
-                <div style="font-size: 12px; color: var(--text-tertiary);">QR 스캔이 안된다면 아래 키를 입력하세요:</div>
-                <div style="margin-top: 4px; font-size: 16px; color: var(--primary); font-weight: bold; user-select: all; letter-spacing: 1px;">${newSecret}</div>
-              `;
-            } catch (err) {
-              qrcodeBox.innerHTML = `설정 키<br><span style="color: var(--primary); user-select: all;">${newSecret}</span>`;
-            }
-          } else {
-            setupContainer.style.display = 'none';
-          }
-          
-          slider.style.transform = 'translateX(-50%)';
-          setTimeout(() => otpInput.focus(), 400);
-        } else {
-          showError('로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.');
         }
       });
     }

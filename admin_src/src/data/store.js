@@ -1,10 +1,28 @@
-// ===== 중앙 데이터 스토어 (Observer 패턴 + LocalStorage + SheetDB) =====
+// ===== 중앙 데이터 스토어 (Observer 패턴 + LocalStorage + Serverless API 프록시) =====
 import { getBroadcastStatus, getSettleStatus, getBroadcastStatusLabel, getSettleStatusLabel } from './models.js';
 import CryptoJS from 'crypto-js';
 
+// [보안] SUPABASE_KEY(anon)는 라이브 시청자 기능(live.js)용 공개키이며, 어드민 민감 데이터 접근에는 사용하지 않습니다.
+// 어드민 데이터 조회/쓰기는 /api/admin/* Serverless 함수를 통해 service_role 키로만 처리됩니다.
 const SUPABASE_URL = 'https://vybrnhyaeugfwezbygdt.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9';
+const SUPABASE_KEY = 'sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9'; // anon key (라이브 전용)
 const SECRET_SALT = 'ryzin_super_secret_salt_2026';
+
+// ===== 어드민 API 프록시 헬퍼 =====
+function getAdminToken() {
+  return localStorage.getItem('ryzin_admin_token') || null;
+}
+
+async function adminFetch(path, options = {}) {
+  const token = getAdminToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'X-Admin-Token': token } : {}),
+    ...(options.headers || {}),
+  };
+  const resp = await fetch(path, { ...options, headers });
+  return resp;
+}
 
 function createDemoInitialData() {
   return {
@@ -119,8 +137,8 @@ class DataStore {
     }
   }
 
-  // --- Supabase 초기 로딩 ---
-  // --- Supabase 초기 로딩 ---
+  // --- 어드민 API 프록시를 통한 초기 로딩 ---
+  // --- 어드민 API 프록시를 통한 초기 로딩 ---
   async init() {
     if (this.isDemoMode) {
       if (this._data.users.length === 0) {
@@ -131,22 +149,15 @@ class DataStore {
       return true; // 데모 모드일 경우 시트 동기화 스킵
     }
     try {
-      const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      };
+      // [보안] 모든 민감 데이터 조회는 /api/admin/data 프록시를 통해 서버 측 service_role 키로 처리됩니다.
+      // anon 키를 브라우저에서 직접 사용하지 않습니다.
+      const tables = ['users', 'hosts', 'brands', 'live_broadcasts', 'crm_clients', 'crm_activities', 'ryzin_class_applications', 'ryzin_class_survey_questions', 'ryzin_class_settings'];
       
-      let [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes, classSettingsRes] = await Promise.all([
-        fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/hosts?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/brands?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/live_broadcasts?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/crm_clients?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/crm_activities?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_applications?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_survey_questions?select=*`, { headers }).catch(() => null),
-        fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_settings?select=*`, { headers }).catch(() => null)
-      ]);
+      const results = await Promise.all(
+        tables.map(t => adminFetch(`/api/admin/data?table=${t}`).catch(() => null))
+      );
+
+      let [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes, classSettingsRes] = results;
       
       let userData = userRes && userRes.ok ? await userRes.json() : [];
       let shData = shRes && shRes.ok ? await shRes.json() : [];
@@ -165,21 +176,14 @@ class DataStore {
                             (this._data.projects && this._data.projects.length > 0);
 
       if (isSupabaseEmpty && hasLocalData) {
-        console.log('🔄 Supabase가 비어있어 로컬 캐시 데이터 마이그레이션을 시작합니다...');
+        console.log('[Admin] 로컬 캐시 데이터 마이그레이션을 시작합니다...');
         await this._migrateLocalToSupabase();
         
         // 마이그레이션 후 다시 조회
-        [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes, classSettingsRes] = await Promise.all([
-          fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/hosts?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/brands?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/live_broadcasts?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/crm_clients?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/crm_activities?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_applications?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_survey_questions?select=*`, { headers }).catch(() => null),
-          fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_settings?select=*`, { headers }).catch(() => null)
-        ]);
+        const retryResults = await Promise.all(
+          tables.map(t => adminFetch(`/api/admin/data?table=${t}`).catch(() => null))
+        );
+        [userRes, shRes, brRes, liveRes, crmClientRes, crmActRes, classAppRes, surveyQuesRes, classSettingsRes] = retryResults;
         
         userData = userRes && userRes.ok ? await userRes.json() : [];
         shData = shRes && shRes.ok ? await shRes.json() : [];
@@ -196,17 +200,19 @@ class DataStore {
       this._sheetDBReady = true;
       return true;
     } catch (e) {
-      console.error('Supabase 연동 시도 중 오류 발생 (로컬 캐시로 진입):', e);
+      console.error('Admin API 연동 시도 중 오류 발생 (로컬 캐시로 진입):', e);
       return true;
     }
   }
 
   async _migrateLocalToSupabase() {
-    const headers = {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'resolution=merge-duplicates'
+    // [보안] 마이그레이션도 /api/admin/save 프록시를 통해 service_role 키로 처리합니다.
+    const migrateTable = async (table, payload) => {
+      if (!payload || payload.length === 0) return;
+      await adminFetch(`/api/admin/save?table=${table}`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }).catch(e => console.warn(`마이그레이션 실패 (${table}):`, e));
     };
 
     try {
@@ -214,35 +220,35 @@ class DataStore {
         const payload = this._data.users.map(u => ({
           id: u.id, password: u.password, name: u.name, role: u.role, otp_secret: u.otpSecret || ''
         }));
-        await fetch(`${SUPABASE_URL}/rest/v1/users`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+        await migrateTable('users', payload);
       }
       
       if (this._data.hosts && this._data.hosts.length > 0) {
         const payload = this._data.hosts.map(h => ({
           id: h.id, name: h.name, phone: h.phone, ssn: h.ssn, bank: h.bank, account: h.account, account_holder: h.accountHolder, address: h.address, memo: h.memo ? h.memo.features : ''
         }));
-        await fetch(`${SUPABASE_URL}/rest/v1/hosts`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+        await migrateTable('hosts', payload);
       }
 
       if (this._data.brands && this._data.brands.length > 0) {
         const payload = this._data.brands.map(b => ({
           id: b.id, name: b.name, company_name: b.companyName, category: b.category, tax_invoice: b.taxInvoice === true, manager: b.manager, phone: b.phone, email: b.email, business_no: b.businessNo, address: b.address, memo: b.memo
         }));
-        await fetch(`${SUPABASE_URL}/rest/v1/brands`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+        await migrateTable('brands', payload);
       }
 
       if (this._data.crmClients && this._data.crmClients.length > 0) {
         const payload = this._data.crmClients.map(c => ({
           id: c.id, company_name: c.companyName, contact_name: c.contactName, phone: c.phone, email: c.email, status: c.status, category: c.category, interested_service: c.interestedService, source: c.source, memo: c.memo, last_contact_date: c.lastContactDate, created_at: c.createdAt
         }));
-        await fetch(`${SUPABASE_URL}/rest/v1/crm_clients`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+        await migrateTable('crm_clients', payload);
       }
 
       if (this._data.crmActivities && this._data.crmActivities.length > 0) {
         const payload = this._data.crmActivities.map(a => ({
           id: a.id, client_id: a.clientId, date: a.date, type: a.type, content: a.content, follow_up_date: a.followUpDate, created_at: a.createdAt
         }));
-        await fetch(`${SUPABASE_URL}/rest/v1/crm_activities`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+        await migrateTable('crm_activities', payload);
       }
 
       if (this._data.projects && this._data.projects.length > 0) {
@@ -285,9 +291,9 @@ class DataStore {
             note: p.note || ''
           };
         });
-        await fetch(`${SUPABASE_URL}/rest/v1/live_broadcasts`, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(() => null);
+        await migrateTable('live_broadcasts', payload);
       }
-      console.log('✅ 로컬 캐시 데이터 Supabase 마이그레이션 완료!');
+      console.log('[Admin] 로컬 캐시 데이터 마이그레이션 완료!');
     } catch (e) {
       console.warn('로컬 데이터 마이그레이션 실패:', e);
     }
@@ -519,68 +525,69 @@ class DataStore {
     this._save();
   }
 
-  // --- Supabase 비동기 백그라운드 동기화 ---
+  // --- 어드민 API 프록시를 통한 비동기 백그라운드 동기화 ---
   async _syncToSheetDB(collection, action, item) {
     if (!this._sheetDBReady) return;
     try {
-      let endpoint = '';
+      let table = '';
       let payload = null;
       let method = 'POST';
+      let itemId = null;
 
       if (collection === 'users') {
-        endpoint = '/rest/v1/users';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/users?id=eq.${item.id}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/users?id=eq.${item.id}`; }
+        table = 'users';
+        if (action === 'update') { method = 'PATCH'; itemId = item.id; }
+        if (action === 'delete') { method = 'DELETE'; itemId = item.id; }
         payload = { id: item.id, password: item.password, name: item.name, role: item.role, otp_secret: item.otpSecret || '' };
       }
       else if (collection === 'hosts') {
-        endpoint = '/rest/v1/hosts';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/hosts?id=eq.${item.id}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/hosts?id=eq.${item.id}`; }
-        payload = { id: item.id, name: item.name, phone: item.phone, ssn: item.ssn, bank: item.bank, account: item.account, account_holder: item.accountHolder, address: item.address, memo: item.memo.features };
+        table = 'hosts';
+        if (action === 'update') { method = 'PATCH'; itemId = item.id; }
+        if (action === 'delete') { method = 'DELETE'; itemId = item.id; }
+        payload = { id: item.id, name: item.name, phone: item.phone, ssn: item.ssn, bank: item.bank, account: item.account, account_holder: item.accountHolder, address: item.address, memo: item.memo ? item.memo.features : '' };
       } 
       else if (collection === 'brands') {
-        endpoint = '/rest/v1/brands';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/brands?id=eq.${item.id}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/brands?id=eq.${item.id}`; }
+        table = 'brands';
+        if (action === 'update') { method = 'PATCH'; itemId = item.id; }
+        if (action === 'delete') { method = 'DELETE'; itemId = item.id; }
         payload = { id: item.id, name: item.name, company_name: item.companyName, category: item.category, tax_invoice: item.taxInvoice === true, manager: item.manager, phone: item.phone, email: item.email, business_no: item.businessNo, address: item.address, memo: item.memo };
       }
       else if (collection === 'crmClients') {
-        endpoint = '/rest/v1/crm_clients';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/crm_clients?id=eq.${item.id}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/crm_clients?id=eq.${item.id}`; }
+        table = 'crm_clients';
+        if (action === 'update') { method = 'PATCH'; itemId = item.id; }
+        if (action === 'delete') { method = 'DELETE'; itemId = item.id; }
         payload = { id: item.id, company_name: item.companyName, contact_name: item.contactName, phone: item.phone, email: item.email, status: item.status, category: item.category, interested_service: item.interestedService, source: item.source, memo: item.memo, last_contact_date: item.lastContactDate, created_at: item.createdAt };
       }
       else if (collection === 'crmActivities') {
-        endpoint = '/rest/v1/crm_activities';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/crm_activities?id=eq.${item.id}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/crm_activities?id=eq.${item.id}`; }
+        table = 'crm_activities';
+        if (action === 'update') { method = 'PATCH'; itemId = item.id; }
+        if (action === 'delete') { method = 'DELETE'; itemId = item.id; }
         payload = { id: item.id, client_id: item.clientId, date: item.date, type: item.type, content: item.content, follow_up_date: item.followUpDate, created_at: item.createdAt };
       }
       else if (collection === 'classApplications') {
-        endpoint = '/rest/v1/ryzin_class_applications';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/ryzin_class_applications?id=eq.${item.id}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/ryzin_class_applications?id=eq.${item.id}`; }
+        table = 'ryzin_class_applications';
+        if (action === 'update') { method = 'PATCH'; itemId = item.id; }
+        if (action === 'delete') { method = 'DELETE'; itemId = item.id; }
         payload = { id: item.id, name: item.name, phone: item.phone, answers: item.answers, photo_url: item.photo_url, created_at: item.created_at };
       }
       else if (collection === 'surveyQuestions') {
-        endpoint = '/rest/v1/ryzin_class_survey_questions';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/ryzin_class_survey_questions?id=eq.${item.id}`; }
-        if (action === 'delete') { method = 'DELETE'; endpoint = `/rest/v1/ryzin_class_survey_questions?id=eq.${item.id}`; }
+        table = 'ryzin_class_survey_questions';
+        if (action === 'update') { method = 'PATCH'; itemId = item.id; }
+        if (action === 'delete') { method = 'DELETE'; itemId = item.id; }
         payload = { id: item.id, type: item.type, label: item.label, placeholder: item.placeholder, options: item.options, required: item.required === true, sort_order: item.sort_order };
       }
       else if (collection === 'classSettings') {
-        endpoint = '/rest/v1/ryzin_class_settings';
-        if (action === 'update') { method = 'PATCH'; endpoint = `/rest/v1/ryzin_class_settings?key=eq.${item.key}`; }
+        table = 'ryzin_class_settings';
+        if (action === 'update') { method = 'PATCH'; itemId = item.key; }
         payload = { key: item.key, value: item.value };
       }
       else if (['projects', 'results', 'finances', 'liveHosts'].includes(collection)) {
+        table = 'live_broadcasts';
         const liveId = item.liveId || item.id;
-        endpoint = '/rest/v1/live_broadcasts?on_conflict=id';
         
         if (action === 'delete' && collection === 'projects') {
           method = 'DELETE';
-          endpoint = `/rest/v1/live_broadcasts?id=eq.${liveId}`;
+          itemId = liveId;
           payload = null;
         } else {
           const p = this.getById('projects', liveId);
@@ -631,45 +638,27 @@ class DataStore {
         }
       }
 
-      const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json'
-      };
+      if (!table) return;
 
-      if (method === 'POST' && ['live_broadcasts', 'users', 'hosts', 'brands', 'crm_clients', 'crm_activities'].some(t => endpoint.includes(t))) {
-        headers['Prefer'] = 'resolution=merge-duplicates';
-      }
+      // [보안] /api/admin/save 프록시를 통해 service_role 키로 Supabase 쓰기 처리
+      const url = itemId
+        ? `/api/admin/save?table=${table}&id=${encodeURIComponent(itemId)}`
+        : `/api/admin/save?table=${table}`;
 
-      if (payload) {
-        const res = await fetch(`${SUPABASE_URL}${endpoint}`, {
-          method: method,
-          headers: headers,
-          body: JSON.stringify(payload)
+      if (payload || method === 'DELETE') {
+        const res = await adminFetch(url, {
+          method,
+          body: payload ? JSON.stringify(payload) : undefined,
         });
         if (!res.ok) {
           const errBody = await res.text();
-          console.error(`[Supabase Sync Error] ${method} ${endpoint} (Status: ${res.status}):`, errBody);
+          console.error(`[Admin Sync Error] ${method} ${table} (Status: ${res.status}):`, errBody);
         } else {
-          console.log(`[Supabase Sync Success] ${method} ${endpoint}`);
-        }
-      } else if (method === 'DELETE') {
-        const res = await fetch(`${SUPABASE_URL}${endpoint}`, {
-          method: 'DELETE',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
-        });
-        if (!res.ok) {
-          const errBody = await res.text();
-          console.error(`[Supabase Sync Error] DELETE ${endpoint} (Status: ${res.status}):`, errBody);
-        } else {
-          console.log(`[Supabase Sync Success] DELETE ${endpoint}`);
+          console.log(`[Admin Sync Success] ${method} ${table}`);
         }
       }
     } catch (e) {
-      console.error('Supabase 동기화 에러:', e);
+      console.error('Admin API 동기화 에러:', e);
     }
   }
 
@@ -706,11 +695,11 @@ class DataStore {
   async _syncBulkToSheetDB(collection, items) {
     if (!this._sheetDBReady || items.length === 0) return;
     try {
-      let endpoint = '';
+      let table = '';
       let payload = [];
       
       if (collection === 'crmClients') {
-        endpoint = '/rest/v1/crm_clients';
+        table = 'crm_clients';
         payload = items.map(data => ({
           id: data.id || '',
           company_name: data.companyName || '',
@@ -727,19 +716,12 @@ class DataStore {
         }));
       }
 
-      if (!endpoint) return;
+      if (!table) return;
 
-      const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      };
-
-      await fetch(`${SUPABASE_URL}${endpoint}`, {
+      // [보안] /api/admin/save 프록시를 통해 service_role 키로 대량 저장 처리
+      await adminFetch(`/api/admin/save?table=${table}`, {
         method: 'POST',
-        headers: headers,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
     } catch (e) {
       console.error('대량 저장 오류:', e);
@@ -775,16 +757,10 @@ class DataStore {
     this._emit('classSettings:changed');
 
     try {
-      const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      };
-      await fetch(`${SUPABASE_URL}/rest/v1/ryzin_class_settings`, {
+      // [보안] /api/admin/save 프록시를 통해 service_role 키로 설정 저장
+      await adminFetch('/api/admin/save?table=ryzin_class_settings', {
         method: 'POST',
-        headers,
-        body: JSON.stringify({ key, value })
+        body: JSON.stringify({ key, value }),
       });
     } catch (e) {
       console.error('설정 저장 에러:', e);
@@ -990,11 +966,13 @@ class DataStore {
 
   logout() {
     this._data.currentUser = null;
-    this._data.currentRole = 'admin'; // 안전을 위해 초기화하지만, 어차피 로그인 튕김
+    this._data.currentRole = 'admin';
     this._data.authSignature = null;
     this._save();
     this._emit('auth:logout');
     localStorage.removeItem(this.STORAGE_KEY);
+    // [보안] 어드민 JWT 토큰도 함께 삭제
+    localStorage.removeItem('ryzin_admin_token');
   }
 
   updateUser(user) {
