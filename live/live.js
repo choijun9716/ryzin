@@ -2483,7 +2483,7 @@ document.addEventListener('DOMContentLoaded', () => {
           };
         }
 
-        // 6초 후 자동 닫기
+        // 4초 후 자동 닫기
         setTimeout(() => {
           if (soldModal && soldModal.style.display !== 'none') {
             soldModal.style.display = 'none';
@@ -2493,7 +2493,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (typeof loadLiveProducts === 'function') loadLiveProducts();
           }
-        }, 6000);
+        }, 4000);
       }
     } else {
       // 경매 종료 또는 미진행: 무조건 상품 롤링배너로 즉시 자동 전환

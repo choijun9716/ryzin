@@ -3829,7 +3829,7 @@ function renderLiveEditView(container, liveId, showView) {
           broadcastLiveSync();
           plc.innerHTML = renderProductList();
           bindProductEvents();
-        }, 5000);
+        }, 4000);
       };
 
       plc.querySelectorAll('.btn-admin-auction-sold, .btn-auction-sold-row').forEach(btn => {
