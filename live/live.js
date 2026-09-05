@@ -1495,9 +1495,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 하단 장바구니 담기
-    if (btnCart) {
-      btnCart.onclick = (e) => {
+    const detailCartBtn = document.getElementById('btn-pdetail-cart');
+    if (detailCartBtn) {
+      detailCartBtn.onclick = (e) => {
         e.stopPropagation();
+
+        const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+        if (!currentConfig.isLive) {
+          alert('라이브 방송 중에만 구매 가능합니다.');
+          return;
+        }
+
         if (typeof addToCart === 'function') {
           addToCart(item);
         }
@@ -1505,12 +1513,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cartText) {
           const orig = cartText.textContent;
           cartText.textContent = '장바구니에 담겼습니다!';
-          btnCart.style.background = '#2563eb';
-          btnCart.style.transform = 'scale(0.97)';
+          detailCartBtn.style.background = '#2563eb';
+          detailCartBtn.style.transform = 'scale(0.97)';
           setTimeout(() => {
             cartText.textContent = orig;
-            btnCart.style.background = '#0f172a';
-            btnCart.style.transform = 'scale(1)';
+            detailCartBtn.style.background = '#0f172a';
+            detailCartBtn.style.transform = 'scale(1)';
           }, 1200);
         }
       };
@@ -3800,6 +3808,12 @@ function updateCartUI() {
 }
 
 function addToCart(product) {
+  const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+  if (!currentConfig.isLive) {
+    alert('라이브 방송 중에만 구매 가능합니다.');
+    return;
+  }
+
   const exists = cartItems.find(item => item.name === product.name);
   if (exists) {
     exists.quantity = (exists.quantity || 1) + 1;
