@@ -58,6 +58,8 @@ function renderCartItems() {
     if (item.price) price = Number(item.price.toString().replace(/[^0-9]/g, ''));
     total += price;
 
+    const isAuction = !!(item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')));
+
     const div = document.createElement('div');
     div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f1f5f9;';
     div.innerHTML = `
@@ -66,7 +68,9 @@ function renderCartItems() {
         <div style="font-size:14px; font-weight:600; color:#0f172a; margin-bottom:4px; word-break:keep-all;">${item.name}</div>
         <div style="font-size:14px; font-weight:700; color:#e11d48;">${price.toLocaleString()}원</div>
       </div>
-      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
+      ${isAuction 
+        ? `<span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:3px 7px; border-radius:6px; border:1px solid #fee2e2; white-space:nowrap; margin-left:2px;" title="경매 낙찰 상품은 삭제할 수 없습니다">낙찰상품</span>` 
+        : `<button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;" title="삭제">✕</button>`}
     `;
     cartItemsContainer.appendChild(div);
   });
@@ -76,6 +80,11 @@ function renderCartItems() {
   cartItemsContainer.querySelectorAll('.btn-remove-cart').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = e.currentTarget.dataset.index;
+      const targetItem = cartItems[idx];
+      if (targetItem && (targetItem.isAuctionWon || (targetItem.name && targetItem.name.startsWith('[경매낙찰]')))) {
+        alert('경매 낙찰 상품은 장바구니에서 삭제할 수 없습니다.');
+        return;
+      }
       cartItems.splice(idx, 1);
       updateCartUI();
       renderCartItems();

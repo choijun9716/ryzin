@@ -2249,6 +2249,98 @@ document.addEventListener('DOMContentLoaded', () => {
   window.__currentAuction = null;
   window.__isAuctionActive = false;
 
+  // 이메일 앞자리 일부 *** 마스킹 헬퍼 (예: abcdef@naver.com -> abc***@naver.com)
+  function maskAuctionEmail(emailStr) {
+    if (!emailStr || typeof emailStr !== 'string') return '';
+    const trimmed = emailStr.trim();
+    if (!trimmed.includes('@')) return '';
+
+    const parts = trimmed.split('@');
+    const local = parts[0];
+    const domain = parts.slice(1).join('@');
+
+    let maskedLocal = '';
+    if (local.length <= 1) {
+      maskedLocal = local + '***';
+    } else if (local.length <= 2) {
+      maskedLocal = local[0] + '***';
+    } else if (local.length <= 4) {
+      maskedLocal = local.slice(0, 2) + '***';
+    } else {
+      // 5글자 이상: 앞 3글자 남기고 *** 마스킹
+      maskedLocal = local.slice(0, 3) + '***';
+    }
+
+    return `${maskedLocal}@${domain}`;
+  }
+  window.maskAuctionEmail = maskAuctionEmail;
+
+  // 경매 참여자/낙찰자 이름 마스킹 처리 헬퍼 (이메일 우선, 일반 이름/닉네임 보조)
+  function maskAuctionUserName(rawName, rawEmail = '') {
+    if (rawEmail && rawEmail.includes('@')) {
+      return maskAuctionEmail(rawEmail);
+    }
+    if (rawName && typeof rawName === 'string' && rawName.includes('@')) {
+      return maskAuctionEmail(rawName);
+    }
+
+    const name = String(rawName || '').trim();
+    if (!name) return '시청자***';
+    if (name.length <= 1) return name + '***';
+    if (name.length <= 2) return name[0] + '*';
+    if (name.length <= 4) return name.slice(0, 2) + '**';
+    return name.slice(0, 3) + '***';
+  }
+  window.maskAuctionUserName = maskAuctionUserName;
+
+  // 현재 사용자의 경매 표시용 이름/이메일 추출 헬퍼
+  function getAuctionUserEmailAndName() {
+    let email = '';
+    let kakaoUser = null;
+    try { kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    if (kakaoUser && kakaoUser.email && kakaoUser.email.includes('@')) {
+      email = kakaoUser.email.trim();
+    }
+
+    if (!email && typeof window.getUnifiedUserInfo === 'function') {
+      try {
+        const u = window.getUnifiedUserInfo();
+        if (u && u.email && u.email.includes('@')) email = u.email.trim();
+      } catch(e) {}
+    }
+
+    if (!email) {
+      try {
+        const saved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || 'null');
+        if (saved && saved.email && saved.email.includes('@')) email = saved.email.trim();
+      } catch(e) {}
+    }
+
+    if (!email) {
+      const directEmail = localStorage.getItem('ryzin_user_email') || '';
+      if (directEmail && directEmail.includes('@')) email = directEmail.trim();
+    }
+
+    // 카카오 회원이지만 이메일 권한이 없을 경우 가상 카카오 이메일 생성하여 마스킹
+    if (!email && kakaoUser && kakaoUser.id) {
+      email = `user_${kakaoUser.id}@kakao.com`;
+    }
+
+    let name = (kakaoUser && (kakaoUser.nickname || kakaoUser.name)) || 
+               localStorage.getItem('ryzin_nickname') || 
+               localStorage.getItem('ryzin_live_username') || 
+               localStorage.getItem('ryzin_chat_user') || '';
+
+    if (!name && !email) {
+      name = '시청자' + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('ryzin_live_username', name);
+    }
+
+    const maskedDisplay = email ? maskAuctionEmail(email) : maskAuctionUserName(name);
+    return { email, name, maskedDisplay };
+  }
+  window.getAuctionUserEmailAndName = getAuctionUserEmailAndName;
+
   function handleAuctionSync(auctionData) {
     const auctionBar = document.getElementById('live-auction-bar');
     const bottomBanner = document.getElementById('bottom-product-banner');
@@ -2288,7 +2380,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (statusEl) {
         if (auctionData.highestBidder && auctionData.highestBidder.userName) {
-          statusEl.textContent = `최고 입찰: ${auctionData.highestBidder.userName} (${currentPrice.toLocaleString()}원)`;
+          const bidderName = maskAuctionUserName(auctionData.highestBidder.userName, auctionData.highestBidder.email);
+          statusEl.textContent = `최고 입찰: ${bidderName} (${currentPrice.toLocaleString()}원)`;
         } else {
           statusEl.textContent = `시작가 (${currentPrice.toLocaleString()}원) 대기중`;
         }
@@ -2363,7 +2456,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const soldMyNotice = document.getElementById('sold-my-notice');
 
         if (soldTitle) soldTitle.textContent = auctionData.productName || '경매 상품';
-        if (soldWinner) soldWinner.textContent = `${auctionData.highestBidder?.userName || '낙찰자'}님`;
+        if (soldWinner) {
+          const winnerName = maskAuctionUserName(auctionData.highestBidder?.userName || '낙찰자', auctionData.highestBidder?.email);
+          soldWinner.textContent = `${winnerName}님`;
+        }
         if (soldPrice) soldPrice.textContent = `${Number(auctionData.currentPrice || 0).toLocaleString()}원`;
         if (soldMyNotice) soldMyNotice.style.display = isMyWin ? 'block' : 'none';
 
@@ -2416,7 +2512,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (curPriceEl) curPriceEl.textContent = `${bidData.newPrice.toLocaleString()}원`;
       if (statusEl && bidData.bidder) {
-        statusEl.textContent = `최고 입찰: ${bidData.bidder.userName} (${bidData.newPrice.toLocaleString()}원)`;
+        const bidderName = maskAuctionUserName(bidData.bidder.userName, bidData.bidder.email);
+        statusEl.textContent = `최고 입찰: ${bidderName} (${bidData.newPrice.toLocaleString()}원)`;
       }
       const nextBidPrice = bidData.newPrice + (window.__currentAuction.bidStep || 1000);
       if (sliderText) {
@@ -2465,7 +2562,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const onPointerUp = (e) => {
       if (!isDragging) return;
       isDragging = false;
-
       const trackWidth = track.clientWidth;
       const knobWidth = knob.clientWidth;
       const maxDistance = trackWidth - knobWidth - 6;
@@ -2515,16 +2611,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function submitAuctionBid() {
     if (!window.__currentAuction || window.__currentAuction.status !== 'ongoing') return;
 
-    let userName = localStorage.getItem('ryzin_live_username') || localStorage.getItem('ryzin_chat_user');
-    if (!userName) {
-      userName = '시청자' + Math.floor(1000 + Math.random() * 9000);
-      localStorage.setItem('ryzin_live_username', userName);
-    }
+    const userInfo = getAuctionUserEmailAndName();
+    const displayName = userInfo.maskedDisplay;
+
     let userId = localStorage.getItem('ryzin_live_userid');
     if (!userId) {
       userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
       localStorage.setItem('ryzin_live_userid', userId);
     }
+    localStorage.setItem('ryzin_live_username', displayName);
 
     const currentPrice = Number(window.__currentAuction.currentPrice || window.__currentAuction.startPrice || 0);
     const bidStep = Number(window.__currentAuction.bidStep || 1000);
@@ -2536,7 +2631,8 @@ document.addEventListener('DOMContentLoaded', () => {
       newPrice: newBidPrice,
       bidder: {
         userId: userId,
-        userName: userName,
+        userName: displayName,
+        email: userInfo.email ? maskAuctionEmail(userInfo.email) : '',
         bidTime: Date.now()
       }
     };
@@ -2567,10 +2663,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const chatInput = document.getElementById('chat-input');
       const sendBtn = document.getElementById('btn-send');
       if (typeof window.sendChatMessage === 'function') {
-        window.sendChatMessage(`[경매 입찰] ${userName}님이 ${newBidPrice.toLocaleString()}원에 입찰하셨습니다.`);
+        window.sendChatMessage(`[경매 입찰] ${displayName}님이 ${newBidPrice.toLocaleString()}원에 입찰하셨습니다.`);
       } else if (chatInput && sendBtn) {
         const prevVal = chatInput.value;
-        chatInput.value = `[경매 입찰] ${userName}님이 ${newBidPrice.toLocaleString()}원에 입찰하셨습니다.`;
+        chatInput.value = `[경매 입찰] ${displayName}님이 ${newBidPrice.toLocaleString()}원에 입찰하셨습니다.`;
         sendBtn.click();
         chatInput.value = prevVal;
       }
@@ -4818,7 +4914,22 @@ function renderCartItems() {
     const itemTotal = unitPrice * qty;
     total += itemTotal;
 
-    const isMin = qty <= 1;
+    const isAuction = !!(item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')));
+    const isMin = qty <= 1 || isAuction;
+
+    const actionBtnHtml = isAuction
+      ? `<span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:3px 7px; border-radius:6px; border:1px solid #fee2e2; white-space:nowrap; margin-left:2px;" title="경매 낙찰 상품은 삭제할 수 없습니다">낙찰상품</span>`
+      : `<button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#cbd5e1; font-size:16px; cursor:pointer; padding:4px; margin-left:2px; transition:color 0.15s;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">✕</button>`;
+
+    const qtyHtml = isAuction
+      ? `<div style="display:inline-flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:2px 8px;">
+          <span style="font-size:11px; font-weight:700; color:#64748b;">수량 ${qty}개 고정</span>
+        </div>`
+      : `<div style="display:inline-flex; align-items:center; background:#f1f5f9; border-radius:6px; padding:1px;">
+          <button class="btn-qty-minus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:${isMin ? 'not-allowed' : 'pointer'}; opacity:${isMin ? '0.35' : '1'}; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;" ${isMin ? 'disabled' : ''}>-</button>
+          <span style="font-size:12px; font-weight:700; color:#0f172a; min-width:24px; text-align:center;">${qty}</span>
+          <button class="btn-qty-plus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;">+</button>
+        </div>`;
 
     const div = document.createElement('div');
     div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f8fafc;';
@@ -4827,17 +4938,12 @@ function renderCartItems() {
       <div style="flex:1; min-width:0;">
         <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
-          <!-- 미니멀 수량 조절 버튼 -->
-          <div style="display:inline-flex; align-items:center; background:#f1f5f9; border-radius:6px; padding:1px;">
-            <button class="btn-qty-minus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:${isMin ? 'not-allowed' : 'pointer'}; opacity:${isMin ? '0.35' : '1'}; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;" ${isMin ? 'disabled' : ''}>-</button>
-            <span style="font-size:12px; font-weight:700; color:#0f172a; min-width:24px; text-align:center;">${qty}</span>
-            <button class="btn-qty-plus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;">+</button>
-          </div>
+          ${qtyHtml}
           <!-- 상품별 소계 금액 -->
           <div style="font-size:13px; font-weight:800; color:#0f172a;">${itemTotal.toLocaleString()}원</div>
         </div>
       </div>
-      <button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#cbd5e1; font-size:16px; cursor:pointer; padding:4px; margin-left:2px; transition:color 0.15s;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">✕</button>
+      ${actionBtnHtml}
     `;
     cartItemsContainer.appendChild(div);
   });
@@ -4852,23 +4958,29 @@ function renderCartItems() {
     updateCartShippingPreview();
   }
 
-  // 수량 감소 (최소 1 유지, 삭제는 우측 X 버튼으로만 가능)
+  // 수량 감소 (최소 1 유지, 경매 낙찰 상품은 변경 불가)
   cartItemsContainer.querySelectorAll('.btn-qty-minus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
-      if (cartItems[idx] && (cartItems[idx].quantity || 1) > 1) {
-        cartItems[idx].quantity -= 1;
+      const item = cartItems[idx];
+      if (item && (item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')))) return;
+      if (item && (item.quantity || 1) > 1) {
+        item.quantity -= 1;
         updateCartUI();
         renderCartItems();
       }
     });
   });
 
-  // 수량 증가
+  // 수량 증가 (경매 낙찰 상품은 추가 불가)
   cartItemsContainer.querySelectorAll('.btn-qty-plus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
       const item = cartItems[idx];
+      if (item && (item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')))) {
+        alert('경매 낙찰 상품은 수량을 추가할 수 없습니다.');
+        return;
+      }
       if (item) {
         const currentQty = item.quantity || 1;
 
@@ -4901,11 +5013,15 @@ function renderCartItems() {
     });
   });
 
-  // 삭제 버튼 (명시적 삭제)
+  // 삭제 버튼 (명시적 삭제, 경매 낙찰 상품은 삭제 원천 차단)
   cartItemsContainer.querySelectorAll('.btn-remove-cart').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
       const removedItem = cartItems[idx];
+      if (removedItem && (removedItem.isAuctionWon || (removedItem.name && removedItem.name.startsWith('[경매낙찰]')))) {
+        alert('경매 낙찰 상품은 장바구니에서 삭제할 수 없습니다.');
+        return;
+      }
       if (removedItem) {
         // 무료나눔 상품 삭제 시 담기 기록도 초기화하여 깨끗이 삭제
         if (removedItem.isFreeGiveaway) {
