@@ -157,6 +157,88 @@ async function sendEmailOtp(toEmail, code) {
   return await transporter.sendMail(mailOptions);
 }
 
+// 클라이언트 IP 추출
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
+}
+
+// 접속 감사 로그 기록 (admin_access_logs)
+async function recordAccessLog({ userId, userName, ip, userAgent, status, failReason }) {
+  if (!SUPABASE_SERVICE_ROLE_KEY) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/admin_access_logs`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: String(userId || 'unknown'),
+        user_name: userName || null,
+        ip: String(ip || 'unknown'),
+        user_agent: String(userAgent || 'unknown'),
+        status: String(status),
+        fail_reason: failReason || null,
+      }),
+    });
+  } catch (err) {
+    console.warn('[Admin Access Log] 로그 저장 실패 (무시됨):', err.message);
+  }
+}
+
+// 5회 연속 실패 시 1분간 잠금 확인
+async function checkAccountLockout(userId, ip) {
+  if (!SUPABASE_SERVICE_ROLE_KEY || !userId) return { locked: false };
+  try {
+    const oneMinAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const query = `user_id=eq.${encodeURIComponent(userId)}&created_at=gte.${encodeURIComponent(oneMinAgo)}&order=created_at.desc&limit=10`;
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/admin_access_logs?${query}`, {
+      headers: {
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    });
+
+    if (!resp.ok) return { locked: false };
+    const logs = await resp.json();
+    if (!Array.isArray(logs) || logs.length === 0) return { locked: false };
+
+    let consecutiveFails = 0;
+    let mostRecentFailTime = 0;
+    for (const log of logs) {
+      if (log.status === 'SUCCESS') {
+        break; // 최근 성공이 있으면 그 이전 실패는 카운트 제외
+      }
+      if (log.status === 'FAILED_PASSWORD' || log.status === 'FAILED_OTP' || log.status === 'LOCKED') {
+        consecutiveFails++;
+        if (!mostRecentFailTime) {
+          mostRecentFailTime = new Date(log.created_at).getTime();
+        }
+      }
+    }
+
+    if (consecutiveFails >= 5) {
+      const elapsed = Math.floor((Date.now() - mostRecentFailTime) / 1000);
+      const remainingSec = Math.max(1, 60 - elapsed);
+      return {
+        locked: true,
+        remainingSec,
+        consecutiveFails,
+      };
+    }
+
+    return { locked: false };
+  } catch (err) {
+    console.warn('[Admin Lockout Check] 잠금 확인 오류:', err);
+    return { locked: false };
+  }
+}
+
 module.exports = { verifyJWT, ADMIN_JWT_SECRET };
 
 module.exports.default = async function handler(req, res) {
@@ -177,6 +259,9 @@ module.exports.default = async function handler(req, res) {
     console.error('[Admin Login] SUPABASE_SERVICE_ROLE_KEY 환경변수가 설정되지 않았습니다.');
     return res.status(500).json({ error: '서버 설정 오류입니다. 관리자에게 문의하세요.' });
   }
+
+  const clientIp = getClientIp(req);
+  const userAgent = req.headers['user-agent'] || 'unknown';
 
   let body;
   try {
@@ -211,6 +296,13 @@ module.exports.default = async function handler(req, res) {
 
       // 유효시간(5분) 검사
       if (Date.now() > exp) {
+        await recordAccessLog({
+          userId,
+          ip: clientIp,
+          userAgent,
+          status: 'FAILED_OTP',
+          failReason: '인증번호 유효시간(5분) 만료'
+        });
         return res.status(401).json({ error: '인증번호 유효시간(5분)이 만료되었습니다. 다시 로그인해 주세요.' });
       }
 
@@ -222,6 +314,13 @@ module.exports.default = async function handler(req, res) {
         .digest('hex');
 
       if (sig !== expectedSig) {
+        await recordAccessLog({
+          userId,
+          ip: clientIp,
+          userAgent,
+          status: 'FAILED_OTP',
+          failReason: '인증번호 불일치'
+        });
         return res.status(401).json({ error: '인증번호가 일치하지 않습니다. 다시 확인해 주세요.' });
       }
 
@@ -258,6 +357,16 @@ module.exports.default = async function handler(req, res) {
         },
         ADMIN_JWT_SECRET
       );
+
+      // 최종 로그인 성공 감사 로그 기록
+      await recordAccessLog({
+        userId: user.id,
+        userName: user.name,
+        ip: clientIp,
+        userAgent,
+        status: 'SUCCESS',
+        failReason: null,
+      });
 
       return res.status(200).json({
         success: true,
@@ -339,6 +448,22 @@ module.exports.default = async function handler(req, res) {
       return res.status(400).json({ error: '아이디와 비밀번호를 입력하세요.' });
     }
 
+    // 5회 연속 실패 시 1분간 잠금 확인 (Account Lockout)
+    const lockout = await checkAccountLockout(id, clientIp);
+    if (lockout.locked) {
+      await recordAccessLog({
+        userId: id,
+        ip: clientIp,
+        userAgent,
+        status: 'LOCKED',
+        failReason: `5회 연속 로그인 실패로 1분간 차단 (남은 시간: ${lockout.remainingSec}초)`
+      });
+      return res.status(429).json({
+        error: `5회 연속 로그인 실패로 1분 동안 로그인이 제한됩니다. (남은 시간: ${lockout.remainingSec}초)`,
+        remainingSec: lockout.remainingSec,
+      });
+    }
+
     const resp = await fetch(
       `${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}&select=id,name,role,password`,
       {
@@ -358,6 +483,13 @@ module.exports.default = async function handler(req, res) {
     const users = await resp.json();
 
     if (!users || users.length === 0) {
+      await recordAccessLog({
+        userId: id,
+        ip: clientIp,
+        userAgent,
+        status: 'FAILED_PASSWORD',
+        failReason: '존재하지 않는 아이디'
+      });
       return res.status(401).json({ error: '아이디 또는 비밀번호가 일치하지 않습니다.' });
     }
 
@@ -366,6 +498,14 @@ module.exports.default = async function handler(req, res) {
     // 비밀번호 검증 (SHA256 해시 비교)
     const hashedInput = sha256(password);
     if (user.password !== hashedInput) {
+      await recordAccessLog({
+        userId: user.id,
+        userName: user.name,
+        ip: clientIp,
+        userAgent,
+        status: 'FAILED_PASSWORD',
+        failReason: '비밀번호 불일치'
+      });
       return res.status(401).json({ error: '아이디 또는 비밀번호가 일치하지 않습니다.' });
     }
 
@@ -385,6 +525,16 @@ module.exports.default = async function handler(req, res) {
         },
         ADMIN_JWT_SECRET
       );
+
+      await recordAccessLog({
+        userId: user.id,
+        userName: user.name,
+        ip: clientIp,
+        userAgent,
+        status: 'SUCCESS',
+        failReason: 'SMTP 미설정으로 OTP 건너뜀 (직접 로그인)',
+      });
+
       return res.status(200).json({
         success: true,
         token,

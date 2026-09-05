@@ -3,6 +3,7 @@ import { router } from '../router.js';
 import { store } from '../data/store.js';
 import { ROLES } from '../data/models.js';
 import { getAccessibleMenus } from '../utils/permissions.js';
+import { sessionManager } from '../utils/session_manager.js';
 import ryzinLogo from '../assets/ryzin_studio_white.png';
 
 // SVG 아이콘
@@ -76,6 +77,20 @@ export function renderSidebar() {
         데모 샌드박스 활성화됨
       </div>
       ` : ''}
+      <!-- 세션 만료 타이머 -->
+      <div class="sidebar-session-box" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); margin-bottom: var(--space-3); font-size: 11px;">
+        <div style="display: flex; align-items: center; gap: 6px; color: var(--text-tertiary);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>세션 만료</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span id="sidebar-session-countdown" style="font-family: monospace; font-weight: 700; color: #38bdf8;">30:00</span>
+          <button id="btn-sidebar-session-extend" style="background: transparent; border: none; font-size: 11px; padding: 0; text-decoration: underline; color: #94a3b8; cursor: pointer;">연장</button>
+        </div>
+      </div>
       <div class="sidebar-user">
         <div class="sidebar-user-avatar">${userName[0]}</div>
         <div class="sidebar-user-info">
@@ -86,6 +101,31 @@ export function renderSidebar() {
       <button class="btn btn-secondary btn-sm" id="btn-logout" style="width: 100%; margin-top: var(--space-3);">로그아웃</button>
     </div>
   `;
+
+  // 세션 타이머 실시간 갱신 바인딩
+  const countdownEl = sidebar.querySelector('#sidebar-session-countdown');
+  const extendBtn = sidebar.querySelector('#btn-sidebar-session-extend');
+
+  if (countdownEl) {
+    const handleTick = ({ formatted, remainingSeconds }) => {
+      if (countdownEl) {
+        countdownEl.textContent = formatted;
+        if (remainingSeconds < 300) {
+          countdownEl.style.color = '#ef4444'; // 5분 미만 경고
+        } else {
+          countdownEl.style.color = '#38bdf8';
+        }
+      }
+    };
+    sessionManager.onTick(handleTick);
+  }
+
+  if (extendBtn) {
+    extendBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      sessionManager.extendSession();
+    });
+  }
 
   // 로고 클릭 이벤트 (대시보드로 이동)
   const logoContainer = sidebar.querySelector('#sidebar-logo-container');
@@ -108,6 +148,7 @@ export function renderSidebar() {
   const logoutBtn = sidebar.querySelector('#btn-logout');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+      sessionManager.stop();
       store.logout();
       router.navigate('/login');
     });

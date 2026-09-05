@@ -13,6 +13,7 @@ import './styles/dashboard.css';
 import { router } from './router.js';
 import { store } from './data/store.js';
 import { renderSidebar } from './components/sidebar.js';
+import { sessionManager } from './utils/session_manager.js';
 
 // 페이지 import
 import { renderDashboard } from './pages/dashboard.js';
@@ -87,10 +88,17 @@ async function initApp() {
     const isLoggedIn = !!store.getCurrentUser();
     
     if (!bypassAuth && !isLoggedIn && to !== '/login') {
+      sessionManager.stop();
       return '/login';
     }
     if (isLoggedIn && to === '/login') {
+      sessionManager.start();
       return '/';
+    }
+    if (isLoggedIn) {
+      sessionManager.start();
+    } else {
+      sessionManager.stop();
     }
 
     // 데모 계정은 라이브 송출관리(/live_stream) 페이지 접근 제한

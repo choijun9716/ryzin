@@ -20,6 +20,7 @@ const ALLOWED_TABLES = {
   ryzin_class_survey_questions: 'ryzin_class_survey_questions?select=*',
   ryzin_class_settings: 'ryzin_class_settings?select=*',
   live_orders: 'live_orders?select=*&order=created_at.desc',
+  admin_access_logs: 'admin_access_logs?select=*&order=created_at.desc&limit=300',
 };
 
 function verifyJWT(token, secret) {
