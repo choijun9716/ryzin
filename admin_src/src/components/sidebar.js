@@ -78,17 +78,11 @@ export function renderSidebar() {
       </div>
       ` : ''}
       <!-- 세션 만료 타이머 -->
-      <div class="sidebar-session-box" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.04); border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08); margin-bottom: var(--space-3); font-size: 11px;">
-        <div style="display: flex; align-items: center; gap: 6px; color: var(--text-tertiary);">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <span>세션 만료</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span id="sidebar-session-countdown" style="font-family: monospace; font-weight: 700; color: #38bdf8;">30:00</span>
-          <button id="btn-sidebar-session-extend" style="background: transparent; border: none; font-size: 11px; padding: 0; text-decoration: underline; color: #94a3b8; cursor: pointer;">연장</button>
+      <div class="sidebar-session-box" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: var(--space-3); font-size: 11px;">
+        <span style="color: #94a3b8; font-size: 11px;">세션 만료</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="sidebar-session-countdown" style="font-weight: 600; color: #ffffff; letter-spacing: 0.5px; font-variant-numeric: tabular-nums;">30:00</span>
+          <button id="btn-sidebar-session-extend" style="background: transparent; border: none; font-size: 10px; padding: 0; color: #94a3b8; cursor: pointer; text-decoration: underline;">연장</button>
         </div>
       </div>
       <div class="sidebar-user">
@@ -111,9 +105,9 @@ export function renderSidebar() {
       if (countdownEl) {
         countdownEl.textContent = formatted;
         if (remainingSeconds < 300) {
-          countdownEl.style.color = '#ef4444'; // 5분 미만 경고
+          countdownEl.style.color = '#f87171'; // 5분 미만 경고 시 은은한 레드
         } else {
-          countdownEl.style.color = '#38bdf8';
+          countdownEl.style.color = '#ffffff'; // 기본 순백색
         }
       }
     };
