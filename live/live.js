@@ -2506,6 +2506,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (typeof loadLiveProducts === 'function') loadLiveProducts();
 
+      // 낙찰 시점 타임스탬프 계산
+      const soldTimestamp = auctionData.soldTime || auctionData.endTime || Date.now();
+
       // 어드민 전용 낙찰자 관리 목록에 영구 동기화
       try {
         const storedWinners = JSON.parse(localStorage.getItem(`ryzin_auction_winners_${LIVE_ID}`) || '[]');
@@ -2529,7 +2532,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch(e) {}
 
       // 내가 낙찰자인 경우: 장바구니에 자동 추가 (1회만 실행되도록 가드)
-      const soldTimestamp = auctionData.soldTime || auctionData.endTime || Date.now();
       if (isMyWin && window.__lastWonAuctionSoldTime !== soldTimestamp) {
         window.__lastWonAuctionSoldTime = soldTimestamp;
 
@@ -2553,6 +2555,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           cartItems.push(wonProduct);
         }
+
+        try {
+          localStorage.setItem('ryzin_won_auction_backup', JSON.stringify(wonProduct));
+        } catch(e) {}
 
         if (typeof syncCartStorage === 'function') syncCartStorage();
         if (typeof updateCartUI === 'function') updateCartUI();
@@ -2863,8 +2869,178 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchUserBenefitsFromDB();
   }
 
-  // 어드민에서 경매 낙찰자 삭제 시 고객 장바구니 자동 취소 동기화 핸들러
+  // 경매 낙찰 상품 장바구니 자동 보존 및 복원 엔진
+  window.ensureWonAuctionInCart = function() {
+    try {
+      if (typeof loadCartFromStorage === 'function') {
+        cartItems = loadCartFromStorage();
+      }
+      const hasWonAuctionInCart = cartItems.some(item => item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')));
+      if (hasWonAuctionInCart) return;
+      if (window.__adminExplicitlyDeletedAuction) return;
+
+      let candidate = null;
+
+      // 1) 백업 키 확인
+      try {
+        candidate = JSON.parse(localStorage.getItem('ryzin_won_auction_backup') || 'null');
+      } catch(e) {}
+
+      // 2) ryzin_auction_winners 키 전수 조사
+      if (!candidate) {
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('ryzin_auction_winners_')) {
+              const list = JSON.parse(localStorage.getItem(key) || '[]');
+              if (Array.isArray(list) && list.length > 0) {
+                const w = list[0];
+                candidate = {
+                  id: 'auction_' + (w.productId || Date.now()),
+                  name: `[경매낙찰] ${w.productName || '경매 상품'}`,
+                  price: String(w.finalPrice || 0),
+                  normalPrice: String(w.finalPrice || 0),
+                  image: w.productImage || 'https://via.placeholder.com/72',
+                  quantity: 1,
+                  isAuctionWon: true
+                };
+                break;
+              }
+            }
+          }
+        } catch(e) {}
+      }
+
+      // 3) ryzin_last_bid 및 ryzin_last_auction_bid 전수 확인
+      if (!candidate) {
+        try {
+          let lastBid = JSON.parse(localStorage.getItem(`ryzin_last_bid_${LIVE_ID}`) || 'null') || JSON.parse(localStorage.getItem('ryzin_last_auction_bid') || 'null');
+          if (!lastBid) {
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && key.startsWith('ryzin_last_bid_')) {
+                lastBid = JSON.parse(localStorage.getItem(key) || 'null');
+                if (lastBid && lastBid.newPrice) break;
+              }
+            }
+          }
+          if (lastBid && lastBid.newPrice) {
+            let pList = [];
+            try { pList = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`) || '[]'); } catch(e) {}
+            if (!pList || pList.length === 0) {
+              try { pList = JSON.parse(localStorage.getItem(`ryzin_products_${LIVE_ID}`) || '[]'); } catch(e) {}
+            }
+            const targetP = (Array.isArray(pList) && (pList.find(p => p.id == lastBid.productId || p.isAuctionOpen) || pList[0])) || null;
+            candidate = {
+              id: 'auction_' + (lastBid.productId || (targetP && targetP.id) || Date.now()),
+              name: `[경매낙찰] ${(targetP && targetP.name) || '경매 낙찰 상품'}`,
+              price: String(lastBid.newPrice),
+              normalPrice: String(lastBid.newPrice),
+              image: (targetP && targetP.image) || 'https://via.placeholder.com/72',
+              quantity: 1,
+              isAuctionWon: true
+            };
+          }
+        } catch(e) {}
+      }
+
+      // 4) ryzin_live_auction_ 키 전수 확인
+      if (!candidate) {
+        try {
+          let liveAuction = JSON.parse(localStorage.getItem(`ryzin_live_auction_${LIVE_ID}`) || 'null');
+          if (!liveAuction) {
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && (key.startsWith('ryzin_live_auction_') || key === 'ryzin_live_auction')) {
+                liveAuction = JSON.parse(localStorage.getItem(key) || 'null');
+                if (liveAuction && (liveAuction.currentPrice || liveAuction.startPrice)) break;
+              }
+            }
+          }
+          if (liveAuction && (liveAuction.currentPrice || liveAuction.startPrice)) {
+            candidate = {
+              id: 'auction_' + (liveAuction.productId || Date.now()),
+              name: `[경매낙찰] ${liveAuction.productName || '경매 상품'}`,
+              price: String(liveAuction.currentPrice || liveAuction.startPrice || 0),
+              normalPrice: String(liveAuction.currentPrice || liveAuction.startPrice || 0),
+              image: liveAuction.productImage || 'https://via.placeholder.com/72',
+              quantity: 1,
+              isAuctionWon: true
+            };
+          }
+        } catch(e) {}
+      }
+
+      // 5) 상품 목록에서 경매 활성 상품 조사 (fallback)
+      if (!candidate) {
+        try {
+          let pList = [];
+          try { pList = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`) || '[]'); } catch(e) {}
+          if (!pList || pList.length === 0) {
+            try { pList = JSON.parse(localStorage.getItem(`ryzin_products_${LIVE_ID}`) || '[]'); } catch(e) {}
+          }
+          if (Array.isArray(pList)) {
+            const targetP = pList.find(p => p.isAuctionOpen);
+            if (targetP) {
+              const pr = targetP.auctionStartPrice || (targetP.price ? targetP.price.toString().replace(/[^0-9]/g, '') : 1000) || 1000;
+              candidate = {
+                id: 'auction_' + (targetP.id || Date.now()),
+                name: `[경매낙찰] ${targetP.name || '경매 상품'}`,
+                price: String(pr),
+                normalPrice: String(pr),
+                image: targetP.image || 'https://via.placeholder.com/72',
+                quantity: 1,
+                isAuctionWon: true
+              };
+            }
+          }
+        } catch(e) {}
+      }
+
+      if (candidate && candidate.name) {
+        cartItems.push(candidate);
+        localStorage.setItem('ryzin_won_auction_backup', JSON.stringify(candidate));
+        if (typeof syncCartStorage === 'function') syncCartStorage();
+        if (typeof updateCartUI === 'function') updateCartUI();
+        if (typeof renderCartItems === 'function') renderCartItems();
+
+        // 어드민 낙찰자 목록에도 동기화 보장
+        try {
+          const storedWinners = JSON.parse(localStorage.getItem(`ryzin_auction_winners_${LIVE_ID}`) || '[]');
+          if (storedWinners.length === 0) {
+            storedWinners.unshift({
+              id: 'WIN-' + Date.now() + '-auto',
+              liveId: LIVE_ID,
+              productId: candidate.id,
+              productName: candidate.name.replace('[경매낙찰] ', ''),
+              productImage: candidate.image,
+              finalPrice: Number(candidate.price || 0),
+              winner: { userName: '낙찰자', userId: 'user' },
+              soldAt: new Date().toISOString(),
+              soldTime: Date.now()
+            });
+            localStorage.setItem(`ryzin_auction_winners_${LIVE_ID}`, JSON.stringify(storedWinners));
+          }
+        } catch(e) {}
+      }
+    } catch(err) {
+      console.warn('ensureWonAuctionInCart error:', err);
+    }
+  };
+
+  // 즉시 1회 자동 실행하여 기존 낙찰 상품 복원 보장
+  setTimeout(() => {
+    if (typeof window.ensureWonAuctionInCart === 'function') window.ensureWonAuctionInCart();
+  }, 100);
+
+  // 어드민에서 명시적으로 경매 낙찰자 삭제 시에만 고객 장바구니 자동 취소
   window.handleAuctionWinnerDeleted = function(data) {
+    if (!data || data.type !== 'auction_winner_deleted') return;
+    window.__adminExplicitlyDeletedAuction = true;
+    try {
+      localStorage.removeItem('ryzin_won_auction_backup');
+    } catch(e) {}
+
     if (typeof loadCartFromStorage === 'function') {
       cartItems = loadCartFromStorage();
     }
@@ -2875,30 +3051,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const isAuction = !!(item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')));
       if (!isAuction) return true;
 
-      if (!data) {
-        // storage/cart 오픈 시: 현재 라이브의 ryzin_auction_winners_${LIVE_ID}에 남아있지 않으면 관리자에 의해 삭제된 것으로 간주
-        try {
-          const winners = JSON.parse(localStorage.getItem(`ryzin_auction_winners_${LIVE_ID}`) || 'null');
-          if (winners && Array.isArray(winners)) {
-            const exists = winners.some(w => {
-              const matchId = w.productId && (String(item.id).includes(String(w.productId)) || String(item.productId) === String(w.productId));
-              const matchName = w.productName && item.name && item.name.includes(w.productName);
-              return matchId || matchName;
-            });
-            if (!exists) {
-              modified = true;
-              removedProductName = item.name;
-              return false;
-            }
-          }
-        } catch(e) {}
-        return true;
-      }
-
-      // data 페이로드 매칭
       const matchId = data.productId && (String(item.id).includes(String(data.productId)) || String(item.productId) === String(data.productId));
       const matchName = data.productName && item.name && item.name.includes(data.productName);
-      if (matchId || matchName || (data.type === 'auction_winner_deleted' && !data.productId && !data.productName)) {
+      if (matchId || matchName || (!data.productId && !data.productName)) {
         modified = true;
         removedProductName = item.name;
         return false;
@@ -5113,8 +5268,8 @@ function openCartModal() {
   }
 
   if (cartModal) {
-    if (typeof window.handleAuctionWinnerDeleted === 'function') {
-      window.handleAuctionWinnerDeleted(null);
+    if (typeof window.ensureWonAuctionInCart === 'function') {
+      window.ensureWonAuctionInCart();
     }
     if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
     if (typeof window.restoreUserAddressFromDB === 'function') {
@@ -5135,6 +5290,10 @@ function renderCartItems() {
   // 항상 최신 로컬스토리지에서 장바구니 데이터 복원
   if (typeof loadCartFromStorage === 'function') {
     cartItems = loadCartFromStorage();
+  }
+  // 낙찰 상품 누락 방지 자동 복원
+  if (typeof window.ensureWonAuctionInCart === 'function') {
+    window.ensureWonAuctionInCart();
   }
 
 
