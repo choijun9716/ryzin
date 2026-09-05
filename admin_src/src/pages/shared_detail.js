@@ -3,7 +3,7 @@ const getDb = () => window.supabaseClient || null;
 
 export function renderSharedDetail(params) {
   const container = document.createElement('div');
-  container.style.cssText = 'min-height:100vh; background:#f8fafc; padding:32px 20px 100px; max-width:960px; margin:0 auto; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-sizing:border-box;';
+  container.style.cssText = 'min-height:100vh; background:#f8fafc; padding:32px 24px 110px; max-width:1040px; margin:0 auto; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-sizing:border-box;';
 
   const liveId = params.id;
   let liveData = null;
@@ -119,17 +119,21 @@ export function renderSharedDetail(params) {
     const liveSubtitle = liveData.subtitle || '상품 상세페이지 등록';
 
     container.innerHTML = `
-      <!-- 상단 프리미엄 헤더 -->
-      <div style="background:#0f172a; color:#ffffff; border-radius:16px; padding:28px 32px; margin-bottom:24px; box-shadow:0 4px 20px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-        <div>
-          <span style="display:inline-block; font-size:11px; font-weight:800; color:#38bdf8; background:rgba(56,189,248,0.12); padding:3px 10px; border-radius:6px; margin-bottom:8px; letter-spacing:0.04em;">브랜드사 전용 상세페이지 기재 링크</span>
-          <h1 style="font-size:22px; font-weight:800; margin:0 0 6px; letter-spacing:-0.4px;">[${brandName}] ${liveSubtitle}</h1>
+      <!-- 상단 헤더 -->
+      <div style="background:#0f172a; color:#ffffff; border-radius:14px; padding:24px 30px; margin-bottom:24px; box-shadow:0 4px 20px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div style="flex:1; min-width:280px;">
+          <h1 style="font-size:22px; font-weight:700; color:#ffffff; margin:0 0 6px; letter-spacing:-0.5px;">[${brandName}] ${liveSubtitle}</h1>
           <p style="font-size:13px; color:#94a3b8; margin:0;">각 상품별 상세페이지 이미지 및 애니메이션 GIF를 직접 여러 장 업로드하고 순서를 지정할 수 있습니다.</p>
         </div>
-        <div style="text-align:right;">
-          <span style="display:inline-block; font-size:12px; font-weight:700; color:#cbd5e1; background:rgba(255,255,255,0.08); padding:6px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.12);">
-            등록 상품: ${products.length}개
-          </span>
+        <div style="text-align:left; display:flex; flex-direction:column; gap:5px; background:rgba(255,255,255,0.06); padding:10px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); min-width:170px; flex-shrink:0;">
+          <div style="font-size:13px; color:#f1f5f9; font-weight:500; display:flex; align-items:center;">
+            <span style="color:#94a3b8; margin-right:8px; font-weight:600; width:65px; display:inline-block;">등록 상품</span>
+            <span style="color:#ffffff; font-weight:700;">${products.length}개</span>
+          </div>
+          <div style="font-size:12px; color:#38bdf8; font-weight:600; display:flex; align-items:center; gap:5px;">
+            <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#38bdf8;"></span>
+            실시간 방송 연동
+          </div>
         </div>
       </div>
 
@@ -139,10 +143,10 @@ export function renderSharedDetail(params) {
       </div>
 
       <!-- 하단 고정 플로팅 액션 바 -->
-      <div style="position:fixed; bottom:0; left:0; width:100%; background:#ffffff; border-top:1.5px solid #e2e8f0; padding:14px 24px; display:flex; justify-content:center; box-shadow:0 -6px 20px rgba(0,0,0,0.06); z-index:9999;">
-        <div style="max-width:960px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:16px;">
+      <div style="position:fixed; bottom:0; left:0; width:100%; background:#ffffff; border-top:1px solid #e2e8f0; padding:14px 24px; display:flex; justify-content:center; box-shadow:0 -4px 20px rgba(0,0,0,0.06); z-index:9999;">
+        <div style="max-width:1040px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:16px;">
           <span style="font-size:13px; color:#64748b; font-weight:600;">작업 완료 후 반드시 우측 [상세페이지 저장 및 반영] 버튼을 눌러주세요.</span>
-          <button type="button" id="btn-shared-save" style="padding:12px 36px; background:#0f172a; color:#ffffff; border:none; border-radius:10px; font-size:14.5px; font-weight:800; cursor:pointer; box-shadow:0 4px 14px rgba(15,23,42,0.25); transition:transform 0.15s ease, background 0.2s;">
+          <button type="button" id="btn-shared-save" style="padding:11px 32px; background:#0f172a; color:#ffffff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(15,23,42,0.18); transition:all 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
             상세페이지 저장 및 반영
           </button>
         </div>
@@ -168,46 +172,46 @@ export function renderSharedDetail(params) {
       const priceFormatted = p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() + '원' : '가격 미정';
 
       return `
-        <div class="shared-prod-card" style="background:#ffffff; border-radius:14px; border:1.5px solid #e2e8f0; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+        <div class="shared-prod-card" style="background:#ffffff; border-radius:12px; border:1px solid #e2e8f0; padding:20px 22px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
           <!-- 상품 헤더 정보 -->
-          <div style="display:flex; align-items:center; gap:14px; padding-bottom:14px; border-bottom:1px solid #f1f5f9;">
-            <div style="width:60px; height:60px; border-radius:10px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0; flex-shrink:0;">
-              <img src="${p.image || 'https://via.placeholder.com/60'}" style="width:100%; height:100%; object-fit:cover; display:block;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding-bottom:14px; border-bottom:1px solid #f1f5f9; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:14px; min-width:0;">
+              <div style="width:54px; height:54px; border-radius:8px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0; flex-shrink:0;">
+                <img src="${p.image || 'https://via.placeholder.com/54'}" style="width:100%; height:100%; object-fit:cover; display:block;">
+              </div>
+              <div style="min-width:0;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:3px;">
+                  <span style="font-size:11px; font-weight:700; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px;">상품 #${idx + 1}</span>
+                  <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name || '무명 상품'}</span>
+                </div>
+                <div style="font-size:13.5px; font-weight:700; color:#2563eb;">
+                  ${priceFormatted}
+                  ${p.normalPrice ? `<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through; font-weight:500; margin-left:6px;">${Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString()}원</span>` : ''}
+                </div>
+              </div>
             </div>
-            <div style="flex:1; min-width:0;">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span style="font-size:11px; font-weight:800; background:#f1f5f9; color:#475569; padding:2px 7px; border-radius:4px;">상품 #${idx + 1}</span>
-                <span style="font-size:14px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name || '무명 상품'}</span>
-              </div>
-              <div style="font-size:13px; font-weight:700; color:#2563eb;">
-                ${priceFormatted}
-                ${p.normalPrice ? `<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through; font-weight:500; margin-left:6px;">${Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString()}원</span>` : ''}
-              </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:11.5px; font-weight:700; color:#475569; background:#e2e8f0; padding:4px 10px; border-radius:6px;">총 ${detailImages.length}장</span>
+              <input type="file" id="shared-upload-${idx}" accept="image/*,.gif" multiple style="display:none;" data-idx="${idx}" class="shared-detail-upload">
+              <button type="button" id="btn-shared-upload-${idx}" class="btn-trigger-upload" data-idx="${idx}" style="padding:7px 14px; font-size:12.5px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                + 이미지/GIF 다중 추가
+              </button>
+              ${detailImages.length > 0 ? `
+                <button type="button" class="btn-shared-del-all" data-idx="${idx}" style="background:#fef2f2; border:1px solid #fee2e2; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; padding:6px 12px; border-radius:8px; transition:background 0.15s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">전체 삭제</button>
+              ` : ''}
             </div>
           </div>
 
           <!-- 상세 이미지 / GIF 관리 영역 -->
-          <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0;">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:12.5px; font-weight:800; color:#0f172a;">상세 이미지 / GIF (순서대로 렌더링)</span>
-                <span style="font-size:11px; font-weight:700; color:#475569; background:#e2e8f0; padding:2px 8px; border-radius:6px;">총 ${detailImages.length}장</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <input type="file" id="shared-upload-${idx}" accept="image/*,.gif" multiple style="display:none;" data-idx="${idx}" class="shared-detail-upload">
-                <button type="button" id="btn-shared-upload-${idx}" class="btn-trigger-upload" data-idx="${idx}" style="padding:6px 14px; font-size:12px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
-                  + 이미지/GIF 다중 추가
-                </button>
-                ${detailImages.length > 0 ? `
-                  <button type="button" class="btn-shared-del-all" data-idx="${idx}" style="background:#fee2e2; border:1px solid #fecaca; color:#ef4444; font-size:11.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px;">전체 삭제</button>
-                ` : ''}
-              </div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#64748b;">상세페이지 이미지 목록 (가로 순서대로 상세 화면에 세로 노출)</span>
             </div>
 
             ${detailImages.length > 0 ? `
-              <div style="display:flex; gap:10px; overflow-x:auto; padding:6px 0; -webkit-overflow-scrolling:touch;">
+              <div style="display:flex; gap:10px; overflow-x:auto; padding:4px 0; -webkit-overflow-scrolling:touch; width:100%;">
                 ${detailImages.map((imgUrl, imgIdx) => `
-                  <div style="position:relative; width:94px; flex-shrink:0; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:10px; padding:6px; display:flex; flex-direction:column; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                  <div style="position:relative; width:96px; flex-shrink:0; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:6px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
                     <div style="position:relative; width:100%; aspect-ratio:1/1; border-radius:6px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0;">
                       <span style="position:absolute; top:2px; left:2px; background:rgba(15,23,42,0.85); color:#ffffff; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; z-index:2;">${imgIdx + 1}</span>
                       <a href="${imgUrl}" target="_blank" title="클릭하여 원본 보기">
@@ -215,20 +219,20 @@ export function renderSharedDetail(params) {
                       </a>
                     </div>
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:2px;">
-                      <button type="button" class="btn-shared-move-left" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="앞으로 이동">◀</button>
-                      <button type="button" class="btn-shared-move-right" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === detailImages.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="뒤로 이동">▶</button>
+                      <button type="button" class="btn-shared-move-left" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="앞으로 이동">◀</button>
+                      <button type="button" class="btn-shared-move-right" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === detailImages.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="뒤로 이동">▶</button>
                       <button type="button" class="btn-shared-del-single" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#fee2e2; border:1px solid #fca5a5; color:#ef4444; border-radius:4px; font-size:11px; font-weight:800; cursor:pointer;" title="이 이미지 삭제">✕</button>
                     </div>
                   </div>
                 `).join('')}
               </div>
             ` : `
-              <div style="font-size:12px; color:#94a3b8; padding:10px; text-align:center; background:#ffffff; border:1px dashed #cbd5e1; border-radius:8px;">
-                등록된 상세페이지 이미지가 없습니다. [+ 이미지/GIF 다중 추가]를 눌러 순서대로 올릴 파일들을 선택하세요.
+              <div style="font-size:12px; color:#94a3b8; padding:14px; text-align:center; background:#ffffff; border:1px dashed #cbd5e1; border-radius:8px;">
+                등록된 상세 이미지가 없습니다. [+ 이미지/GIF 다중 추가] 버튼을 눌러 상세페이지를 등록하세요.
               </div>
             `}
 
-            <input type="text" class="shared-url-input" style="width:100%; padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; outline:none; background:#ffffff; box-sizing:border-box;" value="${p.detailImage || ''}" data-idx="${idx}" placeholder="이미지 URL 직접 편집 (쉼표로 구분하여 여러 장 순서대로 지정 가능)">
+            <input type="text" class="shared-url-input" style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; outline:none; background:#ffffff; box-sizing:border-box; color:#334155;" value="${p.detailImage || ''}" data-idx="${idx}" placeholder="이미지 URL 직접 편집 (쉼표로 구분하여 여러 장 순서대로 지정 가능)">
           </div>
         </div>
       `;

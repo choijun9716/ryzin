@@ -3039,7 +3039,7 @@ Minimum version required to store current data is: `+c+`.
             <div>순마진: <strong id="prev-margin" style="color: var(--text-primary);">-</strong></div>
           </div>
         </div>
-      `,a=document.createElement(`div`);a.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let o=document.createElement(`button`);o.className=`btn btn-secondary`,o.textContent=`취소`,o.addEventListener(`click`,q);let l=document.createElement(`button`);l.className=`btn btn-primary`,l.textContent=`저장`,l.addEventListener(`click`,()=>{let n=parseInt(document.getElementById(`fin-ad`).value)||0,i=parseInt(document.getElementById(`fin-prod`).value)||0,a=parseInt(document.getElementById(`fin-other`).value)||0,o=document.getElementById(`fin-include-host`).checked,s=document.getElementById(`fin-brand-pays-host`).checked,c=s?0:r,l=s||o?i+n:i+r+n,u=l-c-n-a,d=Math.round(l*.1),f=u-d,p={liveId:e.id,adCost:n,productionCost:i,otherCost:a,includeHostCost:o,brandPaysHost:s,salesRevenue:l,operatingProfit:u,vat:d,netMargin:f},m=W.getAll(`finances`).find(t=>t.liveId===e.id);m?W.update(`finances`,m.id,p):(p.id=e.id,W.create(`finances`,p)),q(),J(`정산 정보가 저장되었습니다.`);let h=Rn(e);t.replaceWith(h)}),a.appendChild(o),a.appendChild(l),K({title:`정산 정보 수정`,size:`md`,content:i,footer:a}),setTimeout(()=>{let e=document.getElementById(`fin-prod`),t=document.getElementById(`fin-ad`),n=document.getElementById(`fin-other`),i=document.getElementById(`fin-include-host`),a=document.getElementById(`fin-brand-pays-host`),o=()=>{let o=parseInt(e?.value)||0,s=parseInt(t?.value)||0,c=parseInt(n?.value)||0,l=i?i.checked:!1,u=a?a.checked:!1,d=u?0:r,f=u||l?o+s:o+r+s,p=f-d-s-c,m=Math.round(f*.1),h=p-m,g=f?(h/f*100).toFixed(1):`0.0`,_=document.getElementById(`prev-sales`),v=document.getElementById(`prev-profit`),y=document.getElementById(`prev-vat`),b=document.getElementById(`prev-margin`);_&&(_.textContent=G(f)),v&&(v.textContent=G(p),v.style.color=p>=0?`var(--status-success)`:`var(--status-error)`),y&&(y.textContent=G(m)),b&&(b.textContent=`${G(h)} (${g}%)`,b.style.color=h>=0?`var(--status-success)`:`var(--status-error)`)};e?.addEventListener(`input`,o),t?.addEventListener(`input`,o),n?.addEventListener(`input`,o),i?.addEventListener(`change`,o),a?.addEventListener(`change`,o),o()},0)})},0),t}var zn=()=>window.supabaseClient||null;function Bn(e){let t=document.createElement(`div`);t.style.cssText=`min-height:100vh; background:#f8fafc; padding:32px 20px 100px; max-width:960px; margin:0 auto; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-sizing:border-box;`;let n=e.id,r=null,i=[],a=!1,o=e=>{let t=document.getElementById(`shared-toast`);t||(t=document.createElement(`div`),t.id=`shared-toast`,t.style.cssText=`position:fixed; bottom:30px; right:30px; background:#0f172a; color:#ffffff; padding:12px 20px; border-radius:10px; font-size:13.5px; font-weight:700; z-index:99999; box-shadow:0 10px 25px rgba(0,0,0,0.25); transition:opacity 0.2s;`,document.body.appendChild(t)),t.textContent=e,t.style.opacity=`1`,clearTimeout(t.timer),t.timer=setTimeout(()=>{t.style.opacity=`0`},2400)},s=async e=>{let t=`ryzin_products`,n=Math.floor(Date.now()/1e3),r=`folder=${t}&timestamp=${n}3viWG82ApYRVKmovy--32tNhsCw`,i=new TextEncoder,a=await window.crypto.subtle.digest(`SHA-1`,i.encode(r)),o=Array.from(new Uint8Array(a)).map(e=>e.toString(16).padStart(2,`0`)).join(``),s=new FormData;s.append(`file`,e),s.append(`api_key`,`164668247829219`),s.append(`timestamp`,n.toString()),s.append(`folder`,t),s.append(`signature`,o);let c=await fetch(`https://api.cloudinary.com/v1_1/dcschlkqy/image/upload`,{method:`POST`,body:s}),l=await c.json();if(!c.ok||l.error)throw Error(l.error?.message||`Cloudinary 응답 실패`);return l.secure_url||l.url};async function c(){t.innerHTML=`
+      `,a=document.createElement(`div`);a.style.cssText=`display: flex; gap: var(--space-3); justify-content: flex-end; width: 100%;`;let o=document.createElement(`button`);o.className=`btn btn-secondary`,o.textContent=`취소`,o.addEventListener(`click`,q);let l=document.createElement(`button`);l.className=`btn btn-primary`,l.textContent=`저장`,l.addEventListener(`click`,()=>{let n=parseInt(document.getElementById(`fin-ad`).value)||0,i=parseInt(document.getElementById(`fin-prod`).value)||0,a=parseInt(document.getElementById(`fin-other`).value)||0,o=document.getElementById(`fin-include-host`).checked,s=document.getElementById(`fin-brand-pays-host`).checked,c=s?0:r,l=s||o?i+n:i+r+n,u=l-c-n-a,d=Math.round(l*.1),f=u-d,p={liveId:e.id,adCost:n,productionCost:i,otherCost:a,includeHostCost:o,brandPaysHost:s,salesRevenue:l,operatingProfit:u,vat:d,netMargin:f},m=W.getAll(`finances`).find(t=>t.liveId===e.id);m?W.update(`finances`,m.id,p):(p.id=e.id,W.create(`finances`,p)),q(),J(`정산 정보가 저장되었습니다.`);let h=Rn(e);t.replaceWith(h)}),a.appendChild(o),a.appendChild(l),K({title:`정산 정보 수정`,size:`md`,content:i,footer:a}),setTimeout(()=>{let e=document.getElementById(`fin-prod`),t=document.getElementById(`fin-ad`),n=document.getElementById(`fin-other`),i=document.getElementById(`fin-include-host`),a=document.getElementById(`fin-brand-pays-host`),o=()=>{let o=parseInt(e?.value)||0,s=parseInt(t?.value)||0,c=parseInt(n?.value)||0,l=i?i.checked:!1,u=a?a.checked:!1,d=u?0:r,f=u||l?o+s:o+r+s,p=f-d-s-c,m=Math.round(f*.1),h=p-m,g=f?(h/f*100).toFixed(1):`0.0`,_=document.getElementById(`prev-sales`),v=document.getElementById(`prev-profit`),y=document.getElementById(`prev-vat`),b=document.getElementById(`prev-margin`);_&&(_.textContent=G(f)),v&&(v.textContent=G(p),v.style.color=p>=0?`var(--status-success)`:`var(--status-error)`),y&&(y.textContent=G(m)),b&&(b.textContent=`${G(h)} (${g}%)`,b.style.color=h>=0?`var(--status-success)`:`var(--status-error)`)};e?.addEventListener(`input`,o),t?.addEventListener(`input`,o),n?.addEventListener(`input`,o),i?.addEventListener(`change`,o),a?.addEventListener(`change`,o),o()},0)})},0),t}var zn=()=>window.supabaseClient||null;function Bn(e){let t=document.createElement(`div`);t.style.cssText=`min-height:100vh; background:#f8fafc; padding:32px 24px 110px; max-width:1040px; margin:0 auto; font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; box-sizing:border-box;`;let n=e.id,r=null,i=[],a=!1,o=e=>{let t=document.getElementById(`shared-toast`);t||(t=document.createElement(`div`),t.id=`shared-toast`,t.style.cssText=`position:fixed; bottom:30px; right:30px; background:#0f172a; color:#ffffff; padding:12px 20px; border-radius:10px; font-size:13.5px; font-weight:700; z-index:99999; box-shadow:0 10px 25px rgba(0,0,0,0.25); transition:opacity 0.2s;`,document.body.appendChild(t)),t.textContent=e,t.style.opacity=`1`,clearTimeout(t.timer),t.timer=setTimeout(()=>{t.style.opacity=`0`},2400)},s=async e=>{let t=`ryzin_products`,n=Math.floor(Date.now()/1e3),r=`folder=${t}&timestamp=${n}3viWG82ApYRVKmovy--32tNhsCw`,i=new TextEncoder,a=await window.crypto.subtle.digest(`SHA-1`,i.encode(r)),o=Array.from(new Uint8Array(a)).map(e=>e.toString(16).padStart(2,`0`)).join(``),s=new FormData;s.append(`file`,e),s.append(`api_key`,`164668247829219`),s.append(`timestamp`,n.toString()),s.append(`folder`,t),s.append(`signature`,o);let c=await fetch(`https://api.cloudinary.com/v1_1/dcschlkqy/image/upload`,{method:`POST`,body:s}),l=await c.json();if(!c.ok||l.error)throw Error(l.error?.message||`Cloudinary 응답 실패`);return l.secure_url||l.url};async function c(){t.innerHTML=`
       <div style="text-align:center; padding:120px 20px;">
         <div style="font-size:16px; font-weight:700; color:#475569; margin-bottom:8px;">데이터를 불러오는 중입니다...</div>
         <div style="font-size:13px; color:#94a3b8;">잠시만 기다려 주세요.</div>
@@ -3051,17 +3051,21 @@ Minimum version required to store current data is: `+c+`.
           <button id="btn-retry-load" style="padding:10px 24px; background:#0f172a; color:#ffffff; border:none; border-radius:10px; font-weight:700; cursor:pointer;">다시 시도</button>
         </div>
       `,t.querySelector(`#btn-retry-load`)?.addEventListener(`click`,c)}}function l(){t.innerHTML=`
-      <!-- 상단 프리미엄 헤더 -->
-      <div style="background:#0f172a; color:#ffffff; border-radius:16px; padding:28px 32px; margin-bottom:24px; box-shadow:0 4px 20px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-        <div>
-          <span style="display:inline-block; font-size:11px; font-weight:800; color:#38bdf8; background:rgba(56,189,248,0.12); padding:3px 10px; border-radius:6px; margin-bottom:8px; letter-spacing:0.04em;">브랜드사 전용 상세페이지 기재 링크</span>
-          <h1 style="font-size:22px; font-weight:800; margin:0 0 6px; letter-spacing:-0.4px;">[${r.title||r.brandName||`라이브 방송`}] ${r.subtitle||`상품 상세페이지 등록`}</h1>
+      <!-- 상단 헤더 -->
+      <div style="background:#0f172a; color:#ffffff; border-radius:14px; padding:24px 30px; margin-bottom:24px; box-shadow:0 4px 20px rgba(0,0,0,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div style="flex:1; min-width:280px;">
+          <h1 style="font-size:22px; font-weight:700; color:#ffffff; margin:0 0 6px; letter-spacing:-0.5px;">[${r.title||r.brandName||`라이브 방송`}] ${r.subtitle||`상품 상세페이지 등록`}</h1>
           <p style="font-size:13px; color:#94a3b8; margin:0;">각 상품별 상세페이지 이미지 및 애니메이션 GIF를 직접 여러 장 업로드하고 순서를 지정할 수 있습니다.</p>
         </div>
-        <div style="text-align:right;">
-          <span style="display:inline-block; font-size:12px; font-weight:700; color:#cbd5e1; background:rgba(255,255,255,0.08); padding:6px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.12);">
-            등록 상품: ${i.length}개
-          </span>
+        <div style="text-align:left; display:flex; flex-direction:column; gap:5px; background:rgba(255,255,255,0.06); padding:10px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); min-width:170px; flex-shrink:0;">
+          <div style="font-size:13px; color:#f1f5f9; font-weight:500; display:flex; align-items:center;">
+            <span style="color:#94a3b8; margin-right:8px; font-weight:600; width:65px; display:inline-block;">등록 상품</span>
+            <span style="color:#ffffff; font-weight:700;">${i.length}개</span>
+          </div>
+          <div style="font-size:12px; color:#38bdf8; font-weight:600; display:flex; align-items:center; gap:5px;">
+            <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#38bdf8;"></span>
+            실시간 방송 연동
+          </div>
         </div>
       </div>
 
@@ -3071,10 +3075,10 @@ Minimum version required to store current data is: `+c+`.
       </div>
 
       <!-- 하단 고정 플로팅 액션 바 -->
-      <div style="position:fixed; bottom:0; left:0; width:100%; background:#ffffff; border-top:1.5px solid #e2e8f0; padding:14px 24px; display:flex; justify-content:center; box-shadow:0 -6px 20px rgba(0,0,0,0.06); z-index:9999;">
-        <div style="max-width:960px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:16px;">
+      <div style="position:fixed; bottom:0; left:0; width:100%; background:#ffffff; border-top:1px solid #e2e8f0; padding:14px 24px; display:flex; justify-content:center; box-shadow:0 -4px 20px rgba(0,0,0,0.06); z-index:9999;">
+        <div style="max-width:1040px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:16px;">
           <span style="font-size:13px; color:#64748b; font-weight:600;">작업 완료 후 반드시 우측 [상세페이지 저장 및 반영] 버튼을 눌러주세요.</span>
-          <button type="button" id="btn-shared-save" style="padding:12px 36px; background:#0f172a; color:#ffffff; border:none; border-radius:10px; font-size:14.5px; font-weight:800; cursor:pointer; box-shadow:0 4px 14px rgba(15,23,42,0.25); transition:transform 0.15s ease, background 0.2s;">
+          <button type="button" id="btn-shared-save" style="padding:11px 32px; background:#0f172a; color:#ffffff; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 2px 8px rgba(15,23,42,0.18); transition:all 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
             상세페이지 저장 및 반영
           </button>
         </div>
@@ -3085,46 +3089,46 @@ Minimum version required to store current data is: `+c+`.
           <div style="font-size:13px; color:#94a3b8;">관리자가 방송에 상품을 먼저 등록해야 상세페이지를 추가할 수 있습니다.</div>
         </div>
       `:i.map((e,t)=>{let n=e.detailImage?String(e.detailImage).split(`,`).map(e=>e.trim()).filter(Boolean):[],r=e.price?Number(e.price.toString().replace(/[^0-9]/g,``)).toLocaleString()+`원`:`가격 미정`;return`
-        <div class="shared-prod-card" style="background:#ffffff; border-radius:14px; border:1.5px solid #e2e8f0; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+        <div class="shared-prod-card" style="background:#ffffff; border-radius:12px; border:1px solid #e2e8f0; padding:20px 22px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
           <!-- 상품 헤더 정보 -->
-          <div style="display:flex; align-items:center; gap:14px; padding-bottom:14px; border-bottom:1px solid #f1f5f9;">
-            <div style="width:60px; height:60px; border-radius:10px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0; flex-shrink:0;">
-              <img src="${e.image||`https://via.placeholder.com/60`}" style="width:100%; height:100%; object-fit:cover; display:block;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding-bottom:14px; border-bottom:1px solid #f1f5f9; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:14px; min-width:0;">
+              <div style="width:54px; height:54px; border-radius:8px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0; flex-shrink:0;">
+                <img src="${e.image||`https://via.placeholder.com/54`}" style="width:100%; height:100%; object-fit:cover; display:block;">
+              </div>
+              <div style="min-width:0;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:3px;">
+                  <span style="font-size:11px; font-weight:700; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px;">상품 #${t+1}</span>
+                  <span style="font-size:15px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${e.name||`무명 상품`}</span>
+                </div>
+                <div style="font-size:13.5px; font-weight:700; color:#2563eb;">
+                  ${r}
+                  ${e.normalPrice?`<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through; font-weight:500; margin-left:6px;">${Number(e.normalPrice.toString().replace(/[^0-9]/g,``)).toLocaleString()}원</span>`:``}
+                </div>
+              </div>
             </div>
-            <div style="flex:1; min-width:0;">
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                <span style="font-size:11px; font-weight:800; background:#f1f5f9; color:#475569; padding:2px 7px; border-radius:4px;">상품 #${t+1}</span>
-                <span style="font-size:14px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${e.name||`무명 상품`}</span>
-              </div>
-              <div style="font-size:13px; font-weight:700; color:#2563eb;">
-                ${r}
-                ${e.normalPrice?`<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through; font-weight:500; margin-left:6px;">${Number(e.normalPrice.toString().replace(/[^0-9]/g,``)).toLocaleString()}원</span>`:``}
-              </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:11.5px; font-weight:700; color:#475569; background:#e2e8f0; padding:4px 10px; border-radius:6px;">총 ${n.length}장</span>
+              <input type="file" id="shared-upload-${t}" accept="image/*,.gif" multiple style="display:none;" data-idx="${t}" class="shared-detail-upload">
+              <button type="button" id="btn-shared-upload-${t}" class="btn-trigger-upload" data-idx="${t}" style="padding:7px 14px; font-size:12.5px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                + 이미지/GIF 다중 추가
+              </button>
+              ${n.length>0?`
+                <button type="button" class="btn-shared-del-all" data-idx="${t}" style="background:#fef2f2; border:1px solid #fee2e2; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; padding:6px 12px; border-radius:8px; transition:background 0.15s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">전체 삭제</button>
+              `:``}
             </div>
           </div>
 
           <!-- 상세 이미지 / GIF 관리 영역 -->
-          <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0;">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:12.5px; font-weight:800; color:#0f172a;">상세 이미지 / GIF (순서대로 렌더링)</span>
-                <span style="font-size:11px; font-weight:700; color:#475569; background:#e2e8f0; padding:2px 8px; border-radius:6px;">총 ${n.length}장</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <input type="file" id="shared-upload-${t}" accept="image/*,.gif" multiple style="display:none;" data-idx="${t}" class="shared-detail-upload">
-                <button type="button" id="btn-shared-upload-${t}" class="btn-trigger-upload" data-idx="${t}" style="padding:6px 14px; font-size:12px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
-                  + 이미지/GIF 다중 추가
-                </button>
-                ${n.length>0?`
-                  <button type="button" class="btn-shared-del-all" data-idx="${t}" style="background:#fee2e2; border:1px solid #fecaca; color:#ef4444; font-size:11.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px;">전체 삭제</button>
-                `:``}
-              </div>
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; background:#f8fafc; padding:14px; border-radius:10px; border:1px solid #e2e8f0;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#64748b;">상세페이지 이미지 목록 (가로 순서대로 상세 화면에 세로 노출)</span>
             </div>
 
             ${n.length>0?`
-              <div style="display:flex; gap:10px; overflow-x:auto; padding:6px 0; -webkit-overflow-scrolling:touch;">
+              <div style="display:flex; gap:10px; overflow-x:auto; padding:4px 0; -webkit-overflow-scrolling:touch; width:100%;">
                 ${n.map((e,r)=>`
-                  <div style="position:relative; width:94px; flex-shrink:0; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:10px; padding:6px; display:flex; flex-direction:column; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                  <div style="position:relative; width:96px; flex-shrink:0; background:#ffffff; border:1px solid #cbd5e1; border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:6px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
                     <div style="position:relative; width:100%; aspect-ratio:1/1; border-radius:6px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0;">
                       <span style="position:absolute; top:2px; left:2px; background:rgba(15,23,42,0.85); color:#ffffff; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; z-index:2;">${r+1}</span>
                       <a href="${e}" target="_blank" title="클릭하여 원본 보기">
@@ -3132,20 +3136,20 @@ Minimum version required to store current data is: `+c+`.
                       </a>
                     </div>
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:2px;">
-                      <button type="button" class="btn-shared-move-left" data-prod-idx="${t}" data-img-idx="${r}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${r===0?`disabled style="opacity:0.3; cursor:not-allowed;"`:``} title="앞으로 이동">◀</button>
-                      <button type="button" class="btn-shared-move-right" data-prod-idx="${t}" data-img-idx="${r}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${r===n.length-1?`disabled style="opacity:0.3; cursor:not-allowed;"`:``} title="뒤로 이동">▶</button>
+                      <button type="button" class="btn-shared-move-left" data-prod-idx="${t}" data-img-idx="${r}" style="flex:1; padding:3px 0; background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${r===0?`disabled style="opacity:0.3; cursor:not-allowed;"`:``} title="앞으로 이동">◀</button>
+                      <button type="button" class="btn-shared-move-right" data-prod-idx="${t}" data-img-idx="${r}" style="flex:1; padding:3px 0; background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${r===n.length-1?`disabled style="opacity:0.3; cursor:not-allowed;"`:``} title="뒤로 이동">▶</button>
                       <button type="button" class="btn-shared-del-single" data-prod-idx="${t}" data-img-idx="${r}" style="flex:1; padding:3px 0; background:#fee2e2; border:1px solid #fca5a5; color:#ef4444; border-radius:4px; font-size:11px; font-weight:800; cursor:pointer;" title="이 이미지 삭제">✕</button>
                     </div>
                   </div>
                 `).join(``)}
               </div>
             `:`
-              <div style="font-size:12px; color:#94a3b8; padding:10px; text-align:center; background:#ffffff; border:1px dashed #cbd5e1; border-radius:8px;">
-                등록된 상세페이지 이미지가 없습니다. [+ 이미지/GIF 다중 추가]를 눌러 순서대로 올릴 파일들을 선택하세요.
+              <div style="font-size:12px; color:#94a3b8; padding:14px; text-align:center; background:#ffffff; border:1px dashed #cbd5e1; border-radius:8px;">
+                등록된 상세 이미지가 없습니다. [+ 이미지/GIF 다중 추가] 버튼을 눌러 상세페이지를 등록하세요.
               </div>
             `}
 
-            <input type="text" class="shared-url-input" style="width:100%; padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; outline:none; background:#ffffff; box-sizing:border-box;" value="${e.detailImage||``}" data-idx="${t}" placeholder="이미지 URL 직접 편집 (쉼표로 구분하여 여러 장 순서대로 지정 가능)">
+            <input type="text" class="shared-url-input" style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; outline:none; background:#ffffff; box-sizing:border-box; color:#334155;" value="${e.detailImage||``}" data-idx="${t}" placeholder="이미지 URL 직접 편집 (쉼표로 구분하여 여러 장 순서대로 지정 가능)">
           </div>
         </div>
       `}).join(``)}function d(){let e=t.querySelector(`#shared-products-list`);if(!e)return;e.querySelectorAll(`.btn-trigger-upload`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.dataset.idx,n=document.getElementById(`shared-upload-${t}`);n&&n.click()})}),e.querySelectorAll(`.shared-detail-upload`).forEach(t=>{t.addEventListener(`change`,async t=>{let n=Array.from(t.target.files||[]);if(n.length===0)return;let r=parseInt(t.target.dataset.idx,10),a=document.getElementById(`btn-shared-upload-${r}`),c=a?a.textContent:`+ 이미지/GIF 다중 추가`;a&&(a.disabled=!0,a.style.opacity=`0.7`);try{let t=[],c=n.length;for(let e=0;e<c;e++){let r=n[e];a&&(a.textContent=`업로드 중 (${e+1}/${c})...`);let i=null;try{i=await s(r)}catch(t){console.warn(`[Cloudinary Direct Fail] 파일 ${e+1} 폴백 시도:`,t)}if(!i){let e=new FileReader,t=await new Promise((t,n)=>{e.onload=()=>t(e.result),e.onerror=n,e.readAsDataURL(r)});for(let e of[`/api/upload-cloudinary`,`https://ryzincorp.com/api/upload-cloudinary`])try{let n=await fetch(e,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({image:t})});if(n.ok){let e=await n.json();if(e&&e.url){i=e.url;break}}}catch{}}i&&t.push(i)}if(t.length===0)throw Error(`이미지 업로드에 실패했습니다. 파일 형식과 용량을 확인해 주세요.`);let l=i[r].detailImage?String(i[r].detailImage).trim():``,f=l?l.split(`,`).map(e=>e.trim()).filter(Boolean):[];i[r].detailImage=[...f,...t].join(`, `),e.innerHTML=u(),d(),o(`${t.length}장의 이미지가 순서대로 추가되었습니다.`)}catch(e){console.error(`Shared detail upload error:`,e),alert(`업로드 실패: `+e.message)}finally{a&&(a.disabled=!1,a.textContent=c,a.style.opacity=`1`)}})}),e.querySelectorAll(`.btn-shared-move-left`).forEach(t=>{t.addEventListener(`click`,t=>{let n=parseInt(t.currentTarget.dataset.prodIdx,10),r=parseInt(t.currentTarget.dataset.imgIdx,10);if(!i[n])return;let a=i[n].detailImage?String(i[n].detailImage).split(`,`).map(e=>e.trim()).filter(Boolean):[];if(r>0&&r<a.length){let t=a[r-1];a[r-1]=a[r],a[r]=t,i[n].detailImage=a.join(`, `),e.innerHTML=u(),d(),o(`이미지 순서가 변경되었습니다.`)}})}),e.querySelectorAll(`.btn-shared-move-right`).forEach(t=>{t.addEventListener(`click`,t=>{let n=parseInt(t.currentTarget.dataset.prodIdx,10),r=parseInt(t.currentTarget.dataset.imgIdx,10);if(!i[n])return;let a=i[n].detailImage?String(i[n].detailImage).split(`,`).map(e=>e.trim()).filter(Boolean):[];if(r>=0&&r<a.length-1){let t=a[r+1];a[r+1]=a[r],a[r]=t,i[n].detailImage=a.join(`, `),e.innerHTML=u(),d(),o(`이미지 순서가 변경되었습니다.`)}})}),e.querySelectorAll(`.btn-shared-del-single`).forEach(t=>{t.addEventListener(`click`,t=>{let n=parseInt(t.currentTarget.dataset.prodIdx,10),r=parseInt(t.currentTarget.dataset.imgIdx,10);if(!i[n])return;let a=i[n].detailImage?String(i[n].detailImage).split(`,`).map(e=>e.trim()).filter(Boolean):[];r>=0&&r<a.length&&(a.splice(r,1),i[n].detailImage=a.join(`, `),e.innerHTML=u(),d(),o(`선택한 이미지가 삭제되었습니다.`))})}),e.querySelectorAll(`.btn-shared-del-all`).forEach(t=>{t.addEventListener(`click`,t=>{let n=parseInt(t.currentTarget.dataset.idx,10);i[n]&&confirm(`등록된 모든 상세페이지 이미지를 삭제하시겠습니까?`)&&(i[n].detailImage=``,e.innerHTML=u(),d(),o(`상세 이미지가 전체 삭제되었습니다.`))})}),e.querySelectorAll(`.shared-url-input`).forEach(t=>{t.addEventListener(`change`,t=>{let n=parseInt(t.target.dataset.idx,10);i[n]&&(i[n].detailImage=t.target.value.trim(),e.innerHTML=u(),d())})});let r=t.querySelector(`#btn-shared-save`);r&&(r.onclick=async()=>{if(!a){a=!0,r.disabled=!0,r.textContent=`저장 중...`,r.style.opacity=`0.7`;try{localStorage.setItem(`ryzin_products_${n}`,JSON.stringify(i));let e=zn();if(e){let{error:t}=await e.from(`live_control`).update({products:i,updated_at:new Date().toISOString()}).eq(`live_id`,n);if(t)throw t}o(`상세페이지가 성공적으로 저장 및 방송에 반영되었습니다.`),setTimeout(()=>alert(`상세페이지가 저장되었습니다. 라이브 화면에 즉시 반영됩니다.`),50)}catch(e){console.error(`Save failed:`,e),alert(`저장 처리 중 오류가 발생했습니다: `+e.message)}finally{a=!1,r.disabled=!1,r.textContent=`상세페이지 저장 및 반영`,r.style.opacity=`1`}}})}return c(),t}function Vn(){let e=document.createElement(`div`),t=``;function n(){let r=W.getAll(`projects`),i=W.getAll(`finances`),a=W.getAll(`results`),o=[...new Set(r.map(e=>{let t=e.broadcastMonth;if(e.broadcastDate){let n=new Date(e.broadcastDate.replace(/\./g,`-`));isNaN(n.getTime())||(t=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,`0`)}`)}return t&&!t.includes(`-`)&&t.length<=2&&(t=`2026-${String(t).padStart(2,`0`)}`),t}).filter(Boolean))].sort().reverse(),s=r,c=a;if(t){s=r.filter(e=>{let n=e.broadcastMonth;if(e.broadcastDate){let t=new Date(e.broadcastDate.replace(/\./g,`-`));isNaN(t.getTime())||(n=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,`0`)}`)}return n&&!n.includes(`-`)&&n.length<=2&&(n=`2026-${String(n).padStart(2,`0`)}`),n===t});let e=s.map(e=>e.id);i.filter(t=>e.includes(t.liveId)),c=a.filter(t=>e.includes(t.liveId))}let l=e=>{let t=i.find(t=>t.liveId===e.id)||{},n=W.query(`liveHosts`,t=>t.liveId===e.id).reduce((e,t)=>e+(t.fee||0),0),r=parseInt(t.productionCost)||0,a=parseInt(t.adCost)||0,o=parseInt(t.otherCost)||0,s=!!t.includeHostCost,c=!!t.brandPaysHost,l=c?0:n,u=c||s?r+a:r+n+a,d=u-(l+a+o),f=Math.round(u*.1);return{productionCost:r,hostCost:n,adCost:a,otherCost:o,salesRevenue:u,operatingProfit:d,vat:f,netMargin:d-f}},u=0,d=0,f=0,p=0,m=0,h=0,g={};s.forEach(e=>{let t=e.broadcastMonth;if(e.broadcastDate){let n=new Date(e.broadcastDate.replace(/\./g,`-`));isNaN(n.getTime())||(t=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,`0`)}`)}if(!t&&e.date){let n=new Date(e.date.replace(/\./g,`-`));isNaN(n.getTime())||(t=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,`0`)}`)}t||=`2026-05`,!t.includes(`-`)&&t.length<=2&&(t=`2026-${String(t).padStart(2,`0`)}`),g[t]||(g[t]={month:t,revenue:0,profit:0,margin:0,count:0}),g[t].count++;let n=l(e);g[t].revenue+=n.salesRevenue,g[t].profit+=n.operatingProfit,g[t].margin+=n.netMargin,u+=n.salesRevenue,d+=n.operatingProfit,f+=n.netMargin,p+=n.adCost,m+=n.productionCost,h+=n.hostCost});let _=Object.values(g).sort((e,t)=>t.month.localeCompare(e.month)),v={};s.forEach(e=>{let t=W.getById(`brands`,e.brandId);if(!t)return;v[t.id]||(v[t.id]={name:t.name,revenue:0,count:0}),v[t.id].count++;let n=c.find(t=>t.liveId===e.id);n&&(v[t.id].revenue+=parseInt(n.liveRevenue)||0)});let y=Object.values(v).sort((e,t)=>t.revenue-e.revenue),b={};W.getAll(`liveHosts`).forEach(e=>{if(t&&!s.some(t=>t.id===e.liveId))return;let n=W.getById(`hosts`,e.hostId);if(!n)return;b[n.id]||(b[n.id]={name:n.name,revenue:0,count:0,fee:0}),b[n.id].count++,b[n.id].fee+=parseInt(e.fee)||0;let r=c.find(t=>t.liveId===e.liveId);r&&(b[n.id].revenue+=parseInt(r.liveRevenue)||0)});let x=Object.values(b).sort((e,t)=>t.revenue-e.revenue),S=s.filter(e=>e.status===`settle_wait`).length,C=s.filter(e=>e.status===`settle_done`).length;e.innerHTML=`
