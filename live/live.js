@@ -2250,15 +2250,14 @@ document.addEventListener('DOMContentLoaded', () => {
   window.__currentAuction = null;
   window.__isAuctionActive = false;
 
-  // 이메일 앞자리 일부 *** 마스킹 헬퍼 (예: abcdef@naver.com -> abc***@naver.com)
+  // 이메일 앞자리 일부 *** 마스킹 헬퍼 (@ 및 뒷자리 도메인은 완전히 제거하여 앞자리 아이디 일부만 *** 노출)
   function maskAuctionEmail(emailStr) {
     if (!emailStr || typeof emailStr !== 'string') return '';
     const trimmed = emailStr.trim();
-    if (!trimmed.includes('@')) return '';
+    if (!trimmed) return '';
 
-    const parts = trimmed.split('@');
-    const local = parts[0];
-    const domain = parts.slice(1).join('@');
+    // @ 및 뒷자리 도메인 완전 제거
+    const local = trimmed.includes('@') ? trimmed.split('@')[0] : trimmed;
 
     let maskedLocal = '';
     if (local.length <= 1) {
@@ -2272,7 +2271,7 @@ document.addEventListener('DOMContentLoaded', () => {
       maskedLocal = local.slice(0, 3) + '***';
     }
 
-    return `${maskedLocal}@${domain}`;
+    return maskedLocal;
   }
   window.maskAuctionEmail = maskAuctionEmail;
 
