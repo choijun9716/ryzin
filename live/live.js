@@ -73,8 +73,34 @@ let LIVE_ID = 'N45ZMPL';
 // ── [무정전 자동 재생 가드 및 소리 제어 엔진] 브라우저 자동재생 차단 완벽 회피 및 100% 즉시 자동 재생 보장 ──
 window.__isMediaUnmuted = false;
 
+window.dismissUnmuteToast = function() {
+  const banner = document.getElementById('unmute-toast-banner');
+  if (banner && !banner.classList.contains('fade-out')) {
+    banner.classList.add('fade-out');
+    setTimeout(() => {
+      if (banner && banner.parentNode) {
+        banner.parentNode.removeChild(banner);
+      }
+    }, 350);
+  }
+};
+
+window.triggerUnmuteToast = function(e) {
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+  if (typeof window.unmuteAllMedia === 'function') {
+    window.unmuteAllMedia();
+  }
+};
+
 window.unmuteAllMedia = function() {
   window.__isMediaUnmuted = true;
+  if (typeof isStreamMuted !== 'undefined') {
+    isStreamMuted = false;
+    if (typeof updateSoundUI === 'function') updateSoundUI();
+  }
+  if (typeof window.dismissUnmuteToast === 'function') {
+    window.dismissUnmuteToast();
+  }
   try {
     // 1. 유튜브 라이브 플레이어 음소거 해제 & 볼륨 100%
     const ytPlayer = document.getElementById('youtube-player');
@@ -98,11 +124,14 @@ window.unmuteAllMedia = function() {
   } catch (e) {}
 };
 
-// 화면 어디든 최초 터치/클릭/스크롤 시 오디오 자동 언뮤트
+// 화면 어디든 최초 터치/클릭/스크롤 시 오디오 자동 언뮤트 및 배너 닫기
 ['click', 'touchstart', 'touchend', 'scroll', 'pointerdown', 'keydown'].forEach(evt => {
   window.addEventListener(evt, function handleFirstUserGesture() {
     if (!window.__isMediaUnmuted && typeof window.unmuteAllMedia === 'function') {
       window.unmuteAllMedia();
+    }
+    if (typeof window.dismissUnmuteToast === 'function') {
+      window.dismissUnmuteToast();
     }
   }, { passive: true });
 });
