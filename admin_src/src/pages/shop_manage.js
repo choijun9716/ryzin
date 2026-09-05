@@ -261,8 +261,48 @@ function injectShopManageStyles(container) {
   container.appendChild(style);
 }
 
-// ── 이미지 압축 & ImgBB 업로드 헬퍼 ──
+// ── Cloudinary 직접 서명 업로드 ──
+async function uploadToCloudinaryDirect(fileObj, folder = 'ryzin_shop') {
+  const CLOUD_NAME = 'dcschlkqy';
+  const API_KEY = '164668247829219';
+  const API_SECRET = '3viWG82ApYRVKmovy--32tNhsCw';
+  const timestamp = Math.floor(Date.now() / 1000);
+
+  const paramsToSign = `folder=${folder}&timestamp=${timestamp}${API_SECRET}`;
+  const enc = new TextEncoder();
+  const hashBuffer = await window.crypto.subtle.digest('SHA-1', enc.encode(paramsToSign));
+  const signature = Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  const fd = new FormData();
+  fd.append('file', fileObj);
+  fd.append('api_key', API_KEY);
+  fd.append('timestamp', timestamp.toString());
+  fd.append('folder', folder);
+  fd.append('signature', signature);
+
+  const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: fd
+  });
+
+  const resData = await uploadRes.json();
+  if (!uploadRes.ok || resData.error) {
+    throw new Error(resData.error?.message || 'Cloudinary 응답 실패');
+  }
+  return resData.secure_url || resData.url;
+}
+
+// ── 이미지 Cloudinary 업로드 (ImgBB 폴백) ──
 async function uploadToImgBB(file) {
+  try {
+    const cloudUrl = await uploadToCloudinaryDirect(file, 'ryzin_shop');
+    if (cloudUrl) return cloudUrl;
+  } catch (errCloud) {
+    console.warn('[Cloudinary Fail] ImgBB 폴백 시도:', errCloud);
+  }
+
   const apiKey = localStorage.getItem('ryzin_imgbb_key') || '4ad44d673bfba8d88df109c0df1e2cae';
   const compressedBase64 = await compressImageFile(file, 1024, 0.85);
   const formData = new FormData();

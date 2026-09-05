@@ -505,6 +505,87 @@ function renderLiveEditView(container, liveId, showView) {
     }
   };
 
+  // Cloudinary 직접 서명 업로드 함수 (프로필, 썸네일, 상품, 상세페이지 공통)
+  const uploadToCloudinaryDirect = async (fileOrBlob, subfolder = 'ryzin_products') => {
+    const CLOUD_NAME = 'dcschlkqy';
+    const API_KEY = '164668247829219';
+    const API_SECRET = '3viWG82ApYRVKmovy--32tNhsCw';
+    const folder = subfolder;
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    // Web Crypto API로 SHA-1 서명 생성
+    const paramsToSign = `folder=${folder}&timestamp=${timestamp}${API_SECRET}`;
+    const enc = new TextEncoder();
+    const hashBuffer = await window.crypto.subtle.digest('SHA-1', enc.encode(paramsToSign));
+    const signature = Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    const fd = new FormData();
+    fd.append('file', fileOrBlob);
+    fd.append('api_key', API_KEY);
+    fd.append('timestamp', timestamp.toString());
+    fd.append('folder', folder);
+    fd.append('signature', signature);
+
+    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+      method: 'POST',
+      body: fd
+    });
+
+    const resData = await uploadRes.json();
+    if (!uploadRes.ok || resData.error) {
+      throw new Error(resData.error?.message || 'Cloudinary 응답 실패');
+    }
+    return resData.secure_url || resData.url;
+  };
+
+  // 공통 이미지 업로더 (Cloudinary 직행 1순위 -> 서버리스 프록시 2순위 -> ImgBB 3순위)
+  const uploadImageUniversal = async (file, folder = 'ryzin_products') => {
+    // 1순위: Cloudinary 직접 직행 업로드
+    try {
+      const directUrl = await uploadToCloudinaryDirect(file, folder);
+      if (directUrl) return directUrl;
+    } catch (errDirect) {
+      console.warn(`[Cloudinary Direct Fail] 폴백 시도 (${folder}):`, errDirect);
+    }
+
+    // 2순위: 서버리스 프록시 폴백 (/api/upload-cloudinary)
+    try {
+      const reader = new FileReader();
+      const dataUrl = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const endpoints = ['/api/upload-cloudinary', 'https://ryzincorp.com/api/upload-cloudinary'];
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: dataUrl })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.url) return data.url;
+          }
+        } catch (epErr) { }
+      }
+    } catch (proxyErr) {
+      console.warn('[Proxy Fail]:', proxyErr);
+    }
+
+    // 3순위: ImgBB 폴백
+    const base64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+      reader.readAsDataURL(file);
+    });
+    return await uploadToImgBB(base64);
+  };
+
   const uploadToImgBB = async (base64Data) => {
     // 0. 전송할 Blob 및 확장자 획득
     const blob = base64ToBlob(base64Data);
@@ -1311,13 +1392,7 @@ function renderLiveEditView(container, liveId, showView) {
       btnUploadWidgetImg.disabled = true;
       btnUploadWidgetImg.textContent = '업로드 중...';
       try {
-        const isLogo = false;
-        const maxWidth = 256;
-        const maxHeight = 256;
-        const quality = 0.88;
-        const base64 = await compressImage(file, maxWidth, maxHeight, quality);
-
-        const url = await uploadToImgBB(base64);
+        const url = await uploadImageUniversal(file, 'ryzin_widgets');
         config.widgetImageUrl = url;
         saveLiveConfig(liveId, config);
         
@@ -1887,19 +1962,20 @@ function renderLiveEditView(container, liveId, showView) {
 
     const uploadImage = async (file, previewId, configKey) => {
       if (!file) return;
-      document.getElementById(previewId).style.opacity = '0.5';
+      const prevEl = document.getElementById(previewId);
+      if (prevEl) prevEl.style.opacity = '0.5';
       try {
-        const isLogo = configKey === 'logoUrl';
-        const maxWidth = isLogo ? 256 : 1080;
-        const maxHeight = isLogo ? 256 : 1920;
-        const quality = isLogo ? 0.88 : 0.82;
-        const base64 = await compressImage(file, maxWidth, maxHeight, quality);
+        let folder = 'ryzin_thumbnails';
+        if (configKey === 'logoUrl') folder = 'ryzin_profiles';
+        else if (configKey === 'shareImageUrl') folder = 'ryzin_shares';
+        else if (configKey === 'standbyImageUrl') folder = 'ryzin_standby';
 
-        const url = await uploadToImgBB(base64);
+        const url = await uploadImageUniversal(file, folder);
         config[configKey] = url;
-        const prevEl = document.getElementById(previewId);
-        prevEl.src = url;
-        prevEl.style.display = 'block';
+        if (prevEl) {
+          prevEl.src = url;
+          prevEl.style.display = 'block';
+        }
 
         // 공유 이미지 업로드 시 OG 미리보기 카드도 즉시 반영
         if (configKey === 'shareImageUrl') {
@@ -1929,7 +2005,7 @@ function renderLiveEditView(container, liveId, showView) {
         console.error('이미지 업로드 오류:', err);
         alert('이미지 업로드 실패: ' + err.message);
       } finally {
-        document.getElementById(previewId).style.opacity = '1';
+        if (prevEl) prevEl.style.opacity = '1';
       }
     };
 
@@ -1939,23 +2015,14 @@ function renderLiveEditView(container, liveId, showView) {
       const placeholder = document.getElementById('like-preview-placeholder');
       const clearBtn = document.getElementById('btn-clear-like-icon');
       
-      preview.style.opacity = '0.5';
+      if (preview) preview.style.opacity = '0.5';
       try {
-        let base64 = '';
-        if (file.size < 1.2 * 1024 * 1024) {
-          base64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-            reader.readAsDataURL(file);
-          });
-        } else {
-          base64 = await compressImage(file, 512, 512, 0.9);
-        }
-
-        const url = await uploadToImgBB(base64);
+        const url = await uploadImageUniversal(file, 'ryzin_likes');
         config.likeImageUrl = url;
-        preview.src = url;
-        preview.style.display = 'block';
+        if (preview) {
+          preview.src = url;
+          preview.style.display = 'block';
+        }
         if (placeholder) placeholder.style.display = 'none';
         if (clearBtn) clearBtn.style.display = 'block';
         saveConfig();
@@ -1963,7 +2030,7 @@ function renderLiveEditView(container, liveId, showView) {
         console.error('응원 이미지 업로드 오류:', err);
         alert('응원 이미지 업로드 실패: ' + err.message);
       } finally {
-        preview.style.opacity = '1';
+        if (preview) preview.style.opacity = '1';
       }
     };
 
@@ -3370,12 +3437,9 @@ function renderLiveEditView(container, liveId, showView) {
           const preview = document.getElementById(`img-prev-${idx}`);
           if (preview) preview.style.opacity = '0.5';
           try {
-            // 외부 호스팅 API 장애/만료에 구애받지 않도록 최적화 압축(250x250, 0.8) Data URL로 직접 영구 저장
-            const base64Data = await compressImage(file, 250, 250, 0.8);
-            const dataUrl = base64Data.startsWith('data:') ? base64Data : `data:image/jpeg;base64,${base64Data}`;
-
-            products[idx].image = dataUrl;
-            if (preview) preview.src = dataUrl;
+            const url = await uploadImageUniversal(file, 'ryzin_products');
+            products[idx].image = url;
+            if (preview) preview.src = url;
             saveProducts(true);
             syncToSheetDB(liveId, config, stats, products, true);
             plc.innerHTML = renderProductList();
@@ -3388,40 +3452,6 @@ function renderLiveEditView(container, liveId, showView) {
           }
         });
       });
-      // Cloudinary 직접 서명 업로드 함수 (Vercel 페이로드 제한 및 라우팅 에러 완벽 해결)
-      const uploadToCloudinaryDirect = async (fileObj) => {
-        const CLOUD_NAME = 'dcschlkqy';
-        const API_KEY = '164668247829219';
-        const API_SECRET = '3viWG82ApYRVKmovy--32tNhsCw';
-        const folder = 'ryzin_products';
-        const timestamp = Math.floor(Date.now() / 1000);
-
-        // Web Crypto API로 SHA-1 서명 생성
-        const paramsToSign = `folder=${folder}&timestamp=${timestamp}${API_SECRET}`;
-        const enc = new TextEncoder();
-        const hashBuffer = await window.crypto.subtle.digest('SHA-1', enc.encode(paramsToSign));
-        const signature = Array.from(new Uint8Array(hashBuffer))
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('');
-
-        const fd = new FormData();
-        fd.append('file', fileObj);
-        fd.append('api_key', API_KEY);
-        fd.append('timestamp', timestamp.toString());
-        fd.append('folder', folder);
-        fd.append('signature', signature);
-
-        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-          method: 'POST',
-          body: fd
-        });
-
-        const resData = await uploadRes.json();
-        if (!uploadRes.ok || resData.error) {
-          throw new Error(resData.error?.message || 'Cloudinary 응답 실패');
-        }
-        return resData.secure_url || resData.url;
-      };
 
       plc.querySelectorAll('.prod-detail-upload').forEach(input => {
         input.addEventListener('change', async (e) => {
@@ -3445,45 +3475,14 @@ function renderLiveEditView(container, liveId, showView) {
               }
 
               let fileUrl = null;
-              // 1순위: Cloudinary 직접 직행 업로드
               try {
-                fileUrl = await uploadToCloudinaryDirect(file);
-              } catch (errDirect) {
-                console.warn(`[Cloudinary Direct Fail] 파일 ${i + 1} 폴백 시도:`, errDirect);
-              }
-
-              // 2순위: 서버리스 프록시 폴백
-              if (!fileUrl) {
-                const reader = new FileReader();
-                const dataUrl = await new Promise((resolve, reject) => {
-                  reader.onload = () => resolve(reader.result);
-                  reader.onerror = reject;
-                  reader.readAsDataURL(file);
-                });
-
-                const endpoints = ['/api/upload-cloudinary', 'https://ryzincorp.com/api/upload-cloudinary'];
-                for (const ep of endpoints) {
-                  try {
-                    const res = await fetch(ep, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ image: dataUrl })
-                    });
-                    if (res.ok) {
-                      const data = await res.json();
-                      if (data && data.url) {
-                        fileUrl = data.url;
-                        break;
-                      }
-                    }
-                  } catch (epErr) { }
-                }
+                fileUrl = await uploadImageUniversal(file, 'ryzin_products');
+              } catch (errUpload) {
+                console.error(`파일 ${file.name} 업로드 실패:`, errUpload);
               }
 
               if (fileUrl) {
                 uploadedUrls.push(fileUrl);
-              } else {
-                console.error(`파일 ${file.name} 업로드 실패`);
               }
             }
 
