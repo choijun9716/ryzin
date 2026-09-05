@@ -1357,8 +1357,18 @@ function renderSchemeTab(project, isSharedView = false) {
       saveBtn.textContent = '저장 중...';
 
       try {
-        store.update('projects', project.id, { scheme });
-        showSuccess('스킴 정보가 정상적으로 저장되었습니다.');
+        if (isSharedView) {
+          const resp = await fetch(`/api/shared_scheme?id=${encodeURIComponent(project.id)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scheme })
+          });
+          if (!resp.ok) throw new Error('서버 저장 실패');
+          showSuccess('스킴 정보가 정상적으로 저장되었습니다.');
+        } else {
+          store.update('projects', project.id, { scheme });
+          showSuccess('스킴 정보가 정상적으로 저장되었습니다.');
+        }
       } catch (err) {
         console.error('스킴 저장 실패:', err);
         showError('스킴 저장 중 오류가 발생했습니다.');
@@ -1415,31 +1425,55 @@ export function renderSharedScheme(params) {
   container.style.maxWidth = '1200px';
   container.style.margin = '0 auto';
 
-  function render() {
-    const project = store.getById('projects', params.id);
+  container.innerHTML = `
+    <div style="text-align:center; padding: 120px 20px;">
+      <div style="width:36px; height:36px; border:3px solid #e2e8f0; border-top-color:#0f172a; border-radius:50%; animation:spin 1s linear infinite; margin: 0 auto 16px;"></div>
+      <div style="font-size:15px; font-weight:600; color:#334155;">스킴 정보를 불러오는 중입니다...</div>
+      <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+    </div>
+  `;
+
+  async function loadAndRender() {
+    let project = store.getById('projects', params.id);
+
+    // 비로그인 상태이거나 스토어에 프로젝트가 없을 경우 전용 API로 실시간 조회
+    if (!project) {
+      try {
+        const resp = await fetch(`/api/shared_scheme?id=${encodeURIComponent(params.id)}`);
+        if (resp.ok) {
+          project = await resp.json();
+        }
+      } catch (err) {
+        console.warn('[Shared Scheme] API 로드 실패:', err);
+      }
+    }
+
     if (!project) {
       container.innerHTML = `
-        <div style="text-align:center; padding: 100px 20px;">
-          <h2 style="color:var(--text-secondary); margin-bottom: 20px;">프로젝트 정보를 찾을 수 없습니다.</h2>
-          <p style="color:var(--text-tertiary);">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>
+        <div style="text-align:center; padding: 100px 20px; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0;">
+          <h2 style="color:var(--text-secondary); margin-bottom: 12px; font-size: 18px; font-weight: 700;">프로젝트 정보를 찾을 수 없습니다.</h2>
+          <p style="color:var(--text-tertiary); font-size: 14px; margin: 0;">올바르지 않은 공유 주소이거나 삭제된 프로젝트입니다.</p>
         </div>
       `;
       return;
     }
 
-    const brand = store.getById('brands', project.brandId);
+    const brand = project.brandId ? store.getById('brands', project.brandId) : null;
     const brandName = project.brandName || (brand ? brand.name : '');
     const broadcastDate = project.broadcastDate || '';
     const titleText = `[${brandName}] 라이브 스킴 _ ${broadcastDate}`;
 
-    const mappedHosts = store.query('liveHosts', lh => lh.liveId === project.id);
-    const hostNames = mappedHosts
-      .map(lh => {
-        const host = store.getById('hosts', lh.hostId);
-        return host ? host.name : '';
-      })
-      .filter(Boolean)
-      .join(', ') || '-';
+    let hostNames = project.hostNames || '';
+    if (!hostNames) {
+      const mappedHosts = store.query('liveHosts', lh => lh.liveId === project.id);
+      hostNames = mappedHosts
+        .map(lh => {
+          const host = store.getById('hosts', lh.hostId);
+          return host ? host.name : '';
+        })
+        .filter(Boolean)
+        .join(', ') || '-';
+    }
     const pdName = project.pd || '-';
 
     container.innerHTML = `
@@ -1468,7 +1502,7 @@ export function renderSharedScheme(params) {
     contentDiv.appendChild(renderSchemeTab(project, true));
   }
 
-  render();
+  loadAndRender();
   return container;
 }
 
