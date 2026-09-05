@@ -1328,54 +1328,74 @@ document.addEventListener('DOMContentLoaded', () => {
     const sheet = document.getElementById('product-detail-sheet');
     if (!sheet) return;
 
-    const imgEl = document.getElementById('pdetail-img');
-    const titleEl = document.getElementById('pdetail-title');
-    const priceEl = document.getElementById('pdetail-price');
-    const origPriceEl = document.getElementById('pdetail-original-price');
-    const discRateEl = document.getElementById('pdetail-discount-rate');
-    const extWrap = document.getElementById('pdetail-external-link-wrap');
-    const extLink = document.getElementById('pdetail-external-link');
+    const headerTitle = document.getElementById('pdetail-header-title');
+    if (headerTitle) headerTitle.textContent = item.name || '상품 상세';
+
+    const iframe = document.getElementById('pdetail-webview-iframe');
+    const fallbackView = document.getElementById('pdetail-fallback-view');
     const btnBuy = document.getElementById('btn-pdetail-buy');
     const btnCart = document.getElementById('btn-pdetail-cart');
 
-    if (imgEl) imgEl.src = item.image || '';
-    if (titleEl) titleEl.textContent = item.name || '상품명';
-
-    const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
-    const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
-
-    if (pNum > 0) {
-      if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
-      if (npNum > pNum) {
-        if (origPriceEl) {
-          origPriceEl.textContent = `${npNum.toLocaleString()}원`;
-          origPriceEl.style.display = 'inline';
-        }
-        if (discRateEl) {
-          const rate = Math.round(((npNum - pNum) / npNum) * 100);
-          discRateEl.textContent = `${rate}%`;
-          discRateEl.style.display = 'inline';
-        }
-      } else {
-        if (origPriceEl) origPriceEl.style.display = 'none';
-        if (discRateEl) discRateEl.style.display = 'none';
-      }
-    } else if (item.price === '0' || item.price === 0) {
-      if (priceEl) priceEl.textContent = '무료나눔';
-      if (origPriceEl) origPriceEl.style.display = 'none';
-      if (discRateEl) discRateEl.style.display = 'none';
-    } else {
-      if (priceEl) priceEl.textContent = '가격 준비중';
-      if (origPriceEl) origPriceEl.style.display = 'none';
-      if (discRateEl) discRateEl.style.display = 'none';
-    }
-
-    // 자사몰 원문 외부 링크 설정
+    // 데모버전처럼 실제 제품 상세 페이지를 풀스크린 웹뷰 iframe으로 렌더링
     if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
-      if (extWrap) extWrap.style.display = 'flex';
-      if (extLink) extLink.href = item.url.startsWith('http') ? item.url : 'https://' + item.url;
+      let cleanUrl = String(item.url).trim();
+      if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+        cleanUrl = 'https://' + cleanUrl;
+      }
+      const targetLiveId = LIVE_ID || 'N45ZMPL';
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(cleanUrl)}&live_id=${targetLiveId}&clean=true`;
+      
+      if (iframe) {
+        iframe.src = proxyUrl;
+        iframe.style.display = 'block';
+      }
+      if (fallbackView) fallbackView.style.display = 'none';
     } else {
-      if (extWrap) extWrap.style.display = 'none';
+      // URL이 없는 경우 기본 상품 카드 정보 노출
+      if (iframe) {
+        iframe.src = '';
+        iframe.style.display = 'none';
+      }
+      if (fallbackView) {
+        fallbackView.style.display = 'block';
+        const imgEl = document.getElementById('pdetail-img');
+        const titleEl = document.getElementById('pdetail-title');
+        const priceEl = document.getElementById('pdetail-price');
+        const origPriceEl = document.getElementById('pdetail-original-price');
+        const discRateEl = document.getElementById('pdetail-discount-rate');
+
+        if (imgEl) imgEl.src = item.image || '';
+        if (titleEl) titleEl.textContent = item.name || '상품명';
+
+        const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+        const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+
+        if (pNum > 0) {
+          if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
+          if (npNum > pNum) {
+            if (origPriceEl) {
+              origPriceEl.textContent = `${npNum.toLocaleString()}원`;
+              origPriceEl.style.display = 'inline';
+            }
+            if (discRateEl) {
+              const rate = Math.round(((npNum - pNum) / npNum) * 100);
+              discRateEl.textContent = `${rate}%`;
+              discRateEl.style.display = 'inline';
+            }
+          } else {
+            if (origPriceEl) origPriceEl.style.display = 'none';
+            if (discRateEl) discRateEl.style.display = 'none';
+          }
+        } else if (item.price === '0' || item.price === 0) {
+          if (priceEl) priceEl.textContent = '무료나눔';
+          if (origPriceEl) origPriceEl.style.display = 'none';
+          if (discRateEl) discRateEl.style.display = 'none';
+        } else {
+          if (priceEl) priceEl.textContent = '가격 준비중';
+          if (origPriceEl) origPriceEl.style.display = 'none';
+          if (discRateEl) discRateEl.style.display = 'none';
+        }
+      }
     }
 
     // 하단 장바구니 담기
@@ -1401,9 +1421,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    // 스크롤 초기화 및 시트 노출
-    const scrollContent = document.getElementById('product-detail-scroll-content');
-    if (scrollContent) scrollContent.scrollTop = 0;
     sheet.style.display = 'flex';
 
     // 4. 영상 소리 끊김 없이 지속 재생 보장
@@ -1418,6 +1435,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.remove('pip-active');
     const sheet = document.getElementById('product-detail-sheet');
     if (sheet) sheet.style.display = 'none';
+    const iframe = document.getElementById('pdetail-webview-iframe');
+    if (iframe) iframe.src = '';
 
     // 전체화면 복귀 후에도 소리와 영상 지속 재생 보장
     if (typeof window.resumeAllMedia === 'function') {
@@ -1795,7 +1814,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputSection = document.querySelector('.input-section');
 
   const sideActions = document.querySelector('.side-actions');
-  videoWrapper.addEventListener('click', () => {
+  videoWrapper.addEventListener('click', (e) => {
+    if (document.body.classList.contains('pip-active')) {
+      e.stopPropagation();
+      if (typeof window.closeProductDetailSheet === 'function') {
+        window.closeProductDetailSheet();
+      }
+      return;
+    }
     chatSection.classList.toggle('chat-hidden');
     inputSection.classList.toggle('chat-hidden');
     if (sideActions) sideActions.classList.toggle('chat-hidden');

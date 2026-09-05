@@ -1873,52 +1873,29 @@ video::-webkit-media-controls-overlay-play-button {
   pointer-events: auto !important;
 }
 
-.pip-active .video-wrapper .bottom-gradient {
+.pip-active .video-wrapper .bottom-gradient,
+.pip-active .video-wrapper .pip-badge,
+.pip-active .video-wrapper .pip-tap-hint,
+.pip-active .video-wrapper #tap-to-unmute-badge,
+.pip-active .video-wrapper .video-badge,
+.pip-active .video-wrapper .sound-toggle-badge {
   display: none !important;
 }
 
-.pip-active .video-wrapper .pip-badge {
-  display: flex !important;
+/* PIP 화면 내 오로지 순수 라이브 비디오 화면만 100% 핏 */
+.pip-active .video-wrapper video,
+.pip-active .video-wrapper iframe,
+.pip-active .video-wrapper #youtube-box,
+.pip-active .video-wrapper #standby-youtube-wrap {
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  object-fit: cover !important;
 }
 
-.pip-active .video-wrapper .pip-tap-hint {
-  display: block !important;
-}
-
-/* PIP 화면 내 LIVE 배지 및 복귀 안내 */
-.video-wrapper .pip-badge {
-  display: none;
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  background: #e11d48;
-  color: #ffffff;
-  font-size: 9px;
-  font-weight: 800;
-  padding: 2px 5px;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
-  pointer-events: none;
-  z-index: 20;
-}
-
+.video-wrapper .pip-badge,
 .video-wrapper .pip-tap-hint {
-  display: none;
-  position: absolute;
-  bottom: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  color: #ffffff;
-  font-size: 9px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 10px;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 20;
+  display: none !important;
 }
 
 /* 상품 상세 시트 애니메이션 */
