@@ -6949,10 +6949,35 @@ window.openMyCsModal = function() {
   if (m) m.style.display = 'flex';
 };
 
-window.openMyTermsModal = function() {
+window.openMyTermsModal = async function() {
   closeMyMenuModal();
   const m = document.getElementById('my-terms-modal');
-  if (m) m.style.display = 'flex';
+  if (!m) return;
+  m.style.display = 'flex';
+
+  try {
+    const res = await fetch('/terms.json');
+    if (res.ok) {
+      const data = await res.json();
+      const titleEl = m.querySelector('h3');
+      const dateEl = m.querySelector('span');
+      const bodyEl = m.querySelector('div[style*="overflow-y:auto"]');
+      if (titleEl && data.title) titleEl.textContent = data.title;
+      if (dateEl && data.effectiveDate) dateEl.textContent = data.effectiveDate;
+      if (bodyEl && Array.isArray(data.sections)) {
+        let html = '';
+        data.sections.forEach(sec => {
+          html += `
+            <div>
+              <div style="font-size:12.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">${sec.heading}</div>
+              ${sec.paragraphs.map(p => `<p style="margin:0 0 3px 0; color:#475569; font-size:12px; line-height:1.6;">${p}</p>`).join('')}
+            </div>
+          `;
+        });
+        bodyEl.innerHTML = html;
+      }
+    }
+  } catch(e) {}
 };
 
 window.handleMyLogout = function() {
