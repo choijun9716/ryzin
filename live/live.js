@@ -179,22 +179,21 @@ window.dismissUnmuteToast = function() {
   }
 };
 
-window.triggerUnmuteToast = function(e) {
-  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-  if (typeof window.unmuteAllMedia === 'function') {
-    window.unmuteAllMedia();
-  }
-};
-
 window.__userManuallyMuted = false;
+window.__isStreamMuted = false;
+
+window.isAudioMuted = function() {
+  return !!(window.__userManuallyMuted || window.__isStreamMuted || (typeof isStreamMuted !== 'undefined' && isStreamMuted));
+};
 
 window.unmuteAllMedia = function(force = false) {
   // 사용자가 명시적으로 '소리끔'을 누른 상태라면 화면 터치/제스처로 절대 언뮤트되지 않음 (소리켬 버튼을 눌러야만 해제)
-  if (window.__userManuallyMuted && !force) {
+  if (window.isAudioMuted() && !force) {
     return;
   }
   window.__isMediaUnmuted = true;
   window.__userManuallyMuted = false;
+  window.__isStreamMuted = false;
   if (typeof isStreamMuted !== 'undefined') {
     isStreamMuted = false;
     if (typeof updateSoundUI === 'function') updateSoundUI();
@@ -230,7 +229,7 @@ window.unmuteAllMedia = function(force = false) {
 // 화면 어디든 최초 터치/클릭/스크롤 시 오디오 자동 언뮤트 및 배너 닫기 (단, 소리끔 상태에서는 무시)
 ['click', 'touchstart', 'touchend', 'scroll', 'pointerdown', 'keydown'].forEach(evt => {
   window.addEventListener(evt, function handleFirstUserGesture() {
-    if (window.__userManuallyMuted || (typeof isStreamMuted !== 'undefined' && isStreamMuted)) {
+    if (window.isAudioMuted()) {
       return;
     }
     if (!window.__isMediaUnmuted && typeof window.unmuteAllMedia === 'function') {
@@ -243,21 +242,18 @@ window.unmuteAllMedia = function(force = false) {
 });
 
 window.resumeAllMedia = function() {
+  const shouldBeMuted = window.isAudioMuted();
   try {
     // 1. 일반 HTML5 비디오 (HLS/MP4) 무조건 재생 재개
     const video = document.getElementById('live-video');
     if (video) {
       if (video.paused) {
-        const p = video.play();
-        if (p && typeof p.catch === 'function') {
-          p.catch(() => {
-            // 브라우저 자동재생 제약 시 muted로 재생 후 언뮤트 재시도
-            video.muted = true;
-            video.play().then(() => {
-              if (window.__isMediaUnmuted) video.muted = false;
-            }).catch(() => {});
-          });
-        }
+        video.play().catch(() => {});
+      }
+      if (shouldBeMuted) {
+        video.muted = true;
+      } else if (window.__isMediaUnmuted) {
+        video.muted = false;
       }
     }
 
@@ -266,7 +262,9 @@ window.resumeAllMedia = function() {
     if (ytPlayer && ytPlayer.contentWindow) {
       ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
       disableYtCaptions(ytPlayer);
-      if (window.__isMediaUnmuted) {
+      if (shouldBeMuted) {
+        ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+      } else if (window.__isMediaUnmuted) {
         ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
         ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
       }
@@ -277,7 +275,9 @@ window.resumeAllMedia = function() {
     if (standbyIfr && standbyIfr.contentWindow) {
       standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
       disableYtCaptions(standbyIfr);
-      if (window.__isMediaUnmuted) {
+      if (shouldBeMuted) {
+        standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+      } else if (window.__isMediaUnmuted) {
         standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
         standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
       }
@@ -550,6 +550,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!e.data) return;
         if (e.data.type === 'auction_bid') {
           handleIncomingAuctionBid(e.data);
+          return;
+        }
+        if (e.data.type === 'auction_winner_deleted') {
+          if (typeof window.handleAuctionWinnerDeleted === 'function') {
+            window.handleAuctionWinnerDeleted(e.data);
+          }
           return;
         }
         if (!e.data.liveId || e.data.liveId === LIVE_ID) {
@@ -1280,7 +1286,9 @@ document.addEventListener('DOMContentLoaded', () => {
                       currentIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
                       disableYtCaptions(currentIfr);
                       enforceHighestQuality(currentIfr);
-                      if (window.__isMediaUnmuted) {
+                      if (window.isAudioMuted()) {
+                        currentIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+                      } else if (window.__isMediaUnmuted) {
                         currentIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
                         currentIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
                       }
@@ -2498,6 +2506,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (typeof loadLiveProducts === 'function') loadLiveProducts();
 
+      // 어드민 전용 낙찰자 관리 목록에 영구 동기화
+      try {
+        const storedWinners = JSON.parse(localStorage.getItem(`ryzin_auction_winners_${LIVE_ID}`) || '[]');
+        const soldKey = auctionData.productId || (localAuction && localAuction.productId) || 'item';
+        const alreadySaved = storedWinners.some(w => String(w.productId) === String(soldKey) && Math.abs(Number(w.soldTime || 0) - Number(soldTimestamp)) < 15000);
+        if (!alreadySaved) {
+          storedWinners.unshift({
+            id: 'WIN-' + soldTimestamp + '-' + Math.random().toString(36).substr(2, 5),
+            liveId: LIVE_ID,
+            productId: soldKey,
+            productCode: auctionData.productCode || (localAuction && localAuction.productCode) || '',
+            productName: auctionData.productName || (localAuction && localAuction.productName) || '경매 상품',
+            productImage: auctionData.productImage || (localAuction && localAuction.productImage) || '',
+            finalPrice: finalPrice,
+            winner: highestBidder || { userName: (isMyWin ? (myName || '나') : '낙찰자'), userId: (isMyWin ? (myId || 'me') : 'unknown') },
+            soldAt: new Date(soldTimestamp).toISOString(),
+            soldTime: soldTimestamp
+          });
+          localStorage.setItem(`ryzin_auction_winners_${LIVE_ID}`, JSON.stringify(storedWinners));
+        }
+      } catch(e) {}
+
       // 내가 낙찰자인 경우: 장바구니에 자동 추가 (1회만 실행되도록 가드)
       const soldTimestamp = auctionData.soldTime || auctionData.endTime || Date.now();
       if (isMyWin && window.__lastWonAuctionSoldTime !== soldTimestamp) {
@@ -2833,10 +2863,67 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchUserBenefitsFromDB();
   }
 
+  // 어드민에서 경매 낙찰자 삭제 시 고객 장바구니 자동 취소 동기화 핸들러
+  window.handleAuctionWinnerDeleted = function(data) {
+    if (typeof loadCartFromStorage === 'function') {
+      cartItems = loadCartFromStorage();
+    }
+    let modified = false;
+    let removedProductName = '';
+
+    cartItems = cartItems.filter(item => {
+      const isAuction = !!(item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')));
+      if (!isAuction) return true;
+
+      if (!data) {
+        // storage/cart 오픈 시: 현재 라이브의 ryzin_auction_winners_${LIVE_ID}에 남아있지 않으면 관리자에 의해 삭제된 것으로 간주
+        try {
+          const winners = JSON.parse(localStorage.getItem(`ryzin_auction_winners_${LIVE_ID}`) || 'null');
+          if (winners && Array.isArray(winners)) {
+            const exists = winners.some(w => {
+              const matchId = w.productId && (String(item.id).includes(String(w.productId)) || String(item.productId) === String(w.productId));
+              const matchName = w.productName && item.name && item.name.includes(w.productName);
+              return matchId || matchName;
+            });
+            if (!exists) {
+              modified = true;
+              removedProductName = item.name;
+              return false;
+            }
+          }
+        } catch(e) {}
+        return true;
+      }
+
+      // data 페이로드 매칭
+      const matchId = data.productId && (String(item.id).includes(String(data.productId)) || String(item.productId) === String(data.productId));
+      const matchName = data.productName && item.name && item.name.includes(data.productName);
+      if (matchId || matchName || (data.type === 'auction_winner_deleted' && !data.productId && !data.productName)) {
+        modified = true;
+        removedProductName = item.name;
+        return false;
+      }
+      return true;
+    });
+
+    if (modified) {
+      if (typeof syncCartStorage === 'function') syncCartStorage();
+      if (typeof updateCartUI === 'function') updateCartUI();
+      if (typeof renderCartItems === 'function') renderCartItems();
+      window.__lastWonAuctionSoldTime = null;
+      alert(`관리자에 의해 [${removedProductName || '경매 낙찰 상품'}] 내역이 취소되어 장바구니에서 삭제되었습니다.`);
+    }
+  };
+
   // 어드민 iframe에서 postMessage로 실시간 데이터 쏘는 것 수신
   window.addEventListener('message', (e) => {
     if (e.data && e.data.type === 'sync_user_benefits') {
       if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
+    }
+    if (e.data && e.data.type === 'auction_winner_deleted') {
+      if (typeof window.handleAuctionWinnerDeleted === 'function') {
+        window.handleAuctionWinnerDeleted(e.data);
+      }
     }
     if (e.data && e.data.type === 'sync_preview') {
       if (e.data.config) localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(e.data.config));
@@ -2854,7 +2941,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key.includes('config')) loadLiveConfig();
     if (e.key.includes('stats')) loadLiveStats();
     if (e.key.includes('products')) loadLiveProducts();
-    if (e.key.includes('auction')) {
+    if (e.key.includes('auction_winners') || e.key === 'ryzin_live_sync_global') {
+      let payload = null;
+      try { payload = JSON.parse(e.newValue); } catch(err) {}
+      if (typeof window.handleAuctionWinnerDeleted === 'function') {
+        window.handleAuctionWinnerDeleted(payload && payload.type === 'auction_winner_deleted' ? payload : null);
+      }
+    }
+    if (e.key.includes('auction') && !e.key.includes('auction_winners')) {
       try {
         const aData = e.newValue ? JSON.parse(e.newValue) : null;
         handleAuctionSync(aData);
@@ -2923,7 +3017,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 화면 첫 터치/클릭 시 자동 음소거 해제 (브라우저 정책 우회, 단 소리끔 수동 설정 시에는 작동 안함)
   const unmuteOnInteraction = () => {
-    if (window.__userManuallyMuted || (typeof isStreamMuted !== 'undefined' && isStreamMuted)) {
+    if (window.isAudioMuted()) {
       return;
     }
     if (video.muted) {
@@ -4608,10 +4702,12 @@ window.toggleStreamSound = function(explicitState) {
   } else {
     isStreamMuted = !isStreamMuted;
   }
+  window.__isStreamMuted = isStreamMuted;
 
   if (isStreamMuted) {
     // 사용자가 '소리끔'을 누른 경우: 화면 터치 등으로 절대 자동 언뮤트되지 않도록 차단 플래그 설정
     window.__userManuallyMuted = true;
+    window.__isMediaUnmuted = false;
   } else {
     // 사용자가 '소리켬'을 누른 경우: 음소거 해제 및 플래그 해제
     window.__userManuallyMuted = false;
@@ -4620,61 +4716,40 @@ window.toggleStreamSound = function(explicitState) {
 
   const video = document.getElementById('live-video');
   const ytPlayer = document.getElementById('youtube-player');
+  const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
 
   updateSoundUI();
 
-  if (video) {
-    video.muted = isStreamMuted;
-    if (!isStreamMuted) {
+  if (isStreamMuted) {
+    if (video) video.muted = true;
+    if (ytPlayer && ytPlayer.contentWindow) {
+      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+    }
+    if (standbyIfr && standbyIfr.contentWindow) {
+      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+    }
+  } else {
+    if (video) {
+      video.muted = false;
       video.volume = 1.0;
       video.play().catch(e => console.warn(e));
     }
-  }
-
-  if (ytPlayer && ytPlayer.contentWindow) {
-    const cmd = isStreamMuted ? 'mute' : 'unMute';
-    ytPlayer.contentWindow.postMessage(JSON.stringify({
-      event: 'command',
-      func: cmd
-    }), '*');
-    if (!isStreamMuted) {
-      ytPlayer.contentWindow.postMessage(JSON.stringify({
-        event: 'command',
-        func: 'setVolume',
-        args: [100]
-      }), '*');
+    if (ytPlayer && ytPlayer.contentWindow) {
+      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
     }
-  }
-
-  const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
-  if (standbyIfr && standbyIfr.contentWindow) {
-    const cmd = isStreamMuted ? 'mute' : 'unMute';
-    standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: cmd }), '*');
-    if (!isStreamMuted) {
+    if (standbyIfr && standbyIfr.contentWindow) {
+      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
       standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
     }
   }
 };
 
-// 사용자가 화면을 첫 터치/클릭할 때 강제 소리 ON 확실 보장 (단, 소리끔 상태에서는 실행 안함)
+// 사용자가 화면을 첫 터치/클릭할 때 강제 소리 ON 확실 보장 (단, 소리끔 상태에서는 절대 실행 안함)
 function forceSoundOn() {
-  if (window.__userManuallyMuted || isStreamMuted) return;
-  const video = document.getElementById('live-video');
-  const ytPlayer = document.getElementById('youtube-player');
-  const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
-  isStreamMuted = false;
-  updateSoundUI();
-  if (video) {
-    video.muted = false;
-    video.volume = 1.0;
-  }
-  if (ytPlayer && ytPlayer.contentWindow) {
-    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
-  }
-  if (standbyIfr && standbyIfr.contentWindow) {
-    standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-    standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+  if (window.isAudioMuted()) return;
+  if (typeof window.unmuteAllMedia === 'function') {
+    window.unmuteAllMedia(false);
   }
 }
 ['click', 'touchstart', 'touchend'].forEach(evtType => {
@@ -4689,8 +4764,10 @@ function safePlayVideo(v) {
       // 브라우저 자동재생 차단(NotAllowedError) 회피: muted로 먼저 재생 후 언뮤트 복원
       v.muted = true;
       v.play().then(() => {
-        if (window.__isMediaUnmuted) {
-          setTimeout(() => { v.muted = false; }, 150);
+        if (!window.isAudioMuted() && window.__isMediaUnmuted) {
+          setTimeout(() => {
+            if (!window.isAudioMuted()) v.muted = false;
+          }, 150);
         }
       }).catch(err => console.warn('Safe video play error:', err));
     });
@@ -4749,11 +4826,17 @@ function playStreamUrl(url, isLive) {
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
               disableYtCaptions(ytPlayer);
               enforceHighestQuality(ytPlayer);
-              if (window.__isMediaUnmuted) {
+              if (window.isAudioMuted()) {
+                ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+              } else if (window.__isMediaUnmuted) {
                 setTimeout(() => {
                   try {
-                    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-                    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                    if (window.isAudioMuted()) {
+                      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+                    } else {
+                      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                    }
                   } catch(e) {}
                 }, 200);
               }
@@ -4771,7 +4854,9 @@ function playStreamUrl(url, isLive) {
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
               disableYtCaptions(ytPlayer);
               enforceHighestQuality(ytPlayer);
-              if (window.__isMediaUnmuted && delay >= 120) {
+              if (window.isAudioMuted()) {
+                ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+              } else if (window.__isMediaUnmuted && delay >= 120) {
                 ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
                 ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
               }
@@ -4799,10 +4884,12 @@ function playStreamUrl(url, isLive) {
                 if ((data.info === 2 || data.info === 5 || data.info === -1) && !document.hidden && window.__lastIsLive !== false && !window.__lastStandbyActive) {
                   curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
                 }
-                // 1(재생 중) 감지 시 최고화질 고정 및 소리 언뮤트
+                // 1(재생 중) 감지 시 최고화질 고정 및 소리 상태 동기화
                 if (data.info === 1) {
                   enforceHighestQuality(curYt);
-                  if (window.__isMediaUnmuted) {
+                  if (window.isAudioMuted()) {
+                    curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute' }), '*');
+                  } else if (window.__isMediaUnmuted) {
                     curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
                     curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
                   }
@@ -5026,6 +5113,9 @@ function openCartModal() {
   }
 
   if (cartModal) {
+    if (typeof window.handleAuctionWinnerDeleted === 'function') {
+      window.handleAuctionWinnerDeleted(null);
+    }
     if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
     if (typeof window.restoreUserAddressFromDB === 'function') {
       window.restoreUserAddressFromDB().then(() => {
@@ -7170,7 +7260,7 @@ window.enterLiveFullScreen = function() {
   closeSellerChannelView();
 
   const video = document.getElementById('live-video');
-  if (video && video.muted) {
+  if (video && video.muted && !window.isAudioMuted()) {
     video.muted = false;
     video.volume = 1.0;
   }

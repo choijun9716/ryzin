@@ -50,6 +50,11 @@ const saveLiveProductsLocal = (liveId, data) => {
   localStorage.setItem(`ryzin_live_products_${liveId}`, JSON.stringify(data));
 };
 
+const getAuctionWinners = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_auction_winners_${liveId}`), []);
+const saveAuctionWinners = (liveId, data) => {
+  localStorage.setItem(`ryzin_auction_winners_${liveId}`, JSON.stringify(data));
+};
+
 const getBotConfig = (liveId) => safeJsonParse(localStorage.getItem(`ryzin_bot_${liveId}`), { list: '', interval: 10, autoReplyRules: [], autoReplyActive: true });
 const saveBotConfig = (liveId, data) => localStorage.setItem(`ryzin_bot_${liveId}`, JSON.stringify(data));
 
@@ -3205,8 +3210,24 @@ function renderLiveEditView(container, liveId, showView) {
       `;
     }
 
+    let winnersBannerHtml = '';
+    const currentWinnersList = getAuctionWinners(liveId);
+    if (currentWinnersList.length > 0) {
+      winnersBannerHtml = `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 16px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+          <div style="font-size:12.5px; color:#475569; display:flex; align-items:center; gap:8px;">
+            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444;"></span>
+            <span>현재 등록된 경매 낙찰자가 <b style="color:#ef4444;">${currentWinnersList.length}명</b> 있습니다. (어드민에서만 관리자가 삭제 가능)</span>
+          </div>
+          <button type="button" class="btn-go-winners-tab" style="background:#0f172a; color:#ffffff; border:none; padding:5px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+            낙찰자 관리 보기
+          </button>
+        </div>
+      `;
+    }
+
     if (products.length === 0) {
-      return auctionBannerHtml + `
+      return auctionBannerHtml + winnersBannerHtml + `
         <div style="background:#ffffff; border-radius:14px; padding:60px 20px; text-align:center; border:1.5px solid #e2e8f0;">
           <div style="font-size:16px; font-weight:700; color:#475569; margin-bottom:6px;">등록된 상품이 없습니다</div>
           <div style="font-size:13px; color:#94a3b8; margin-bottom:16px;">우측 상단 [+ 상품 추가] 버튼을 눌러 방송에 소개할 상품을 등록하세요.</div>
@@ -3215,7 +3236,7 @@ function renderLiveEditView(container, liveId, showView) {
       `;
     }
 
-    return auctionBannerHtml + products.map((p, idx) => {
+    return auctionBannerHtml + winnersBannerHtml + products.map((p, idx) => {
       const clickCount = p.clicks || 0;
       const isFeatured = p.isFeatured === true || p.isFeatured === 'true';
       const isAuctionThisProduct = currentAuction && currentAuction.productId == (p.id || p.product_code || idx);
@@ -3406,11 +3427,85 @@ function renderLiveEditView(container, liveId, showView) {
     }).join('');
   };
 
+  // 3. 실시간 경매 낙찰자 관리 뷰 (어드민에서만 관리자가 삭제 가능)
+  const renderAuctionWinnersList = () => {
+    const winners = getAuctionWinners(liveId);
+    if (!winners || winners.length === 0) {
+      return `
+        <div style="text-align:center; padding:50px 20px; background:#f8fafc; border:1.5px dashed #cbd5e1; border-radius:12px;">
+          <div style="font-size:14px; font-weight:700; color:#475569; margin-bottom:6px;">현재 등록된 경매 낙찰 내역이 없습니다</div>
+          <div style="font-size:12.5px; color:#94a3b8;">라이브 방송 중 실시간 경매가 진행되어 낙찰 확정되면 이곳에 자동으로 기록되며, 관리자만 취소 및 삭제할 수 있습니다.</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div style="margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:13px; font-weight:700; color:#334155;">
+          총 <span style="color:#ef4444; font-weight:800;">${winners.length}</span>건의 낙찰 내역이 관리 중입니다. (삭제 시 해당 고객의 장바구니에서도 자동 취소됩니다)
+        </div>
+      </div>
+      <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; background:#ffffff; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:12.5px;">
+          <thead>
+            <tr style="background:#f8fafc; border-bottom:1.5px solid #e2e8f0; color:#475569; font-weight:700;">
+              <th style="padding:11px 14px; width:64px; text-align:center;">이미지</th>
+              <th style="padding:11px 14px;">상품 정보</th>
+              <th style="padding:11px 14px; width:130px; text-align:right;">최종 낙찰가</th>
+              <th style="padding:11px 14px; width:200px;">낙찰자 정보</th>
+              <th style="padding:11px 14px; width:150px; text-align:center;">낙찰 일시</th>
+              <th style="padding:11px 14px; width:100px; text-align:center;">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${winners.map(w => {
+              const formattedPrice = Number(w.finalPrice || 0).toLocaleString() + '원';
+              const winnerUser = w.winner || {};
+              const winnerName = winnerUser.userName || winnerUser.name || '낙찰자';
+              const winnerEmail = winnerUser.email || (winnerUser.userId ? `${winnerUser.userId}` : '');
+              const soldDateStr = w.soldAt ? new Date(w.soldAt).toLocaleString('ko-KR', { hour12: false }) : (w.soldTime ? new Date(w.soldTime).toLocaleString('ko-KR', { hour12: false }) : '-');
+              return `
+                <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#fbfcfd'" onmouseout="this.style.background='#ffffff'">
+                  <td style="padding:11px 14px; text-align:center;">
+                    <img src="${w.productImage || 'https://via.placeholder.com/44'}" alt="product" style="width:44px; height:44px; border-radius:6px; object-fit:cover; border:1px solid #e2e8f0;">
+                  </td>
+                  <td style="padding:11px 14px;">
+                    <div style="font-weight:700; color:#0f172a; font-size:13px; margin-bottom:2px;">${w.productName || '경매 상품'}</div>
+                    <div style="font-size:11px; color:#64748b;">코드: ${w.productCode || w.productId || '-'}</div>
+                  </td>
+                  <td style="padding:11px 14px; text-align:right; font-weight:800; color:#ef4444; font-size:14px;">
+                    ${formattedPrice}
+                  </td>
+                  <td style="padding:11px 14px;">
+                    <div style="font-weight:700; color:#1e293b;">${winnerName}</div>
+                    ${winnerEmail ? `<div style="font-size:11px; color:#64748b;">${winnerEmail}</div>` : ''}
+                  </td>
+                  <td style="padding:11px 14px; text-align:center; font-size:11.5px; color:#64748b;">
+                    ${soldDateStr}
+                  </td>
+                  <td style="padding:11px 14px; text-align:center;">
+                    <button type="button" class="btn-delete-winner" data-winner-id="${w.id}" style="padding:5px 12px; font-size:11.5px; font-weight:700; color:#ef4444; background:#fee2e2; border:1px solid #fca5a5; border-radius:6px; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'">
+                      삭제
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  };
+
   const renderProductList = () => {
-    return productSubTab === 'basic' ? renderProductListBasic() : renderProductListDetail();
+    if (productSubTab === 'basic') return renderProductListBasic();
+    if (productSubTab === 'detail') return renderProductListDetail();
+    if (productSubTab === 'winners') return renderAuctionWinnersList();
+    return renderProductListBasic();
   };
 
   const renderProductTab = () => {
+    const winnersCount = getAuctionWinners(liveId).length;
     contentArea.innerHTML = `
       <div class="section-card">
         <!-- 상단 헤더 & 서브 탭 분기 -->
@@ -3422,6 +3517,9 @@ function renderLiveEditView(container, liveId, showView) {
             </button>
             <button type="button" class="prod-subtab-btn" data-subtab="detail" style="padding:7px 18px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; border:none; transition:all 0.15s; ${productSubTab === 'detail' ? 'background:#0f172a; color:#ffffff; box-shadow:0 2px 6px rgba(15,23,42,0.15);' : 'background:transparent; color:#64748b;'}">
               상세페이지 관리
+            </button>
+            <button type="button" class="prod-subtab-btn" data-subtab="winners" style="padding:7px 18px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; border:none; transition:all 0.15s; ${productSubTab === 'winners' ? 'background:#0f172a; color:#ffffff; box-shadow:0 2px 6px rgba(15,23,42,0.15);' : 'background:transparent; color:#64748b;'}">
+              경매 낙찰자 관리 (${winnersCount})
             </button>
           </div>
 
@@ -3435,9 +3533,9 @@ function renderLiveEditView(container, liveId, showView) {
                 </svg>
                 브랜드사 상세 링크 복사
               </button>
-            ` : `
+            ` : (productSubTab === 'basic' ? `
               <button id="btn-add-product" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
-            `}
+            ` : '')}
             <span style="font-size:12px; color:#10b981; font-weight:700; background:#ecfdf5; padding:6px 12px; border-radius:8px; border:1px solid #a7f3d0; display:flex; align-items:center; gap:5px;">
               <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10b981;"></span>
               실시간 자동 반영
@@ -3857,6 +3955,26 @@ function renderLiveEditView(container, liveId, showView) {
         currentAuction.isActive = false;
         currentAuction.soldTime = Date.now();
         localStorage.setItem(`ryzin_live_auction_${liveId}`, JSON.stringify(currentAuction));
+
+        // 경매 낙찰자 영구 보관 목록에 추가 (어드민에서만 관리자가 삭제 가능)
+        try {
+          const winnerRecord = {
+            id: 'WIN-' + currentAuction.soldTime + '-' + Math.random().toString(36).substr(2, 5),
+            liveId: liveId,
+            productId: currentAuction.productId,
+            productCode: currentAuction.productCode || (currentAuction.product && currentAuction.product.code) || '',
+            productName: currentAuction.productName || (currentAuction.product && currentAuction.product.name) || '',
+            productImage: currentAuction.productImage || (currentAuction.product && currentAuction.product.image) || '',
+            finalPrice: Number(currentAuction.currentPrice) || 0,
+            winner: currentAuction.highestBidder || { userName: '낙찰자', userId: 'unknown' },
+            soldAt: new Date(currentAuction.soldTime).toISOString(),
+            soldTime: currentAuction.soldTime
+          };
+          const winners = getAuctionWinners(liveId);
+          winners.unshift(winnerRecord);
+          saveAuctionWinners(liveId, winners);
+        } catch(e) {}
+
         broadcastLiveSync();
         plc.innerHTML = renderProductList();
         bindProductEvents();
@@ -3890,6 +4008,58 @@ function renderLiveEditView(container, liveId, showView) {
 
       plc.querySelectorAll('.btn-admin-auction-stop, .btn-auction-stop-row').forEach(btn => {
         btn.addEventListener('click', handleStopClick);
+      });
+
+      // 낙찰자 관리 탭 바로가기
+      plc.querySelectorAll('.btn-go-winners-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          productSubTab = 'winners';
+          renderProductTab();
+        });
+      });
+
+      // 낙찰자 삭제 (어드민에서만 관리자가 삭제 가능, 삭제 시 고객 장바구니 실시간 자동 취소)
+      plc.querySelectorAll('.btn-delete-winner').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const winnerId = e.currentTarget.dataset.winnerId;
+          const winners = getAuctionWinners(liveId);
+          const target = winners.find(w => String(w.id) === String(winnerId));
+          if (!target) return;
+          const winnerName = target.winner ? (target.winner.userName || target.winner.name || '낙찰자') : '낙찰자';
+          if (!confirm(`[${target.productName}] ${winnerName}님의 낙찰 내역을 삭제하시겠습니까?\n삭제 시 해당 고객의 장바구니에서도 낙찰 상품이 즉시 자동 취소됩니다.`)) {
+            return;
+          }
+          const updated = winners.filter(w => String(w.id) !== String(winnerId));
+          saveAuctionWinners(liveId, updated);
+
+          // 브로드캐스트 이벤트 발행: 라이브 및 고객 장바구니 실시간 삭제 동기화
+          const deleteEvent = {
+            type: 'auction_winner_deleted',
+            liveId: liveId,
+            winnerId: target.id,
+            productId: target.productId,
+            productName: target.productName,
+            winner: target.winner,
+            timestamp: Date.now()
+          };
+
+          try {
+            if (typeof liveWebBroadcastChannel !== 'undefined' && liveWebBroadcastChannel) {
+              liveWebBroadcastChannel.postMessage(deleteEvent);
+            }
+          } catch(e) {}
+          try {
+            localStorage.setItem('ryzin_live_sync_global', JSON.stringify(deleteEvent));
+          } catch(e) {}
+          try {
+            if (typeof postMessageToPreview === 'function') {
+              postMessageToPreview(deleteEvent);
+            }
+          } catch(e) {}
+
+          if (typeof toast === 'function') toast('경매 낙찰 내역이 삭제되었습니다.');
+          renderProductTab();
+        });
       });
 
       plc.querySelectorAll('.btn-deal-start').forEach(btn => {
