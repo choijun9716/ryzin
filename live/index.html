@@ -383,18 +383,6 @@
         </button>
       </div>
 
-      <!-- 원터치 소리 켜기 플로팅 버튼 (외부 브라우저 강제 자동재생 시 노출) -->
-      <button id="live-unmute-badge" type="button" onclick="if(typeof unmuteAllMedia==='function')unmuteAllMedia();"
-        style="position:absolute; top:62px; right:12px; z-index:25; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); color:#ffffff; border:1px solid rgba(255,255,255,0.25); border-radius:20px; padding:6px 12px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,0.35); transition:opacity 0.25s ease, transform 0.2s ease; outline:none;"
-        aria-label="소리 켜기">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-          <line x1="23" y1="9" x2="17" y2="15"></line>
-          <line x1="17" y1="9" x2="23" y2="15"></line>
-        </svg>
-        <span>소리 켜기</span>
-      </button>
-
       <div class="header">
         <div class="brand-info">
           <img src="https://ui-avatars.com/api/?name=R&background=0D8ABC&color=fff" alt="Brand Logo" class="brand-logo">
@@ -1606,7 +1594,7 @@
     <!-- Supabase JS SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config.js"></script>
-    <script src="live.js?v=202609050009"></script>
+    <script src="live.js?v=202609050010"></script>
 
 
   <!-- iOS PWA 홈 화면 추가 가이드 모달 (화이트 미니멀 스타일 + 공유 아이콘) -->
