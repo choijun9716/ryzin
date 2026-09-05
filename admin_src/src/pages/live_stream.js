@@ -3032,15 +3032,15 @@ function renderLiveEditView(container, liveId, showView) {
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
         <div style="display:flex; align-items:center; gap:8px; margin-top:8px; background:#f8fafc; padding:8px 12px; border-radius:10px; border:1px solid #e2e8f0;">
-          <span style="font-size:12px; font-weight:800; color:#0f172a; white-space:nowrap;">상세페이지 이미지</span>
-          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" value="${p.detailImage || ''}" data-idx="${idx}" data-field="detailImage" placeholder="상세 이미지 URL 직접 입력 또는 우측 파일 업로드">
-          <input type="file" id="upload-detail-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-detail-upload">
-          <button type="button" class="action-btn" onclick="document.getElementById('upload-detail-${idx}').click()" style="padding:6px 12px; font-size:12px; font-weight:700; background:#2563eb; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
-            ${p.detailImage ? '상세이미지 변경' : '+ 상세이미지 업로드'}
+          <span style="font-size:12px; font-weight:800; color:#0f172a; white-space:nowrap;">상세 이미지/GIF (Cloudinary)</span>
+          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" value="${p.detailImage || ''}" data-idx="${idx}" data-field="detailImage" placeholder="이미지/GIF URL 직접 입력 또는 우측 파일 업로드 (쉼표 구분 다중 지원)">
+          <input type="file" id="upload-detail-${idx}" accept="image/*,.gif" style="display:none;" data-idx="${idx}" class="prod-detail-upload">
+          <button type="button" id="btn-upload-detail-${idx}" class="action-btn" onclick="document.getElementById('upload-detail-${idx}').click()" style="padding:6px 12px; font-size:12px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
+            ${p.detailImage ? '+ 이미지/GIF 추가' : '+ 이미지/GIF 업로드'}
           </button>
           ${p.detailImage ? `
-            <a href="${p.detailImage}" target="_blank" style="font-size:11.5px; color:#2563eb; text-decoration:underline; font-weight:700; white-space:nowrap;">미리보기</a>
-            <button type="button" class="btn-del-detail-img" data-idx="${idx}" style="background:transparent; border:none; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; padding:0 4px;">삭제</button>
+            <a href="${String(p.detailImage).split(',')[0].trim()}" target="_blank" style="font-size:11.5px; color:#2563eb; text-decoration:underline; font-weight:700; white-space:nowrap;">미리보기</a>
+            <button type="button" class="btn-del-detail-img" data-idx="${idx}" style="background:transparent; border:none; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; padding:0 4px;">전체 삭제</button>
           ` : ''}
         </div>
         ${isLiveStreamOnly ? '' : `
@@ -3271,19 +3271,55 @@ function renderLiveEditView(container, liveId, showView) {
           const file = e.target.files[0];
           if (!file) return;
           const idx = parseInt(e.target.dataset.idx);
+          const uploadBtn = document.getElementById(`btn-upload-detail-${idx}`);
+          const origBtnText = uploadBtn ? uploadBtn.textContent : '+ 이미지/GIF 업로드';
+          if (uploadBtn) {
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '클라우드 업로드 중...';
+            uploadBtn.style.opacity = '0.7';
+          }
           try {
-            // 상세 이미지는 세로로 길 수 있으므로 900x3500, quality 0.85로 압축
-            const base64Data = await compressImage(file, 900, 3500, 0.85);
-            const dataUrl = base64Data.startsWith('data:') ? base64Data : `data:image/jpeg;base64,${base64Data}`;
-            products[idx].detailImage = dataUrl;
+            // 파일을 base64 DataURL로 변환
+            const reader = new FileReader();
+            const dataUrl = await new Promise((resolve, reject) => {
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+
+            // Cloudinary 서버리스 엔드포인트 호출
+            const res = await fetch('/api/upload-cloudinary', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image: dataUrl })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.url) {
+              throw new Error(data.error || '업로드 응답이 올바르지 않습니다.');
+            }
+
+            const current = products[idx].detailImage ? String(products[idx].detailImage).trim() : '';
+            if (current) {
+              // 이미 등록된 이미지가 있으면 쉼표로 연결하여 여러 장 지원
+              products[idx].detailImage = `${current}, ${data.url}`;
+            } else {
+              products[idx].detailImage = data.url;
+            }
+
             saveProducts(true);
             syncToSheetDB(liveId, config, stats, products, true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
-            if (typeof toast === 'function') toast('상세페이지 이미지가 업로드되었습니다.');
+            if (typeof toast === 'function') toast('Cloudinary에 이미지/GIF가 성공적으로 업로드되었습니다.');
           } catch (err) {
-            console.error('상세 이미지 등록 에러:', err);
-            alert('상세 이미지 등록 에러: ' + err.message);
+            console.error('상세 이미지 Cloudinary 업로드 에러:', err);
+            alert('업로드 실패: ' + err.message);
+          } finally {
+            if (uploadBtn) {
+              uploadBtn.disabled = false;
+              uploadBtn.textContent = origBtnText;
+              uploadBtn.style.opacity = '1';
+            }
           }
         });
       });
