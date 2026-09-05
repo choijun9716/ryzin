@@ -848,6 +848,31 @@ function renderLiveEditView(container, liveId, showView) {
     window[`live_loaded_${liveId}`] = true;
   }
 
+  // Web API BroadcastChannel (동일 브라우저/기기 0ms 무지연 실시간 동기화)
+  let liveWebBroadcastChannel = null;
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      liveWebBroadcastChannel = new BroadcastChannel(`ryzin_live_sync_${liveId}`);
+    }
+  } catch (e) {}
+
+  // Supabase Realtime 초고속 웹소켓 채널 (모든 시청자에게 0.05초 내 전송)
+  let liveSupabaseBroadcastChannel = null;
+  const initLiveBroadcastChannel = () => {
+    if (!db || liveSupabaseBroadcastChannel) return;
+    try {
+      liveSupabaseBroadcastChannel = db.channel(`live-control-channel-${liveId}`);
+      liveSupabaseBroadcastChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`[Admin Realtime] Connected to live-control-channel-${liveId}`);
+        }
+      });
+    } catch (e) {
+      console.warn('Failed to init live supabase broadcast channel', e);
+    }
+  };
+  initLiveBroadcastChannel();
+
   const postMessageToPreview = () => {
     try {
       const iframe = layout.querySelector('#live-preview-iframe') || document.getElementById('live-preview-iframe');
@@ -862,19 +887,53 @@ function renderLiveEditView(container, liveId, showView) {
     } catch(e) {}
   };
 
+  const broadcastLiveSync = () => {
+    const payload = {
+      liveId: liveId,
+      config: config,
+      stats: stats,
+      products: products,
+      timestamp: Date.now()
+    };
+
+    // 1. 우측 iframe 미리보기 즉각 동기화
+    postMessageToPreview();
+
+    // 2. 브라우저 Web API BroadcastChannel 즉각 전송 (0ms 지연)
+    try {
+      if (liveWebBroadcastChannel) {
+        liveWebBroadcastChannel.postMessage(payload);
+      }
+    } catch (e) {}
+
+    // 3. Supabase Realtime 웹소켓 브로드캐스트 즉각 전송 (0.05초 지연)
+    try {
+      if (!liveSupabaseBroadcastChannel && db) {
+        initLiveBroadcastChannel();
+      }
+      if (liveSupabaseBroadcastChannel) {
+        liveSupabaseBroadcastChannel.send({
+          type: 'broadcast',
+          event: 'live_control_sync',
+          payload: payload
+        });
+      }
+    } catch (e) {}
+  };
+
   const saveConfig = () => {
     saveLiveConfig(liveId, config);
-    postMessageToPreview();
+    broadcastLiveSync();
     syncToSheetDB(liveId, config, stats, products, true);
   };
   const saveStats = () => {
     saveLiveStats(liveId, stats);
-    postMessageToPreview();
+    broadcastLiveSync();
     syncToSheetDB(liveId, config, stats, products, true);
   };
   const saveProducts = (force = true) => {
     saveLiveProductsLocal(liveId, products);
-    postMessageToPreview();
+    broadcastLiveSync();
     syncToSheetDB(liveId, config, stats, products, force);
   };
   const saveBotCfg = () => saveBotConfig(liveId, botCfg);

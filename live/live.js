@@ -419,7 +419,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 백그라운드 1.2초 폴링 백업 연동 (실시간 채널 끊김 및 캐시 딜레이 무력화)
+  // Web API BroadcastChannel (동일 브라우저 탭 간 0ms 무지연 실시간 동기화)
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const liveWebBc = new BroadcastChannel(`ryzin_live_sync_${LIVE_ID}`);
+      liveWebBc.onmessage = (e) => {
+        if (e.data && (!e.data.liveId || e.data.liveId === LIVE_ID)) {
+          applyLiveControlSync(e.data);
+        }
+      };
+    }
+  } catch (e) {}
+
+  // 실시간 페이로드 즉시 적용 함수
+  function applyLiveControlSync(payload) {
+    if (!payload || (payload.liveId && payload.liveId !== LIVE_ID)) return;
+
+    if (payload.config) {
+      localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(payload.config));
+    }
+    if (payload.stats) {
+      localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(payload.stats));
+    }
+    if (payload.products) {
+      try {
+        const pList = typeof payload.products === 'string' ? JSON.parse(payload.products) : payload.products;
+        localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(pList));
+        localStorage.setItem(`ryzin_products_${LIVE_ID}`, JSON.stringify(pList));
+      } catch (e) {}
+    }
+
+    loadLiveConfig();
+    loadLiveStats();
+    loadLiveProducts();
+    updateOpenDetailProductModal();
+  }
+
+  // 열려있는 상품 상세 모달 실시간 갱신 함수
+  function updateOpenDetailProductModal() {
+    if (!window.__currentDetailProduct) return;
+    const modal = document.getElementById('product-detail-modal');
+    if (!modal || modal.style.display === 'none') return;
+
+    let pList = null;
+    try {
+      pList = JSON.parse(localStorage.getItem(`ryzin_live_products_${LIVE_ID}`));
+      if (!Array.isArray(pList) || pList.length === 0) {
+        pList = JSON.parse(localStorage.getItem(`ryzin_products_${LIVE_ID}`));
+      }
+    } catch (e) {}
+
+    if (Array.isArray(pList)) {
+      const cur = window.__currentDetailProduct;
+      const updated = pList.find(p => (cur.id && p.id === cur.id) || (p.name && p.name === cur.name));
+      if (updated && typeof window.openProductDetailModal === 'function') {
+        window.openProductDetailModal(updated);
+      }
+    }
+  }
+
+  // 백그라운드 1.2초 스마트 폴링 백업 (실시간 채널 끊김 및 캐시 딜레이 무력화)
+  let lastPolledHash = '';
   setInterval(async () => {
     if (!db) return;
     try {
@@ -431,7 +491,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!error) {
         if (data) {
-          applyLiveConfig(data);
+          const currentHash = `${data.updated_at || ''}_${data.status || ''}_${data.title || ''}_${data.subtitle || ''}_${data.stream_url || ''}_${typeof data.products === 'string' ? data.products : JSON.stringify(data.products || '')}_${data.winner_timestamp || ''}`;
+          if (currentHash !== lastPolledHash) {
+            lastPolledHash = currentHash;
+            applyLiveConfig(data);
+          }
         } else {
           showInvalidLiveScreen();
         }
@@ -441,12 +505,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 1200);
 
-  // 2. 실시간 라이브 제어 감지 설정
+  // 2. 실시간 라이브 제어 감지 설정 (Broadcast + Postgres Changes 이중 구독)
   function subscribeConfig() {
     if (!db) return;
-    db.channel(`live-control-channel-${LIVE_ID}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, async payload => {
-        // Supabase 실시간 UPDATE 시, 누락된 필드로 인한 UI 오염을 막기 위해 DB에서 100% 온전한 전체 레코드를 다시 조회해서 안전하게 적용
+    const channel = db.channel(`live-control-channel-${LIVE_ID}`);
+
+    channel
+      .on('broadcast', { event: 'live_control_sync' }, (payload) => {
+        if (payload && payload.payload) {
+          applyLiveControlSync(payload.payload);
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, async payload => {
         try {
           const { data, error } = await db
             .from('live_control')
@@ -462,7 +532,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`[Viewer Realtime] Subscribed to live-control-channel-${LIVE_ID}`);
+        }
+      });
   }
 
   // 설정 데이터를 파싱하고 UI에 적용하는 헬퍼 함수
@@ -608,6 +682,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadLiveConfig();
     loadLiveStats();
     loadLiveProducts();
+    if (typeof updateOpenDetailProductModal === 'function') {
+      updateOpenDetailProductModal();
+    }
   }
 
   // 3. 초기 채팅 로드 (최초 1회 실행)
@@ -1665,6 +1742,7 @@ document.addEventListener('DOMContentLoaded', () => {
           checkAndShowGiveaway(p);
         }
         const modalProductsList = document.getElementById('modal-products-list');
+        const prevScrollTop = modalProductsList ? modalProductsList.scrollTop : 0;
         modalProductsList.innerHTML = '';
         const now = Date.now();
         
@@ -1853,6 +1931,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           modalProductsList.appendChild(el);
         });
+        if (modalProductsList && prevScrollTop > 0) {
+          modalProductsList.scrollTop = prevScrollTop;
+        }
 
         // 2. 하단 플로팅 롤링 배너 렌더링
         const bottomBanner = document.getElementById('bottom-product-banner');
