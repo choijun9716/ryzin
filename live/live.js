@@ -1461,7 +1461,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (brandNameEl && c.brandName) brandNameEl.textContent = c.brandName;
         const brandLogo = document.querySelector('.brand-logo');
-        if (brandLogo && c.logoUrl) brandLogo.src = c.logoUrl;
+        if (brandLogo) {
+          if (c.logoUrl) brandLogo.src = c.logoUrl;
+          brandLogo.classList.toggle('is-live', !!c.isLive);
+        }
+        document.body.classList.toggle('is-live', !!c.isLive);
         const viewCountWrapper = document.querySelector('.view-count');
         if (viewCountWrapper) {
           viewCountWrapper.style.display = (c.showViewers === false) ? 'none' : '';
@@ -2266,6 +2270,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   playStreamUrl(initialStreamUrl, savedConfig.isLive !== false);
+  const initialBrandLogo = document.querySelector('.brand-logo');
+  if (initialBrandLogo) {
+    initialBrandLogo.classList.toggle('is-live', savedConfig.isLive !== false);
+  }
+  document.body.classList.toggle('is-live', savedConfig.isLive !== false);
 
 
 

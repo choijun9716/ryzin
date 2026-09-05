@@ -179,6 +179,25 @@ body {
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.85);
   flex-shrink: 0;
+  object-fit: cover;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* 라이브 방송 중 프로필 빨간 링 (약 2mm 얇게 강조) */
+.brand-logo.is-live,
+body.is-live .brand-logo {
+  border: 2.5px solid #ef4444 !important;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.4), 0 0 8px rgba(239, 68, 68, 0.7);
+  animation: live-profile-ring-pulse 2s infinite ease-in-out;
+}
+
+@keyframes live-profile-ring-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 0 6px rgba(239, 68, 68, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.4), 0 0 12px rgba(239, 68, 68, 0.9);
+  }
 }
 
 .text-side {
