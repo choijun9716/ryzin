@@ -97,7 +97,26 @@ async function handler(req, res) {
       return res.status(500).json({ error: '데이터 조회 중 오류가 발생했습니다.' });
     }
 
-    const data = await resp.json();
+    let data = await resp.json();
+
+    // 개인정보보호법: hosts 테이블 조회 시 권한별 주민등록번호 복호화/마스킹 처리
+    if (table === 'hosts' && Array.isArray(data)) {
+      const { decryptSSN, maskSSN } = require('./crypto_util.js');
+      const isAdmin = payload.role === 'admin';
+
+      data = data.map(item => {
+        if (item && item.ssn) {
+          if (isAdmin) {
+            item.ssn = decryptSSN(item.ssn, ADMIN_JWT_SECRET);
+          } else {
+            const dec = decryptSSN(item.ssn, ADMIN_JWT_SECRET);
+            item.ssn = maskSSN(dec);
+          }
+        }
+        return item;
+      });
+    }
+
     return res.status(200).json(data);
 
   } catch (err) {

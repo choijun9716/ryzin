@@ -112,6 +112,21 @@ export default async function handler(req, res) {
       headers,
     };
 
+    // 개인정보보호법: hosts 테이블 저장 시 주민등록번호(ssn) 자동 암호화
+    if (table === 'hosts' && body && method !== 'DELETE') {
+      const { encryptSSN } = require('./crypto_util.js');
+      if (Array.isArray(body)) {
+        body = body.map(item => {
+          if (item && item.ssn) {
+            item.ssn = encryptSSN(item.ssn, ADMIN_JWT_SECRET);
+          }
+          return item;
+        });
+      } else if (body && body.ssn) {
+        body.ssn = encryptSSN(body.ssn, ADMIN_JWT_SECRET);
+      }
+    }
+
     if (body && method !== 'DELETE') {
       fetchOptions.body = JSON.stringify(body);
     }
