@@ -138,66 +138,69 @@ window.unmuteAllMedia = function() {
 
 window.resumeAllMedia = function() {
   try {
-    // 1. 일반 HTML5 비디오 (HLS/MP4)
+    // 1. 일반 HTML5 비디오 (HLS/MP4) 무조건 재생 재개
     const video = document.getElementById('live-video');
-    if (video && video.style.display !== 'none') {
+    if (video) {
       if (video.paused) {
         const p = video.play();
-        if (p && typeof p.catch === 'function') p.catch(() => {});
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {
+            // 브라우저 자동재생 제약 시 muted로 재생 후 언뮤트 재시도
+            video.muted = true;
+            video.play().then(() => {
+              if (window.__isMediaUnmuted) video.muted = false;
+            }).catch(() => {});
+          });
+        }
       }
     }
 
-    // 2. 라이브 송출 유튜브 플레이어 강제 재생
+    // 2. 라이브 송출 유튜브 플레이어 강제 재생 명령 전송
     const ytPlayer = document.getElementById('youtube-player');
-    const ytBox = document.getElementById('youtube-box');
-    if (ytPlayer && ytPlayer.contentWindow && ytBox && ytBox.style.display !== 'none') {
+    if (ytPlayer && ytPlayer.contentWindow) {
       ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
       if (window.__isMediaUnmuted) {
         ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+        ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
       }
     }
 
-    // 3. 예비 썸네일 유튜브 플레이어 강제 재생
-    const standbyOverlay = document.getElementById('standby-overlay');
+    // 3. 예비 썸네일 유튜브 플레이어 강제 재생 명령 전송
     const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
-    if (standbyIfr && standbyIfr.contentWindow && standbyOverlay && standbyOverlay.style.display !== 'none') {
+    if (standbyIfr && standbyIfr.contentWindow) {
       standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
       if (window.__isMediaUnmuted) {
         standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+        standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
       }
+    }
+
+    // 4. HLS 라이브 스트림 버퍼 로드 재개
+    if (window.hlsInstance) {
+      try { window.hlsInstance.startLoad(); } catch(e) {}
     }
   } catch (e) {}
 };
 
-// 상세페이지 갔다 오거나 탭/창 전환 복귀 시 무조건 즉시 재생
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && typeof window.resumeAllMedia === 'function') {
-    window.resumeAllMedia();
-    setTimeout(window.resumeAllMedia, 300);
-    setTimeout(window.resumeAllMedia, 800);
-  }
+// 상세페이지 갔다 오거나 탭/창 전환 복귀 시 무조건 즉시 재생 (다단계 재시도)
+['visibilitychange', 'focus', 'pageshow', 'popstate'].forEach(evt => {
+  window.addEventListener(evt, () => {
+    if (!document.hidden && typeof window.resumeAllMedia === 'function') {
+      window.resumeAllMedia();
+      [50, 150, 300, 600, 1200, 2000].forEach(delay => {
+        setTimeout(window.resumeAllMedia, delay);
+      });
+    }
+  });
 });
 
-window.addEventListener('focus', () => {
-  if (typeof window.resumeAllMedia === 'function') {
-    window.resumeAllMedia();
-    setTimeout(window.resumeAllMedia, 300);
-  }
-});
-
-window.addEventListener('pageshow', (e) => {
-  if (typeof window.resumeAllMedia === 'function') {
-    window.resumeAllMedia();
-    setTimeout(window.resumeAllMedia, 300);
-    setTimeout(window.resumeAllMedia, 800);
-  }
-});
-
-window.addEventListener('popstate', () => {
-  if (typeof window.resumeAllMedia === 'function') {
-    window.resumeAllMedia();
-  }
-});
+// 복귀 후 화면 어디든 탭/터치 시 1회 즉시 영상 재생 보장
+document.addEventListener('click', () => {
+  if (typeof window.resumeAllMedia === 'function') window.resumeAllMedia();
+}, { passive: true });
+document.addEventListener('touchstart', () => {
+  if (typeof window.resumeAllMedia === 'function') window.resumeAllMedia();
+}, { passive: true });
 
 // 1초 주기 헬스체크: 화면이 보이고 있는데 영상이 멈춰있다면 스스로 즉각 강제 재개
 if (!window.__mediaKeepAliveTimer) {
@@ -1039,7 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 standbyYtWrap.innerHTML = `
                   <iframe
                     data-yt-id="${ytId}"
-                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080"
+                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowfullscreen
                     style="position:absolute; top:50%; left:50%; width:100%; height:100%; min-width:178vh; min-height:100%; transform:translate(-50%, -50%) scale(1.08); border:none; pointer-events:none; -webkit-backface-visibility:hidden; image-rendering:-webkit-optimize-contrast;"
@@ -1537,14 +1540,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const sheet = document.getElementById('product-detail-sheet');
     if (sheet) sheet.style.display = 'none';
     const iframe = document.getElementById('pdetail-webview-iframe');
-    if (iframe) iframe.src = '';
+    if (iframe) {
+      try { iframe.src = 'about:blank'; } catch(e) {}
+      iframe.style.display = 'none';
+    }
     const customPage = document.getElementById('pdetail-custom-page');
     if (customPage) customPage.style.display = 'none';
 
-    // 전체화면 복귀 후에도 소리와 영상 지속 재생 보장
+    // 전체화면 복귀 직후 즉시 동기 실행 + 연속 다단계 딜레이 호출로 무조건 영상 재생 보장
     if (typeof window.resumeAllMedia === 'function') {
       window.resumeAllMedia();
-      setTimeout(window.resumeAllMedia, 150);
+      [50, 150, 300, 600, 1000, 1800].forEach(delay => {
+        setTimeout(window.resumeAllMedia, delay);
+      });
     }
   };
 
@@ -3692,7 +3700,7 @@ function playStreamUrl(url, isLive) {
       // [방송 ON] 유튜브 영상 재생
       if (ytBox) ytBox.style.display = 'block';
       if (ytPlayer) {
-        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080`;
+        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080`;
         [100, 300, 600, 1200, 2500, 4000].forEach(delay => {
           setTimeout(() => {
             if (ytPlayer && ytPlayer.contentWindow) {
