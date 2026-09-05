@@ -1429,6 +1429,9 @@ document.addEventListener('DOMContentLoaded', () => {
             img.style.width = '100%';
             img.style.height = 'auto';
             img.style.display = 'block';
+            img.style.margin = '0';
+            img.style.padding = '0';
+            img.style.border = 'none';
             img.loading = 'lazy';
             imagesContainer.appendChild(img);
           });
