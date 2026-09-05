@@ -1306,6 +1306,124 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { }
   }
 
+  // ── 상품 상세 보기 시 라이브 영상 PIP 모드 및 소리 지속 재생 엔진 ──
+  window.openProductDetailSheet = function(item) {
+    if (!item) return;
+
+    if (item.url === '__LEAD_FORM__') {
+      if (typeof openLeadModal === 'function') openLeadModal(item.name);
+      return;
+    }
+
+    // 1. 라이브 영상 PIP 모드 활성화 (화면 우측 상단 플로팅 미니 플레이어로 축소)
+    document.body.classList.add('pip-active');
+
+    // 2. 다른 모달창(상품 목록, 장바구니 등) 닫기
+    const modalProducts = document.getElementById('modal-products');
+    if (modalProducts) modalProducts.style.display = 'none';
+
+    // 3. 상품 상세 시트 요소 바인딩
+    const sheet = document.getElementById('product-detail-sheet');
+    if (!sheet) return;
+
+    const imgEl = document.getElementById('pdetail-img');
+    const titleEl = document.getElementById('pdetail-title');
+    const priceEl = document.getElementById('pdetail-price');
+    const origPriceEl = document.getElementById('pdetail-original-price');
+    const discRateEl = document.getElementById('pdetail-discount-rate');
+    const extWrap = document.getElementById('pdetail-external-link-wrap');
+    const extLink = document.getElementById('pdetail-external-link');
+    const btnBuy = document.getElementById('btn-pdetail-buy');
+    const btnCart = document.getElementById('btn-pdetail-cart');
+
+    if (imgEl) imgEl.src = item.image || '';
+    if (titleEl) titleEl.textContent = item.name || '상품명';
+
+    const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+    const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+
+    if (pNum > 0) {
+      if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
+      if (npNum > pNum) {
+        if (origPriceEl) {
+          origPriceEl.textContent = `${npNum.toLocaleString()}원`;
+          origPriceEl.style.display = 'inline';
+        }
+        if (discRateEl) {
+          const rate = Math.round(((npNum - pNum) / npNum) * 100);
+          discRateEl.textContent = `${rate}%`;
+          discRateEl.style.display = 'inline';
+        }
+      } else {
+        if (origPriceEl) origPriceEl.style.display = 'none';
+        if (discRateEl) discRateEl.style.display = 'none';
+      }
+    } else if (item.price === '0' || item.price === 0) {
+      if (priceEl) priceEl.textContent = '무료나눔';
+      if (origPriceEl) origPriceEl.style.display = 'none';
+      if (discRateEl) discRateEl.style.display = 'none';
+    } else {
+      if (priceEl) priceEl.textContent = '가격 준비중';
+      if (origPriceEl) origPriceEl.style.display = 'none';
+      if (discRateEl) discRateEl.style.display = 'none';
+    }
+
+    // 자사몰 원문 외부 링크 설정
+    if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
+      if (extWrap) extWrap.style.display = 'flex';
+      if (extLink) extLink.href = item.url.startsWith('http') ? item.url : 'https://' + item.url;
+    } else {
+      if (extWrap) extWrap.style.display = 'none';
+    }
+
+    // 하단 장바구니 담기
+    if (btnCart) {
+      btnCart.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof addToCart === 'function') {
+          addToCart(item);
+        }
+      };
+    }
+
+    // 하단 바로 구매하기
+    if (btnBuy) {
+      btnBuy.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof addToCart === 'function') {
+          addToCart(item);
+        }
+        if (typeof openCartModal === 'function') {
+          openCartModal();
+        }
+      };
+    }
+
+    // 스크롤 초기화 및 시트 노출
+    const scrollContent = document.getElementById('product-detail-scroll-content');
+    if (scrollContent) scrollContent.scrollTop = 0;
+    sheet.style.display = 'flex';
+
+    // 4. 영상 소리 끊김 없이 지속 재생 보장
+    if (typeof window.resumeAllMedia === 'function') {
+      window.resumeAllMedia();
+      setTimeout(window.resumeAllMedia, 150);
+      setTimeout(window.resumeAllMedia, 500);
+    }
+  };
+
+  window.closeProductDetailSheet = function() {
+    document.body.classList.remove('pip-active');
+    const sheet = document.getElementById('product-detail-sheet');
+    if (sheet) sheet.style.display = 'none';
+
+    // 전체화면 복귀 후에도 소리와 영상 지속 재생 보장
+    if (typeof window.resumeAllMedia === 'function') {
+      window.resumeAllMedia();
+      setTimeout(window.resumeAllMedia, 150);
+    }
+  };
+
   let rollingInterval = null;
 
   function loadLiveProducts() {
@@ -1387,7 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
 
-          // 상세 버튼 및 이미지/상품명 클릭 시 등록된 제품 상세 URL로 즉시 이동
+          // 상세 버튼 및 이미지/상품명 클릭 시 라이브 영상 PIP 모드로 전환하며 상품 상세 시트 오픈
           const handleDetailUrlNavigation = async (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
@@ -1397,13 +1515,11 @@ document.addEventListener('DOMContentLoaded', () => {
               return;
             }
 
-            if (item.url && item.url !== '#' && (item.url.startsWith('http://') || item.url.startsWith('https://'))) {
-              window.open(item.url, '_blank');
+            // 라이브 화면 내 PIP 모드 및 상세 시트 호출 (소리 무중단)
+            if (typeof window.openProductDetailSheet === 'function') {
+              window.openProductDetailSheet(item);
             } else if (item.url && item.url !== '#') {
-              window.open('https://' + item.url, '_blank');
-            } else {
-              alert('등록된 제품 상세 URL 링크가 없습니다.');
-              return;
+              window.open(item.url.startsWith('http') ? item.url : 'https://' + item.url, '_blank');
             }
 
             // 클릭 수 동기화
@@ -1530,22 +1646,24 @@ document.addEventListener('DOMContentLoaded', () => {
               `;
               
               card.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
                 const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
                 if (!currentConfig.isLive) {
-                  e.preventDefault();
                   alert('라이브 방송 중에만 구매 가능합니다.');
                   return;
                 }
                 if (item.url === '__LEAD_FORM__') {
-                  e.preventDefault();
                   openLeadModal(item.name);
-                } else if (!item.url || item.url === '#') {
-                  e.preventDefault();
-                  if (typeof addToCart === 'function') {
-                    addToCart(item);
-                  }
-                } else {
-                  card.target = '_blank';
+                  return;
+                }
+
+                // 라이브 화면 내 PIP 모드 및 상세 시트 호출 (소리 무중단 유지)
+                if (typeof window.openProductDetailSheet === 'function') {
+                  window.openProductDetailSheet(item);
+                } else if (item.url && item.url !== '#') {
+                  window.open(item.url.startsWith('http') ? item.url : 'https://' + item.url, '_blank');
                 }
                 try {
                   const targetLiveId = LIVE_ID || 'N45ZMPL';

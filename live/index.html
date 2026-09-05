@@ -76,7 +76,7 @@
     }
   </script>
 
-  <link rel="stylesheet" href="live.css?v=202609050009">
+  <link rel="stylesheet" href="live.css?v=202609050011">
   <style>
     /* Embed Mode Overrides */
     body.embed-mode {
@@ -284,8 +284,8 @@
   <div class="live-container">
 
 
-    <!-- 비디오 영역 -->
-    <div class="video-wrapper">
+    <!-- 비디오 영역 (상품 상세 보기 시 PIP 모드로 자동 전환) -->
+    <div class="video-wrapper" id="live-video-wrapper" onclick="if(document.body.classList.contains('pip-active') && typeof closeProductDetailSheet==='function') closeProductDetailSheet();">
       <script>
         (function() {
           try {
@@ -306,6 +306,10 @@
           allowfullscreen></iframe>
       </div>
 
+      <!-- PIP 모드 전용 라이브 배지 및 복귀 안내 -->
+      <div class="pip-badge">LIVE</div>
+      <div class="pip-tap-hint">탭하여 전체화면</div>
+
       <!-- 썸네일 오버레이 (방송 대기 시 카운트다운 및 썸네일 노출) -->
       <div id="thumbnail-overlay" class="thumbnail-overlay" style="z-index:5; pointer-events:none; background:transparent;">
         <img id="thumbnail-img" class="thumbnail-img" src="" alt="Live Thumbnail" style="pointer-events:none;">
@@ -319,7 +323,6 @@
         <img id="standby-img" src="" alt="Standby Thumbnail" style="width:100%; height:100%; object-fit:cover; display:none;">
         <div id="standby-youtube-wrap" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; overflow:hidden; pointer-events:none;"></div>
       </div>
-
 
       <!-- 하단 그라데이션 오버레이 (텍스트 가독성) -->
       <div class="bottom-gradient"></div>
@@ -1591,10 +1594,107 @@
 
     </div>
 
+    <!-- 상품 상세 보기 PIP 시트 (라이브 영상 PIP 플로팅 유지) -->
+    <div id="product-detail-sheet" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:999990; background:#f8fafc; flex-direction:column; overflow:hidden; animation:slideUpSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+      <!-- 헤더 -->
+      <div style="height:52px; background:#ffffff; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding:0 16px; flex-shrink:0; position:sticky; top:0; z-index:10;">
+        <button type="button" onclick="closeProductDetailSheet()" style="background:transparent; border:none; padding:8px; margin-left:-8px; cursor:pointer; color:#0f172a; display:flex; align-items:center; justify-content:center;" aria-label="뒤로가기">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <span style="font-size:15px; font-weight:700; color:#0f172a; letter-spacing:-0.01em;">상품 상세정보</span>
+        <button type="button" onclick="closeProductDetailSheet()" style="background:transparent; border:none; padding:8px; margin-right:-8px; cursor:pointer; color:#64748b; display:flex; align-items:center; justify-content:center;" aria-label="닫기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 시트 스크롤 본문 -->
+      <div id="product-detail-scroll-content" style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:90px;">
+        <!-- 상품 메인 이미지 -->
+        <div style="width:100%; aspect-ratio:1/1; background:#f1f5f9; position:relative; overflow:hidden;">
+          <img id="pdetail-img" src="" alt="상품 이미지" style="width:100%; height:100%; object-fit:cover; display:block;">
+          <div id="pdetail-badge-wrap" style="position:absolute; top:12px; left:12px; display:flex; gap:6px;">
+            <span style="background:#ef4444; color:#fff; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; letter-spacing:0.02em;">LIVE 특가</span>
+          </div>
+        </div>
+
+        <!-- 상품 정보 패널 -->
+        <div style="padding:18px 16px; background:#ffffff; border-bottom:1px solid #e2e8f0;">
+          <div id="pdetail-category" style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:4px;">라이브 특별 구성</div>
+          <h2 id="pdetail-title" style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.35; margin:0 0 10px; word-break:keep-all;">상품명</h2>
+          
+          <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:6px;">
+            <span id="pdetail-discount-rate" style="font-size:20px; font-weight:900; color:#ef4444;"></span>
+            <span id="pdetail-price" style="font-size:22px; font-weight:900; color:#0f172a;">0원</span>
+            <span id="pdetail-original-price" style="font-size:14px; color:#94a3b8; text-decoration:line-through;"></span>
+          </div>
+          
+          <div style="display:flex; align-items:center; gap:6px; margin-top:8px;">
+            <span style="background:#f1f5f9; color:#475569; font-size:11px; font-weight:700; padding:3px 8px; border-radius:4px;">무료배송</span>
+            <span style="background:#fee2e2; color:#ef4444; font-size:11px; font-weight:700; padding:3px 8px; border-radius:4px;">방송 중 한정 혜택</span>
+          </div>
+        </div>
+
+        <!-- 혜택 및 배송 정보 요약 -->
+        <div style="margin-top:10px; padding:16px; background:#ffffff; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
+          <h3 style="font-size:13px; font-weight:800; color:#0f172a; margin:0 0 12px;">주요 안내</h3>
+          <div style="display:flex; flex-direction:column; gap:10px; font-size:12px; color:#475569;">
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:#64748b;">배송방법</span>
+              <span style="font-weight:600; color:#0f172a;">순차 택배 발송 (1~3일 소요)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:#64748b;">판매처</span>
+              <span style="font-weight:600; color:#0f172a;">RYZIN 공식 인증 파트너스</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:#64748b;">포인트</span>
+              <span style="font-weight:600; color:#2563eb;">구매 확정 시 최대 3% 즉시 적립</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 자사몰 외부 상세 페이지 이동 버튼 (선택적) -->
+        <div id="pdetail-external-link-wrap" style="padding:14px 16px; margin-top:10px; background:#ffffff; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:13px; font-weight:700; color:#0f172a;">공식 상세페이지에서 더 알아보기</div>
+            <div style="font-size:11px; color:#64748b; margin-top:2px;">원문 사이트 상세 스펙 및 성분 확인</div>
+          </div>
+          <a id="pdetail-external-link" href="#" target="_blank" rel="noopener noreferrer" style="padding:8px 12px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-weight:700; color:#0f172a; text-decoration:none; display:flex; align-items:center; gap:4px;">
+            <span>웹으로 이동</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- 하단 고정 구매/장바구니 액션 바 -->
+      <div style="position:fixed; bottom:0; left:0; width:100%; background:#ffffff; border-top:1px solid #e2e8f0; padding:10px 16px 16px; display:flex; gap:10px; box-shadow:0 -4px 16px rgba(0,0,0,0.06); z-index:20;">
+        <button type="button" id="btn-pdetail-cart" style="flex:1; height:46px; background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span>장바구니</span>
+        </button>
+        <button type="button" id="btn-pdetail-buy" style="flex:2; height:46px; background:#ef4444; color:#ffffff; border:none; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(239, 68, 68, 0.3);">
+          <span>바로 구매하기</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Supabase JS SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config.js"></script>
-    <script src="live.js?v=202609050010"></script>
+    <script src="live.js?v=202609050011"></script>
 
 
   <!-- iOS PWA 홈 화면 추가 가이드 모달 (화이트 미니멀 스타일 + 공유 아이콘) -->
