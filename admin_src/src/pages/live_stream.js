@@ -7,7 +7,7 @@ import QRCode from 'qrcode';
 //  - 시청자 URL: /live?id=live01
 // ============================================================
 
-import { store } from '../data/store.js';
+import { store, adminFetch } from '../data/store.js';
 
 const SHEETDB_URL = 'https://sheetdb.io/api/v1/3k5vdph36v8ej';
 
@@ -4693,14 +4693,26 @@ function renderLiveEditView(container, liveId, showView) {
       try {
         let rawOrders = [];
 
-        // 1-1. Supabase live_orders 테이블 조회 (실제 라이브 주문)
-        if (db) {
+        // 1-1. 어드민 API 프록시를 통한 live_orders 조회 (JWT 인증 + service_role 키)
+        let ordData = null;
+        try {
+          const resp = await adminFetch(`/api/admin/data?table=live_orders&live_id=${encodeURIComponent(liveId)}`);
+          if (resp && resp.ok) {
+            ordData = await resp.json();
+          }
+        } catch(e) {}
+
+        if (!ordData && db) {
           try {
-            const { data: ordData, error: ordErr } = await db.from('live_orders')
+            const { data } = await db.from('live_orders')
               .select('*')
               .eq('live_id', liveId)
               .order('created_at', { ascending: false });
-            if (Array.isArray(ordData) && !ordErr) {
+            ordData = data;
+          } catch(e) {}
+        }
+
+        if (Array.isArray(ordData)) {
               ordData.forEach(o => {
                 rawOrders.push({
                   id: o.id,
@@ -4717,10 +4729,10 @@ function renderLiveEditView(container, liveId, showView) {
                 });
               });
             }
-          } catch(e) {}
 
           // 1-2. live_winners 중 오직 type: 'order'인 레거시 주문 데이터만 추출 (추첨 당첨자는 제외!)
-          try {
+          if (db) {
+            try {
             const { data: winData, error: winErr } = await db.from('live_winners')
               .select('*')
               .eq('live_id', liveId)
@@ -5155,12 +5167,13 @@ function renderLiveEditView(container, liveId, showView) {
       ord.transfer_confirmed_at = Date.now();
 
       try {
-        if (db) {
-          if (ord.id) {
-            await db.from('live_orders')
-              .update({ payment_status: 'paid', updated_at: Date.now() })
-              .eq('id', ord.id);
-          } else if (ord.pg_receipt_id) {
+        if (ord.id) {
+          await adminFetch(`/api/admin/save?table=live_orders&id=${encodeURIComponent(ord.id)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ payment_status: 'paid', updated_at: Date.now() })
+          });
+        } else if (db) {
+          if (ord.pg_receipt_id) {
             await db.from('live_orders')
               .update({ payment_status: 'paid', updated_at: Date.now() })
               .eq('pg_receipt_id', ord.pg_receipt_id);
@@ -5456,17 +5469,18 @@ function renderLiveEditView(container, liveId, showView) {
             }
           }
 
-          // 2. Supabase live_orders 테이블 상태를 'cancelled'로 업데이트
-          if (db) {
-            try {
-              if (ord.id) {
-                await db.from('live_orders').update({ payment_status: 'cancelled' }).eq('id', ord.id);
-              } else if (receiptNo) {
-                await db.from('live_orders').update({ payment_status: 'cancelled' }).eq('pg_receipt_id', receiptNo);
-              }
-            } catch (e) {
-              console.warn('DB order update failed:', e);
+          // 2. 어드민 API를 통한 live_orders 상태 업데이트 ('cancelled')
+          try {
+            if (ord.id) {
+              await adminFetch(`/api/admin/save?table=live_orders&id=${encodeURIComponent(ord.id)}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ payment_status: 'cancelled' })
+              });
+            } else if (db && receiptNo) {
+              await db.from('live_orders').update({ payment_status: 'cancelled' }).eq('pg_receipt_id', receiptNo);
             }
+          } catch (e) {
+            console.warn('DB order cancel update failed:', e);
           }
 
           // 3. 로컬 캐시 스토리지 업데이트
@@ -5546,21 +5560,22 @@ function renderLiveEditView(container, liveId, showView) {
           const remainingAmount = Math.max(0, currentAmount - cancelPrice);
           const nextStatus = remainingAmount === 0 ? 'cancelled' : 'paid';
 
-          // 2. Supabase live_orders 테이블 업데이트
-          if (db) {
-            try {
-              const updatePayload = {
-                total_amount: remainingAmount,
-                payment_status: nextStatus
-              };
-              if (ord.id) {
-                await db.from('live_orders').update(updatePayload).eq('id', ord.id);
-              } else if (receiptNo) {
-                await db.from('live_orders').update(updatePayload).eq('pg_receipt_id', receiptNo);
-              }
-            } catch (e) {
-              console.warn('DB partial cancel update failed:', e);
+          // 2. 어드민 API를 통한 live_orders 테이블 업데이트
+          try {
+            const updatePayload = {
+              total_amount: remainingAmount,
+              payment_status: nextStatus
+            };
+            if (ord.id) {
+              await adminFetch(`/api/admin/save?table=live_orders&id=${encodeURIComponent(ord.id)}`, {
+                method: 'PATCH',
+                body: JSON.stringify(updatePayload)
+              });
+            } else if (db && receiptNo) {
+              await db.from('live_orders').update(updatePayload).eq('pg_receipt_id', receiptNo);
             }
+          } catch (e) {
+            console.warn('DB partial cancel update failed:', e);
           }
 
           // 3. 로컬 캐시 스토리지 업데이트

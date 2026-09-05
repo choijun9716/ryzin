@@ -6252,29 +6252,39 @@ window.openMyOrdersModal = async function() {
   const phone = (savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '').replace(/[^0-9]/g, '');
   const userName = (savedInfo.name || (kakaoUserObj && kakaoUserObj.name) || '').trim();
 
-  // 3. Supabase live_orders 테이블에서 본인 주문만 안전 조회 (개인정보 보호 전수 덤프 차단)
-  if (db && (phone || userName)) {
+  // 3. 서버리스 주문 조회 API (/api/orders)를 통한 안전한 2-Factor 본인 주문 동기화
+  const existingOrderIds = orders.map(o => o.id).filter(Boolean);
+  const existingReceiptIds = orders.map(o => o.pg_receipt_id).filter(Boolean);
+
+  if (phone && (existingOrderIds.length > 0 || existingReceiptIds.length > 0)) {
     try {
-      let query = db.from('live_orders').select('*');
-      if (phone) {
-        query = query.eq('customer_phone', phone);
-      } else if (userName) {
-        query = query.eq('customer_name', userName);
-      }
+      const resp = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: phone,
+          order_ids: existingOrderIds,
+          receipt_ids: existingReceiptIds
+        })
+      });
 
-      const { data: dbOrders } = await query
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (dbOrders && dbOrders.length > 0) {
-        dbOrders.forEach(dbo => {
-          if (!orders.some(o => (o.pg_receipt_id && o.pg_receipt_id === dbo.pg_receipt_id) || o.id === dbo.id)) {
-            orders.push(dbo);
-          }
-        });
+      if (resp.ok) {
+        const resJson = await resp.json();
+        if (resJson && Array.isArray(resJson.orders)) {
+          resJson.orders.forEach(dbo => {
+            const idx = orders.findIndex(o => (o.pg_receipt_id && o.pg_receipt_id === dbo.pg_receipt_id) || o.id === dbo.id);
+            if (idx >= 0) {
+              orders[idx] = { ...orders[idx], ...dbo };
+            } else {
+              orders.push(dbo);
+            }
+          });
+        }
+      } else {
+        console.warn('주문 보안 조회 응답:', resp.status);
       }
     } catch(err) {
-      console.warn('DB 내 주문 조회 에러:', err);
+      console.warn('API 주문 조회 에러:', err);
     }
   }
 

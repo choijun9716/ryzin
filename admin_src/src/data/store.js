@@ -13,7 +13,7 @@ function getAdminToken() {
   return localStorage.getItem('ryzin_admin_token') || null;
 }
 
-async function adminFetch(path, options = {}) {
+export async function adminFetch(path, options = {}) {
   const token = getAdminToken();
   const headers = {
     'Content-Type': 'application/json',

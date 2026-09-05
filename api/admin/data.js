@@ -19,6 +19,7 @@ const ALLOWED_TABLES = {
   ryzin_class_applications: 'ryzin_class_applications?select=*',
   ryzin_class_survey_questions: 'ryzin_class_survey_questions?select=*',
   ryzin_class_settings: 'ryzin_class_settings?select=*',
+  live_orders: 'live_orders?select=*&order=created_at.desc',
 };
 
 function verifyJWT(token, secret) {
@@ -38,7 +39,7 @@ function verifyJWT(token, secret) {
   }
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Token');
@@ -79,7 +80,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const endpoint = ALLOWED_TABLES[table];
+    let endpoint = ALLOWED_TABLES[table];
+    if (table === 'live_orders' && req.query.live_id) {
+      endpoint = `live_orders?select=*&live_id=eq.${encodeURIComponent(req.query.live_id)}&order=created_at.desc`;
+    }
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
       headers: {
         'apikey': SUPABASE_SERVICE_ROLE_KEY,
@@ -101,3 +105,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: '서버 오류가 발생했습니다.' });
   }
 }
+
+module.exports = handler;
+module.exports.default = handler;

@@ -16,13 +16,8 @@ CREATE POLICY "Allow anon insert orders" ON public.live_orders
     WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow select filtered orders" ON public.live_orders;
-CREATE POLICY "Allow select filtered orders" ON public.live_orders
-    FOR SELECT TO public
-    USING (
-        live_id IS NOT NULL OR
-        customer_phone IS NOT NULL OR
-        customer_name IS NOT NULL
-    );
+-- ※ 외부 anon SELECT/UPDATE/DELETE 정책을 제거하여 무차별 스크래핑을 차단합니다.
+-- 주문 조회는 /api/orders, 관리자 조회는 /api/admin/data (service_role)를 통해 안전하게 처리됩니다.
 
 
 -- 2. [shop_users] 테이블 보안 정책 (고객 명단 보호)

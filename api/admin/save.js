@@ -19,6 +19,7 @@ const ALLOWED_WRITE_TABLES = {
   ryzin_class_applications: { idCol: 'id' },
   ryzin_class_survey_questions: { idCol: 'id' },
   ryzin_class_settings: { idCol: 'key' },
+  live_orders: { idCol: 'id' },
 };
 
 function verifyJWT(token, secret) {
