@@ -1670,8 +1670,18 @@
         </div>
       </div>
 
-      <!-- 하단 고정 장바구니 담기 액션 바 -->
-      <div id="pdetail-bottom-actions" style="position:fixed; bottom:0; left:0; width:100%; background:#ffffff; border-top:1px solid #e2e8f0; padding:10px 16px 16px; display:flex; box-shadow:0 -4px 16px rgba(0,0,0,0.06); z-index:20;">
+      <!-- 하단 고정 제품 판매 링크 & 장바구니 담기 액션 바 -->
+      <div id="pdetail-bottom-actions" style="position:fixed; bottom:0; left:0; width:100%; background:#ffffff; border-top:1px solid #e2e8f0; padding:10px 16px 16px; display:flex; align-items:center; gap:8px; box-shadow:0 -4px 16px rgba(0,0,0,0.06); z-index:20;">
+        <!-- 제품 판매 링크 버튼 (좌측) -->
+        <a id="btn-pdetail-external-link" href="#" target="_blank" rel="noopener noreferrer" style="height:48px; padding:0 14px; background:#f8fafc; color:#1e293b; border:1.5px solid #cbd5e1; border-radius:12px; font-size:13.5px; font-weight:700; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; transition:all 0.15s ease;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span id="btn-pdetail-external-link-text">제품 판매 링크</span>
+        </a>
+        <!-- 장바구니 담기 버튼 (우측) -->
         <button type="button" id="btn-pdetail-cart" style="flex:1; width:100%; height:48px; background:#0f172a; color:#ffffff; border:none; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(15,23,42,0.25); transition:transform 0.15s ease, background 0.2s;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"></circle>

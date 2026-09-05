@@ -1570,6 +1570,31 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // 하단 좌측: 제품 판매 링크 연결
+    const extLinkBtn = document.getElementById('btn-pdetail-external-link');
+    if (extLinkBtn) {
+      const rawUrl = (item.url || item.link || '').trim();
+      if (rawUrl && rawUrl !== '#' && rawUrl !== '__LEAD_FORM__') {
+        let cleanUrl = rawUrl;
+        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+          cleanUrl = 'https://' + cleanUrl;
+        }
+        extLinkBtn.href = cleanUrl;
+        extLinkBtn.target = '_blank';
+        extLinkBtn.onclick = (e) => {
+          e.stopPropagation();
+        };
+      } else {
+        extLinkBtn.href = '#';
+        extLinkBtn.target = '_self';
+        extLinkBtn.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          alert('등록된 제품 판매 링크가 없습니다.');
+        };
+      }
+    }
+
     // 하단 장바구니 담기
     if (btnCart) {
       btnCart.onclick = (e) => {
