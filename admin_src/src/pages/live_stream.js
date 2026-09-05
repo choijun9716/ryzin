@@ -848,11 +848,39 @@ function renderLiveEditView(container, liveId, showView) {
     window[`live_loaded_${liveId}`] = true;
   }
 
+  // ── 실시간 라이브 경매 상태 관리 ──
+  let currentAuction = null;
+  try {
+    currentAuction = JSON.parse(localStorage.getItem(`ryzin_live_auction_${liveId}`) || 'null');
+  } catch(e) {}
+
+  const handleIncomingBidInAdmin = (bidData) => {
+    if (!bidData || bidData.liveId !== liveId) return;
+    if (!currentAuction || currentAuction.status !== 'ongoing') return;
+
+    if (bidData.newPrice > (currentAuction.currentPrice || 0)) {
+      currentAuction.currentPrice = bidData.newPrice;
+      currentAuction.highestBidder = bidData.bidder;
+      currentAuction.bidCount = (currentAuction.bidCount || 0) + 1;
+      localStorage.setItem(`ryzin_live_auction_${liveId}`, JSON.stringify(currentAuction));
+      broadcastLiveSync();
+      // 상품 목록 갱신이 정의된 경우 즉시 갱신
+      if (typeof renderProductsAfterBid === 'function') {
+        renderProductsAfterBid();
+      }
+    }
+  };
+
   // Web API BroadcastChannel (동일 브라우저/기기 0ms 무지연 실시간 동기화)
   let liveWebBroadcastChannel = null;
   try {
     if (typeof BroadcastChannel !== 'undefined') {
       liveWebBroadcastChannel = new BroadcastChannel(`ryzin_live_sync_${liveId}`);
+      liveWebBroadcastChannel.onmessage = (e) => {
+        if (e.data && e.data.type === 'auction_bid') {
+          handleIncomingBidInAdmin(e.data);
+        }
+      };
     }
   } catch (e) {}
 
@@ -862,11 +890,17 @@ function renderLiveEditView(container, liveId, showView) {
     if (!db || liveSupabaseBroadcastChannel) return;
     try {
       liveSupabaseBroadcastChannel = db.channel(`live-control-channel-${liveId}`);
-      liveSupabaseBroadcastChannel.subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log(`[Admin Realtime] Connected to live-control-channel-${liveId}`);
-        }
-      });
+      liveSupabaseBroadcastChannel
+        .on('broadcast', { event: 'auction_bid' }, (payload) => {
+          if (payload && payload.payload) {
+            handleIncomingBidInAdmin(payload.payload);
+          }
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log(`[Admin Realtime] Connected to live-control-channel-${liveId}`);
+          }
+        });
     } catch (e) {
       console.warn('Failed to init live supabase broadcast channel', e);
     }
@@ -881,7 +915,8 @@ function renderLiveEditView(container, liveId, showView) {
           type: 'sync_preview',
           config: config,
           stats: stats,
-          products: products
+          products: products,
+          auction: currentAuction
         }, '*');
       }
     } catch(e) {}
@@ -893,6 +928,7 @@ function renderLiveEditView(container, liveId, showView) {
       config: config,
       stats: stats,
       products: products,
+      auction: currentAuction,
       timestamp: Date.now()
     };
 
@@ -3122,8 +3158,32 @@ function renderLiveEditView(container, liveId, showView) {
 
   // 1. 상품 기본 관리 뷰 (상품명, 가격, 링크, 무료나눔, 깜짝딜)
   const renderProductListBasic = () => {
+    let auctionBannerHtml = '';
+    if (currentAuction && currentAuction.isActive && currentAuction.status === 'ongoing') {
+      auctionBannerHtml = `
+        <div class="admin-live-auction-banner" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border:1.5px solid #f59e0b; border-radius:12px; padding:14px 18px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 12px rgba(245,158,11,0.12);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="background:#f59e0b; color:#fff; font-size:11px; font-weight:900; padding:4px 8px; border-radius:6px; letter-spacing:-0.2px;">LIVE 경매 진행중</span>
+            <img src="${currentAuction.productImage || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:8px; object-fit:cover; border:1px solid #fde68a;">
+            <div>
+              <div style="font-size:13.5px; font-weight:800; color:#0f172a;">${currentAuction.productName}</div>
+              <div style="font-size:12px; color:#475569; margin-top:2px;">
+                시작가: <b>${Number(currentAuction.startPrice).toLocaleString()}원</b> | 현재 최고가: <b style="color:#ef4444; font-size:14px;">${Number(currentAuction.currentPrice).toLocaleString()}원</b>
+                ${currentAuction.highestBidder ? ` (최고 입찰자: <b style="color:#2563eb;">${currentAuction.highestBidder.userName}</b>)` : ' (첫 입찰자 대기중)'}
+                <span style="margin-left:6px; font-size:11px; color:#94a3b8;">총 입찰: ${currentAuction.bidCount || 0}회</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn-admin-auction-sold action-btn btn-primary-solid" style="background:#16a34a; border-color:#16a34a; padding:7px 16px; font-size:13px; font-weight:800; cursor:pointer;">낙찰 확정</button>
+            <button type="button" class="btn-admin-auction-stop action-btn btn-danger-solid" style="padding:7px 16px; font-size:13px; font-weight:800; cursor:pointer;">경매 종료</button>
+          </div>
+        </div>
+      `;
+    }
+
     if (products.length === 0) {
-      return `
+      return auctionBannerHtml + `
         <div style="background:#ffffff; border-radius:14px; padding:60px 20px; text-align:center; border:1.5px solid #e2e8f0;">
           <div style="font-size:16px; font-weight:700; color:#475569; margin-bottom:6px;">등록된 상품이 없습니다</div>
           <div style="font-size:13px; color:#94a3b8; margin-bottom:16px;">우측 상단 [+ 상품 추가] 버튼을 눌러 방송에 소개할 상품을 등록하세요.</div>
@@ -3132,15 +3192,18 @@ function renderLiveEditView(container, liveId, showView) {
       `;
     }
 
-    return products.map((p, idx) => {
+    return auctionBannerHtml + products.map((p, idx) => {
       const clickCount = p.clicks || 0;
       const isFeatured = p.isFeatured === true || p.isFeatured === 'true';
+      const isAuctionThisProduct = currentAuction && currentAuction.productId == (p.id || p.product_code || idx);
+      const isAuctionOngoing = isAuctionThisProduct && currentAuction.status === 'ongoing';
+      const isAuctionEnabled = p.isAuctionOpen === true || isAuctionThisProduct;
       return `
-      <div class="product-row" style="${isFeatured ? 'border: 2px solid #2563eb; background: #f8faff; box-shadow:0 4px 12px rgba(37,99,235,0.08);' : ''}">
+      <div class="product-row" style="${isAuctionOngoing ? 'border: 2px solid #f59e0b; background: #fffdf7; box-shadow:0 4px 12px rgba(245,158,11,0.12);' : (isFeatured ? 'border: 2px solid #2563eb; background: #f8faff; box-shadow:0 4px 12px rgba(37,99,235,0.08);' : '')}">
         <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative;">
           <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}">
           <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
-          ${isFeatured ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-size:10px; font-weight:800; text-align:center; border-radius:4px; padding:1px 0;">소개중</span>` : ''}
+          ${isAuctionOngoing ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#f59e0b; color:#ffffff; font-size:10px; font-weight:900; text-align:center; border-radius:4px; padding:1px 0;">경매중</span>` : (isFeatured ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-size:10px; font-weight:800; text-align:center; border-radius:4px; padding:1px 0;">소개중</span>` : '')}
         </div>
         <div class="product-inputs">
           <div style="display:flex; align-items:center; gap:8px;">
@@ -3173,6 +3236,21 @@ function renderLiveEditView(container, liveId, showView) {
               <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
               평소숨김
             </label>
+            <label style="font-size:12px; color:#b45309; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#fef3c7; padding:8px 12px; border:1.5px solid #fcd34d; border-radius:8px;">
+              <input type="checkbox" data-idx="${idx}" class="chk-auction-enable" ${isAuctionEnabled ? 'checked' : ''} style="width:14px; height:14px; accent-color:#f59e0b;">
+              실시간 경매
+            </label>
+            ${isAuctionEnabled ? `
+              <div style="display:flex; align-items:center; gap:6px; background:#fffbeb; padding:4px 8px; border-radius:8px; border:1.5px solid #fde68a; white-space:nowrap;">
+                <span style="font-size:11.5px; font-weight:700; color:#b45309;">시작가:</span>
+                <input type="text" class="modern-input price-input auction-start-input" style="width:75px; padding:4px 6px; font-size:12px; font-weight:700; text-align:right;" data-idx="${idx}" value="${Number(p.auctionStartPrice || (p.price ? p.price.toString().replace(/[^0-9]/g, '') : 1000) || 1000).toLocaleString()}">
+                <button class="btn-auction-start" data-idx="${idx}" style="padding:4px 10px; background:#f59e0b; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap;">${isAuctionOngoing ? '진행중' : '경매 시작'}</button>
+                ${isAuctionOngoing ? `
+                  <button class="btn-auction-sold-row" data-idx="${idx}" style="padding:4px 9px; background:#16a34a; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">낙찰</button>
+                  <button class="btn-auction-stop-row" data-idx="${idx}" style="padding:4px 9px; background:#ef4444; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">종료</button>
+                ` : ''}
+              </div>
+            ` : ''}
             <label style="font-size:12px; color:#dc2626; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#fef2f2; padding:8px 12px; border:1.5px solid #fca5a5; border-radius:8px;">
               <input type="checkbox" data-idx="${idx}" data-field="isFreeGiveaway" ${p.isFreeGiveaway === true || p.isFreeGiveaway === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#ef4444;" class="chk-giveaway">
               선착순 무료나눔
@@ -3668,6 +3746,114 @@ function renderLiveEditView(container, liveId, showView) {
           }
         });
       });
+      // ── 실시간 라이브 경매 이벤트 바인딩 ──
+      window.renderProductsAfterBid = () => {
+        const pContainer = document.getElementById('product-list-container');
+        if (pContainer && productSubTab === 'basic') {
+          pContainer.innerHTML = renderProductList();
+          bindProductEvents();
+        }
+      };
+
+      // 경매 체크박스 토글
+      plc.querySelectorAll('.chk-auction-enable').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const p = products[idx];
+          if (p) {
+            p.isAuctionOpen = e.target.checked;
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+          }
+        });
+      });
+
+      // 경매 시작가 인풋 입력
+      plc.querySelectorAll('.auction-start-input').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const raw = e.target.value.replace(/[^0-9]/g, '');
+          const p = products[idx];
+          if (p) {
+            p.auctionStartPrice = parseInt(raw) || 1000;
+            e.target.value = p.auctionStartPrice.toLocaleString();
+          }
+        });
+      });
+
+      // 경매 시작 버튼
+      plc.querySelectorAll('.btn-auction-start').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          const p = products[idx];
+          if (!p) return;
+          const startPrice = parseInt(p.auctionStartPrice) || parseInt((p.price || '').toString().replace(/[^0-9]/g, '')) || 1000;
+          currentAuction = {
+            isActive: true,
+            productId: p.id || p.product_code || idx,
+            productName: p.name || '경매 상품',
+            productImage: p.image || 'https://via.placeholder.com/72',
+            startPrice: startPrice,
+            currentPrice: startPrice,
+            bidStep: 1000,
+            highestBidder: null,
+            bidCount: 0,
+            status: 'ongoing',
+            startTime: Date.now()
+          };
+          localStorage.setItem(`ryzin_live_auction_${liveId}`, JSON.stringify(currentAuction));
+          broadcastLiveSync();
+          plc.innerHTML = renderProductList();
+          bindProductEvents();
+          if (typeof toast === 'function') toast(`[${p.name}] 실시간 경매가 시작되었습니다.`);
+        });
+      });
+
+      // 낙찰 확정 버튼 (상단 배너 및 행)
+      const handleSoldClick = () => {
+        if (!currentAuction) return;
+        const winnerText = currentAuction.highestBidder ? `${currentAuction.highestBidder.userName}님에게 ${Number(currentAuction.currentPrice).toLocaleString()}원에` : '현재 최고가로';
+        if (!confirm(`${winnerText} 최종 낙찰 확정하시겠습니까?`)) return;
+
+        currentAuction.status = 'sold';
+        currentAuction.isActive = false;
+        currentAuction.soldTime = Date.now();
+        localStorage.setItem(`ryzin_live_auction_${liveId}`, JSON.stringify(currentAuction));
+        broadcastLiveSync();
+        plc.innerHTML = renderProductList();
+        bindProductEvents();
+
+        setTimeout(() => {
+          currentAuction = null;
+          localStorage.removeItem(`ryzin_live_auction_${liveId}`);
+          broadcastLiveSync();
+          plc.innerHTML = renderProductList();
+          bindProductEvents();
+        }, 5000);
+      };
+
+      plc.querySelectorAll('.btn-admin-auction-sold, .btn-auction-sold-row').forEach(btn => {
+        btn.addEventListener('click', handleSoldClick);
+      });
+
+      // 경매 종료 버튼 (상단 배너 및 행)
+      const handleStopClick = () => {
+        if (!currentAuction) return;
+        if (!confirm('진행 중인 경매를 즉시 종료하시겠습니까?')) return;
+        currentAuction.isActive = false;
+        currentAuction.status = 'ended';
+        broadcastLiveSync();
+        currentAuction = null;
+        localStorage.removeItem(`ryzin_live_auction_${liveId}`);
+        plc.innerHTML = renderProductList();
+        bindProductEvents();
+        if (typeof toast === 'function') toast('경매가 종료되었습니다.');
+      };
+
+      plc.querySelectorAll('.btn-admin-auction-stop, .btn-auction-stop-row').forEach(btn => {
+        btn.addEventListener('click', handleStopClick);
+      });
+
       plc.querySelectorAll('.btn-deal-start').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);

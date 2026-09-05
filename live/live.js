@@ -528,8 +528,14 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     if (typeof BroadcastChannel !== 'undefined') {
       const liveWebBc = new BroadcastChannel(`ryzin_live_sync_${LIVE_ID}`);
+      window.liveWebBroadcastChannel = liveWebBc;
       liveWebBc.onmessage = (e) => {
-        if (e.data && (!e.data.liveId || e.data.liveId === LIVE_ID)) {
+        if (!e.data) return;
+        if (e.data.type === 'auction_bid') {
+          handleIncomingAuctionBid(e.data);
+          return;
+        }
+        if (!e.data.liveId || e.data.liveId === LIVE_ID) {
           applyLiveControlSync(e.data);
         }
       };
@@ -552,6 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(pList));
         localStorage.setItem(`ryzin_products_${LIVE_ID}`, JSON.stringify(pList));
       } catch (e) {}
+    }
+    if (payload.auction !== undefined) {
+      handleAuctionSync(payload.auction);
     }
 
     loadLiveConfig();
@@ -614,11 +623,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function subscribeConfig() {
     if (!db) return;
     const channel = db.channel(`live-control-channel-${LIVE_ID}`);
+    window.liveSupabaseChannel = channel;
 
     channel
       .on('broadcast', { event: 'live_control_sync' }, (payload) => {
         if (payload && payload.payload) {
           applyLiveControlSync(payload.payload);
+        }
+      })
+      .on('broadcast', { event: 'auction_bid' }, (payload) => {
+        if (payload && payload.payload) {
+          handleIncomingAuctionBid(payload.payload);
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, async payload => {
@@ -2083,7 +2098,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const pModal = document.getElementById('product-modal');
           const isModalOpen = pModal && !pModal.classList.contains('hidden');
 
-          if (activeProducts.length === 0 || isModalOpen) {
+          if (activeProducts.length === 0 || isModalOpen || window.__isAuctionActive) {
             bottomBanner.style.display = 'none';
             if (chatSection) chatSection.classList.remove('banner-active');
           } else {
@@ -2230,10 +2245,302 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { }
   }
 
+  // ── [실시간 라이브 경매 및 밀어서 참여하기 엔진] ──
+  window.__currentAuction = null;
+  window.__isAuctionActive = false;
+
+  function handleAuctionSync(auctionData) {
+    const auctionBar = document.getElementById('live-auction-bar');
+    const bottomBanner = document.getElementById('bottom-product-banner');
+    const soldModal = document.getElementById('auction-sold-modal');
+
+    if (!auctionBar) return;
+
+    if (auctionData && auctionData.isActive && auctionData.status === 'ongoing') {
+      window.__currentAuction = auctionData;
+      window.__isAuctionActive = true;
+      localStorage.setItem(`ryzin_live_auction_${LIVE_ID}`, JSON.stringify(auctionData));
+
+      // 1. 기존 롤링 상품 배너 강제 숨김
+      if (bottomBanner) {
+        bottomBanner.style.display = 'none';
+        bottomBanner.classList.add('banner-hidden');
+      }
+
+      // 2. 경매 바 표시
+      auctionBar.style.display = 'flex';
+
+      // 3. 상품 정보 렌더링
+      const prodImg = document.getElementById('auction-prod-img');
+      const prodName = document.getElementById('auction-prod-name');
+      const curPriceEl = document.getElementById('auction-current-price');
+      const statusEl = document.getElementById('auction-bid-status');
+      const sliderText = document.getElementById('auction-slider-text');
+
+      if (prodImg) prodImg.src = auctionData.productImage || 'https://via.placeholder.com/48';
+      if (prodName) prodName.textContent = auctionData.productName || '경매 상품';
+
+      const currentPrice = Number(auctionData.currentPrice || auctionData.startPrice || 0);
+      const bidStep = Number(auctionData.bidStep || 1000);
+      const nextBidPrice = currentPrice + bidStep;
+
+      if (curPriceEl) curPriceEl.textContent = `${currentPrice.toLocaleString()}원`;
+
+      if (statusEl) {
+        if (auctionData.highestBidder && auctionData.highestBidder.userName) {
+          statusEl.textContent = `최고 입찰: ${auctionData.highestBidder.userName} (${currentPrice.toLocaleString()}원)`;
+        } else {
+          statusEl.textContent = `시작가 (${currentPrice.toLocaleString()}원) 대기중`;
+        }
+      }
+
+      if (sliderText) {
+        sliderText.textContent = `밀어서 참여하기 (+1,000원: ${nextBidPrice.toLocaleString()}원)`;
+      }
+
+      // 슬라이더 노브 위치 초기화
+      resetAuctionSlider();
+    } else if (auctionData && auctionData.status === 'sold') {
+      // 낙찰 완료 모달 처리
+      window.__isAuctionActive = false;
+      localStorage.removeItem(`ryzin_live_auction_${LIVE_ID}`);
+      if (auctionBar) auctionBar.style.display = 'none';
+
+      if (soldModal) {
+        const soldTitle = document.getElementById('sold-product-title');
+        const soldWinner = document.getElementById('sold-winner-name');
+        const soldPrice = document.getElementById('sold-final-price');
+        const soldMyNotice = document.getElementById('sold-my-notice');
+
+        if (soldTitle) soldTitle.textContent = auctionData.productName || '경매 상품';
+        if (soldWinner) soldWinner.textContent = `${auctionData.highestBidder?.userName || '낙찰자'}님`;
+        if (soldPrice) soldPrice.textContent = `${Number(auctionData.currentPrice || 0).toLocaleString()}원`;
+
+        // 내가 낙찰자인지 확인
+        const myId = localStorage.getItem('ryzin_live_userid');
+        const isMyWin = !!(myId && auctionData.highestBidder && auctionData.highestBidder.userId === myId);
+        if (soldMyNotice) soldMyNotice.style.display = isMyWin ? 'block' : 'none';
+
+        soldModal.style.display = 'flex';
+
+        const confirmBtn = document.getElementById('btn-sold-confirm');
+        if (confirmBtn) {
+          confirmBtn.onclick = () => {
+            soldModal.style.display = 'none';
+            if (isMyWin) {
+              const addressModal = document.getElementById('winner-address-modal');
+              if (addressModal) addressModal.style.display = 'flex';
+            }
+            if (typeof loadLiveProducts === 'function') loadLiveProducts();
+          };
+        }
+
+        // 6초 후 자동 닫기
+        setTimeout(() => {
+          if (soldModal && soldModal.style.display !== 'none') {
+            soldModal.style.display = 'none';
+            if (typeof loadLiveProducts === 'function') loadLiveProducts();
+          }
+        }, 6000);
+      }
+    } else {
+      // 경매 종료 또는 미진행
+      window.__isAuctionActive = false;
+      window.__currentAuction = null;
+      localStorage.removeItem(`ryzin_live_auction_${LIVE_ID}`);
+      if (auctionBar) auctionBar.style.display = 'none';
+      if (typeof loadLiveProducts === 'function') loadLiveProducts();
+    }
+  }
+  window.handleAuctionSync = handleAuctionSync;
+
+  // 다른 시청자 또는 내가 입찰했을 때 실시간 수신 처리
+  function handleIncomingAuctionBid(bidData) {
+    if (!bidData || bidData.liveId !== LIVE_ID) return;
+    if (!window.__currentAuction || window.__currentAuction.status !== 'ongoing') return;
+
+    if (bidData.newPrice > (window.__currentAuction.currentPrice || 0)) {
+      window.__currentAuction.currentPrice = bidData.newPrice;
+      window.__currentAuction.highestBidder = bidData.bidder;
+      window.__currentAuction.bidCount = (window.__currentAuction.bidCount || 0) + 1;
+
+      // UI 즉시 갱신
+      const curPriceEl = document.getElementById('auction-current-price');
+      const statusEl = document.getElementById('auction-bid-status');
+      const sliderText = document.getElementById('auction-slider-text');
+
+      if (curPriceEl) curPriceEl.textContent = `${bidData.newPrice.toLocaleString()}원`;
+      if (statusEl && bidData.bidder) {
+        statusEl.textContent = `최고 입찰: ${bidData.bidder.userName} (${bidData.newPrice.toLocaleString()}원)`;
+      }
+      const nextBidPrice = bidData.newPrice + (window.__currentAuction.bidStep || 1000);
+      if (sliderText) {
+        sliderText.textContent = `밀어서 참여하기 (+1,000원: ${nextBidPrice.toLocaleString()}원)`;
+      }
+    }
+  }
+  window.handleIncomingAuctionBid = handleIncomingAuctionBid;
+
+  // 밀어서 참여하기 슬라이더 초기화
+  function initAuctionSlider() {
+    const track = document.getElementById('auction-slider-track');
+    const knob = document.getElementById('auction-slider-knob');
+    const fill = document.getElementById('auction-slider-fill');
+    const text = document.getElementById('auction-slider-text');
+    if (!track || !knob || !fill) return;
+
+    let isDragging = false;
+    let startX = 0;
+    let currentTranslate = 0;
+
+    const onPointerDown = (e) => {
+      if (!window.__currentAuction || window.__currentAuction.status !== 'ongoing') return;
+      isDragging = true;
+      startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      knob.style.transition = 'none';
+      fill.style.transition = 'none';
+      if (knob.setPointerCapture && e.pointerId) {
+        try { knob.setPointerCapture(e.pointerId); } catch(err) {}
+      }
+    };
+
+    const onPointerMove = (e) => {
+      if (!isDragging) return;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const deltaX = clientX - startX;
+      const trackWidth = track.clientWidth;
+      const knobWidth = knob.clientWidth;
+      const maxDistance = trackWidth - knobWidth - 6;
+
+      currentTranslate = Math.max(0, Math.min(deltaX, maxDistance));
+      knob.style.transform = `translateX(${currentTranslate}px)`;
+      fill.style.width = `${(currentTranslate / maxDistance) * 100}%`;
+    };
+
+    const onPointerUp = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+
+      const trackWidth = track.clientWidth;
+      const knobWidth = knob.clientWidth;
+      const maxDistance = trackWidth - knobWidth - 6;
+
+      if (currentTranslate >= maxDistance * 0.85) {
+        // 85% 이상 밀었을 때: 입찰 실행!
+        if (navigator.vibrate) try { navigator.vibrate(50); } catch(err) {}
+        if (text) text.textContent = '입찰 처리중...';
+        submitAuctionBid();
+        setTimeout(resetAuctionSlider, 350);
+      } else {
+        // 85% 미만이면 원위치 복귀
+        resetAuctionSlider();
+      }
+    };
+
+    knob.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+
+    // 모바일 터치 이벤트 보조
+    knob.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp, { passive: true });
+  }
+
+  function resetAuctionSlider() {
+    const knob = document.getElementById('auction-slider-knob');
+    const fill = document.getElementById('auction-slider-fill');
+    const text = document.getElementById('auction-slider-text');
+    if (knob) {
+      knob.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+      knob.style.transform = 'translateX(0px)';
+    }
+    if (fill) {
+      fill.style.transition = 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+      fill.style.width = '0%';
+    }
+    if (text && window.__currentAuction) {
+      const curP = Number(window.__currentAuction.currentPrice || window.__currentAuction.startPrice || 0);
+      const step = Number(window.__currentAuction.bidStep || 1000);
+      text.textContent = `밀어서 참여하기 (+1,000원: ${(curP + step).toLocaleString()}원)`;
+    }
+  }
+
+  function submitAuctionBid() {
+    if (!window.__currentAuction || window.__currentAuction.status !== 'ongoing') return;
+
+    let userName = localStorage.getItem('ryzin_live_username') || localStorage.getItem('ryzin_chat_user');
+    if (!userName) {
+      userName = '시청자' + Math.floor(1000 + Math.random() * 9000);
+      localStorage.setItem('ryzin_live_username', userName);
+    }
+    let userId = localStorage.getItem('ryzin_live_userid');
+    if (!userId) {
+      userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+      localStorage.setItem('ryzin_live_userid', userId);
+    }
+
+    const currentPrice = Number(window.__currentAuction.currentPrice || window.__currentAuction.startPrice || 0);
+    const bidStep = Number(window.__currentAuction.bidStep || 1000);
+    const newBidPrice = currentPrice + bidStep;
+
+    const bidPayload = {
+      liveId: LIVE_ID,
+      productId: window.__currentAuction.productId,
+      newPrice: newBidPrice,
+      bidder: {
+        userId: userId,
+        userName: userName,
+        bidTime: Date.now()
+      }
+    };
+
+    // 로컬 즉시 반영
+    handleIncomingAuctionBid(bidPayload);
+
+    // 1. BroadcastChannel 전송 (동일 브라우저 탭 0ms 무지연 동기화)
+    try {
+      if (window.liveWebBroadcastChannel) {
+        window.liveWebBroadcastChannel.postMessage({ type: 'auction_bid', ...bidPayload });
+      }
+    } catch(e) {}
+
+    // 2. Supabase Realtime 전송
+    try {
+      if (window.liveSupabaseChannel) {
+        window.liveSupabaseChannel.send({
+          type: 'broadcast',
+          event: 'auction_bid',
+          payload: bidPayload
+        });
+      }
+    } catch(e) {}
+
+    // 3. 채팅창에 자동 입찰 공지 메시지 전송
+    try {
+      const chatInput = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('btn-send');
+      if (typeof window.sendChatMessage === 'function') {
+        window.sendChatMessage(`[경매 입찰] ${userName}님이 ${newBidPrice.toLocaleString()}원에 입찰하셨습니다.`);
+      } else if (chatInput && sendBtn) {
+        const prevVal = chatInput.value;
+        chatInput.value = `[경매 입찰] ${userName}님이 ${newBidPrice.toLocaleString()}원에 입찰하셨습니다.`;
+        sendBtn.click();
+        chatInput.value = prevVal;
+      }
+    } catch(e) {}
+  }
+
   // 초기 로드
   loadLiveConfig();
   loadLiveStats();
   loadLiveProducts();
+  initAuctionSlider();
+  try {
+    const savedAuction = JSON.parse(localStorage.getItem(`ryzin_live_auction_${LIVE_ID}`) || 'null');
+    if (savedAuction) handleAuctionSync(savedAuction);
+  } catch(e) {}
   if (typeof fetchUserBenefitsFromDB === 'function') {
     fetchUserBenefitsFromDB();
   }
@@ -2247,6 +2554,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.data.config) localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(e.data.config));
       if (e.data.stats) localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(e.data.stats));
       if (e.data.products) localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(e.data.products));
+      if (e.data.auction !== undefined) handleAuctionSync(e.data.auction);
       loadLiveConfig();
       loadLiveStats();
       loadLiveProducts();
@@ -2258,6 +2566,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key.includes('config')) loadLiveConfig();
     if (e.key.includes('stats')) loadLiveStats();
     if (e.key.includes('products')) loadLiveProducts();
+    if (e.key.includes('auction')) {
+      try {
+        const aData = JSON.parse(e.newValue);
+        handleAuctionSync(aData);
+      } catch(err) {}
+    }
     if (e.key === 'ryzin_admin_chat_trigger') {
       try {
         const msg = JSON.parse(e.newValue);

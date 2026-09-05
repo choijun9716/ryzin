@@ -77,7 +77,7 @@
     }
   </script>
 
-  <link rel="stylesheet" href="live.css?v=202609050098">
+  <link rel="stylesheet" href="live.css?v=202609050100">
   <style>
     /* Embed Mode Overrides */
     body.embed-mode {
@@ -545,6 +545,57 @@
         <div class="banner-more-btn" id="banner-more-btn">
           <span class="more-count" id="banner-more-count">0</span>
           <span class="more-text">더보기</span>
+        </div>
+      </div>
+
+      <!-- 실시간 라이브 경매 바 (롤링 배너 대체 및 밀어서 참여하기 인터랙션) -->
+      <div id="live-auction-bar" class="live-auction-bar" style="display:none;">
+        <div class="auction-header">
+          <div class="auction-tag-badge">실시간 경매</div>
+          <div class="auction-bid-status" id="auction-bid-status">첫 입찰자를 기다립니다</div>
+        </div>
+        <div class="auction-main-body">
+          <img id="auction-prod-img" class="auction-prod-img" src="" alt="경매 상품">
+          <div class="auction-info-col">
+            <div id="auction-prod-name" class="auction-prod-name">상품명</div>
+            <div class="auction-price-line">
+              <span class="price-title">현재가</span>
+              <span id="auction-current-price" class="auction-current-price">0원</span>
+              <span class="price-step-badge">+1,000원</span>
+            </div>
+          </div>
+        </div>
+        <!-- 밀어서 참여하기 인터랙티브 슬라이더 -->
+        <div class="auction-slider-wrap" id="auction-slider-wrap">
+          <div class="auction-slider-track" id="auction-slider-track">
+            <div class="auction-slider-fill" id="auction-slider-fill"></div>
+            <span class="auction-slider-text" id="auction-slider-text">밀어서 참여하기</span>
+            <div class="auction-slider-knob" id="auction-slider-knob">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 낙찰 축하 알림 모달 -->
+      <div id="auction-sold-modal" class="auction-sold-modal" style="display:none;">
+        <div class="auction-sold-box">
+          <div class="sold-badge">최종 낙찰 완료</div>
+          <h3 id="sold-product-title" class="sold-product-title">경매 상품명</h3>
+          <div class="sold-winner-row">
+            <span class="sold-winner-label">낙찰자</span>
+            <span id="sold-winner-name" class="sold-winner-name">000님</span>
+          </div>
+          <div class="sold-price-row">
+            <span class="sold-price-label">최종 낙찰가</span>
+            <span id="sold-final-price" class="sold-final-price">0원</span>
+          </div>
+          <div id="sold-my-notice" class="sold-my-notice" style="display:none;">
+            축하합니다! 회원님이 최종 낙찰되었습니다. 배송지 정보를 입력해 주세요.
+          </div>
+          <button type="button" id="btn-sold-confirm" class="btn-sold-confirm">확인</button>
         </div>
       </div>
 
@@ -1701,7 +1752,7 @@
     <!-- Supabase JS SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config.js"></script>
-    <script src="live.js?v=202609050099"></script>
+    <script src="live.js?v=202609050100"></script>
 
 
   <!-- iOS PWA 홈 화면 추가 가이드 모달 (화이트 미니멀 스타일 + 공유 아이콘) -->
