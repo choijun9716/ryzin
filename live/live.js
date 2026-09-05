@@ -70,8 +70,8 @@ let db = null;
 let LIVE_ID = 'N45ZMPL';
 
 
-// ── [무정전 자동 재생 가드 및 소리 자동 재생 엔진] 어떤 환경에서도 영상과 소리 즉시 강제 재생 ──
-window.__isMediaUnmuted = true;
+// ── [무정전 자동 재생 가드 및 소리 제어 엔진] 브라우저 자동재생 차단 완벽 회피 및 100% 즉시 자동 재생 보장 ──
+window.__isMediaUnmuted = false;
 
 window.unmuteAllMedia = function() {
   window.__isMediaUnmuted = true;
@@ -1010,21 +1010,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 standbyYtWrap.innerHTML = `
                   <iframe
                     data-yt-id="${ytId}"
-                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080"
+                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowfullscreen
                     style="position:absolute; top:50%; left:50%; width:100%; height:100%; min-width:178vh; min-height:100%; transform:translate(-50%, -50%) scale(1.08); border:none; pointer-events:none; -webkit-backface-visibility:hidden; image-rendering:-webkit-optimize-contrast;"
                   ></iframe>
                 `;
 
-                // 유튜브 강제 재생 및 소리 자동 재생 보장 (unMute & Volume 100%)
+                // 유튜브 무조건 자동 재생 보장 (autoplay=1&mute=1로 브라우저 차단 완벽 회피)
                 [100, 300, 600, 1200, 2500, 4000].forEach(delay => {
                   setTimeout(() => {
                     const ifr = standbyYtWrap.querySelector('iframe');
                     if (ifr && ifr.contentWindow) {
                       ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
-                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                      if (window.__isMediaUnmuted) {
+                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                      }
                     }
                   }, delay);
                 });
@@ -3433,13 +3435,15 @@ function playStreamUrl(url, isLive) {
       // [방송 ON] 유튜브 영상 재생
       if (ytBox) ytBox.style.display = 'block';
       if (ytPlayer) {
-        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080`;
+        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080`;
         [100, 300, 600, 1200, 2500, 4000].forEach(delay => {
           setTimeout(() => {
             if (ytPlayer && ytPlayer.contentWindow) {
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
-              ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-              ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+              if (window.__isMediaUnmuted) {
+                ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+              }
               // 모바일/임베드 화면에서도 최상위 화질(1080p) 강제 고정 요청
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: ['hd1080', 'highres'] }), '*');
