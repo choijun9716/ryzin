@@ -1955,42 +1955,107 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch(e) {}
 
   // ── [통합 배송지 & 프로필 관리 엔진] ──────────────────────────
-  // 1. 주소 안전 분리 헬퍼 (기본 주소와 상세 주소 자동 분리)
+  // 0. 상세주소 중복 제거 및 주소 안전 결합 헬퍼
+  window.cleanDetailAddress = function(base, detail) {
+    if (!detail) return '';
+    if (!base) return String(detail).trim();
+    base = String(base).trim();
+    detail = String(detail).trim();
+
+    // 1) base 전체가 detail 앞부분에 들어간 경우 제거
+    if (detail.startsWith(base)) {
+      detail = detail.slice(base.length).trim();
+    }
+
+    // 2) base에 포함된 괄호 참고항목 (예: "(역삼동)" 또는 "(역삼동, 파라곤)")이 detail 앞부분에 있는 경우 제거
+    const baseParen = base.match(/\([^\)]+\)/);
+    if (baseParen && baseParen[0]) {
+      const pText = baseParen[0];
+      if (detail.startsWith(pText)) {
+        detail = detail.slice(pText.length).trim();
+      }
+    }
+
+    // 3) base의 끝부분(번지수 또는 번지수 + 괄호)이 detail 앞부분에 중복된 경우 제거
+    // 예: base: "서울 강남구 테헤란로 123 (역삼동)", detail: "123 (역삼동) 101호" -> detail: "101호"
+    // 예: base: "서울 강남구 테헤란로 123", detail: "123 101호" -> detail: "101호"
+    const endMatch = base.match(/([0-9\-]+(?:번지)?(?:\s*\([^\)]+\))?)$/);
+    if (endMatch && endMatch[1]) {
+      const endPart = endMatch[1].trim();
+      if (detail.startsWith(endPart)) {
+        detail = detail.slice(endPart.length).trim();
+      }
+      const innerParen = endPart.match(/\([^\)]+\)/);
+      if (innerParen && innerParen[0] && detail.startsWith(innerParen[0])) {
+        detail = detail.slice(innerParen[0].length).trim();
+      }
+    }
+
+    // 4) 번지수 숫자만 단독으로 앞에 붙은 경우도 제거 (예: base에 "123"이 있고 detail이 "123 101호"인 경우)
+    const baseNums = base.match(/[0-9]+(?:-[0-9]+)?/g);
+    if (baseNums && baseNums.length > 0) {
+      const lastNum = baseNums[baseNums.length - 1];
+      const numPrefixRegex = new RegExp('^' + lastNum + '(?:번지)?\\s*');
+      if (numPrefixRegex.test(detail)) {
+        detail = detail.replace(numPrefixRegex, '').trim();
+      }
+    }
+
+    // 5) base와 detail이 완전히 동일한 경우 detail은 빈값
+    if (base === detail) {
+      return '';
+    }
+
+    return detail.trim();
+  };
+
+  window.combineAddress = function(base, detail) {
+    base = (base || '').trim();
+    detail = window.cleanDetailAddress(base, detail || '');
+    if (!detail) return base;
+    if (!base) return detail;
+    return (base + ' ' + detail).trim();
+  };
+
+  // 1. 주소 안전 분리 헬퍼 (기본 주소와 상세 주소 자동 분리 및 중복 제거)
   window.splitAddress = function(fullAddr) {
     if (!fullAddr) return { base: '', detail: '' };
     fullAddr = String(fullAddr).trim();
     
-    // 괄호 참고항목이 있는 경우 (예: "서울시 강남구 테헤란로 123 (역삼동) 101동 202호")
+    let base = '';
+    let detail = '';
+
+    // 1) 괄호 참고항목이 있는 경우 (예: "서울 강남구 테헤란로 123 (역삼동) 101동 202호")
     const parenMatch = fullAddr.match(/^(.+?\([^\)]+\))\s*(.*)$/);
     if (parenMatch) {
-      return {
-        base: parenMatch[1].trim(),
-        detail: (parenMatch[2] || '').trim()
-      };
+      base = parenMatch[1].trim();
+      detail = (parenMatch[2] || '').trim();
+    } else {
+      // 2) 도로명/지번 뒤 번지수(숫자 또는 숫자-숫자)를 기준으로 분리
+      const numMatch = fullAddr.match(/^(.+?[로길동읍면리]\s*[0-9]+(?:-[0-9]+)?(?:번지)?)\s*(.*)$/);
+      if (numMatch) {
+        base = numMatch[1].trim();
+        detail = (numMatch[2] || '').trim();
+      } else {
+        // 3) 공백 기준 앞 3개 단어를 기본주소로
+        const parts = fullAddr.split(/\s+/);
+        if (parts.length > 3) {
+          base = parts.slice(0, 3).join(' ');
+          detail = parts.slice(3).join(' ');
+        } else {
+          base = fullAddr;
+          detail = '';
+        }
+      }
     }
 
-    // 도로명/지번 뒤 번지수(숫자 또는 숫자-숫자)를 기준으로 분리
-    // 예: "경기도 하남시 미사강변동로 100-1 미사역 파라곤스퀘어 2064-2"
-    const numMatch = fullAddr.match(/^(.+?[로길동읍면리]\s*[0-9]+(?:-[0-9]+)?(?:번지)?)\s+(.+)$/);
-    if (numMatch) {
-      return {
-        base: numMatch[1].trim(),
-        detail: (numMatch[2] || '').trim()
-      };
-    }
+    // 상세주소에서 기본주소 중복 내용 완전 소거
+    detail = window.cleanDetailAddress(base, detail);
 
-    // 공백 기준 앞 3~4개 단어를 기본주소로, 나머지를 상세주소로
-    const parts = fullAddr.split(/\s+/);
-    if (parts.length > 3) {
-      return {
-        base: parts.slice(0, 3).join(' '),
-        detail: parts.slice(3).join(' ')
-      };
-    }
-    return { base: fullAddr, detail: '' };
+    return { base, detail };
   };
 
-  // 2. 통합 사용자 배송 정보 조회 (수령인 실명 및 상세주소 영구 보존 및 동기화)
+  // 2. 통합 사용자 배송 정보 조회 (수령인 실명 및 상세주소 영구 보존 및 중복 원천 차단)
   window.getUnifiedUserInfo = function() {
     const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
     let savedAddr = null;
@@ -2017,11 +2082,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let baseAddr = (savedAddr && savedAddr.baseAddr) || (generalSaved && generalSaved.baseAddr) || '';
     let detailAddr = (savedAddr && savedAddr.detailAddr) || (generalSaved && generalSaved.detailAddr) || '';
 
-    // 개별 저장된 base/detail이 없으면 splitAddress로 분리
+    // 개별 저장된 base/detail이 없거나, 오염된 경우 splitAddress로 분리 및 정규화
     if (!baseAddr && address) {
       const splitted = window.splitAddress(address);
       baseAddr = splitted.base;
-      if (!detailAddr) detailAddr = splitted.detail;
+      detailAddr = splitted.detail;
+    } else if (baseAddr && detailAddr) {
+      detailAddr = window.cleanDetailAddress(baseAddr, detailAddr);
+      address = window.combineAddress(baseAddr, detailAddr);
     }
 
     // 이메일
@@ -2043,10 +2111,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let baseAddr = (data.baseAddr !== undefined ? data.baseAddr : '').trim();
     let detailAddr = (data.detailAddr !== undefined ? data.detailAddr : '').trim();
+    detailAddr = window.cleanDetailAddress(baseAddr, detailAddr);
 
     let address = (data.address !== undefined ? data.address : '').trim();
     if (!address && (baseAddr || detailAddr)) {
-      address = (baseAddr + (detailAddr ? ' ' + detailAddr : '')).trim();
+      address = window.combineAddress(baseAddr, detailAddr);
+    } else if (baseAddr && detailAddr) {
+      address = window.combineAddress(baseAddr, detailAddr);
     }
     if (!baseAddr && address) {
       const splitted = window.splitAddress(address);
@@ -3664,13 +3735,14 @@ window.restoreUserAddressFromDB = async function() {
         }
         const finalAddress = dbAddress || localInfo.address || '';
 
-        // 기본주소 / 상세주소 분리
-        let baseAddr = '';
-        let detailAddr = '';
+        // 기본주소 / 상세주소 분리 및 중복 제거
+        let baseAddr = localInfo.baseAddr || '';
+        let detailAddr = localInfo.detailAddr || '';
         if (finalAddress) {
           const splitted = window.splitAddress(finalAddress);
-          baseAddr = splitted.base;
-          detailAddr = splitted.detail;
+          if (!baseAddr) baseAddr = splitted.base;
+          if (!detailAddr) detailAddr = splitted.detail;
+          detailAddr = window.cleanDetailAddress(baseAddr, detailAddr);
         }
 
         // 로컬 kakaoUserObj 최신화
@@ -3763,9 +3835,10 @@ window.openPostcodeSearchModal = function(targetMode = 'checkout') {
 
       if (targetMode === 'my_profile') {
         const baseInput = document.getElementById('my-p-base-addr');
-        if (baseInput) baseInput.value = fullAddr;
         const detailInput = document.getElementById('my-p-detail-addr');
+        if (baseInput) baseInput.value = fullAddr;
         if (detailInput) {
+          detailInput.value = window.cleanDetailAddress(fullAddr, detailInput.value);
           setTimeout(() => detailInput.focus(), 150);
         }
       } else {
@@ -3774,8 +3847,11 @@ window.openPostcodeSearchModal = function(targetMode = 'checkout') {
         const hiddenInput = document.getElementById('checkout-address');
 
         if (baseInput) baseInput.value = fullAddr;
+        if (detailInput) {
+          detailInput.value = window.cleanDetailAddress(fullAddr, detailInput.value);
+        }
         if (hiddenInput) {
-          hiddenInput.value = fullAddr + (detailInput && detailInput.value.trim() ? ' ' + detailInput.value.trim() : '');
+          hiddenInput.value = window.combineAddress(fullAddr, detailInput ? detailInput.value : '');
         }
 
         // 주소 입력 후 즉시 로컬 저장 및 장바구니 갱신
@@ -3807,8 +3883,14 @@ function updateFullAddressFromInputs() {
   const hiddenInput = document.getElementById('checkout-address');
 
   const base = baseInput ? baseInput.value.trim() : '';
-  const detail = detailInput ? detailInput.value.trim() : '';
-  const full = (base + (detail ? ' ' + detail : '')).trim();
+  let detail = detailInput ? detailInput.value.trim() : '';
+  detail = window.cleanDetailAddress(base, detail);
+  
+  // 포커스 중이 아닐 때만 정규화된 값으로 갱신
+  if (detailInput && detailInput !== document.activeElement && detailInput.value !== detail) {
+    detailInput.value = detail;
+  }
+  const full = window.combineAddress(base, detail);
 
   if (hiddenInput) {
     hiddenInput.value = full;
@@ -3824,17 +3906,19 @@ function saveCheckoutForm() {
       phone = '';
     }
     const baseAddr = document.getElementById('checkout-base-address')?.value.trim() || '';
-    const detailAddr = document.getElementById('checkout-detail-address')?.value.trim() || '';
+    let detailAddr = document.getElementById('checkout-detail-address')?.value.trim() || '';
+    detailAddr = window.cleanDetailAddress(baseAddr, detailAddr);
+
     if (typeof updateFullAddressFromInputs === 'function') updateFullAddressFromInputs();
-    const address = document.getElementById('checkout-address')?.value.trim() || '';
+    const address = window.combineAddress(baseAddr, detailAddr);
 
     // 기존 저장된 정보와 합쳐 부분 입력 중 유실 방지
     const curInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
     const finalName = name || curInfo.name || '';
     const finalPhone = phone || curInfo.phone || '';
     const finalBaseAddr = baseAddr || curInfo.baseAddr || '';
-    const finalDetailAddr = detailAddr || curInfo.detailAddr || '';
-    const finalAddress = address || (finalBaseAddr + (finalDetailAddr ? ' ' + finalDetailAddr : '')).trim();
+    const finalDetailAddr = detailAddr || window.cleanDetailAddress(finalBaseAddr, curInfo.detailAddr || '');
+    const finalAddress = address || window.combineAddress(finalBaseAddr, finalDetailAddr);
 
     const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
 
@@ -5033,8 +5117,9 @@ window.saveMyProfileInfo = async function() {
   const name = document.getElementById('my-p-name')?.value.trim() || '';
   const phone = document.getElementById('my-p-phone')?.value.trim() || '';
   const baseAddr = document.getElementById('my-p-base-addr')?.value.trim() || '';
-  const detailAddr = document.getElementById('my-p-detail-addr')?.value.trim() || '';
-  const address = (baseAddr + (detailAddr ? ' ' + detailAddr : '')).trim();
+  let detailAddr = document.getElementById('my-p-detail-addr')?.value.trim() || '';
+  detailAddr = window.cleanDetailAddress(baseAddr, detailAddr);
+  const address = window.combineAddress(baseAddr, detailAddr);
 
   if (!name) {
     alert('회원 이름(수령인)을 입력해 주세요.');
