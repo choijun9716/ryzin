@@ -2991,165 +2991,237 @@ function renderLiveEditView(container, liveId, showView) {
     }
   };
 
-  const renderProductList = () => products.map((p, idx) => {
-    const clickCount = p.clicks || 0;
-    const isFeatured = p.isFeatured === true || p.isFeatured === 'true';
-    const detailImages = p.detailImage ? String(p.detailImage).split(',').map(s => s.trim()).filter(Boolean) : [];
-    return `
-    <div class="product-row" style="${isFeatured ? 'border: 2px solid #2563eb; background: #f8faff; box-shadow:0 4px 12px rgba(37,99,235,0.08);' : ''}">
-      <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative;">
-        <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}">
-        <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
-        ${isFeatured ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-size:10px; font-weight:800; text-align:center; border-radius:4px; padding:1px 0;">소개중</span>` : ''}
-      </div>
-      <div class="product-inputs">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <input type="text" class="modern-input" style="flex:2;" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
-          <input type="text" class="modern-input price-input" style="flex:1;" value="${p.normalPrice ? Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
-          <input type="text" class="modern-input price-input" style="flex:1;" value="${p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="price" placeholder="라이브가">
-          <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="width:50px; text-align:center;">
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-          <input type="text" class="modern-input" style="flex:1;" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL" ${p.isLeadForm ? 'disabled' : ''}>
-          <label style="font-size:12px; color:${isFeatured ? '#1d4ed8' : '#334155'}; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:${isFeatured ? '#eff6ff' : '#f8fafc'}; padding:8px 12px; border:${isFeatured ? '1.5px solid #2563eb' : '1px solid #cbd5e1'}; border-radius:8px; transition:all 0.15s;">
-            <input type="checkbox" data-idx="${idx}" data-field="isFeatured" class="chk-featured-product" ${isFeatured ? 'checked' : ''} style="width:14px; height:14px; accent-color:#2563eb; cursor:pointer;">
-            지금소개중
-          </label>
-          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
-            <input type="checkbox" data-idx="${idx}" data-field="isLeadForm" ${p.isLeadForm === true || p.isLeadForm === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#3b82f6;">
-            상담문의
-          </label>
-          <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
-            <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
-            평소숨김
-          </label>
-          <label style="font-size:12px; color:#dc2626; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#fef2f2; padding:8px 12px; border:1.5px solid #fca5a5; border-radius:8px;">
-            <input type="checkbox" data-idx="${idx}" data-field="isFreeGiveaway" ${p.isFreeGiveaway === true || p.isFreeGiveaway === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#ef4444;" class="chk-giveaway">
-            선착순 무료나눔
-          </label>
-          ${(p.isFreeGiveaway === true || p.isFreeGiveaway === 'true') ? `
-            <div style="display:flex; align-items:center; gap:6px; background:#fff1f2; padding:4px 8px; border-radius:8px; border:1px solid #fecdd3; white-space:nowrap;">
-              <span style="font-size:11.5px; font-weight:700; color:#dc2626;">수량:</span>
-              <input type="number" class="modern-input" style="width:50px; padding:4px 6px; font-size:12px; font-weight:700; text-align:center;" data-idx="${idx}" data-field="giveawayStock" value="${p.giveawayStock || 3}">
-              <button class="btn-giveaway-start" data-idx="${idx}" style="padding:4px 9px; background:#dc2626; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
-              <button class="btn-giveaway-stop" data-idx="${idx}" style="padding:4px 9px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-              ${p.isGiveawayActive ? `<span style="font-size:11px; font-weight:800; color:#16a34a; background:#dcfce7; padding:2px 6px; border-radius:4px;">송출중</span>` : `<span style="font-size:11px; font-weight:600; color:#94a3b8;">대기</span>`}
-            </div>
-          ` : ''}
-          <span style="font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:8px 10px; border-radius:8px; white-space:nowrap;">조회: ${clickCount.toLocaleString()}</span>
-          <button class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === 0 ? 'disabled' : ''}>▲</button>
-          <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
-          <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px; background:#f8fafc; padding:12px 14px; border-radius:12px; border:1.5px solid #e2e8f0;">
-          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:12.5px; font-weight:800; color:#0f172a;">상세 이미지/GIF (순서대로 렌더링)</span>
-              <span style="font-size:11px; font-weight:700; color:#475569; background:#e2e8f0; padding:2px 8px; border-radius:6px;">총 ${detailImages.length}장</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <input type="file" id="upload-detail-${idx}" accept="image/*,.gif" multiple style="display:none;" data-idx="${idx}" class="prod-detail-upload">
-              <button type="button" id="btn-upload-detail-${idx}" class="action-btn" onclick="document.getElementById('upload-detail-${idx}').click()" style="padding:6px 12px; font-size:12px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
-                + 이미지/GIF 다중 추가
-              </button>
-              ${detailImages.length > 0 ? `
-                <button type="button" class="btn-del-all-detail-img" data-idx="${idx}" style="background:#fee2e2; border:1px solid #fecaca; color:#ef4444; font-size:11.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px;">전체 삭제</button>
-              ` : ''}
-            </div>
-          </div>
+  // 상품 관리 내부 서브 탭 ('basic' = 기본 상품 목록, 'detail' = 상세페이지 관리)
+  let productSubTab = 'basic';
 
-          ${detailImages.length > 0 ? `
-            <div style="display:flex; gap:10px; overflow-x:auto; padding:6px 0; -webkit-overflow-scrolling:touch;">
-              ${detailImages.map((imgUrl, imgIdx) => `
-                <div style="position:relative; width:92px; flex-shrink:0; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:10px; padding:6px; display:flex; flex-direction:column; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
-                  <div style="position:relative; width:100%; aspect-ratio:1/1; border-radius:6px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0;">
-                    <span style="position:absolute; top:2px; left:2px; background:rgba(15,23,42,0.85); color:#ffffff; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; z-index:2;">${imgIdx + 1}</span>
-                    <a href="${imgUrl}" target="_blank" title="클릭하여 원본 보기">
-                      <img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; display:block;">
-                    </a>
-                  </div>
-                  <div style="display:flex; align-items:center; justify-content:space-between; gap:2px;">
-                    <button type="button" class="btn-move-detail-left" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="앞으로 이동">◀</button>
-                    <button type="button" class="btn-move-detail-right" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === detailImages.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="뒤로 이동">▶</button>
-                    <button type="button" class="btn-del-single-detail" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#fee2e2; border:1px solid #fca5a5; color:#ef4444; border-radius:4px; font-size:11px; font-weight:800; cursor:pointer;" title="이 이미지 삭제">✕</button>
-                  </div>
-                </div>
-              `).join('')}
+  // 1. 상품 기본 관리 뷰 (상품명, 가격, 링크, 무료나눔, 깜짝딜)
+  const renderProductListBasic = () => {
+    if (products.length === 0) {
+      return `
+        <div style="background:#ffffff; border-radius:14px; padding:60px 20px; text-align:center; border:1.5px solid #e2e8f0;">
+          <div style="font-size:16px; font-weight:700; color:#475569; margin-bottom:6px;">등록된 상품이 없습니다</div>
+          <div style="font-size:13px; color:#94a3b8; margin-bottom:16px;">우측 상단 [+ 상품 추가] 버튼을 눌러 방송에 소개할 상품을 등록하세요.</div>
+          <button type="button" id="btn-empty-add-prod" class="action-btn btn-primary-solid" style="padding:8px 20px; font-size:13px;">+ 첫 상품 등록하기</button>
+        </div>
+      `;
+    }
+
+    return products.map((p, idx) => {
+      const clickCount = p.clicks || 0;
+      const isFeatured = p.isFeatured === true || p.isFeatured === 'true';
+      return `
+      <div class="product-row" style="${isFeatured ? 'border: 2px solid #2563eb; background: #f8faff; box-shadow:0 4px 12px rgba(37,99,235,0.08);' : ''}">
+        <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative;">
+          <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}">
+          <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
+          ${isFeatured ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-size:10px; font-weight:800; text-align:center; border-radius:4px; padding:1px 0;">소개중</span>` : ''}
+        </div>
+        <div class="product-inputs">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="text" class="modern-input" style="flex:2;" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
+            <input type="text" class="modern-input price-input" style="flex:1;" value="${p.normalPrice ? Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
+            <input type="text" class="modern-input price-input" style="flex:1;" value="${p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="price" placeholder="라이브가">
+            <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="width:50px; text-align:center;">
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+            <input type="text" class="modern-input" style="flex:1;" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL" ${p.isLeadForm ? 'disabled' : ''}>
+            <label style="font-size:12px; color:${isFeatured ? '#1d4ed8' : '#334155'}; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:${isFeatured ? '#eff6ff' : '#f8fafc'}; padding:8px 12px; border:${isFeatured ? '1.5px solid #2563eb' : '1px solid #cbd5e1'}; border-radius:8px; transition:all 0.15s;">
+              <input type="checkbox" data-idx="${idx}" data-field="isFeatured" class="chk-featured-product" ${isFeatured ? 'checked' : ''} style="width:14px; height:14px; accent-color:#2563eb; cursor:pointer;">
+              지금소개중
+            </label>
+            <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+              <input type="checkbox" data-idx="${idx}" data-field="isLeadForm" ${p.isLeadForm === true || p.isLeadForm === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#3b82f6;">
+              상담문의
+            </label>
+            <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
+              <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
+              평소숨김
+            </label>
+            <label style="font-size:12px; color:#dc2626; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#fef2f2; padding:8px 12px; border:1.5px solid #fca5a5; border-radius:8px;">
+              <input type="checkbox" data-idx="${idx}" data-field="isFreeGiveaway" ${p.isFreeGiveaway === true || p.isFreeGiveaway === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#ef4444;" class="chk-giveaway">
+              선착순 무료나눔
+            </label>
+            ${(p.isFreeGiveaway === true || p.isFreeGiveaway === 'true') ? `
+              <div style="display:flex; align-items:center; gap:6px; background:#fff1f2; padding:4px 8px; border-radius:8px; border:1px solid #fecdd3; white-space:nowrap;">
+                <span style="font-size:11.5px; font-weight:700; color:#dc2626;">수량:</span>
+                <input type="number" class="modern-input" style="width:50px; padding:4px 6px; font-size:12px; font-weight:700; text-align:center;" data-idx="${idx}" data-field="giveawayStock" value="${p.giveawayStock || 3}">
+                <button class="btn-giveaway-start" data-idx="${idx}" style="padding:4px 9px; background:#dc2626; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+                <button class="btn-giveaway-stop" data-idx="${idx}" style="padding:4px 9px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+                ${p.isGiveawayActive ? `<span style="font-size:11px; font-weight:800; color:#16a34a; background:#dcfce7; padding:2px 6px; border-radius:4px;">송출중</span>` : `<span style="font-size:11px; font-weight:600; color:#94a3b8;">대기</span>`}
+              </div>
+            ` : ''}
+            <span style="font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:8px 10px; border-radius:8px; white-space:nowrap;">조회: ${clickCount.toLocaleString()}</span>
+            <button class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === 0 ? 'disabled' : ''}>▲</button>
+            <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
+            <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
+          </div>
+          ${isLiveStreamOnly ? '' : `
+          <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+            <summary style="padding:10px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none;">고급 설정 (깜짝딜 / 좋아요 조건)</summary>
+            <div style="padding:10px 14px; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
+                <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
+                <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
+                <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
+                <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
+                <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+                ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:8px; border:1px solid #bbf7d0;">
+                <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
+                <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetLikes" placeholder="목표 좋아요" value="${p.targetLikes || ''}">
+                <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
+                <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
+                <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; background:#fef2f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
+                <span style="font-size:12px; font-weight:800; color:#dc2626;">화면 중앙 무료나눔 드롭</span>
+                <span style="font-size:12px; color:#475569; font-weight:600;">한정 수량:</span>
+                <input type="number" class="modern-input" style="width:65px; padding:6px 8px; font-size:12px;" data-idx="${idx}" data-field="giveawayStock" placeholder="수량" value="${p.giveawayStock || 3}">
+                <span style="font-size:12px; color:#475569;">개</span>
+                <button class="btn-giveaway-start" data-idx="${idx}" style="padding:6px 12px; background:#dc2626; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">화면 송출 시작</button>
+                <button class="btn-giveaway-stop" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
+                ${p.isGiveawayActive ? `<span style="font-size:11.5px; font-weight:800; color:#dc2626; background:#fee2e2; padding:3px 8px; border-radius:6px;">화면 송출중 (잔여: ${Math.max(0, (parseInt(p.giveawayStock) || 0) - (parseInt(p.giveawayClaimed) || 0))}개)</span>` : ''}
+              </div>
             </div>
-          ` : `
-            <div style="font-size:12px; color:#94a3b8; padding:10px; text-align:center; background:#ffffff; border:1px dashed #cbd5e1; border-radius:8px;">
-              등록된 상세페이지 이미지가 없습니다. [+ 이미지/GIF 다중 추가]를 눌러 여러 이미지를 한 번에 선택할 수 있습니다.
-            </div>
+          </details>
           `}
-
-          <input type="text" class="modern-input" style="padding:6px 10px; font-size:11.5px;" value="${p.detailImage || ''}" data-idx="${idx}" data-field="detailImage" placeholder="이미지 URL 직접 편집 (쉼표로 구분하여 여러 장 순서대로 지정)">
         </div>
-        ${isLiveStreamOnly ? '' : `
-        <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-          <summary style="padding:10px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none;">고급 설정 (깜짝딜 / 좋아요 조건)</summary>
-          <div style="padding:10px 14px; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
-              <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
-              <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
-              <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
-              <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
-              <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-              ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
+      </div>
+      `;
+    }).join('');
+  };
+
+  // 2. 상세페이지 관리 뷰 (상품별 상세 이미지/GIF 다중 업로드 및 순서 제어)
+  const renderProductListDetail = () => {
+    if (products.length === 0) {
+      return `
+        <div style="background:#ffffff; border-radius:14px; padding:60px 20px; text-align:center; border:1.5px solid #e2e8f0;">
+          <div style="font-size:16px; font-weight:700; color:#475569; margin-bottom:6px;">등록된 상품이 없습니다</div>
+          <div style="font-size:13px; color:#94a3b8;">[상품 기본 관리] 탭에서 상품을 먼저 등록해 주세요.</div>
+        </div>
+      `;
+    }
+
+    return products.map((p, idx) => {
+      const detailImages = p.detailImage ? String(p.detailImage).split(',').map(s => s.trim()).filter(Boolean) : [];
+      const priceFormatted = p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() + '원' : '가격 미정';
+
+      return `
+      <div class="product-row" style="flex-direction:column; gap:12px; padding:18px 20px; border-radius:14px; background:#ffffff; border:1.5px solid #e2e8f0; margin-bottom:14px;">
+        <!-- 상단 상품 기본 요약 바 -->
+        <div style="display:flex; align-items:center; justify-content:space-between; width:100%; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
+          <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+            <div style="width:48px; height:48px; border-radius:8px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0; flex-shrink:0;">
+              <img src="${p.image || 'https://via.placeholder.com/48'}" style="width:100%; height:100%; object-fit:cover; display:block;">
             </div>
-            <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:8px; border:1px solid #bbf7d0;">
-              <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
-              <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetLikes" placeholder="목표 좋아요" value="${p.targetLikes || ''}">
-              <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
-              <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
-              <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; background:#fef2f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
-              <span style="font-size:12px; font-weight:800; color:#dc2626;">화면 중앙 무료나눔 드롭</span>
-              <span style="font-size:12px; color:#475569; font-weight:600;">한정 수량:</span>
-              <input type="number" class="modern-input" style="width:65px; padding:6px 8px; font-size:12px;" data-idx="${idx}" data-field="giveawayStock" placeholder="수량" value="${p.giveawayStock || 3}">
-              <span style="font-size:12px; color:#475569;">개</span>
-              <button class="btn-giveaway-start" data-idx="${idx}" style="padding:6px 12px; background:#dc2626; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">화면 송출 시작</button>
-              <button class="btn-giveaway-stop" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-              ${p.isGiveawayActive ? `<span style="font-size:11.5px; font-weight:800; color:#dc2626; background:#fee2e2; padding:3px 8px; border-radius:6px;">화면 송출중 (잔여: ${Math.max(0, (parseInt(p.giveawayStock) || 0) - (parseInt(p.giveawayClaimed) || 0))}개)</span>` : ''}
+            <div style="min-width:0;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                <span style="font-size:11px; font-weight:800; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px;">상품 #${idx + 1}</span>
+                <span style="font-size:14px; font-weight:800; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name || '무명 상품'}</span>
+              </div>
+              <div style="font-size:12.5px; font-weight:700; color:#2563eb;">
+                ${priceFormatted}
+                ${p.normalPrice ? `<span style="font-size:11px; color:#94a3b8; text-decoration:line-through; font-weight:500; margin-left:4px;">${Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString()}원</span>` : ''}
+              </div>
             </div>
           </div>
-        </details>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:11.5px; font-weight:700; color:#475569; background:#e2e8f0; padding:4px 10px; border-radius:6px;">총 ${detailImages.length}장</span>
+            <input type="file" id="upload-detail-${idx}" accept="image/*,.gif" multiple style="display:none;" data-idx="${idx}" class="prod-detail-upload">
+            <button type="button" id="btn-upload-detail-${idx}" class="action-btn" onclick="document.getElementById('upload-detail-${idx}').click()" style="padding:6px 14px; font-size:12px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
+              + 이미지/GIF 다중 추가
+            </button>
+            ${detailImages.length > 0 ? `
+              <button type="button" class="btn-del-all-detail-img" data-idx="${idx}" style="background:#fee2e2; border:1px solid #fecaca; color:#ef4444; font-size:11.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px;">전체 삭제</button>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- 썸네일 스트립 및 순서 관리 카드 -->
+        ${detailImages.length > 0 ? `
+          <div style="display:flex; gap:10px; overflow-x:auto; padding:4px 0; -webkit-overflow-scrolling:touch; width:100%;">
+            ${detailImages.map((imgUrl, imgIdx) => `
+              <div style="position:relative; width:96px; flex-shrink:0; background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:10px; padding:6px; display:flex; flex-direction:column; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+                <div style="position:relative; width:100%; aspect-ratio:1/1; border-radius:6px; overflow:hidden; background:#ffffff; border:1px solid #e2e8f0;">
+                  <span style="position:absolute; top:2px; left:2px; background:rgba(15,23,42,0.85); color:#ffffff; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; z-index:2;">${imgIdx + 1}</span>
+                  <a href="${imgUrl}" target="_blank" title="클릭하여 원본 보기">
+                    <img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; display:block;">
+                  </a>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:2px;">
+                  <button type="button" class="btn-move-detail-left" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="앞으로 이동">◀</button>
+                  <button type="button" class="btn-move-detail-right" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === detailImages.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="뒤로 이동">▶</button>
+                  <button type="button" class="btn-del-single-detail" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#fee2e2; border:1px solid #fca5a5; color:#ef4444; border-radius:4px; font-size:11px; font-weight:800; cursor:pointer;" title="이 이미지 삭제">✕</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div style="font-size:12px; color:#94a3b8; padding:12px; text-align:center; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; width:100%; box-sizing:border-box;">
+            등록된 상세 이미지가 없습니다. 우측 [+ 이미지/GIF 다중 추가] 버튼을 눌러 상세페이지를 등록하세요.
+          </div>
         `}
+
+        <input type="text" class="modern-input" style="padding:6px 10px; font-size:11.5px; background:#f8fafc;" value="${p.detailImage || ''}" data-idx="${idx}" data-field="detailImage" placeholder="이미지 URL 직접 편집 (쉼표로 구분하여 여러 장 순서대로 지정 가능)">
       </div>
-    </div>
-    `;
-  }).join('');
+      `;
+    }).join('');
+  };
+
+  const renderProductList = () => {
+    return productSubTab === 'basic' ? renderProductListBasic() : renderProductListDetail();
+  };
 
   const renderProductTab = () => {
     contentArea.innerHTML = `
       <div class="section-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:20px;">
-          <h3 style="margin:0; border:none; padding:0;">상품 관리</h3>
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <button id="btn-copy-shared-detail-url" class="action-btn" style="padding:8px 14px; font-size:12.5px; font-weight:700; background:#f1f5f9; color:#1e293b; border:1.5px solid #cbd5e1; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s ease;" title="브랜드사에 전달할 상세페이지 전용 등록 링크를 복사합니다.">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-              </svg>
-              브랜드사 상세 링크 복사
+        <!-- 상단 헤더 & 서브 탭 분기 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9; margin-bottom:18px;">
+          <!-- 서브 탭 선택 바 -->
+          <div style="display:flex; align-items:center; gap:6px; background:#f1f5f9; padding:4px; border-radius:10px; border:1px solid #e2e8f0;">
+            <button type="button" class="prod-subtab-btn" data-subtab="basic" style="padding:7px 18px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; border:none; transition:all 0.15s; ${productSubTab === 'basic' ? 'background:#0f172a; color:#ffffff; box-shadow:0 2px 6px rgba(15,23,42,0.15);' : 'background:transparent; color:#64748b;'}">
+              상품 기본 관리 (${products.length})
             </button>
+            <button type="button" class="prod-subtab-btn" data-subtab="detail" style="padding:7px 18px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; border:none; transition:all 0.15s; ${productSubTab === 'detail' ? 'background:#0f172a; color:#ffffff; box-shadow:0 2px 6px rgba(15,23,42,0.15);' : 'background:transparent; color:#64748b;'}">
+              상세페이지 관리
+            </button>
+          </div>
+
+          <!-- 우측 액션 버튼들 -->
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            ${productSubTab === 'detail' ? `
+              <button id="btn-copy-shared-detail-url" class="action-btn" style="padding:8px 14px; font-size:12.5px; font-weight:700; background:#f8fafc; color:#1e293b; border:1.5px solid #cbd5e1; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s ease;" title="브랜드사에 전달할 상세페이지 전용 등록 링크를 복사합니다.">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+                브랜드사 상세 링크 복사
+              </button>
+            ` : `
+              <button id="btn-add-product" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
+            `}
             <span style="font-size:12px; color:#10b981; font-weight:700; background:#ecfdf5; padding:6px 12px; border-radius:8px; border:1px solid #a7f3d0; display:flex; align-items:center; gap:5px;">
               <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10b981;"></span>
               실시간 자동 반영
             </span>
-            <button id="btn-add-product" class="action-btn btn-primary-solid" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
             <button id="btn-save-products-manual" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15); transition:all 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
               저장
             </button>
           </div>
         </div>
+
+        <!-- 상품 목록 영역 -->
         <div id="product-list-container">${renderProductList()}</div>
+
+        ${productSubTab === 'basic' && products.length > 0 ? `
         <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
           <button id="btn-add-product-bottom" class="action-btn btn-secondary" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
           <button id="btn-save-products-bottom" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15);">
             저장
           </button>
         </div>
+        ` : ''}
       </div>
     `;
 
@@ -3277,6 +3349,8 @@ function renderLiveEditView(container, liveId, showView) {
             products[idx].name = input.value;
           } else if (field === 'url') {
             products[idx].url = input.value.trim();
+          } else if (field === 'detailImage') {
+            products[idx].detailImage = input.value.trim();
           } else if (field === 'giveawayStock') {
             products[idx].giveawayStock = parseInt(input.value, 10) || 3;
           }
@@ -3629,6 +3703,14 @@ function renderLiveEditView(container, liveId, showView) {
       bindProductEvents();
     };
 
+    contentArea.querySelectorAll('.prod-subtab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        productSubTab = e.currentTarget.dataset.subtab;
+        renderProductTab();
+      });
+    });
+
+    document.getElementById('btn-empty-add-prod')?.addEventListener('click', handleAddProduct);
     document.getElementById('btn-add-product')?.addEventListener('click', handleAddProduct);
     document.getElementById('btn-add-product-bottom')?.addEventListener('click', handleAddProduct);
 
@@ -3695,6 +3777,8 @@ function renderLiveEditView(container, liveId, showView) {
           if (normalPriceInput) products[idx].normalPrice = normalPriceInput.value.replace(/[^0-9]/g, '');
           if (priceInput) products[idx].price = priceInput.value.replace(/[^0-9]/g, '');
           if (urlInput) products[idx].url = urlInput.value.trim();
+          const detailImageInput = row.querySelector('input[data-field="detailImage"]');
+          if (detailImageInput) products[idx].detailImage = detailImageInput.value.trim();
           if (isLeadForm) products[idx].isLeadForm = isLeadForm.checked;
           if (hideByDefault) products[idx].hideByDefault = hideByDefault.checked;
           
