@@ -396,8 +396,8 @@ body {
 .side-actions {
   position: absolute;
   right: 16px;
-  bottom: calc(122px + env(safe-area-inset-bottom, 0px));
-  /* 3mm(약 12px) 상향 조정 */
+  bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+  /* 2mm(약 8px) 상향 기준 조정 */
   display: flex;
   flex-direction: column;
   gap: 36px;
@@ -447,9 +447,9 @@ body {
 
 
 
-/* 입력 영역 (바닥에서 3mm 상향 조정) */
+/* 입력 영역 (바닥에서 2mm 상향 기준 조정) */
 .input-section {
-  padding: 8px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
   display: flex;
   align-items: center;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
@@ -561,7 +561,7 @@ body.embed-active-full .live-container {
 
 /* 채팅이 숨겨졌을 때 상품 배너를 화면 하단에 바짝 붙임 */
 body.ui-hidden .bottom-product-banner {
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   transition: bottom 0.3s ease, opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
 }
 
@@ -741,10 +741,10 @@ body.ui-hidden .bottom-product-banner {
   display: none;
 }
 
-/* 하단 플로팅 롤링 상품 배너 (3mm 상향 조정) */
+/* 하단 플로팅 롤링 상품 배너 (2mm 상향 기준 조정) */
 .bottom-product-banner {
   position: absolute;
-  bottom: calc(92px + env(safe-area-inset-bottom, 0px)); /* input-section 위에 안정적으로 안착하도록 높이 조절 */
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px)); /* input-section 위에 안정적으로 안착하도록 높이 조절 */
   left: 12px;
   width: 275px; /* 가로 너비 여유 조율 */
   max-width: calc(100% - 95px);
