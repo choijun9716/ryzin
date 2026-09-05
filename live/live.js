@@ -2450,11 +2450,6 @@ document.addEventListener('DOMContentLoaded', () => {
           btnCart.style.transform = 'scale(1.35)';
           setTimeout(() => { btnCart.style.transform = 'scale(1)'; }, 200);
         }
-
-        // 사용자가 요청한 '낙찰됐다 알럿' 띄우기
-        setTimeout(() => {
-          alert(`축하합니다! [${auctionData.productName}] 경매에 ${Number(auctionData.currentPrice).toLocaleString()}원으로 낙찰되었습니다! 해당 상품이 장바구니에 담겼습니다.`);
-        }, 100);
       }
 
       if (soldModal) {
