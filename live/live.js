@@ -1302,9 +1302,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        // 예비 썸네일이 방금 꺼졌을 때 브라우저 딜레이를 완벽 회피하기 위해 다단계 강제 재생 재시도
-        if (standbyTurnedOff && c.streamUrl && c.isLive !== false) {
-          [50, 150, 300, 600, 1200].forEach(delay => {
+        // 예비 썸네일이 방금 꺼졌거나 스트리밍 URL이 변경되었을 때 브라우저 딜레이를 완벽 회피하기 위해 다단계 강제 재생 재시도
+        if ((standbyTurnedOff || isStreamChanged) && c.streamUrl && c.isLive !== false) {
+          [50, 150, 300, 600, 1200, 2500].forEach(delay => {
             setTimeout(() => {
               if (typeof window.resumeAllMedia === 'function' && !window.__lastStandbyActive) {
                 window.resumeAllMedia();
@@ -2269,6 +2269,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.hlsInstance = new Hls({ lowLatencyMode: true });
   }
 
+  window.__lastStreamUrl = initialStreamUrl;
+  window.__lastIsLive = savedConfig.isLive !== false;
   playStreamUrl(initialStreamUrl, savedConfig.isLive !== false);
   const initialBrandLogo = document.querySelector('.brand-logo');
   if (initialBrandLogo) {
@@ -4036,6 +4038,22 @@ function forceSoundOn() {
   document.addEventListener(evtType, forceSoundOn, { once: true });
 });
 
+function safePlayVideo(v) {
+  if (!v) return;
+  const playPromise = v.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      // 브라우저 자동재생 차단(NotAllowedError) 회피: muted로 먼저 재생 후 언뮤트 복원
+      v.muted = true;
+      v.play().then(() => {
+        if (window.__isMediaUnmuted) {
+          setTimeout(() => { v.muted = false; }, 150);
+        }
+      }).catch(err => console.warn('Safe video play error:', err));
+    });
+  }
+}
+
 function playStreamUrl(url, isLive) {
   const video = document.getElementById('live-video');
   const ytBox = document.getElementById('youtube-box');
@@ -4056,21 +4074,58 @@ function playStreamUrl(url, isLive) {
       // [방송 ON] 유튜브 영상 재생
       if (ytBox) ytBox.style.display = 'block';
       if (ytPlayer) {
-        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none`;
-        if (!ytPlayer.src || !ytPlayer.src.includes(ytId)) {
+        const isExistingYtIframe = ytPlayer.src && ytPlayer.src.includes('youtube.com/embed');
+        const prevYtId = ytPlayer.dataset.currentYtId || '';
+        ytPlayer.dataset.currentYtId = ytId;
+
+        if (isExistingYtIframe && prevYtId && prevYtId !== ytId) {
+          // [중요] 기존 iframe이 이미 로드되어 있는 상태에서 URL만 변경된 경우:
+          // iframe src를 재할당하면 iframe 리로드로 인해 브라우저의 자동재생 차단 정책이 발동되어 클릭해야만 재생되는 문제가 발생함.
+          // 따라서 src 재할당 없이 loadVideoById 명령으로 비디오만 즉시 스왑하여 클릭 없이 100% 무조건 자동 재생 유지!
+          try {
+            if (ytPlayer.contentWindow) {
+              ytPlayer.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'loadVideoById',
+                args: [{ videoId: ytId, startSeconds: 0, suggestedQuality: 'hd1080' }]
+              }), '*');
+              ytPlayer.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'loadVideoById',
+                args: [ytId, 0, 'hd1080']
+              }), '*');
+            }
+          } catch(e) {}
+        } else if (!isExistingYtIframe || !prevYtId) {
+          // 첫 마운트 시에만 targetSrc 설정
+          const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none`;
           ytPlayer.src = targetSrc;
+          ytPlayer.onload = function() {
+            if (ytPlayer && ytPlayer.contentWindow) {
+              ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+              disableYtCaptions(ytPlayer);
+              if (window.__isMediaUnmuted) {
+                setTimeout(() => {
+                  try {
+                    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                    ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                  } catch(e) {}
+                }, 200);
+              }
+            }
+          };
         }
 
         // 0초 무버퍼링 무한 연속 재생 엔진 가동
         setupSeamlessYouTubeLoop(ytPlayer);
 
-        // 무조건 자동 재생 및 자동 자막 강제 차단 (다단계 지연 호출)
-        [30, 100, 250, 500, 1000, 2000, 3500, 5000].forEach(delay => {
+        // 무조건 자동 재생 및 자동 자막 강제 차단 (다단계 지연 호출로 0클릭 즉시 재생 보장)
+        [10, 50, 120, 250, 500, 1000, 1800, 3000, 5000].forEach(delay => {
           setTimeout(() => {
             if (ytPlayer && ytPlayer.contentWindow) {
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
               disableYtCaptions(ytPlayer);
-              if (window.__isMediaUnmuted) {
+              if (window.__isMediaUnmuted && delay >= 120) {
                 ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
                 ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
               }
@@ -4081,7 +4136,7 @@ function playStreamUrl(url, isLive) {
           }, delay);
         });
 
-        // 메인 유튜브 플레이어 상태 감지 리스너 (자막 자동 켜짐 차단 및 멈춤 시 강제 재생)
+        // 메인 유튜브 플레이어 상태 감지 리스너 (자막 자동 켜짐 차단 및 멈춤/대기 시 0클릭 강제 자동 재생)
         if (!window.__ytMainListenerBound) {
           window.__ytMainListenerBound = true;
           window.addEventListener('message', function ytMainStateListener(e) {
@@ -4089,11 +4144,16 @@ function playStreamUrl(url, isLive) {
               const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
               if (data && data.event === 'onStateChange') {
                 const curYt = document.getElementById('youtube-player');
-                if (curYt) {
+                if (curYt && curYt.contentWindow) {
                   disableYtCaptions(curYt);
-                  // 일시정지(2) 감지 시 방송 중이면 무조건 자동 재생 강제
-                  if (data.info === 2 && !document.hidden && window.__lastIsLive !== false) {
+                  // -1(시작안됨), 2(일시정지), 5(대기) 감지 시 방송 중이면 클릭 없이 스스로 즉각 자동 재생 재개
+                  if ((data.info === 2 || data.info === 5 || data.info === -1) && !document.hidden && window.__lastIsLive !== false && !window.__lastStandbyActive) {
                     curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                  }
+                  // 1(재생 중) 감지 시 사용자가 이미 소리를 켰었다면 안전하게 unMute
+                  if (data.info === 1 && window.__isMediaUnmuted) {
+                    curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                    curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
                   }
                 }
               }
@@ -4110,6 +4170,7 @@ function playStreamUrl(url, isLive) {
       if (ytBox) ytBox.style.display = 'none';
       if (ytPlayer) {
         ytPlayer.src = '';
+        ytPlayer.dataset.currentYtId = '';
       }
       if (overlay) {
         overlay.classList.remove('hidden');
@@ -4121,9 +4182,11 @@ function playStreamUrl(url, isLive) {
       }
     }
   } else {
+    // HLS 또는 일반 비디오 스트림 처리
     if (ytBox) ytBox.style.display = 'none';
     if (ytPlayer) {
       ytPlayer.src = '';
+      ytPlayer.dataset.currentYtId = '';
     }
     video.style.display = 'block';
 
@@ -4134,31 +4197,28 @@ function playStreamUrl(url, isLive) {
       }
       if (window.hlsInstance) {
         if (window.__currentHlsUrl === url && video.readyState >= 2) {
-          video.play().catch(e => console.warn(e));
+          safePlayVideo(video);
         } else {
           window.__currentHlsUrl = url;
           try {
             window.hlsInstance.loadSource(url);
             window.hlsInstance.attachMedia(video);
             window.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
-              video.play().catch(e => console.warn(e));
+              safePlayVideo(video);
             });
           } catch(err) {
-            video.play().catch(e => console.warn(e));
+            safePlayVideo(video);
           }
         }
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         if (video.src === url && video.readyState >= 2) {
-          video.play().catch(e => console.warn(e));
+          safePlayVideo(video);
         } else {
           video.src = url;
-          video.play().catch(e => console.warn(e));
+          safePlayVideo(video);
         }
       } else {
-        video.play().catch(e => console.warn(e));
-      }
-      if (window.__isMediaUnmuted) {
-        video.muted = false;
+        safePlayVideo(video);
       }
     } else {
       if (overlay) {
