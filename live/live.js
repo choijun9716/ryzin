@@ -66,6 +66,21 @@ function extractYouTubeId(url) {
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/|watch\?.+&v=))([\w-]{11})/);
   return m ? m[1] : null;
 }
+
+// ── 유튜브 자동 자막 완전 비활성화 엔진 ──
+function disableYtCaptions(ifr) {
+  if (!ifr || !ifr.contentWindow) return;
+  try {
+    ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unloadModule', args: ['captions'] }), '*');
+    ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unloadModule', args: ['cc'] }), '*');
+    ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setOption', args: ['captions', 'track', {}] }), '*');
+    ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setOption', args: ['cc', 'track', {}] }), '*');
+    ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setOption', args: ['captions', 'fontSize', 0] }), '*');
+    ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setOption', args: ['captions', 'reload', false] }), '*');
+  } catch (e) {}
+}
+window.disableYtCaptions = disableYtCaptions;
+
 let db = null;
 let LIVE_ID = 'N45ZMPL';
 
@@ -102,18 +117,20 @@ window.unmuteAllMedia = function() {
     window.dismissUnmuteToast();
   }
   try {
-    // 1. 유튜브 라이브 플레이어 음소거 해제 & 볼륨 100%
+    // 1. 유튜브 라이브 플레이어 음소거 해제 & 볼륨 100% & 자막 강제 해제
     const ytPlayer = document.getElementById('youtube-player');
     if (ytPlayer && ytPlayer.contentWindow) {
       ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
       ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+      disableYtCaptions(ytPlayer);
     }
 
-    // 2. 예비 썸네일 유튜브 플레이어 음소거 해제
+    // 2. 예비 썸네일 유튜브 플레이어 음소거 해제 & 자막 강제 해제
     const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
     if (standbyIfr && standbyIfr.contentWindow) {
       standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
       standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+      disableYtCaptions(standbyIfr);
     }
 
     // 3. 일반 HTML5 비디오 (HLS/MP4) 음소거 해제
@@ -155,20 +172,22 @@ window.resumeAllMedia = function() {
       }
     }
 
-    // 2. 라이브 송출 유튜브 플레이어 강제 재생 명령 전송
+    // 2. 라이브 송출 유튜브 플레이어 강제 재생 명령 전송 및 자막 강제 해제
     const ytPlayer = document.getElementById('youtube-player');
     if (ytPlayer && ytPlayer.contentWindow) {
       ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+      disableYtCaptions(ytPlayer);
       if (window.__isMediaUnmuted) {
         ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
         ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
       }
     }
 
-    // 3. 예비 썸네일 유튜브 플레이어 강제 재생 명령 전송
+    // 3. 예비 썸네일 유튜브 플레이어 강제 재생 명령 전송 및 자막 강제 해제
     const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
     if (standbyIfr && standbyIfr.contentWindow) {
       standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+      disableYtCaptions(standbyIfr);
       if (window.__isMediaUnmuted) {
         standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
         standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
@@ -210,10 +229,17 @@ if (!window.__mediaKeepAliveTimer) {
       if (video && video.style.display !== 'none' && video.paused && video.readyState >= 2) {
         video.play().catch(() => {});
       }
+      const ytPlayer = document.getElementById('youtube-player');
+      const ytBox = document.getElementById('youtube-box');
+      if (ytPlayer && ytBox && ytBox.style.display !== 'none') {
+        ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+        disableYtCaptions(ytPlayer);
+      }
       const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
       const standbyOverlay = document.getElementById('standby-overlay');
       if (standbyIfr && standbyOverlay && standbyOverlay.style.display !== 'none') {
         standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+        disableYtCaptions(standbyIfr);
       }
     }
   }, 1200);
@@ -1124,19 +1150,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 standbyYtWrap.innerHTML = `
                   <iframe
                     data-yt-id="${ytId}"
-                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080"
+                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowfullscreen
                     style="position:absolute; top:50%; left:50%; width:100%; height:100%; min-width:178vh; min-height:100%; transform:translate(-50%, -50%) scale(1.08); border:none; pointer-events:none; -webkit-backface-visibility:hidden; image-rendering:-webkit-optimize-contrast;"
                   ></iframe>
                 `;
 
-                // 유튜브 무조건 자동 재생 보장 (autoplay=1&mute=1로 브라우저 차단 완벽 회피)
-                [100, 300, 600, 1200, 2500, 4000].forEach(delay => {
+                // 유튜브 무조건 자동 재생 보장 & 자막 강제 해제 (다단계 지연 호출)
+                [50, 150, 300, 600, 1200, 2500, 4000].forEach(delay => {
                   setTimeout(() => {
                     const ifr = standbyYtWrap.querySelector('iframe');
                     if (ifr && ifr.contentWindow) {
                       ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                      disableYtCaptions(ifr);
                       if (window.__isMediaUnmuted) {
                         ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
                         ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
@@ -1145,15 +1172,18 @@ document.addEventListener('DOMContentLoaded', () => {
                   }, delay);
                 });
 
-                // 유튜브 반복 시 블랙 현상 방지: 영상 종료(Ended:0) 감지 즉시 처음으로 seekTo(0) 및 재생
+                // 유튜브 반복 시 블랙 현상 방지 & 자막 강제 해제: 영상 종료(Ended:0) 및 재생 시
                 window.addEventListener('message', function ytStandbyLoopHandler(e) {
                   try {
                     const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-                    if (data && (data.event === 'onStateChange' && data.info === 0)) {
+                    if (data && data.event === 'onStateChange') {
                       const ifr = standbyYtWrap.querySelector('iframe');
                       if (ifr && ifr.contentWindow) {
-                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }), '*');
-                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                        disableYtCaptions(ifr);
+                        if (data.info === 0) {
+                          ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }), '*');
+                          ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                        }
                       }
                     }
                   } catch (err) {}
@@ -3963,14 +3993,16 @@ function playStreamUrl(url, isLive) {
       // [방송 ON] 유튜브 영상 재생
       if (ytBox) ytBox.style.display = 'block';
       if (ytPlayer) {
-        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080`;
+        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&vq=hd1080&cc_load_policy=0&cc_lang_pref=none`;
         if (!ytPlayer.src || !ytPlayer.src.includes(ytId)) {
           ytPlayer.src = targetSrc;
         }
-        [50, 150, 300, 600, 1200, 2500, 4000].forEach(delay => {
+        // 무조건 자동 재생 및 자동 자막 강제 차단 (다단계 지연 호출)
+        [30, 100, 250, 500, 1000, 2000, 3500, 5000].forEach(delay => {
           setTimeout(() => {
             if (ytPlayer && ytPlayer.contentWindow) {
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+              disableYtCaptions(ytPlayer);
               if (window.__isMediaUnmuted) {
                 ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
                 ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
@@ -3981,6 +4013,26 @@ function playStreamUrl(url, isLive) {
             }
           }, delay);
         });
+
+        // 메인 유튜브 플레이어 상태 감지 리스너 (자막 자동 켜짐 차단 및 멈춤 시 강제 재생)
+        if (!window.__ytMainListenerBound) {
+          window.__ytMainListenerBound = true;
+          window.addEventListener('message', function ytMainStateListener(e) {
+            try {
+              const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+              if (data && data.event === 'onStateChange') {
+                const curYt = document.getElementById('youtube-player');
+                if (curYt) {
+                  disableYtCaptions(curYt);
+                  // 일시정지(2) 감지 시 방송 중이면 무조건 자동 재생 강제
+                  if (data.info === 2 && !document.hidden && window.__lastIsLive !== false) {
+                    curYt.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                  }
+                }
+              }
+            } catch (err) {}
+          });
+        }
       }
       if (overlay) {
         overlay.classList.add('hidden');
