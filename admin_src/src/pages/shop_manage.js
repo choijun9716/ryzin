@@ -1312,8 +1312,9 @@ async function renderUsersPanel(panel, wrapper) {
                 <td style="font-weight:700; color:#059669; text-align:right; font-family:inherit;">${(u.points || 0).toLocaleString()}P</td>
                 <td style="font-weight:700; color:#2563eb; text-align:right; font-family:inherit;">${(u.coupons_count || 0)}장</td>
                 <td style="font-size:11px; color:#64748b; text-align:center;">${regDate}</td>
-                <td style="text-align:center;">
+                <td style="text-align:center; white-space:nowrap;">
                   <button class="sm-action-btn sm-btn-primary user-edit-btn" data-id="${u.id}" style="padding:4px 8px; font-size:11px;">수정</button>
+                  <button class="sm-action-btn sm-btn-danger user-del-btn" data-id="${u.id}" style="padding:4px 8px; font-size:11px; margin-left:4px;">삭제</button>
                 </td>
               </tr>
             `;
@@ -1331,6 +1332,21 @@ async function renderUsersPanel(panel, wrapper) {
     btn.addEventListener('click', () => {
       const u = users.find(x => x.id === btn.dataset.id);
       openUserModal(u, wrapper, panel);
+    });
+  });
+
+  panel.querySelectorAll('.user-del-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const u = users.find(x => x.id === btn.dataset.id);
+      if (!u) return;
+      if (!confirm(`[${u.name || '회원'}] 회원 데이터를 영구 삭제하시겠습니까?`)) return;
+      try {
+        await userDB.delete(u.id);
+        toast('회원 정보가 삭제되었습니다.');
+        await renderUsersPanel(panel, wrapper);
+      } catch(e) {
+        alert('회원 삭제 중 오류가 발생했습니다: ' + e.message);
+      }
     });
   });
 }

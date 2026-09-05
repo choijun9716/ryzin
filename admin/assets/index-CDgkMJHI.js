@@ -5220,15 +5220,16 @@ Minimum version required to store current data is: `+c+`.
                 <td style="font-weight:700; color:#059669; text-align:right; font-family:inherit;">${(e.points||0).toLocaleString()}P</td>
                 <td style="font-weight:700; color:#2563eb; text-align:right; font-family:inherit;">${e.coupons_count||0}장</td>
                 <td style="font-size:11px; color:#64748b; text-align:center;">${a}</td>
-                <td style="text-align:center;">
+                <td style="text-align:center; white-space:nowrap;">
                   <button class="sm-action-btn sm-btn-primary user-edit-btn" data-id="${e.id}" style="padding:4px 8px; font-size:11px;">수정</button>
+                  <button class="sm-action-btn sm-btn-danger user-del-btn" data-id="${e.id}" style="padding:4px 8px; font-size:11px; margin-left:4px;">삭제</button>
                 </td>
               </tr>
             `}).join(``)}
         </tbody>
       </table>
     </div>
-  `,e.querySelector(`#add-user-btn`).addEventListener(`click`,()=>{Wa(null,t,e)}),e.querySelectorAll(`.user-edit-btn`).forEach(r=>{r.addEventListener(`click`,()=>{Wa(n.find(e=>e.id===r.dataset.id),t,e)})})}function Wa(e,t,n){let r=!!e,i=t.querySelector(`#sm-modal-container`),a=e?e.user_code:`USER-${Math.floor(Math.random()*89999+1e4)}`,o=e&&e.phone||``,s=e&&e.email||``;e&&(e.name===`채이준`||e.email&&e.email.includes(`choijun`))?(o=`010-3018-9716`,s=e.email&&e.email.includes(`@`)?e.email:`choijun9716@gmail.com`):!o&&s&&(s.startsWith(`01`)||s.includes(`-`)||!s.includes(`@`))&&(o=s.replace(`@kakao.user`,``),s=``),i.innerHTML=`
+  `,e.querySelector(`#add-user-btn`).addEventListener(`click`,()=>{Wa(null,t,e)}),e.querySelectorAll(`.user-edit-btn`).forEach(r=>{r.addEventListener(`click`,()=>{Wa(n.find(e=>e.id===r.dataset.id),t,e)})}),e.querySelectorAll(`.user-del-btn`).forEach(r=>{r.addEventListener(`click`,async()=>{let i=n.find(e=>e.id===r.dataset.id);if(i&&confirm(`[${i.name||`회원`}] 회원 데이터를 영구 삭제하시겠습니까?`))try{await Sa.delete(i.id),Q(`회원 정보가 삭제되었습니다.`),await Ua(e,t)}catch(e){alert(`회원 삭제 중 오류가 발생했습니다: `+e.message)}})})}function Wa(e,t,n){let r=!!e,i=t.querySelector(`#sm-modal-container`),a=e?e.user_code:`USER-${Math.floor(Math.random()*89999+1e4)}`,o=e&&e.phone||``,s=e&&e.email||``;e&&(e.name===`채이준`||e.email&&e.email.includes(`choijun`))?(o=`010-3018-9716`,s=e.email&&e.email.includes(`@`)?e.email:`choijun9716@gmail.com`):!o&&s&&(s.startsWith(`01`)||s.includes(`-`)||!s.includes(`@`))&&(o=s.replace(`@kakao.user`,``),s=``),i.innerHTML=`
     <div class="sm-modal-backdrop">
       <div class="sm-modal-content" style="max-width:500px;">
         <div class="sm-modal-header">
