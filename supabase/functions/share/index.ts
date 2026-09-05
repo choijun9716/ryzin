@@ -73,8 +73,22 @@ Deno.serve(async (req) => {
     <meta name="twitter:description" content="${shareDesc}">
     <meta name="twitter:image" content="${shareImage}">
 
-    <!-- 봇이 아닌 경우 자동 이동 -->
+    <!-- 봇이 아닌 경우 자동 이동 및 카카오톡 외부 브라우저 자동 탈출 -->
     <meta http-equiv="refresh" content="0;url=${targetUrl}">
+    <script>
+      var ua = navigator.userAgent || '';
+      if (/KAKAOTALK/i.test(ua)) {
+        if (/Android/i.test(ua)) {
+          location.href = 'intent://${targetUrl.replace(/https?:\\/\\//i, '')}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.android.chrome;end';
+        } else if (/iPhone|iPad|iPod/i.test(ua)) {
+          location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent('${targetUrl}');
+        } else {
+          location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent('${targetUrl}');
+        }
+      } else {
+        location.replace('${targetUrl}');
+      }
+    </script>
   </head>
   <body>
     <p>잠시 후 라이브 방송 페이지로 이동합니다...</p>

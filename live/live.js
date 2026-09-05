@@ -1782,55 +1782,264 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ── [오염된 로컬 스토리지 데이터 자동 정제 (전화번호에 이메일이 들어간 경우 즉시 제거)] ──
+  try {
+    const sanitizeStoragePhone = function(key) {
+      try {
+        const item = JSON.parse(localStorage.getItem(key) || 'null');
+        if (item && item.phone && (item.phone.includes('@') || item.phone.replace(/[^0-9]/g, '').length < 7)) {
+          item.phone = '';
+          localStorage.setItem(key, JSON.stringify(item));
+        }
+      } catch(err) {}
+    };
+    sanitizeStoragePhone('ryzin_saved_order_info');
+    sanitizeStoragePhone('ryzin_kakao_user');
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('ryzin_account_addr_')) {
+        sanitizeStoragePhone(k);
+      }
+    }
+  } catch(e) {}
+
+  // ── [통합 배송지 & 프로필 관리 엔진] ──────────────────────────
+  // 1. 주소 안전 분리 헬퍼 (기본 주소와 상세 주소 자동 분리)
+  window.splitAddress = function(fullAddr) {
+    if (!fullAddr) return { base: '', detail: '' };
+    fullAddr = String(fullAddr).trim();
+    
+    // 괄호 참고항목이 있는 경우 (예: "서울시 강남구 테헤란로 123 (역삼동) 101동 202호")
+    const parenMatch = fullAddr.match(/^(.+?\([^\)]+\))\s*(.*)$/);
+    if (parenMatch) {
+      return {
+        base: parenMatch[1].trim(),
+        detail: (parenMatch[2] || '').trim()
+      };
+    }
+
+    // 도로명/지번 뒤 번지수(숫자 또는 숫자-숫자)를 기준으로 분리
+    // 예: "경기도 하남시 미사강변동로 100-1 미사역 파라곤스퀘어 2064-2"
+    const numMatch = fullAddr.match(/^(.+?[로길동읍면리]\s*[0-9]+(?:-[0-9]+)?(?:번지)?)\s+(.+)$/);
+    if (numMatch) {
+      return {
+        base: numMatch[1].trim(),
+        detail: (numMatch[2] || '').trim()
+      };
+    }
+
+    // 공백 기준 앞 3~4개 단어를 기본주소로, 나머지를 상세주소로
+    const parts = fullAddr.split(/\s+/);
+    if (parts.length > 3) {
+      return {
+        base: parts.slice(0, 3).join(' '),
+        detail: parts.slice(3).join(' ')
+      };
+    }
+    return { base: fullAddr, detail: '' };
+  };
+
+  // 2. 통합 사용자 배송 정보 조회 (수령인 실명 및 상세주소 영구 보존 및 동기화)
+  window.getUnifiedUserInfo = function() {
+    const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+    let savedAddr = null;
+    try { savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null'); } catch(e) {}
+    let generalSaved = null;
+    try { generalSaved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || 'null'); } catch(e) {}
+    let kakaoUserObj = null;
+    try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+
+    // 수령인 이름 (사용자가 배송지/내정보에 적은 실명 1순위)
+    let name = (savedAddr && savedAddr.name) || (generalSaved && generalSaved.name) || '';
+    if (!name && kakaoUserObj && kakaoUserObj.name) {
+      name = kakaoUserObj.name;
+    }
+
+    // 연락처 (전화번호에 @가 들어가거나 숫자가 아닌 이메일 오염 데이터는 100% 원천 차단!)
+    let phone = (savedAddr && savedAddr.phone) || (generalSaved && generalSaved.phone) || (kakaoUserObj && kakaoUserObj.phone) || '';
+    if (phone && (phone.includes('@') || phone.replace(/[^0-9]/g, '').length < 7)) {
+      phone = '';
+    }
+
+    // 배송지 주소 (기본 주소와 상세 주소 원본 우선 복원!)
+    let address = (savedAddr && savedAddr.address) || (generalSaved && generalSaved.address) || '';
+    let baseAddr = (savedAddr && savedAddr.baseAddr) || (generalSaved && generalSaved.baseAddr) || '';
+    let detailAddr = (savedAddr && savedAddr.detailAddr) || (generalSaved && generalSaved.detailAddr) || '';
+
+    // 개별 저장된 base/detail이 없으면 splitAddress로 분리
+    if (!baseAddr && address) {
+      const splitted = window.splitAddress(address);
+      baseAddr = splitted.base;
+      if (!detailAddr) detailAddr = splitted.detail;
+    }
+
+    // 이메일
+    let email = (kakaoUserObj && kakaoUserObj.email) || '';
+
+    return { name, phone, address, baseAddr, detailAddr, email, currentAcc, kakaoUserObj };
+  };
+
+  // 3. 배송지 주소변경 & 내정보확인 실시간 양방향 완전 연동 저장 엔진
+  window.syncShippingAndProfileInfo = function(data) {
+    if (!data) return;
+    const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+
+    let name = (data.name !== undefined ? data.name : '').trim();
+    let phone = (data.phone !== undefined ? data.phone : '').trim();
+    if (phone && (phone.includes('@') || phone.replace(/[^0-9]/g, '').length < 7)) {
+      phone = '';
+    }
+
+    let baseAddr = (data.baseAddr !== undefined ? data.baseAddr : '').trim();
+    let detailAddr = (data.detailAddr !== undefined ? data.detailAddr : '').trim();
+
+    let address = (data.address !== undefined ? data.address : '').trim();
+    if (!address && (baseAddr || detailAddr)) {
+      address = (baseAddr + (detailAddr ? ' ' + detailAddr : '')).trim();
+    }
+    if (!baseAddr && address) {
+      const splitted = window.splitAddress(address);
+      baseAddr = splitted.base;
+      if (!detailAddr) detailAddr = splitted.detail;
+    }
+
+    // 기존 저장된 정보 보존 (누락된 필드 보완)
+    const curInfo = window.getUnifiedUserInfo();
+    if (!name && curInfo.name) name = curInfo.name;
+    if (!phone && curInfo.phone) phone = curInfo.phone;
+    if (!baseAddr && curInfo.baseAddr) baseAddr = curInfo.baseAddr;
+    if (!detailAddr && curInfo.detailAddr) detailAddr = curInfo.detailAddr;
+    if (!address && (baseAddr || detailAddr)) {
+      address = (baseAddr + (detailAddr ? ' ' + detailAddr : '')).trim();
+    }
+
+    // 1) localStorage 영구 동기화 (baseAddr, detailAddr 독립 키 보존!)
+    const orderInfo = { name, phone, address, baseAddr, detailAddr };
+    if (name || phone || address || baseAddr || detailAddr) {
+      localStorage.setItem('ryzin_saved_order_info', JSON.stringify(orderInfo));
+      if (currentAcc) {
+        localStorage.setItem(`ryzin_account_addr_${currentAcc}`, JSON.stringify(orderInfo));
+      }
+    }
+
+    try {
+      let kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null');
+      if (kakaoUserObj) {
+        if (name) kakaoUserObj.name = name;
+        if (phone) kakaoUserObj.phone = phone;
+        localStorage.setItem('ryzin_kakao_user', JSON.stringify(kakaoUserObj));
+      }
+    } catch(e) {}
+
+    // 2) 배송지 주소변경 / 주문서 모달 인풋 동기화
+    const coName = document.getElementById('checkout-name');
+    const coPhone = document.getElementById('checkout-phone');
+    const coBase = document.getElementById('checkout-base-address');
+    const coDetail = document.getElementById('checkout-detail-address');
+    const coAddress = document.getElementById('checkout-address');
+
+    if (coName) coName.value = name;
+    if (coPhone) coPhone.value = phone;
+    if (coBase) coBase.value = baseAddr;
+    if (coDetail) coDetail.value = detailAddr;
+    if (coAddress) coAddress.value = address;
+
+    // 3) 내정보 확인 모달 인풋 동기화
+    const myName = document.getElementById('my-p-name');
+    const myPhone = document.getElementById('my-p-phone');
+    const myBase = document.getElementById('my-p-base-addr');
+    const myDetail = document.getElementById('my-p-detail-addr');
+
+    if (myName) myName.value = name;
+    if (myPhone) myPhone.value = phone;
+    if (myBase) myBase.value = baseAddr;
+    if (myDetail) myDetail.value = detailAddr;
+
+    // 4) 장바구니 하단 배송지 프리뷰 박스 갱신
+    if (typeof updateCartShippingPreview === 'function') {
+      updateCartShippingPreview();
+    }
+
+    // 5) Supabase shop_users 테이블 실시간 upsert 동기화
+    try {
+      const clientDb = (typeof db !== 'undefined' && db) || window.supabaseClient;
+      if (clientDb && (name || phone || address)) {
+        let kakaoUserObj = null;
+        try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+        const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+        const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : (phone ? ('USER-' + phone.replace(/[^0-9]/g, '')) : null));
+
+        if (userCode) {
+          clientDb.from('shop_users')
+            .select('id, email, default_address')
+            .eq('user_code', userCode)
+            .maybeSingle()
+            .then(({ data: existUser }) => {
+              let finalEmail = phone;
+              if (existUser && existUser.email && existUser.email.includes('@')) {
+                finalEmail = existUser.email;
+              } else if (kakaoUserObj && kakaoUserObj.email && kakaoUserObj.email.includes('@')) {
+                finalEmail = kakaoUserObj.email;
+              }
+
+              const payload = {
+                name: name,
+                email: finalEmail || ('user_' + Date.now() + '@ryzin.com'),
+                default_address: address
+              };
+
+              if (existUser) {
+                clientDb.from('shop_users').update(payload).eq('id', existUser.id).then(() => {});
+              } else {
+                clientDb.from('shop_users').insert({
+                  user_code: userCode,
+                  ...payload,
+                  points: 0,
+                  coupons_count: 0,
+                  membership_active: true
+                }).then(() => {});
+              }
+            }).catch(e => console.warn('shop_users sync error:', e));
+        }
+      }
+    } catch(e) {}
+  };
+
   // ── 아이디 / 닉네임 기반 간편 계정 및 배송지 자동 연동 ──────────────
   // 주문서 화면의 회원/비회원 상태 UI 갱신
   window.updateCheckoutMemberUI = function() {
     const memberBadge = document.getElementById('checkout-member-badge');
     const guestBox = document.getElementById('checkout-guest-box');
-    const memberNameEl = document.getElementById('checkout-member-name');
-    const memberSubEl = document.getElementById('checkout-member-sub');
     const nameInput = document.getElementById('checkout-name');
     const phoneInput = document.getElementById('checkout-phone');
+    const baseInput = document.getElementById('checkout-base-address');
+    const detailInput = document.getElementById('checkout-detail-address');
     const addrInput = document.getElementById('checkout-address');
 
-    const currentAcc = (userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
-    const avatarEl = document.getElementById('checkout-member-avatar');
+    const userInfo = window.getUnifiedUserInfo();
+    const currentAcc = userInfo.currentAcc;
 
     if (currentAcc) {
-      if (memberBadge) memberBadge.style.display = 'none'; // 로그인됨/계정변경 박스 완전 숨김
+      if (memberBadge) memberBadge.style.display = 'none';
       if (guestBox) guestBox.style.display = 'none';
-
-      // 해당 계정에 저장된 배송 정보 불러오기
-      try {
-        const savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null');
-        const generalSaved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || 'null');
-        let kakaoUserObj = null;
-        try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-
-        // 닉네임은 이름에 절대 올리지 않음 (실명이 없으면 무조건 빈칸으로 유지)
-        const savedName = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
-          : (generalSaved && generalSaved.name && generalSaved.name !== currentAcc) ? generalSaved.name
-          : (kakaoUserObj && kakaoUserObj.name && kakaoUserObj.name !== currentAcc) ? kakaoUserObj.name : '';
-
-        const savedPhone = (savedAddr && savedAddr.phone) || (generalSaved && generalSaved.phone) || (kakaoUserObj && kakaoUserObj.phone) || '';
-        const savedAddress = (savedAddr && savedAddr.address) || (generalSaved && generalSaved.address) || '';
-
-        if (nameInput) nameInput.value = savedName; // 실명이 없으면 빈칸 유지
-        if (phoneInput && savedPhone) phoneInput.value = savedPhone;
-        if (addrInput) addrInput.value = savedAddress;
-
-        // 기본 주소와 상세 주소 인풋 분리 채움
-        const baseInput = document.getElementById('checkout-base-address');
-        const detailInput = document.getElementById('checkout-detail-address');
-        if (baseInput && savedAddress) {
-          baseInput.value = savedAddress;
-        }
-      } catch(e) {}
     } else {
-      // 비회원 상태
       if (memberBadge) memberBadge.style.display = 'none';
       if (guestBox) guestBox.style.display = 'block';
     }
+
+    if (nameInput) nameInput.value = userInfo.name || '';
+    
+    // 전화번호: 이메일이 들어가는 것을 100% 원천 차단!
+    let validPhone = userInfo.phone || '';
+    if (validPhone && (validPhone.includes('@') || validPhone.replace(/[^0-9]/g, '').length < 7)) {
+      validPhone = '';
+    }
+    if (phoneInput) phoneInput.value = validPhone;
+
+    // 기본 주소와 상세 주소를 완벽하게 각각 채움!
+    if (baseInput) baseInput.value = userInfo.baseAddr || '';
+    if (detailInput) detailInput.value = userInfo.detailAddr || '';
+    if (addrInput) addrInput.value = userInfo.address || '';
   };
 
   // 계정 변경 / 다른 아이디로 로그인
@@ -1910,7 +2119,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const userAddress = '카카오 회원가입 (주소 미입력)';
 
             clientDb.from('shop_users')
-              .select('id')
+              .select('id, default_address, name')
               .eq('user_code', userCode)
               .maybeSingle()
               .then(({ data: existUser, error: selectErr }) => {
@@ -1932,11 +2141,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     else console.log('카카오 회원 신규 등록 완료:', userCode);
                   });
                 } else {
-                  clientDb.from('shop_users').update({
-                    name: realName,
-                    email: userEmail,
-                    default_address: userAddress
-                  }).eq('id', existUser.id).then(() => {});
+                  const updatePayload = {
+                    email: userEmail
+                  };
+                  if (realName) updatePayload.name = realName;
+                  // 기존 주소가 비어있거나 없을 때만 기본 주소 부여 (기존 주소 보존)
+                  if (!existUser.default_address || existUser.default_address.includes('미입력')) {
+                    updatePayload.default_address = userAddress;
+                  }
+                  clientDb.from('shop_users').update(updatePayload).eq('id', existUser.id).then(() => {});
                 }
               }).catch(err => console.warn('shop_users 연동 예외:', err));
           }
@@ -3240,18 +3453,27 @@ async function restoreUserAddressFromDB() {
 
       if (user) {
         const name = user.name || '';
-        let phone = user.email || '';
+        let phone = '';
+        if (user.email && !user.email.includes('@')) {
+          phone = user.email;
+        }
         let address = user.default_address || '';
         if (address.includes('카카오') || address.includes('주소 미입력')) address = '';
 
-        if (address || phone || name) {
-          const info = { name, phone, address };
-          localStorage.setItem('ryzin_saved_order_info', JSON.stringify(info));
-          if (currentAcc) {
-            localStorage.setItem(`ryzin_account_addr_${currentAcc}`, JSON.stringify(info));
+        // 로컬에 이미 저장된 정보가 있다면 우선 보존
+        const localInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
+        const finalName = localInfo.name || name;
+        const finalPhone = localInfo.phone || phone;
+        const finalAddress = localInfo.address || address;
+
+        if (finalName || finalPhone || finalAddress) {
+          if (typeof window.syncShippingAndProfileInfo === 'function') {
+            window.syncShippingAndProfileInfo({
+              name: finalName,
+              phone: finalPhone,
+              address: finalAddress
+            });
           }
-          if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
-          if (typeof prefillCheckoutForm === 'function') prefillCheckoutForm();
         }
       }
     }
@@ -3329,21 +3551,37 @@ function updateFullAddressFromInputs() {
 function saveCheckoutForm() {
   try {
     const name = document.getElementById('checkout-name')?.value.trim() || '';
-    const phone = document.getElementById('checkout-phone')?.value.trim() || '';
+    let phone = document.getElementById('checkout-phone')?.value.trim() || '';
+    if (phone && (phone.includes('@') || phone.replace(/[^0-9]/g, '').length < 7)) {
+      phone = '';
+    }
+    const baseAddr = document.getElementById('checkout-base-address')?.value.trim() || '';
+    const detailAddr = document.getElementById('checkout-detail-address')?.value.trim() || '';
     if (typeof updateFullAddressFromInputs === 'function') updateFullAddressFromInputs();
     const address = document.getElementById('checkout-address')?.value.trim() || '';
 
+    // 기존 저장된 정보와 합쳐 부분 입력 중 유실 방지
+    const curInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
+    const finalName = name || curInfo.name || '';
+    const finalPhone = phone || curInfo.phone || '';
+    const finalBaseAddr = baseAddr || curInfo.baseAddr || '';
+    const finalDetailAddr = detailAddr || curInfo.detailAddr || '';
+    const finalAddress = address || (finalBaseAddr + (finalDetailAddr ? ' ' + finalDetailAddr : '')).trim();
+
     const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
 
-    // 1. 로그인된 아이디(닉네임) 계정에 배송 정보 영구 저장
-    if (currentAcc && (name || phone || address)) {
-      const key = `ryzin_account_addr_${currentAcc}`;
-      localStorage.setItem(key, JSON.stringify({ name, phone, address }));
-    }
-
-    // 2. 일반 로컬 스토리지 백업
-    if (name || phone || address) {
-      localStorage.setItem('ryzin_saved_order_info', JSON.stringify({ name, phone, address }));
+    if (finalName || finalPhone || finalAddress || finalBaseAddr || finalDetailAddr) {
+      const info = {
+        name: finalName,
+        phone: finalPhone,
+        address: finalAddress,
+        baseAddr: finalBaseAddr,
+        detailAddr: finalDetailAddr
+      };
+      localStorage.setItem('ryzin_saved_order_info', JSON.stringify(info));
+      if (currentAcc) {
+        localStorage.setItem(`ryzin_account_addr_${currentAcc}`, JSON.stringify(info));
+      }
     }
   } catch(e) {}
 }
@@ -3364,8 +3602,8 @@ function autoFormatPhoneNumber(val) {
   return clean.slice(0, 11).replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
 }
 
-// 전화번호 입력창 실시간 하이픈 바인딩
-['checkout-phone', 'lead-phone'].forEach(id => {
+// 전화번호 입력창 실시간 하이픈 바인딩 (내정보 확인 모달 포함)
+['checkout-phone', 'lead-phone', 'my-p-phone'].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
     el.addEventListener('input', (e) => {
@@ -3389,8 +3627,14 @@ function autoFormatPhoneNumber(val) {
 ['checkout-name', 'checkout-phone', 'checkout-address'].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
-    el.addEventListener('input', saveCheckoutForm);
-    el.addEventListener('change', saveCheckoutForm);
+    el.addEventListener('input', () => {
+      saveCheckoutForm();
+      if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+    });
+    el.addEventListener('change', () => {
+      saveCheckoutForm();
+      if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+    });
   }
 });
 
@@ -3402,20 +3646,10 @@ function updateCartShippingPreview() {
   const btnChange = document.getElementById('btn-change-shipping');
   if (!nameEl || !addrEl) return;
 
-  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
-  let savedAddr = null;
-  try { savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null'); } catch(e) {}
-  let generalSaved = null;
-  try { generalSaved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || 'null'); } catch(e) {}
-  let kakaoUserObj = null;
-  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-
-  const name = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
-    : (generalSaved && generalSaved.name && generalSaved.name !== currentAcc) ? generalSaved.name
-    : (kakaoUserObj && kakaoUserObj.name && kakaoUserObj.name !== currentAcc) ? kakaoUserObj.name : '';
-
-  const phone = (savedAddr && savedAddr.phone) || (generalSaved && generalSaved.phone) || (kakaoUserObj && kakaoUserObj.phone) || '';
-  const address = (savedAddr && savedAddr.address) || (generalSaved && generalSaved.address) || '';
+  const userInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
+  const name = userInfo.name || '';
+  const phone = userInfo.phone || '';
+  const address = userInfo.address || '';
 
   if (address) {
     nameEl.textContent = name ? name : '수령인 미입력';
@@ -3525,30 +3759,24 @@ if (btnSubmitPayment) {
       return;
     }
 
-    // 주문 정보 영구 저장
-    saveCheckoutForm();
+    // 배송지 및 주문 정보 통합 동기화 저장 (내정보확인과 완벽 연동)
+    const baseAddr = document.getElementById('checkout-base-address')?.value.trim() || '';
+    const detailAddr = document.getElementById('checkout-detail-address')?.value.trim() || '';
+
+    if (typeof window.syncShippingAndProfileInfo === 'function') {
+      window.syncShippingAndProfileInfo({
+        name,
+        phone,
+        address,
+        baseAddr,
+        detailAddr
+      });
+    }
 
     // ── 주소 변경 모드인 경우: 배송지 저장 후 장바구니로 복귀 ──
     if (window.__checkoutModalMode === 'shipping_only') {
-      try {
-        const clientDb = db || window.supabaseClient;
-        if (clientDb) {
-          let kakaoUserObj = null;
-          try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-          const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
-          const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
-          const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : ('USER-' + phone.replace(/[^0-9]/g, '')));
-          if (userCode) {
-            clientDb.from('shop_users').update({
-              name: name,
-              default_address: address
-            }).eq('user_code', userCode).then(() => {});
-          }
-        }
-      } catch(e) {}
-
       if (checkoutModal) checkoutModal.style.display = 'none';
-      updateCartShippingPreview();
+      if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
       if (cartModal) cartModal.style.display = 'flex';
       return;
     }
@@ -4486,47 +4714,7 @@ window.openMyProfileModal = function() {
   const pModal = document.getElementById('my-profile-modal');
   if (!pModal) return;
 
-  // 기존 사용자 정보 불러오기
-  let savedInfo = {};
-  try { savedInfo = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
-  let kakaoUserObj = null;
-  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
-  let savedAddr = null;
-  try { savedAddr = JSON.parse(localStorage.getItem(`ryzin_account_addr_${currentAcc}`) || 'null'); } catch(e) {}
-
-  let name = (savedAddr && savedAddr.name && savedAddr.name !== currentAcc) ? savedAddr.name
-    : (savedInfo.name && savedInfo.name !== currentAcc) ? savedInfo.name
-    : (kakaoUserObj && kakaoUserObj.name && kakaoUserObj.name !== currentAcc) ? kakaoUserObj.name : '';
-
-  let phone = (savedAddr && savedAddr.phone) || savedInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '';
-  const email = (kakaoUserObj && kakaoUserObj.email) || '';
-  let fullAddr = (savedAddr && savedAddr.address) || savedInfo.address || '';
-
-  // 1. phone에 @가 포함된 경우 이메일 오염 제거
-  if (phone && phone.includes('@')) {
-    phone = '';
-  }
-
-  // 2. fullAddr에 "연락처:"가 들어있는 경우 전화번호 추출 후 주소 필드에서 제거
-  if (fullAddr && fullAddr.includes('연락처:')) {
-    const pMatch = fullAddr.match(/01[0-9]-?[0-9]{3,4}-?[0-9]{4}/);
-    if (pMatch && !phone) {
-      phone = pMatch[0];
-    }
-    fullAddr = fullAddr.replace(/연락처:\s*01[0-9]-?[0-9]{3,4}-?[0-9]{4}\s*\|?\s*/g, '').trim();
-  }
-
-  // 3. 채이준 님 계정 보정
-  if (name === '채이준' || (email && email.includes('choijun')) || (currentAcc && currentAcc.includes('채이준'))) {
-    name = '채이준';
-    if (!phone || phone.includes('@')) {
-      phone = '010-3018-9716';
-    }
-    if (!fullAddr || fullAddr.includes('미입력') || fullAddr.includes('연락처')) {
-      fullAddr = '경기도 하남시 미사강변동로 100-1 미사역 파라곤스퀘어 2064-2';
-    }
-  }
+  const userInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
 
   const nameInput = document.getElementById('my-p-name');
   const phoneInput = document.getElementById('my-p-phone');
@@ -4534,24 +4722,15 @@ window.openMyProfileModal = function() {
   const baseAddrInput = document.getElementById('my-p-base-addr');
   const detailAddrInput = document.getElementById('my-p-detail-addr');
 
-  if (nameInput) nameInput.value = name;
-  if (phoneInput) phoneInput.value = phone;
-  if (emailInput) emailInput.value = email || '카카오 계정 연동 이메일';
-
-  if (fullAddr && (baseAddrInput || detailAddrInput)) {
-    let base = fullAddr;
-    let detail = '';
-    const match = fullAddr.match(/^(.*?[동리로길]\s*[0-9\-번지]+(?:\s*\([^\)]+\))?)(.*)$/);
-    if (match) {
-      base = match[1].trim();
-      detail = match[2].trim();
-    }
-    if (baseAddrInput) baseAddrInput.value = base;
-    if (detailAddrInput) detailAddrInput.value = detail;
-  } else {
-    if (baseAddrInput) baseAddrInput.value = '';
-    if (detailAddrInput) detailAddrInput.value = '';
+  if (nameInput) nameInput.value = userInfo.name || '';
+  let validPhone = userInfo.phone || '';
+  if (validPhone && (validPhone.includes('@') || validPhone.replace(/[^0-9]/g, '').length < 7)) {
+    validPhone = '';
   }
+  if (phoneInput) phoneInput.value = validPhone;
+  if (emailInput) emailInput.value = userInfo.email || '카카오 계정 연동 이메일';
+  if (baseAddrInput) baseAddrInput.value = userInfo.baseAddr || '';
+  if (detailAddrInput) detailAddrInput.value = userInfo.detailAddr || '';
 
   pModal.style.display = 'flex';
 };
@@ -4585,10 +4764,10 @@ window.saveMyProfileInfo = function() {
   const phone = document.getElementById('my-p-phone')?.value.trim() || '';
   const baseAddr = document.getElementById('my-p-base-addr')?.value.trim() || '';
   const detailAddr = document.getElementById('my-p-detail-addr')?.value.trim() || '';
-  const address = (baseAddr + ' ' + detailAddr).trim();
+  const address = (baseAddr + (detailAddr ? ' ' + detailAddr : '')).trim();
 
   if (!name) {
-    alert('회원 이름을 입력해 주세요.');
+    alert('회원 이름(수령인)을 입력해 주세요.');
     return;
   }
   if (!phone) {
@@ -4596,35 +4775,19 @@ window.saveMyProfileInfo = function() {
     return;
   }
 
-  // 로컬 영구 저장
-  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
-  if (currentAcc) {
-    localStorage.setItem(`ryzin_account_addr_${currentAcc}`, JSON.stringify({ name, phone, address }));
-  }
-  localStorage.setItem('ryzin_saved_order_info', JSON.stringify({ name, phone, address }));
-
-  // Supabase shop_users 동기화
-  try {
-    const clientDb = db || window.supabaseClient;
-    let kakaoUserObj = null;
-    try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-    const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
-    const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : ('USER-' + phone.replace(/[^0-9]/g, '')));
-
-    if (clientDb && userCode) {
-      clientDb.from('shop_users').update({
-        name: name,
-        default_address: address
-      }).eq('user_code', userCode).then(() => {});
-    }
-  } catch(e) {}
-
-  if (typeof updateCartShippingPreview === 'function') {
-    updateCartShippingPreview();
+  // 통합 동기화 엔진 호출 -> 배송지 주소변경 모달, 장바구니 배송지 프리뷰, DB, 로컬스토리지 모두 한 번에 연동!
+  if (typeof window.syncShippingAndProfileInfo === 'function') {
+    window.syncShippingAndProfileInfo({
+      name,
+      phone,
+      address,
+      baseAddr,
+      detailAddr
+    });
   }
 
   document.getElementById('my-profile-modal').style.display = 'none';
-  alert('회원 정보가 성공적으로 저장되었습니다.');
+  alert('회원 정보 및 기본 배송지가 성공적으로 저장되었습니다.');
   openMyMenuModal();
 };
 

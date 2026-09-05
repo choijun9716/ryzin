@@ -7,7 +7,30 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="RYZIN STUDIO">
   <link rel="apple-touch-icon" href="/assets/app_icon.png">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <!-- 카카오톡 인앱 브라우저 외부 브라우저(사파리/크롬) 자동 오픈 -->
+  <script>
+    (function() {
+      try {
+        if (window.self !== window.top) return; // 타사 웹사이트 iframe 임베드 내에서는 탈출하지 않음
+      } catch(e) {
+        return;
+      }
+      if (window.location.search.includes('embed=1') || window.location.search.includes('widget=1')) return;
+
+      var ua = navigator.userAgent || navigator.vendor || window.opera || '';
+      if (/KAKAOTALK/i.test(ua)) {
+        var currentUrl = window.location.href;
+        if (/Android/i.test(ua)) {
+          var cleanUrl = currentUrl.replace(/https?:\/\//i, '');
+          location.href = 'intent://' + cleanUrl + '#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;package=com.android.chrome;end';
+        } else if (/iPhone|iPad|iPod/i.test(ua)) {
+          location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
+        } else {
+          location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(currentUrl);
+        }
+      }
+    })();
+  </script>
   <script>
     (function() {
       var idMatch = window.location.pathname.match(/\/live\/([^\/?#]+)/);
@@ -1550,7 +1573,7 @@
     <!-- Supabase JS SDK & Config -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase_config.js"></script>
-    <script src="live.js?v=202609040024"></script>
+    <script src="live.js?v=202609050005"></script>
 
 
   <!-- iOS PWA 홈 화면 추가 가이드 모달 (화이트 미니멀 스타일 + 공유 아이콘) -->
