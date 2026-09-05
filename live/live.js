@@ -1723,6 +1723,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (limitPerUser < Infinity && limitPerUser > 0) {
             priceHtml += `<span style="font-size:11px; color:#2563eb; font-weight:700; margin-left:6px; background:#eff6ff; border:1px solid #bfdbfe; padding:2px 6px; border-radius:4px; vertical-align:middle;">1인 ${limitPerUser}개 한정</span>`;
           }
+          const soldOutBadge = isSoldOut ? '<span style="color:#ef4444; font-weight:800; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; margin-right:4px;">[품절]</span>' : '';
           const dealBadge = item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '';
 
           const btnAddStyle = isSoldOut
