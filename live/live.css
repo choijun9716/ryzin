@@ -1913,3 +1913,13 @@ video::-webkit-media-controls-overlay-play-button {
 #product-detail-sheet {
   animation: slideUpSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* ─── 모바일 브라우저 푸터 사업자정보 자동 링크(전화번호/이메일 등) 차단 ─── */
+#my-menu-modal a[href^="tel"],
+#my-menu-modal a[href^="mailto"],
+#my-menu-modal a {
+  color: inherit !important;
+  text-decoration: none !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
