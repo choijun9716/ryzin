@@ -1710,14 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => {
             priceHtml = `<span style="font-size:13px; color:#94a3b8; font-weight:600;">가격 준비중</span>`;
           }
 
-          const limitPerUser = (typeof window.getProductLimitPerUser === 'function') ? window.getProductLimitPerUser(item) : Infinity;
 
-          if (maxStock < Infinity && maxStock > 0) {
-            priceHtml += `<span style="font-size:11px; color:#64748b; font-weight:600; margin-left:6px;">(재고 ${maxStock}개)</span>`;
-          }
-          if (limitPerUser < Infinity && limitPerUser > 0) {
-            priceHtml += `<span style="font-size:11px; color:#2563eb; font-weight:700; margin-left:6px;">(1인 ${limitPerUser}개 한정)</span>`;
-          }
 
           const soldOutBadge = isSoldOut ? '<span style="color:#ef4444; font-weight:800; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; margin-right:4px;">[품절]</span>' : '';
           const dealBadge = item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '';
