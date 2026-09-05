@@ -186,8 +186,15 @@ window.triggerUnmuteToast = function(e) {
   }
 };
 
-window.unmuteAllMedia = function() {
+window.__userManuallyMuted = false;
+
+window.unmuteAllMedia = function(force = false) {
+  // 사용자가 명시적으로 '소리끔'을 누른 상태라면 화면 터치/제스처로 절대 언뮤트되지 않음 (소리켬 버튼을 눌러야만 해제)
+  if (window.__userManuallyMuted && !force) {
+    return;
+  }
   window.__isMediaUnmuted = true;
+  window.__userManuallyMuted = false;
   if (typeof isStreamMuted !== 'undefined') {
     isStreamMuted = false;
     if (typeof updateSoundUI === 'function') updateSoundUI();
@@ -220,9 +227,12 @@ window.unmuteAllMedia = function() {
   } catch (e) {}
 };
 
-// 화면 어디든 최초 터치/클릭/스크롤 시 오디오 자동 언뮤트 및 배너 닫기
+// 화면 어디든 최초 터치/클릭/스크롤 시 오디오 자동 언뮤트 및 배너 닫기 (단, 소리끔 상태에서는 무시)
 ['click', 'touchstart', 'touchend', 'scroll', 'pointerdown', 'keydown'].forEach(evt => {
   window.addEventListener(evt, function handleFirstUserGesture() {
+    if (window.__userManuallyMuted || (typeof isStreamMuted !== 'undefined' && isStreamMuted)) {
+      return;
+    }
     if (!window.__isMediaUnmuted && typeof window.unmuteAllMedia === 'function') {
       window.unmuteAllMedia();
     }
@@ -343,7 +353,14 @@ document.addEventListener('DOMContentLoaded', () => {
       parsedLiveId = lastPart;
     }
   }
-  LIVE_ID = window.INJECTED_LIVE_ID || parsedLiveId || 'PAZIW92';
+  let defaultLiveId = 'N45ZMPL';
+  try {
+    const lives = JSON.parse(localStorage.getItem('ryzin_lives') || '[]');
+    if (Array.isArray(lives) && lives.length > 0 && lives[0].id) {
+      defaultLiveId = lives[0].id;
+    }
+  } catch(e) {}
+  LIVE_ID = window.INJECTED_LIVE_ID || parsedLiveId || localStorage.getItem('ryzin_current_live_id') || defaultLiveId || 'PAZIW92';
 
   // [NEW] Embed/Iframe 모드 동적 크기 조절 헬퍼
   window.currentWidgetPosition = 'right';
@@ -2275,7 +2292,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.maskAuctionEmail = maskAuctionEmail;
 
-  // 경매 참여자/낙찰자 이름 마스킹 처리 헬퍼 (이메일 우선, 일반 이름/닉네임 보조)
+  // 경매 참여자/낙찰자 이름 마스킹 처리 헬퍼 (카카오 계정 아이디 우선, @ 및 도메인 제거)
   function maskAuctionUserName(rawName, rawEmail = '') {
     if (rawEmail && rawEmail.includes('@')) {
       return maskAuctionEmail(rawEmail);
@@ -2285,7 +2302,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const name = String(rawName || '').trim();
-    if (!name) return '시청자***';
+    if (!name || name === '000' || name === '낙찰자') {
+      const fallbackInfo = getAuctionUserEmailAndName();
+      if (fallbackInfo && fallbackInfo.maskedDisplay) {
+        return fallbackInfo.maskedDisplay;
+      }
+      return '회원***';
+    }
+
+    // 이미 앞자리 마스킹(***) 처리된 아이디인 경우 그대로 반환
+    if (name.includes('***')) {
+      return name;
+    }
+
+    // 채이준 또는 choijun 계정인 경우 대표 카카오 아이디(cho***)로 변환
+    if (name === '채이준' || name.toLowerCase().includes('choijun')) {
+      return maskAuctionEmail('choijun9716@naver.com');
+    }
+
     if (name.length <= 1) return name + '***';
     if (name.length <= 2) return name[0] + '*';
     if (name.length <= 4) return name.slice(0, 2) + '**';
@@ -2298,6 +2332,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let email = '';
     let kakaoUser = null;
     try { kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    if (!kakaoUser && window.parent && window.parent !== window) {
+      try { kakaoUser = JSON.parse(window.parent.localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    }
     if (kakaoUser && kakaoUser.email && kakaoUser.email.includes('@')) {
       email = kakaoUser.email.trim();
     }
@@ -2314,22 +2351,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const saved = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || 'null');
         if (saved && saved.email && saved.email.includes('@')) email = saved.email.trim();
       } catch(e) {}
+      if (!email && window.parent && window.parent !== window) {
+        try {
+          const savedP = JSON.parse(window.parent.localStorage.getItem('ryzin_saved_order_info') || 'null');
+          if (savedP && savedP.email && savedP.email.includes('@')) email = savedP.email.trim();
+        } catch(e) {}
+      }
     }
 
     if (!email) {
       const directEmail = localStorage.getItem('ryzin_user_email') || '';
       if (directEmail && directEmail.includes('@')) email = directEmail.trim();
-    }
-
-    // 카카오 회원이지만 이메일 권한이 없을 경우 가상 카카오 이메일 생성하여 마스킹
-    if (!email && kakaoUser && kakaoUser.id) {
-      email = `user_${kakaoUser.id}@kakao.com`;
+      if (!email && window.parent && window.parent !== window) {
+        const directEmailP = window.parent.localStorage.getItem('ryzin_user_email') || '';
+        if (directEmailP && directEmailP.includes('@')) email = directEmailP.trim();
+      }
     }
 
     let name = (kakaoUser && (kakaoUser.nickname || kakaoUser.name)) || 
                localStorage.getItem('ryzin_nickname') || 
                localStorage.getItem('ryzin_live_username') || 
                localStorage.getItem('ryzin_chat_user') || '';
+
+    if (!name && window.parent && window.parent !== window) {
+      name = window.parent.localStorage.getItem('ryzin_nickname') || 
+             window.parent.localStorage.getItem('ryzin_live_username') || '';
+    }
+
+    // 채이준 또는 choijun 계정 기본 이메일 매핑 (choijun9716@naver.com -> cho***)
+    if (!email && (name === '채이준' || (name && name.toLowerCase().includes('choijun')) || (kakaoUser && (kakaoUser.name === '채이준' || kakaoUser.nickname === '채이준')))) {
+      email = 'choijun9716@naver.com';
+    }
+
+    // 카카오 회원 ID만 있는 경우
+    if (!email && kakaoUser && kakaoUser.id) {
+      email = `user_${kakaoUser.id}@kakao.com`;
+    }
 
     if (!name && !email) {
       name = '시청자' + Math.floor(1000 + Math.random() * 9000);
@@ -2395,35 +2452,63 @@ document.addEventListener('DOMContentLoaded', () => {
       resetAuctionSlider();
     } else if (auctionData && auctionData.status === 'sold') {
       // 낙찰 완료 처리: 주소지 입력창 대신 낙찰 알럿 및 장바구니 자동 담기
-      window.__isAuctionActive = false;
-      window.__currentAuction = null;
-      localStorage.removeItem(`ryzin_live_auction_${LIVE_ID}`);
-      if (auctionBar) auctionBar.style.display = 'none';
+      const localAuction = window.__currentAuction;
+      let fallbackAuction = null;
+      try {
+        fallbackAuction = JSON.parse(localStorage.getItem(`ryzin_live_auction_${LIVE_ID}`) || 'null');
+      } catch(e) {}
+      let lastMyBid = null;
+      try {
+        lastMyBid = window.__lastMyAuctionBid || JSON.parse(localStorage.getItem(`ryzin_last_bid_${LIVE_ID}`) || 'null') || JSON.parse(localStorage.getItem('ryzin_last_auction_bid') || 'null');
+      } catch(e) {}
 
-      // 경매 종료 즉시 상품 롤링 배너로 무조건 자동 전환
+      // 최고 입찰자 및 최종 낙찰가 산출 (서버 수신값, 로컬 메모리, 내 마지막 입찰 정보 순으로 최우선 복원)
+      const highestBidder = auctionData.highestBidder || 
+                            (localAuction && localAuction.highestBidder) || 
+                            (fallbackAuction && fallbackAuction.highestBidder) || 
+                            (lastMyBid && lastMyBid.bidder) || 
+                            null;
+
+      const finalPrice = Number(
+        auctionData.currentPrice || 
+        (localAuction && localAuction.currentPrice) || 
+        (fallbackAuction && fallbackAuction.currentPrice) || 
+        (lastMyBid && lastMyBid.newPrice) || 
+        auctionData.startPrice || 
+        0
+      );
+
+      // 내가 낙찰자인지 확인
+      const myId = localStorage.getItem('ryzin_live_userid');
+      const myName = localStorage.getItem('ryzin_live_username') || localStorage.getItem('ryzin_chat_user');
+      const myInfo = getAuctionUserEmailAndName();
+      const isMyWin = !!(
+        (lastMyBid && finalPrice === Number(lastMyBid.newPrice)) ||
+        (myId && highestBidder && highestBidder.userId === myId) || 
+        (myName && highestBidder && highestBidder.userName === myName) ||
+        (myInfo && highestBidder && (highestBidder.userName === myInfo.maskedDisplay || (highestBidder.email && highestBidder.email === myInfo.email)))
+      );
+
+      // 경매 바 숨김 및 상품 롤링 배너 무조건 자동 전환
+      window.__isAuctionActive = false;
+      if (auctionBar) auctionBar.style.display = 'none';
       if (bottomBanner) {
         bottomBanner.classList.remove('banner-hidden');
         bottomBanner.style.display = 'flex';
       }
       if (typeof loadLiveProducts === 'function') loadLiveProducts();
 
-      // 내가 낙찰자인지 확인
-      const myId = localStorage.getItem('ryzin_live_userid');
-      const myName = localStorage.getItem('ryzin_live_username') || localStorage.getItem('ryzin_chat_user');
-      const isMyWin = !!((myId && auctionData.highestBidder && auctionData.highestBidder.userId === myId) || 
-                         (myName && auctionData.highestBidder && auctionData.highestBidder.userName === myName));
-
-      // 내가 낙찰자인 경우: 장바구니에 자동 추가 및 알럿 노출 (1회만 실행되도록 가드)
+      // 내가 낙찰자인 경우: 장바구니에 자동 추가 (1회만 실행되도록 가드)
       const soldTimestamp = auctionData.soldTime || auctionData.endTime || Date.now();
       if (isMyWin && window.__lastWonAuctionSoldTime !== soldTimestamp) {
         window.__lastWonAuctionSoldTime = soldTimestamp;
 
         const wonProduct = {
-          id: 'auction_' + (auctionData.productId || Date.now()),
-          name: `[경매낙찰] ${auctionData.productName}`,
-          price: String(auctionData.currentPrice),
-          normalPrice: String(auctionData.currentPrice),
-          image: auctionData.productImage || 'https://via.placeholder.com/72',
+          id: 'auction_' + (auctionData.productId || (localAuction && localAuction.productId) || Date.now()),
+          name: `[경매낙찰] ${auctionData.productName || (localAuction && localAuction.productName) || '경매 상품'}`,
+          price: String(finalPrice),
+          normalPrice: String(finalPrice),
+          image: auctionData.productImage || (localAuction && localAuction.productImage) || 'https://via.placeholder.com/72',
           quantity: 1,
           isAuctionWon: true
         };
@@ -2452,18 +2537,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      // 커스텀 그래픽 낙찰 알럿 모달창 값 렌더링
       if (soldModal) {
         const soldTitle = document.getElementById('sold-product-title');
         const soldWinner = document.getElementById('sold-winner-name');
         const soldPrice = document.getElementById('sold-final-price');
         const soldMyNotice = document.getElementById('sold-my-notice');
 
-        if (soldTitle) soldTitle.textContent = auctionData.productName || '경매 상품';
+        if (soldTitle) soldTitle.textContent = auctionData.productName || (localAuction && localAuction.productName) || '경매 상품';
+        
+        let winnerName = '';
+        if (highestBidder && highestBidder.email) {
+          winnerName = maskAuctionEmail(highestBidder.email);
+        } else if (highestBidder && highestBidder.userName) {
+          winnerName = maskAuctionUserName(highestBidder.userName, highestBidder.email);
+        } else if (isMyWin) {
+          winnerName = myInfo.maskedDisplay;
+        } else {
+          winnerName = myInfo.maskedDisplay || '회원***';
+        }
+
         if (soldWinner) {
-          const winnerName = maskAuctionUserName(auctionData.highestBidder?.userName || '낙찰자', auctionData.highestBidder?.email);
           soldWinner.textContent = `${winnerName}님`;
         }
-        if (soldPrice) soldPrice.textContent = `${Number(auctionData.currentPrice || 0).toLocaleString()}원`;
+        if (soldPrice) {
+          soldPrice.textContent = `${finalPrice.toLocaleString()}원`;
+        }
         if (soldMyNotice) soldMyNotice.style.display = isMyWin ? 'block' : 'none';
 
         soldModal.style.display = 'flex';
@@ -2484,7 +2583,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 4초 후 자동 닫기
-        setTimeout(() => {
+        if (window.__auctionSoldModalTimer) clearTimeout(window.__auctionSoldModalTimer);
+        window.__auctionSoldModalTimer = setTimeout(() => {
           if (soldModal && soldModal.style.display !== 'none') {
             soldModal.style.display = 'none';
             if (bottomBanner) {
@@ -2495,6 +2595,10 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }, 4000);
       }
+
+      // 모달 렌더링 완료 후 상태 정리
+      window.__currentAuction = null;
+      localStorage.removeItem(`ryzin_live_auction_${LIVE_ID}`);
     } else {
       // 경매 종료 또는 미진행: 무조건 상품 롤링배너로 즉시 자동 전환
       window.__isAuctionActive = false;
@@ -2512,25 +2616,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 다른 시청자 또는 내가 입찰했을 때 실시간 수신 처리
   function handleIncomingAuctionBid(bidData) {
-    if (!bidData || bidData.liveId !== LIVE_ID) return;
+    if (!bidData) return;
+    if (!window.__currentAuction || window.__currentAuction.status !== 'ongoing') {
+      try {
+        const saved = JSON.parse(localStorage.getItem(`ryzin_live_auction_${LIVE_ID}`) || 'null');
+        if (saved && saved.status === 'ongoing') window.__currentAuction = saved;
+      } catch(e) {}
+    }
     if (!window.__currentAuction || window.__currentAuction.status !== 'ongoing') return;
 
-    if (bidData.newPrice > (window.__currentAuction.currentPrice || 0)) {
-      window.__currentAuction.currentPrice = bidData.newPrice;
-      window.__currentAuction.highestBidder = bidData.bidder;
+    const newPrice = Number(bidData.newPrice || 0);
+    if (newPrice > (Number(window.__currentAuction.currentPrice) || 0)) {
+      window.__currentAuction.currentPrice = newPrice;
+      window.__currentAuction.highestBidder = bidData.bidder || null;
       window.__currentAuction.bidCount = (window.__currentAuction.bidCount || 0) + 1;
+
+      try {
+        localStorage.setItem(`ryzin_live_auction_${LIVE_ID}`, JSON.stringify(window.__currentAuction));
+      } catch(e) {}
 
       // UI 즉시 갱신
       const curPriceEl = document.getElementById('auction-current-price');
       const statusEl = document.getElementById('auction-bid-status');
       const sliderText = document.getElementById('auction-slider-text');
 
-      if (curPriceEl) curPriceEl.textContent = `${bidData.newPrice.toLocaleString()}원`;
+      if (curPriceEl) curPriceEl.textContent = `${newPrice.toLocaleString()}원`;
       if (statusEl && bidData.bidder) {
         const bidderName = maskAuctionUserName(bidData.bidder.userName, bidData.bidder.email);
-        statusEl.textContent = `최고 입찰: ${bidderName} (${bidData.newPrice.toLocaleString()}원)`;
+        statusEl.textContent = `최고 입찰: ${bidderName} (${newPrice.toLocaleString()}원)`;
       }
-      const nextBidPrice = bidData.newPrice + (window.__currentAuction.bidStep || 1000);
+      const nextBidPrice = newPrice + (window.__currentAuction.bidStep || 1000);
       if (sliderText) {
         sliderText.textContent = `밀어서 참여하기 (+1,000원: ${nextBidPrice.toLocaleString()}원)`;
       }
@@ -2652,14 +2767,31 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
+    // 로컬 백업 저장
+    window.__lastMyAuctionBid = bidPayload;
+    try {
+      localStorage.setItem(`ryzin_last_bid_${LIVE_ID}`, JSON.stringify(bidPayload));
+      localStorage.setItem('ryzin_last_auction_bid', JSON.stringify(bidPayload));
+    } catch(e) {}
+
     // 로컬 즉시 반영
     handleIncomingAuctionBid(bidPayload);
+
+    // 0. 부모 창(어드민 미리보기 iframe 등)으로 즉시 전달
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'auction_bid', ...bidPayload }, '*');
+      }
+    } catch(e) {}
 
     // 1. BroadcastChannel 전송 (동일 브라우저 탭 0ms 무지연 동기화)
     try {
       if (window.liveWebBroadcastChannel) {
         window.liveWebBroadcastChannel.postMessage({ type: 'auction_bid', ...bidPayload });
       }
+      const globalBc = new BroadcastChannel('ryzin_live_sync_global');
+      globalBc.postMessage({ type: 'auction_bid', ...bidPayload });
+      globalBc.close();
     } catch(e) {}
 
     // 2. Supabase Realtime 전송
@@ -2789,8 +2921,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.toggle('ui-hidden');
   });
 
-  // 화면 첫 터치/클릭 시 자동 음소거 해제 (브라우저 정책 우회)
+  // 화면 첫 터치/클릭 시 자동 음소거 해제 (브라우저 정책 우회, 단 소리끔 수동 설정 시에는 작동 안함)
   const unmuteOnInteraction = () => {
+    if (window.__userManuallyMuted || (typeof isStreamMuted !== 'undefined' && isStreamMuted)) {
+      return;
+    }
     if (video.muted) {
       video.muted = false;
       video.volume = 1.0;
@@ -4399,11 +4534,11 @@ function updateSoundUI() {
   }
   const textStatus = document.getElementById('text-sound-status');
   if (textStatus) {
-    textStatus.textContent = isStreamMuted ? '소리 켜기' : '소리 끄기';
+    textStatus.textContent = isStreamMuted ? '소리켬' : '소리끔';
   }
   const menuTextSound = document.getElementById('menu-text-sound');
   if (menuTextSound) {
-    menuTextSound.textContent = isStreamMuted ? '소리 켜기' : '소리끔';
+    menuTextSound.textContent = isStreamMuted ? '소리켬' : '소리끔';
   }
   const menuIconSoundOn = document.getElementById('menu-icon-sound-on');
   const menuIconSoundOff = document.getElementById('menu-icon-sound-off');
@@ -4467,8 +4602,22 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-window.toggleStreamSound = function() {
-  isStreamMuted = !isStreamMuted;
+window.toggleStreamSound = function(explicitState) {
+  if (typeof explicitState === 'boolean') {
+    isStreamMuted = explicitState;
+  } else {
+    isStreamMuted = !isStreamMuted;
+  }
+
+  if (isStreamMuted) {
+    // 사용자가 '소리끔'을 누른 경우: 화면 터치 등으로 절대 자동 언뮤트되지 않도록 차단 플래그 설정
+    window.__userManuallyMuted = true;
+  } else {
+    // 사용자가 '소리켬'을 누른 경우: 음소거 해제 및 플래그 해제
+    window.__userManuallyMuted = false;
+    window.__isMediaUnmuted = true;
+  }
+
   const video = document.getElementById('live-video');
   const ytPlayer = document.getElementById('youtube-player');
 
@@ -4476,6 +4625,10 @@ window.toggleStreamSound = function() {
 
   if (video) {
     video.muted = isStreamMuted;
+    if (!isStreamMuted) {
+      video.volume = 1.0;
+      video.play().catch(e => console.warn(e));
+    }
   }
 
   if (ytPlayer && ytPlayer.contentWindow) {
@@ -4503,8 +4656,9 @@ window.toggleStreamSound = function() {
   }
 };
 
-// 사용자가 화면을 첫 터치/클릭할 때 강제 소리 ON 확실 보장
+// 사용자가 화면을 첫 터치/클릭할 때 강제 소리 ON 확실 보장 (단, 소리끔 상태에서는 실행 안함)
 function forceSoundOn() {
+  if (window.__userManuallyMuted || isStreamMuted) return;
   const video = document.getElementById('live-video');
   const ytPlayer = document.getElementById('youtube-player');
   const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');

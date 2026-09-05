@@ -855,12 +855,19 @@ function renderLiveEditView(container, liveId, showView) {
   } catch(e) {}
 
   const handleIncomingBidInAdmin = (bidData) => {
-    if (!bidData || bidData.liveId !== liveId) return;
+    if (!bidData) return;
+    if (!currentAuction || currentAuction.status !== 'ongoing') {
+      try {
+        const saved = JSON.parse(localStorage.getItem(`ryzin_live_auction_${liveId}`) || 'null');
+        if (saved && saved.status === 'ongoing') currentAuction = saved;
+      } catch(e) {}
+    }
     if (!currentAuction || currentAuction.status !== 'ongoing') return;
 
-    if (bidData.newPrice > (currentAuction.currentPrice || 0)) {
-      currentAuction.currentPrice = bidData.newPrice;
-      currentAuction.highestBidder = bidData.bidder;
+    const incomingPrice = Number(bidData.newPrice || 0);
+    if (incomingPrice > (Number(currentAuction.currentPrice) || 0)) {
+      currentAuction.currentPrice = incomingPrice;
+      currentAuction.highestBidder = bidData.bidder || null;
       currentAuction.bidCount = (currentAuction.bidCount || 0) + 1;
       localStorage.setItem(`ryzin_live_auction_${liveId}`, JSON.stringify(currentAuction));
       broadcastLiveSync();
@@ -881,8 +888,24 @@ function renderLiveEditView(container, liveId, showView) {
           handleIncomingBidInAdmin(e.data);
         }
       };
+
+      // 전역 브로드캐스트 채널로도 입찰 수신 대기
+      const globalBidBc = new BroadcastChannel('ryzin_live_sync_global');
+      globalBidBc.onmessage = (e) => {
+        if (e.data && e.data.type === 'auction_bid') {
+          handleIncomingBidInAdmin(e.data);
+        }
+      };
     }
   } catch (e) {}
+
+  // 미리보기 iframe (postMessage)로부터 전송된 경매 입찰 실시간 수신 등록
+  const handleIframeBidMessage = (e) => {
+    if (e.data && e.data.type === 'auction_bid') {
+      handleIncomingBidInAdmin(e.data);
+    }
+  };
+  window.addEventListener('message', handleIframeBidMessage);
 
   // Supabase Realtime 초고속 웹소켓 채널 (모든 시청자에게 0.05초 내 전송)
   let liveSupabaseBroadcastChannel = null;
@@ -3811,8 +3834,23 @@ function renderLiveEditView(container, liveId, showView) {
 
       // 낙찰 확정 버튼 (상단 배너 및 행)
       const handleSoldClick = () => {
+        if (!currentAuction) {
+          try {
+            currentAuction = JSON.parse(localStorage.getItem(`ryzin_live_auction_${liveId}`) || 'null');
+          } catch(e) {}
+        }
         if (!currentAuction) return;
-        const winnerText = currentAuction.highestBidder ? `${currentAuction.highestBidder.userName}님에게 ${Number(currentAuction.currentPrice).toLocaleString()}원에` : '현재 최고가로';
+
+        // 최신 로컬 입찰 정보 한번 더 확인하여 최고가 및 낙찰자 동기화
+        try {
+          const fresh = JSON.parse(localStorage.getItem(`ryzin_live_auction_${liveId}`) || 'null');
+          if (fresh && Number(fresh.currentPrice) > (Number(currentAuction.currentPrice) || 0)) {
+            currentAuction.currentPrice = Number(fresh.currentPrice);
+            currentAuction.highestBidder = fresh.highestBidder;
+          }
+        } catch(e) {}
+
+        const winnerText = currentAuction.highestBidder ? `${currentAuction.highestBidder.userName}님에게 ${Number(currentAuction.currentPrice).toLocaleString()}원에` : `${Number(currentAuction.currentPrice || 0).toLocaleString()}원에 현재 최고가로`;
         if (!confirm(`${winnerText} 최종 낙찰 확정하시겠습니까?`)) return;
 
         currentAuction.status = 'sold';
