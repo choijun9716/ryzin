@@ -70,7 +70,51 @@ let db = null;
 let LIVE_ID = 'N45ZMPL';
 
 
-// ── [무정전 자동 재생 가드 엔진] 어떤 일이 있어도 영상 재생 유지 ──
+// ── [무정전 자동 재생 가드 및 강제 재생 엔진] 어떤 환경(외부 브라우저 포함)에서도 영상 즉시 강제 재생 ──
+window.__isMediaUnmuted = false;
+
+window.unmuteAllMedia = function() {
+  window.__isMediaUnmuted = true;
+  try {
+    // 1. 유튜브 라이브 플레이어 음소거 해제 & 볼륨 100%
+    const ytPlayer = document.getElementById('youtube-player');
+    if (ytPlayer && ytPlayer.contentWindow) {
+      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+      ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+    }
+
+    // 2. 예비 썸네일 유튜브 플레이어 음소거 해제
+    const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
+    if (standbyIfr && standbyIfr.contentWindow) {
+      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+    }
+
+    // 3. 일반 HTML5 비디오 (HLS/MP4) 음소거 해제
+    const video = document.getElementById('live-video');
+    if (video) {
+      video.muted = false;
+    }
+
+    // 4. 소리 켜기 플로팅 배지 부드럽게 숨김
+    const badge = document.getElementById('live-unmute-badge');
+    if (badge) {
+      badge.style.opacity = '0';
+      badge.style.pointerEvents = 'none';
+      setTimeout(() => { badge.style.display = 'none'; }, 300);
+    }
+  } catch (e) {}
+};
+
+// 화면 어디든 최초 터치/클릭/스크롤 시 오디오 자동 언뮤트
+['click', 'touchstart', 'touchend', 'scroll', 'pointerdown', 'keydown'].forEach(evt => {
+  window.addEventListener(evt, function handleFirstUserGesture() {
+    if (!window.__isMediaUnmuted && typeof window.unmuteAllMedia === 'function') {
+      window.unmuteAllMedia();
+    }
+  }, { passive: true });
+});
+
 window.resumeAllMedia = function() {
   try {
     // 1. 일반 HTML5 비디오 (HLS/MP4)
@@ -82,19 +126,24 @@ window.resumeAllMedia = function() {
       }
     }
 
-    // 2. 라이브 송출 유튜브 플레이어
+    // 2. 라이브 송출 유튜브 플레이어 강제 재생
     const ytPlayer = document.getElementById('youtube-player');
     const ytBox = document.getElementById('youtube-box');
     if (ytPlayer && ytPlayer.contentWindow && ytBox && ytBox.style.display !== 'none') {
       ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+      if (window.__isMediaUnmuted) {
+        ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+      }
     }
 
-    // 3. 예비 썸네일 유튜브 플레이어
+    // 3. 예비 썸네일 유튜브 플레이어 강제 재생
     const standbyOverlay = document.getElementById('standby-overlay');
     const standbyIfr = document.querySelector('#standby-youtube-wrap iframe');
     if (standbyIfr && standbyIfr.contentWindow && standbyOverlay && standbyOverlay.style.display !== 'none') {
       standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
-      standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+      if (window.__isMediaUnmuted) {
+        standbyIfr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+      }
     }
   } catch (e) {}
 };
@@ -127,15 +176,6 @@ window.addEventListener('popstate', () => {
   if (typeof window.resumeAllMedia === 'function') {
     window.resumeAllMedia();
   }
-});
-
-// 화면 터치나 클릭 시에도 멈춤 상태 자동 회복
-['click', 'touchstart'].forEach(evt => {
-  document.addEventListener(evt, () => {
-    if (typeof window.resumeAllMedia === 'function') {
-      window.resumeAllMedia();
-    }
-  }, { passive: true });
 });
 
 // 1초 주기 헬스체크: 화면이 보이고 있는데 영상이 멈춰있다면 스스로 즉각 강제 재개
@@ -978,20 +1018,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 standbyYtWrap.innerHTML = `
                   <iframe
                     data-yt-id="${ytId}"
-                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080"
+                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080"
                     allow="autoplay; encrypted-media; picture-in-picture"
                     allowfullscreen
                     style="position:absolute; top:50%; left:50%; width:100%; height:100%; min-width:178vh; min-height:100%; transform:translate(-50%, -50%) scale(1.08); border:none; pointer-events:none; -webkit-backface-visibility:hidden; image-rendering:-webkit-optimize-contrast;"
                   ></iframe>
                 `;
 
-                // 유튜브 음소거 해제 및 볼륨 100% 강제 적용 (소리 ON)
-                [300, 800, 1500, 2500, 4000].forEach(delay => {
+                // 유튜브 강제 재생 및 사용자 인터랙션 발생 시 소리 ON
+                [100, 300, 800, 1500, 2500].forEach(delay => {
                   setTimeout(() => {
                     const ifr = standbyYtWrap.querySelector('iframe');
                     if (ifr && ifr.contentWindow) {
-                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                      ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                      if (window.__isMediaUnmuted) {
+                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+                      }
                     }
                   }, delay);
                 });
@@ -3170,12 +3213,15 @@ function playStreamUrl(url, isLive) {
       // [방송 ON] 유튜브 영상 재생
       if (ytBox) ytBox.style.display = 'block';
       if (ytPlayer) {
-        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080`;
-        [300, 800, 1500, 3000].forEach(delay => {
+        const targetSrc = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&rel=0&showinfo=0&autohide=1&loop=1&playlist=${ytId}&enablejsapi=1&vq=hd1080`;
+        [100, 300, 800, 1500, 3000].forEach(delay => {
           setTimeout(() => {
             if (ytPlayer && ytPlayer.contentWindow) {
-              ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
-              ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+              ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+              if (window.__isMediaUnmuted) {
+                ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute' }), '*');
+                ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+              }
               // 모바일/임베드 화면에서도 최상위 화질(1080p) 강제 고정 요청
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
               ytPlayer.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: ['hd1080', 'highres'] }), '*');
