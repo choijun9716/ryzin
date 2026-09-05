@@ -4932,21 +4932,11 @@ function renderCartItems() {
     total += itemTotal;
 
     const isAuction = !!(item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')));
-    const isMin = qty <= 1 || isAuction;
+    const isMin = qty <= 1;
 
     const actionBtnHtml = isAuction
       ? `<span style="font-size:11px; font-weight:800; color:#ef4444; background:#fef2f2; padding:3px 7px; border-radius:6px; border:1px solid #fee2e2; white-space:nowrap; margin-left:2px;" title="경매 낙찰 상품은 삭제할 수 없습니다">낙찰상품</span>`
       : `<button class="btn-remove-cart" data-index="${index}" style="background:none; border:none; color:#cbd5e1; font-size:16px; cursor:pointer; padding:4px; margin-left:2px; transition:color 0.15s;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">✕</button>`;
-
-    const qtyHtml = isAuction
-      ? `<div style="display:inline-flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:2px 8px;">
-          <span style="font-size:11px; font-weight:700; color:#64748b;">수량 ${qty}개 고정</span>
-        </div>`
-      : `<div style="display:inline-flex; align-items:center; background:#f1f5f9; border-radius:6px; padding:1px;">
-          <button class="btn-qty-minus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:${isMin ? 'not-allowed' : 'pointer'}; opacity:${isMin ? '0.35' : '1'}; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;" ${isMin ? 'disabled' : ''}>-</button>
-          <span style="font-size:12px; font-weight:700; color:#0f172a; min-width:24px; text-align:center;">${qty}</span>
-          <button class="btn-qty-plus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;">+</button>
-        </div>`;
 
     const div = document.createElement('div');
     div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #f8fafc;';
@@ -4955,7 +4945,12 @@ function renderCartItems() {
       <div style="flex:1; min-width:0;">
         <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.name}</div>
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
-          ${qtyHtml}
+          <!-- 미니멀 수량 조절 버튼 -->
+          <div style="display:inline-flex; align-items:center; background:#f1f5f9; border-radius:6px; padding:1px;">
+            <button class="btn-qty-minus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:${isMin ? 'not-allowed' : 'pointer'}; opacity:${isMin ? '0.35' : '1'}; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;" ${isMin ? 'disabled' : ''}>-</button>
+            <span style="font-size:12px; font-weight:700; color:#0f172a; min-width:24px; text-align:center;">${qty}</span>
+            <button class="btn-qty-plus" data-index="${index}" style="width:22px; height:22px; background:none; border:none; font-weight:700; font-size:13px; color:#475569; cursor:pointer; display:flex; align-items:center; justify-content:center; outline:none; border-radius:4px;">+</button>
+          </div>
           <!-- 상품별 소계 금액 -->
           <div style="font-size:13px; font-weight:800; color:#0f172a;">${itemTotal.toLocaleString()}원</div>
         </div>
@@ -4975,29 +4970,23 @@ function renderCartItems() {
     updateCartShippingPreview();
   }
 
-  // 수량 감소 (최소 1 유지, 경매 낙찰 상품은 변경 불가)
+  // 수량 감소 (최소 1 유지, 삭제는 우측 X 버튼으로만 가능)
   cartItemsContainer.querySelectorAll('.btn-qty-minus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
-      const item = cartItems[idx];
-      if (item && (item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')))) return;
-      if (item && (item.quantity || 1) > 1) {
-        item.quantity -= 1;
+      if (cartItems[idx] && (cartItems[idx].quantity || 1) > 1) {
+        cartItems[idx].quantity -= 1;
         updateCartUI();
         renderCartItems();
       }
     });
   });
 
-  // 수량 증가 (경매 낙찰 상품은 추가 불가)
+  // 수량 증가
   cartItemsContainer.querySelectorAll('.btn-qty-plus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
       const item = cartItems[idx];
-      if (item && (item.isAuctionWon || (item.name && item.name.startsWith('[경매낙찰]')))) {
-        alert('경매 낙찰 상품은 수량을 추가할 수 없습니다.');
-        return;
-      }
       if (item) {
         const currentQty = item.quantity || 1;
 
