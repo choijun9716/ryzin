@@ -1405,18 +1405,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof addToCart === 'function') {
           addToCart(item);
         }
-      };
-    }
-
-    // 하단 바로 구매하기
-    if (btnBuy) {
-      btnBuy.onclick = (e) => {
-        e.stopPropagation();
-        if (typeof addToCart === 'function') {
-          addToCart(item);
-        }
-        if (typeof openCartModal === 'function') {
-          openCartModal();
+        const cartText = document.getElementById('btn-pdetail-cart-text');
+        if (cartText) {
+          const orig = cartText.textContent;
+          cartText.textContent = '장바구니에 담겼습니다!';
+          btnCart.style.background = '#2563eb';
+          btnCart.style.transform = 'scale(0.97)';
+          setTimeout(() => {
+            cartText.textContent = orig;
+            btnCart.style.background = '#0f172a';
+            btnCart.style.transform = 'scale(1)';
+          }, 1200);
         }
       };
     }
@@ -3717,7 +3716,7 @@ function addToCart(product) {
   }
 
   const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed; bottom:150px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.9); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; font-weight:600; z-index:99999; animation: fadeOut 2s forwards; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.3);';
+  toast.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.95); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.18); color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; font-weight:700; z-index:9999999; animation: fadeOut 2s forwards; text-align:center; box-shadow:0 12px 32px rgba(0,0,0,0.4);';
   toast.innerHTML = exists ? `장바구니 수량이 추가되었습니다. (총 ${exists.quantity}개)` : '장바구니에 담겼습니다.';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);

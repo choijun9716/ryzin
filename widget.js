@@ -13,6 +13,9 @@
       const u = new URL(currentScript.src);
       hostUrl = u.origin;
     } catch(e) {}
+  // 방송중 상세 보기 웹뷰(iframe) 또는 clean 모드인 경우 상단 배너, 위젯, 도입문의 생성 완전 중단
+  if (window.self !== window.top || window.location.search.includes('clean=true')) {
+    return;
   }
 
   // CSS 주입 (플로팅 뱃지, 데모 띠 배너, 도입문의 버튼, 상담 폼 모달 스타일 일괄 선언)

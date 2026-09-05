@@ -1,11 +1,12 @@
 export default async function handler(req, res) {
-  const { url, live_id } = req.query;
+  const { url, live_id, clean } = req.query;
 
   if (!url) {
     return res.status(400).send('URL 파라미터가 필요합니다. 예: /api/proxy?url=https://example.com&live_id=PAZIW92');
   }
 
   const targetLiveId = live_id || 'PAZIW92';
+  const isClean = clean === 'true' || clean === '1';
 
   try {
     let targetUrl = url.trim();
@@ -32,15 +33,45 @@ export default async function handler(req, res) {
       html = baseTag + html;
     }
 
-    // 2. 초기 캡슐 뱃지 스타일 (더 큼직한 프리미엄 크기)
-    const widgetScript = `
-      <script src="https://ryzincorp.com/widget.js" data-live-id="${targetLiveId}" data-demo="true"></script>
-    `;
-
-    if (html.includes('</body>')) {
-      html = html.replace('</body>', `${widgetScript}</body>`);
+    // 2. 방송중 상세보기(clean=true)인 경우:
+    // 상단 라이진 커넥트 안내 문구, 방송보기 위젯, 도입 문의 버튼 및 모달을 100% 숨김 처리
+    if (isClean) {
+      const cleanOverrideStyle = `
+        <style id="ryzin-clean-override">
+          .ryzin-demo-top-notice,
+          .ryzin-widget-container,
+          .ryzin-demo-lead-btn,
+          .ryzin-lead-modal-overlay,
+          [class*="ryzin-demo-top"],
+          [class*="ryzin-widget"],
+          [class*="ryzin-demo-lead"],
+          [class*="ryzin-lead-modal"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+          body {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+          }
+        </style>
+      `;
+      if (html.includes('</head>')) {
+        html = html.replace('</head>', `${cleanOverrideStyle}</head>`);
+      } else {
+        html = cleanOverrideStyle + html;
+      }
     } else {
-      html = html + widgetScript;
+      // 일반 외부 데모 시연일 때만 플로팅 위젯 주입
+      const widgetScript = `
+        <script src="https://ryzincorp.com/widget.js" data-live-id="${targetLiveId}" data-demo="true"></script>
+      `;
+      if (html.includes('</body>')) {
+        html = html.replace('</body>', `${widgetScript}</body>`);
+      } else {
+        html = html + widgetScript;
+      }
     }
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
