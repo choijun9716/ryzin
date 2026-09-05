@@ -1364,6 +1364,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // ── 상품 재고(stock) 한도 계산 헬퍼 ──
+  window.getProductMaxStock = function(prod) {
+    if (!prod) return Infinity;
+    if (prod.stock === undefined || prod.stock === null || prod.stock === '') {
+      return Infinity;
+    }
+    const num = parseInt(prod.stock, 10);
+    return isNaN(num) ? Infinity : Math.max(0, num);
+  };
+
+  // ── 화이트 미니멀 토스트 알럿 헬퍼 ──
+  window.showWhiteToast = function(msg, isError = false) {
+    const prevToast = document.querySelector('.cart-white-toast');
+    if (prevToast) prevToast.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'cart-white-toast';
+    const iconSvg = isError
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    toast.innerHTML = `${iconSvg}<span>${msg}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2200);
+  };
+
   // ── 상품 상세 보기 시 라이브 영상 PIP 모드 및 소리 지속 재생 엔진 ──
   window.openProductDetailSheet = function(item) {
     if (!item) return;
@@ -1520,9 +1545,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 하단 장바구니 담기
     const detailCartBtn = document.getElementById('btn-pdetail-cart');
-    if (detailCartBtn) {
+    const cartText = document.getElementById('btn-pdetail-cart-text');
+    const maxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
+    const isSoldOut = (maxStock === 0);
+
+    if (detailCartBtn && cartText) {
+      if (isSoldOut) {
+        cartText.textContent = '품절된 상품입니다';
+        detailCartBtn.style.background = '#94a3b8';
+        detailCartBtn.style.cursor = 'not-allowed';
+      } else {
+        cartText.textContent = '장바구니 담기';
+        detailCartBtn.style.background = '#0f172a';
+        detailCartBtn.style.cursor = 'pointer';
+      }
+
       detailCartBtn.onclick = (e) => {
         e.stopPropagation();
+
+        if (isSoldOut) {
+          if (typeof window.showWhiteToast === 'function') {
+            window.showWhiteToast('해당 상품은 품절되었습니다.', true);
+          } else {
+            alert('해당 상품은 품절되었습니다.');
+          }
+          return;
+        }
 
         const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
         if (!currentConfig.isLive) {
@@ -1536,11 +1584,12 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
+        let isSuccess = false;
         if (typeof addToCart === 'function') {
-          addToCart(item);
+          isSuccess = addToCart(item);
         }
-        const cartText = document.getElementById('btn-pdetail-cart-text');
-        if (cartText) {
+
+        if (isSuccess && cartText) {
           const orig = cartText.textContent;
           cartText.textContent = '장바구니에 담겼습니다!';
           detailCartBtn.style.background = '#2563eb';
@@ -1637,6 +1686,8 @@ document.addEventListener('DOMContentLoaded', () => {
           let priceHtml = '';
           const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
           const npNum = Number((item.normalPrice || '').toString().replace(/[^0-9]/g, ''));
+          const maxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
+          const isSoldOut = (maxStock === 0);
 
           if (pNum > 0) {
             priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:14.5px;">${pNum.toLocaleString()}원</span>`;
@@ -1648,22 +1699,36 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             priceHtml = `<span style="font-size:13px; color:#94a3b8; font-weight:600;">가격 준비중</span>`;
           }
+
+          if (maxStock < Infinity && maxStock > 0) {
+            priceHtml += `<span style="font-size:11px; color:#64748b; font-weight:600; margin-left:6px;">(재고 ${maxStock}개)</span>`;
+          }
+
+          const soldOutBadge = isSoldOut ? '<span style="color:#ef4444; font-weight:800; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; margin-right:4px;">[품절]</span>' : '';
+          const dealBadge = item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '';
+
+          const btnAddStyle = isSoldOut
+            ? 'background:#94a3b8; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:not-allowed; display:flex; align-items:center; gap:4px; outline:none;'
+            : 'background:#0f172a; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(15,23,42,0.15);';
+
           el.innerHTML = `
             <img src="${item.image}" alt="product" class="product-image" style="cursor:pointer;">
             <div class="product-info" style="flex:1; min-width:0; cursor:pointer;">
-              <div class="product-name">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
+              <div class="product-name">${soldOutBadge}${dealBadge}${item.name}</div>
               <div class="product-price">${priceHtml}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
               <button type="button" class="btn-card-detail" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155; border-radius:8px; padding:7px 11px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; outline:none;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
                 상세
               </button>
-              <button type="button" class="btn-card-add-cart" style="background:#0f172a; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(15,23,42,0.15);" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+              <button type="button" class="btn-card-add-cart" style="${btnAddStyle}" ${isSoldOut ? '' : `onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'"`}>
+                ${isSoldOut ? '' : `
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
-                <span>담기</span>
+                `}
+                <span>${isSoldOut ? '품절' : '담기'}</span>
               </button>
             </div>
           `;
@@ -1721,6 +1786,16 @@ document.addEventListener('DOMContentLoaded', () => {
             btnAdd.addEventListener('click', async (ev) => {
               ev.preventDefault();
               ev.stopPropagation();
+
+              if (isSoldOut) {
+                if (typeof window.showWhiteToast === 'function') {
+                  window.showWhiteToast('해당 상품은 품절되었습니다.', true);
+                } else {
+                  alert('해당 상품은 품절되었습니다.');
+                }
+                return;
+              }
+
               const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
               if (!currentConfig.isLive) {
                 alert('라이브 방송 중에만 구매 가능합니다.');
@@ -1796,8 +1871,13 @@ document.addEventListener('DOMContentLoaded', () => {
               const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
               let priceDisplay = pNum > 0 ? `${pNum.toLocaleString()}원` : (item.price === '0' || item.price === 0 ? '무료' : '가격 준비중');
 
+              const prodMaxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
+              const isProdSoldOut = (prodMaxStock === 0);
+
               let badgeHtml = '<span class="banner-badge">특가</span>';
-              if (isCurrentlyFeatured) {
+              if (isProdSoldOut) {
+                badgeHtml = '<span class="banner-badge" style="background:#64748b; color:#ffffff; font-weight:800;">품절</span>';
+              } else if (isCurrentlyFeatured) {
                 badgeHtml = '<span class="banner-badge" style="background:#2563eb; color:#ffffff; font-weight:800;">소개중</span>';
               } else if (item.dealEndTime && item.dealEndTime > Date.now()) {
                 badgeHtml = '<span class="banner-badge" style="background:#e11d48; color:#ffffff;">깜짝딜</span>';
@@ -2702,11 +2782,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.__pendingCartItem) {
       const p = window.__pendingCartItem;
       window.__pendingCartItem = null;
-      const exists = cartItems.find(item => item.name === p.name);
-      if (exists) {
-        exists.quantity = (exists.quantity || 1) + 1;
-      } else {
-        cartItems.push({ ...p, quantity: 1 });
+      if (typeof addToCart === 'function') {
+        addToCart(p);
       }
     }
 
@@ -3850,18 +3927,42 @@ function addToCart(product) {
   const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
   if (!currentConfig.isLive) {
     alert('라이브 방송 중에만 구매 가능합니다.');
-    return;
+    return false;
   }
 
   // 카카오 로그인 여부 체크
   if (typeof window.isKakaoLoggedIn === 'function' && !window.isKakaoLoggedIn()) {
     if (typeof window.promptKakaoLogin === 'function') window.promptKakaoLogin(product);
-    return;
+    return false;
+  }
+
+  // 재고(stock) 검증
+  const maxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(product) : Infinity;
+  if (maxStock === 0) {
+    if (typeof window.showWhiteToast === 'function') {
+      window.showWhiteToast('해당 상품은 품절되었습니다.', true);
+    } else {
+      alert('해당 상품은 품절되었습니다.');
+    }
+    return false;
   }
 
   const exists = cartItems.find(item => item.name === product.name);
+  const currentQty = exists ? (exists.quantity || 1) : 0;
+
+  if (currentQty + 1 > maxStock) {
+    const limitMsg = `해당 상품은 최대 ${maxStock}개까지만 담을 수 있습니다.`;
+    if (typeof window.showWhiteToast === 'function') {
+      window.showWhiteToast(limitMsg, true);
+    } else {
+      alert(limitMsg);
+    }
+    return false;
+  }
+
   if (exists) {
-    exists.quantity = (exists.quantity || 1) + 1;
+    exists.quantity = currentQty + 1;
+    if (product.stock !== undefined) exists.stock = product.stock;
   } else {
     cartItems.push({
       ...product,
@@ -3879,13 +3980,11 @@ function addToCart(product) {
     }, 150);
   }
 
-  const toast = document.createElement('div');
-  toast.className = 'cart-white-toast';
-  const checkSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
   const msg = exists ? `장바구니 수량이 추가되었습니다. (총 ${exists.quantity}개)` : '장바구니에 담겼습니다.';
-  toast.innerHTML = `${checkSvg}<span>${msg}</span>`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2000);
+  if (typeof window.showWhiteToast === 'function') {
+    window.showWhiteToast(msg, false);
+  }
+  return true;
 }
 
 function openCartModal() {
@@ -4008,8 +4107,20 @@ function renderCartItems() {
   cartItemsContainer.querySelectorAll('.btn-qty-plus').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
-      if (cartItems[idx]) {
-        cartItems[idx].quantity = (cartItems[idx].quantity || 1) + 1;
+      const item = cartItems[idx];
+      if (item) {
+        const maxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
+        const currentQty = item.quantity || 1;
+        if (currentQty + 1 > maxStock) {
+          const limitMsg = `최대 ${maxStock}개까지만 구매 가능합니다.`;
+          if (typeof window.showWhiteToast === 'function') {
+            window.showWhiteToast(limitMsg, true);
+          } else {
+            alert(limitMsg);
+          }
+          return;
+        }
+        item.quantity = currentQty + 1;
         updateCartUI();
         renderCartItems();
       }
