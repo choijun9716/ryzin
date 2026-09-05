@@ -1880,8 +1880,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // 3. 배송지 주소변경 & 내정보확인 실시간 양방향 완전 연동 저장 엔진
-  window.syncShippingAndProfileInfo = function(data) {
-    if (!data) return;
+  window.syncShippingAndProfileInfo = async function(data, skipDBSave = false) {
+    if (!data) return null;
     const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
 
     let name = (data.name !== undefined ? data.name : '').trim();
@@ -1904,7 +1904,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 기존 저장된 정보 보존 (누락된 필드 보완)
-    const curInfo = window.getUnifiedUserInfo();
+    const curInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
     if (!name && curInfo.name) name = curInfo.name;
     if (!phone && curInfo.phone) phone = curInfo.phone;
     if (!baseAddr && curInfo.baseAddr) baseAddr = curInfo.baseAddr;
@@ -1938,8 +1938,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const coDetail = document.getElementById('checkout-detail-address');
     const coAddress = document.getElementById('checkout-address');
 
-    if (coName) coName.value = name;
-    if (coPhone) coPhone.value = phone;
+    if (coName && name) coName.value = name;
+    if (coPhone && phone) coPhone.value = phone;
     if (coBase) coBase.value = baseAddr;
     if (coDetail) coDetail.value = detailAddr;
     if (coAddress) coAddress.value = address;
@@ -1950,8 +1950,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const myBase = document.getElementById('my-p-base-addr');
     const myDetail = document.getElementById('my-p-detail-addr');
 
-    if (myName) myName.value = name;
-    if (myPhone) myPhone.value = phone;
+    if (myName && name) myName.value = name;
+    if (myPhone && phone) myPhone.value = phone;
     if (myBase) myBase.value = baseAddr;
     if (myDetail) myDetail.value = detailAddr;
 
@@ -1960,49 +1960,58 @@ document.addEventListener('DOMContentLoaded', () => {
       updateCartShippingPreview();
     }
 
-    // 5) Supabase shop_users 테이블 실시간 upsert 동기화
-    try {
-      const clientDb = (typeof db !== 'undefined' && db) || window.supabaseClient;
-      if (clientDb && (name || phone || address)) {
-        let kakaoUserObj = null;
-        try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-        const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
-        const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : (phone ? ('USER-' + phone.replace(/[^0-9]/g, '')) : null));
+    // 5) Supabase shop_users 테이블 실시간 동기화 (skipDBSave가 아닐 때만 실행)
+    if (!skipDBSave) {
+      try {
+        const clientDb = (typeof db !== 'undefined' && db) || window.supabaseClient;
+        if (clientDb && (name || address || phone)) {
+          let kakaoUserObj = null;
+          try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+          const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
+          const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : (phone ? ('USER-' + phone.replace(/[^0-9]/g, '')) : null));
 
-        if (userCode) {
-          clientDb.from('shop_users')
-            .select('id, email, default_address')
-            .eq('user_code', userCode)
-            .maybeSingle()
-            .then(({ data: existUser }) => {
-              let finalEmail = phone;
-              if (existUser && existUser.email && existUser.email.includes('@')) {
-                finalEmail = existUser.email;
-              } else if (kakaoUserObj && kakaoUserObj.email && kakaoUserObj.email.includes('@')) {
-                finalEmail = kakaoUserObj.email;
-              }
+          if (userCode) {
+            const { data: existUser } = await clientDb.from('shop_users')
+              .select('id, email, default_address, name')
+              .eq('user_code', userCode)
+              .maybeSingle();
 
-              const payload = {
-                name: name,
-                email: finalEmail || ('user_' + Date.now() + '@ryzin.com'),
-                default_address: address
-              };
+            let finalEmail = phone;
+            if (existUser && existUser.email && existUser.email.includes('@')) {
+              finalEmail = existUser.email;
+            } else if (kakaoUserObj && kakaoUserObj.email && kakaoUserObj.email.includes('@')) {
+              finalEmail = kakaoUserObj.email;
+            }
 
-              if (existUser) {
-                clientDb.from('shop_users').update(payload).eq('id', existUser.id).then(() => {});
-              } else {
-                clientDb.from('shop_users').insert({
-                  user_code: userCode,
-                  ...payload,
-                  points: 0,
-                  coupons_count: 0,
-                  membership_active: true
-                }).then(() => {});
-              }
-            }).catch(e => console.warn('shop_users sync error:', e));
+            const payload = {
+              name: name || (existUser && existUser.name) || '',
+              default_address: address || (existUser && existUser.default_address) || ''
+            };
+            if (finalEmail) {
+              payload.email = finalEmail;
+            }
+
+            if (existUser) {
+              await clientDb.from('shop_users').update(payload).eq('id', existUser.id);
+              console.log('[Supabase] shop_users 회원 정보 업데이트 성공:', userCode, payload);
+            } else {
+              await clientDb.from('shop_users').insert({
+                user_code: userCode,
+                ...payload,
+                points: 0,
+                coupons_count: 0,
+                membership_active: true
+              });
+              console.log('[Supabase] shop_users 신규 회원 등록 성공:', userCode);
+            }
+          }
         }
+      } catch(e) {
+        console.warn('shop_users sync error:', e);
       }
-    } catch(e) {}
+    }
+
+    return orderInfo;
   };
 
   // ── 아이디 / 닉네임 기반 간편 계정 및 배송지 자동 연동 ──────────────
@@ -2070,6 +2079,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.initKakaoSDK();
   if (typeof restoreUserAddressFromDB === 'function') {
     restoreUserAddressFromDB();
+    setTimeout(() => { if (typeof restoreUserAddressFromDB === 'function') restoreUserAddressFromDB(); }, 600);
+    setTimeout(() => { if (typeof restoreUserAddressFromDB === 'function') restoreUserAddressFromDB(); }, 1800);
   }
   if (typeof updateCartUI === 'function') {
     updateCartUI();
@@ -2112,23 +2123,23 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('ryzin_kakao_user', JSON.stringify({ id: kakaoId, nickname, name, phone, email }));
 
           // ── Supabase shop_users 테이블에 카카오 회원 자동 등록/동기화 ──
-          const clientDb = db || window.supabaseClient;
+          const clientDb = (typeof db !== 'undefined' && db) || window.supabaseClient;
           if (clientDb) {
             const userCode = 'KAKAO-' + kakaoId;
             const userEmail = kakaoAccount.email || phone || ('kakao_' + kakaoId + '@ryzin.com');
             const userAddress = '카카오 회원가입 (주소 미입력)';
 
             clientDb.from('shop_users')
-              .select('id, default_address, name')
+              .select('id, default_address, name, email')
               .eq('user_code', userCode)
               .maybeSingle()
-              .then(({ data: existUser, error: selectErr }) => {
+              .then(async ({ data: existUser, error: selectErr }) => {
                 if (selectErr) {
                   console.warn('shop_users 조회 오류:', selectErr);
                   return;
                 }
                 if (!existUser) {
-                  clientDb.from('shop_users').insert({
+                  await clientDb.from('shop_users').insert({
                     user_code: userCode,
                     name: realName,
                     email: userEmail,
@@ -2136,22 +2147,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     coupons_count: 0,
                     membership_active: true,
                     default_address: userAddress
-                  }).then(({ error: insertErr }) => {
-                    if (insertErr) console.warn('shop_users 신규 등록 오류:', insertErr);
-                    else console.log('카카오 회원 신규 등록 완료:', userCode);
                   });
+                  console.log('카카오 회원 신규 등록 완료:', userCode);
                 } else {
                   const updatePayload = {
                     email: userEmail
                   };
-                  if (realName) updatePayload.name = realName;
-                  // 기존 주소가 비어있거나 없을 때만 기본 주소 부여 (기존 주소 보존)
+                  if (realName && !existUser.name) updatePayload.name = realName;
                   if (!existUser.default_address || existUser.default_address.includes('미입력')) {
                     updatePayload.default_address = userAddress;
                   }
-                  clientDb.from('shop_users').update(updatePayload).eq('id', existUser.id).then(() => {});
+                  await clientDb.from('shop_users').update(updatePayload).eq('id', existUser.id);
+
+                  // ── 기존 DB에 저장되어 있던 회원명 및 기본배송지 즉시 클라이언트 상태로 복원 ──
+                  const dbName = existUser.name || realName;
+                  const dbAddress = (existUser.default_address && !existUser.default_address.includes('미입력')) ? existUser.default_address : '';
+                  if (dbName || dbAddress) {
+                    const splitted = window.splitAddress(dbAddress);
+                    await window.syncShippingAndProfileInfo({
+                      name: dbName,
+                      phone: (existUser.email && !existUser.email.includes('@')) ? existUser.email : phone,
+                      address: dbAddress,
+                      baseAddr: splitted.base,
+                      detailAddr: splitted.detail
+                    }, true /* skipDBSave */);
+                  }
+                }
+
+                if (typeof window.restoreUserAddressFromDB === 'function') {
+                  window.restoreUserAddressFromDB();
                 }
               }).catch(err => console.warn('shop_users 연동 예외:', err));
+          }
+
+          if (typeof window.restoreUserAddressFromDB === 'function') {
+            window.restoreUserAddressFromDB();
           }
 
           if (typeof window.updateCheckoutMemberUI === 'function') {
@@ -3290,6 +3320,11 @@ function openCartModal() {
 
   if (cartModal) {
     if (typeof fetchUserBenefitsFromDB === 'function') fetchUserBenefitsFromDB();
+    if (typeof window.restoreUserAddressFromDB === 'function') {
+      window.restoreUserAddressFromDB().then(() => {
+        if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+      });
+    }
     cartModal.style.display = 'flex';
     renderCartItems();
     if (typeof updateCartShippingPreview === 'function') {
@@ -3435,8 +3470,8 @@ if (btnCart) btnCart.addEventListener('click', openCartModal);
 if (btnCloseCartModal) btnCloseCartModal.addEventListener('click', () => cartModal.style.display = 'none');
 
 // 주문서 정보 자동 채우기 헬퍼 함수
-// ── Supabase shop_users에서 사용자 배송지 및 정보 자동 복원 ──
-async function restoreUserAddressFromDB() {
+// ── Supabase shop_users에서 카카오 계정 기준 사용자 배송지 및 정보 1순위 자동 복원 ──
+window.restoreUserAddressFromDB = async function() {
   try {
     let kakaoUserObj = null;
     try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
@@ -3444,42 +3479,83 @@ async function restoreUserAddressFromDB() {
     const kakaoId = kakaoUserObj ? kakaoUserObj.id : null;
     const userCode = kakaoId ? ('KAKAO-' + kakaoId) : (currentAcc ? ('USER-' + currentAcc) : null);
 
-    if (db && userCode) {
-      const { data: user } = await db
+    const clientDb = (typeof db !== 'undefined' && db) || window.supabaseClient;
+
+    if (clientDb && userCode) {
+      const { data: user, error } = await clientDb
         .from('shop_users')
         .select('*')
         .eq('user_code', userCode)
         .maybeSingle();
 
-      if (user) {
-        const name = user.name || '';
-        let phone = '';
-        if (user.email && !user.email.includes('@')) {
-          phone = user.email;
-        }
-        let address = user.default_address || '';
-        if (address.includes('카카오') || address.includes('주소 미입력')) address = '';
-
-        // 로컬에 이미 저장된 정보가 있다면 우선 보존
+      if (user && !error) {
+        console.log('[Supabase] 카카오 계정 shop_users 정보 로드 완료:', userCode, user);
+        // 1. 이름: DB에 저장된 실명 1순위 -> 로컬 저장 이름 -> 카카오 계정 이름
         const localInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
-        const finalName = localInfo.name || name;
-        const finalPhone = localInfo.phone || phone;
-        const finalAddress = localInfo.address || address;
+        const finalName = (user.name || '').trim() || localInfo.name || (kakaoUserObj && kakaoUserObj.name) || '';
 
-        if (finalName || finalPhone || finalAddress) {
-          if (typeof window.syncShippingAndProfileInfo === 'function') {
-            window.syncShippingAndProfileInfo({
-              name: finalName,
-              phone: finalPhone,
-              address: finalAddress
-            });
-          }
+        // 2. 연락처: 유효 전화번호만 채택 (@ 포함 이메일 절대 배제)
+        let dbPhone = '';
+        if (user.email && !user.email.includes('@') && user.email.replace(/[^0-9]/g, '').length >= 7) {
+          dbPhone = user.email.trim();
         }
+        let localPhone = localInfo.phone || (kakaoUserObj && kakaoUserObj.phone) || '';
+        if (localPhone && (localPhone.includes('@') || localPhone.replace(/[^0-9]/g, '').length < 7)) {
+          localPhone = '';
+        }
+        const finalPhone = dbPhone || localPhone || '';
+
+        // 3. 배송지 주소: DB에 저장된 기본 배송지 1순위!
+        let dbAddress = (user.default_address || '').trim();
+        if (dbAddress.includes('카카오') || dbAddress.includes('주소 미입력') || dbAddress.includes('미입력')) {
+          dbAddress = '';
+        }
+        const finalAddress = dbAddress || localInfo.address || '';
+
+        // 기본주소 / 상세주소 분리
+        let baseAddr = '';
+        let detailAddr = '';
+        if (finalAddress) {
+          const splitted = window.splitAddress(finalAddress);
+          baseAddr = splitted.base;
+          detailAddr = splitted.detail;
+        }
+
+        // 로컬 kakaoUserObj 최신화
+        if (kakaoUserObj) {
+          if (finalName) kakaoUserObj.name = finalName;
+          if (finalPhone) kakaoUserObj.phone = finalPhone;
+          try { localStorage.setItem('ryzin_kakao_user', JSON.stringify(kakaoUserObj)); } catch(e) {}
+        }
+
+        // 모든 모달 인풋, 로컬스토리지, 장바구니 배송지 프리뷰 일괄 동기화 (DB 재저장 방지 플래그 true)
+        if (typeof window.syncShippingAndProfileInfo === 'function') {
+          await window.syncShippingAndProfileInfo({
+            name: finalName,
+            phone: finalPhone,
+            address: finalAddress,
+            baseAddr: baseAddr,
+            detailAddr: detailAddr
+          }, true /* skipDBSave */);
+        }
+
+        return {
+          name: finalName,
+          phone: finalPhone,
+          address: finalAddress,
+          baseAddr: baseAddr,
+          detailAddr: detailAddr,
+          email: user.email || (kakaoUserObj && kakaoUserObj.email) || ''
+        };
       }
     }
   } catch(err) {
     console.warn('사용자 배송 정보 복원 에러:', err);
   }
+  return null;
+};
+function restoreUserAddressFromDB() {
+  return window.restoreUserAddressFromDB();
 }
 
 function prefillCheckoutForm() {
@@ -3668,12 +3744,18 @@ function updateCartShippingPreview() {
 
 const btnChangeShipping = document.getElementById('btn-change-shipping');
 if (btnChangeShipping) {
-  btnChangeShipping.addEventListener('click', () => {
+  btnChangeShipping.addEventListener('click', async () => {
     window.__checkoutModalMode = 'shipping_only';
     if (cartModal) cartModal.style.display = 'none';
     if (checkoutModal) {
       checkoutModal.style.display = 'flex';
       prefillCheckoutForm();
+
+      if (typeof window.restoreUserAddressFromDB === 'function') {
+        window.restoreUserAddressFromDB().then(() => {
+          prefillCheckoutForm();
+        });
+      }
 
       // [주소 변경 모드] UI 문구 및 버튼 전환
       const titleSpan = checkoutModal.querySelector('h3 span');
@@ -4644,8 +4726,9 @@ window.openMyMenuModal = function() {
   const isLogged = Boolean(kakaoUserObj || currentNick);
 
   if (isLogged) {
-    const displayName = (kakaoUserObj && kakaoUserObj.name) || currentNick || '회원';
-    const displayEmail = (kakaoUserObj && kakaoUserObj.email) || (kakaoUserObj && kakaoUserObj.phone) || '';
+    const unified = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
+    const displayName = (kakaoUserObj && kakaoUserObj.name) || unified.name || currentNick || '회원';
+    const displayEmail = (kakaoUserObj && kakaoUserObj.email) || (kakaoUserObj && kakaoUserObj.phone) || unified.phone || '';
 
     profileBox.innerHTML = `
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
@@ -4709,11 +4792,12 @@ window.openMyOrdersFromMenu = function() {
   }
 };
 
-window.openMyProfileModal = function() {
+window.openMyProfileModal = async function() {
   closeMyMenuModal();
   const pModal = document.getElementById('my-profile-modal');
   if (!pModal) return;
 
+  // 1. 기존 로컬 정보로 즉시 채움 (깜빡임 없이 즉각 표시)
   const userInfo = typeof window.getUnifiedUserInfo === 'function' ? window.getUnifiedUserInfo() : {};
 
   const nameInput = document.getElementById('my-p-name');
@@ -4722,17 +4806,29 @@ window.openMyProfileModal = function() {
   const baseAddrInput = document.getElementById('my-p-base-addr');
   const detailAddrInput = document.getElementById('my-p-detail-addr');
 
-  if (nameInput) nameInput.value = userInfo.name || '';
+  if (nameInput && userInfo.name) nameInput.value = userInfo.name;
   let validPhone = userInfo.phone || '';
   if (validPhone && (validPhone.includes('@') || validPhone.replace(/[^0-9]/g, '').length < 7)) {
     validPhone = '';
   }
-  if (phoneInput) phoneInput.value = validPhone;
+  if (phoneInput && validPhone) phoneInput.value = validPhone;
   if (emailInput) emailInput.value = userInfo.email || '카카오 계정 연동 이메일';
-  if (baseAddrInput) baseAddrInput.value = userInfo.baseAddr || '';
-  if (detailAddrInput) detailAddrInput.value = userInfo.detailAddr || '';
+  if (baseAddrInput && userInfo.baseAddr) baseAddrInput.value = userInfo.baseAddr;
+  if (detailAddrInput && userInfo.detailAddr) detailAddrInput.value = userInfo.detailAddr;
 
   pModal.style.display = 'flex';
+
+  // 2. 카카오 계정 기준 Supabase shop_users에서 최신 DB 데이터 실시간 동기화
+  if (typeof window.restoreUserAddressFromDB === 'function') {
+    const dbData = await window.restoreUserAddressFromDB();
+    if (dbData) {
+      if (nameInput && dbData.name) nameInput.value = dbData.name;
+      if (phoneInput && dbData.phone) phoneInput.value = dbData.phone;
+      if (baseAddrInput && dbData.baseAddr) baseAddrInput.value = dbData.baseAddr;
+      if (detailAddrInput && dbData.detailAddr) detailAddrInput.value = dbData.detailAddr;
+      if (emailInput && dbData.email) emailInput.value = dbData.email;
+    }
+  }
 };
 
 window.openMyPostcodeSearch = function() {
@@ -4759,7 +4855,7 @@ window.openMyPostcodeSearch = function() {
   }).open();
 };
 
-window.saveMyProfileInfo = function() {
+window.saveMyProfileInfo = async function() {
   const name = document.getElementById('my-p-name')?.value.trim() || '';
   const phone = document.getElementById('my-p-phone')?.value.trim() || '';
   const baseAddr = document.getElementById('my-p-base-addr')?.value.trim() || '';
@@ -4777,13 +4873,13 @@ window.saveMyProfileInfo = function() {
 
   // 통합 동기화 엔진 호출 -> 배송지 주소변경 모달, 장바구니 배송지 프리뷰, DB, 로컬스토리지 모두 한 번에 연동!
   if (typeof window.syncShippingAndProfileInfo === 'function') {
-    window.syncShippingAndProfileInfo({
+    await window.syncShippingAndProfileInfo({
       name,
       phone,
       address,
       baseAddr,
       detailAddr
-    });
+    }, false /* skipDBSave: false -> Supabase shop_users 즉시 영구 저장! */);
   }
 
   document.getElementById('my-profile-modal').style.display = 'none';
