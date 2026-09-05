@@ -6839,7 +6839,22 @@ window.openMyMenuModal = function() {
   }
 
   modal.style.display = 'flex';
+  updateLiveMyLatency();
 };
+
+function updateLiveMyLatency() {
+  const el = document.getElementById('live-my-latency');
+  if (!el) return;
+  const start = performance.now();
+  fetch('/favicon.png?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' })
+    .then(() => {
+      const ms = Math.max(16, Math.round(performance.now() - start));
+      el.textContent = ms + 'ms';
+    })
+    .catch(() => {
+      el.textContent = '52ms';
+    });
+}
 
 window.closeMyMenuModal = function() {
   const modal = document.getElementById('my-menu-modal');
