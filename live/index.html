@@ -1130,7 +1130,7 @@
             </button>
 
             <!-- 5. 이용약관 -->
-            <button type="button" onclick="openMyTermsModal()"
+            <button type="button" onclick="openMyTermsModal('terms')"
               style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:15px 8px; background:transparent; border:none; border-bottom:1px solid #f8fafc; cursor:pointer; transition:background 0.12s; text-align:left; outline:none;"
               onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
               <div style="display:flex; align-items:center; gap:12px;">
@@ -1138,6 +1138,19 @@
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line>
                 </svg>
                 <span style="font-size:14px; font-weight:600; color:#0f172a;">이용약관</span>
+              </div>
+              <span style="font-size:14px; color:#cbd5e1;">›</span>
+            </button>
+
+            <!-- 6. 개인정보처리방침 -->
+            <button type="button" onclick="openMyTermsModal('privacy')"
+              style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:15px 8px; background:transparent; border:none; border-bottom:1px solid #f8fafc; cursor:pointer; transition:background 0.12s; text-align:left; outline:none;"
+              onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span style="font-size:14px; font-weight:600; color:#0f172a;">개인정보처리방침</span>
               </div>
               <span style="font-size:14px; color:#cbd5e1;">›</span>
             </button>
@@ -1342,8 +1355,15 @@
             onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">✕</button>
 
           <div style="margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #f1f5f9;">
-            <h3 style="margin:0 0 4px 0; font-size:16.5px; font-weight:800; color:#0f172a;">라이진커넥트 이용약관</h3>
-            <span style="font-size:11px; color:#64748b; font-weight:500;">시행일자: 2026년 9월 6일</span>
+            <!-- 이용약관 / 개인정보처리방침 탭 전환 -->
+            <div style="display:flex; gap:6px; margin-bottom:12px; margin-right:32px;">
+              <button id="btn-tab-terms" type="button" onclick="switchLegalTab('terms')"
+                style="padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; border:none; background:#0f172a; color:#ffffff; cursor:pointer; transition:all 0.15s;">이용약관</button>
+              <button id="btn-tab-privacy" type="button" onclick="switchLegalTab('privacy')"
+                style="padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; background:#f8fafc; color:#64748b; cursor:pointer; transition:all 0.15s;">개인정보처리방침</button>
+            </div>
+            <h3 id="legal-modal-title" style="margin:0 0 4px 0; font-size:16.5px; font-weight:800; color:#0f172a;">라이진커넥트 이용약관</h3>
+            <span id="legal-modal-date" style="font-size:11px; color:#64748b; font-weight:500;">시행일자: 2026년 9월 6일</span>
           </div>
 
           <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:16px; padding-right:6px; font-size:12px; color:#475569; line-height:1.65;">

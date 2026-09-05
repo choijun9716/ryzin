@@ -6949,19 +6949,54 @@ window.openMyCsModal = function() {
   if (m) m.style.display = 'flex';
 };
 
-window.openMyTermsModal = async function() {
+window.openMyTermsModal = async function(initialTab = 'terms') {
   closeMyMenuModal();
   const m = document.getElementById('my-terms-modal');
   if (!m) return;
   m.style.display = 'flex';
+  await switchLegalTab(initialTab);
+};
 
+window.switchLegalTab = async function(tab) {
+  const m = document.getElementById('my-terms-modal');
+  if (!m) return;
+  const btnTerms = document.getElementById('btn-tab-terms');
+  const btnPrivacy = document.getElementById('btn-tab-privacy');
+  const titleEl = document.getElementById('legal-modal-title') || m.querySelector('h3');
+  const dateEl = document.getElementById('legal-modal-date') || m.querySelector('span');
+  const bodyEl = m.querySelector('div[style*="overflow-y:auto"]');
+
+  const isPrivacy = tab === 'privacy';
+
+  if (btnTerms && btnPrivacy) {
+    if (isPrivacy) {
+      btnPrivacy.style.background = '#0f172a';
+      btnPrivacy.style.color = '#ffffff';
+      btnPrivacy.style.border = 'none';
+      btnPrivacy.style.fontWeight = '700';
+
+      btnTerms.style.background = '#f8fafc';
+      btnTerms.style.color = '#64748b';
+      btnTerms.style.border = '1px solid #e2e8f0';
+      btnTerms.style.fontWeight = '600';
+    } else {
+      btnTerms.style.background = '#0f172a';
+      btnTerms.style.color = '#ffffff';
+      btnTerms.style.border = 'none';
+      btnTerms.style.fontWeight = '700';
+
+      btnPrivacy.style.background = '#f8fafc';
+      btnPrivacy.style.color = '#64748b';
+      btnPrivacy.style.border = '1px solid #e2e8f0';
+      btnPrivacy.style.fontWeight = '600';
+    }
+  }
+
+  const jsonUrl = isPrivacy ? '/privacy.json' : '/terms.json';
   try {
-    const res = await fetch('/terms.json');
+    const res = await fetch(jsonUrl);
     if (res.ok) {
       const data = await res.json();
-      const titleEl = m.querySelector('h3');
-      const dateEl = m.querySelector('span');
-      const bodyEl = m.querySelector('div[style*="overflow-y:auto"]');
       if (titleEl && data.title) titleEl.textContent = data.title;
       if (dateEl && data.effectiveDate) dateEl.textContent = data.effectiveDate;
       if (bodyEl && Array.isArray(data.sections)) {
