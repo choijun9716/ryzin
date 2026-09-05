@@ -1367,14 +1367,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const webviewContainer = document.getElementById('pdetail-webview-container');
     const fallbackView = document.getElementById('pdetail-fallback-view');
     const customPage = document.getElementById('pdetail-custom-page');
+    const emptyView = document.getElementById('pdetail-empty-view');
+
     const detailImg = item.detailImage || item.detail_image || item.detailImages;
-    if (detailImg) {
+    const hasDetailImg = Boolean(
+      detailImg && (
+        Array.isArray(detailImg)
+          ? detailImg.filter(Boolean).length > 0
+          : String(detailImg).split(',').map(s => s.trim()).filter(Boolean).length > 0
+      )
+    );
+
+    if (hasDetailImg) {
       // 1순위: Cloudinary 등에 등록된 상세페이지 이미지 & 애니메이션 GIF 렌더링
       if (iframe) {
         iframe.src = 'about:blank';
         iframe.style.display = 'none';
       }
       if (fallbackView) fallbackView.style.display = 'none';
+      if (emptyView) emptyView.style.display = 'none';
       if (customPage) {
         customPage.style.display = 'block';
         customPage.scrollTop = 0;
@@ -1437,135 +1448,23 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
       }
-    } else if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
-      if (customPage) customPage.style.display = 'none';
-      let cleanUrl = String(item.url).trim();
-      if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-        cleanUrl = 'https://' + cleanUrl;
-      }
-
-      // 네이버 쇼핑/스마트스토어 등 자체 iframe 보안 정책(X-Frame-Options/Frame-Busting) 적용 사이트
-      const isNaverStore = /naver\.com/i.test(cleanUrl) || /naver\.me/i.test(cleanUrl);
-      if (isNaverStore) {
-        // 1. 새 창으로 네이버스토어 즉시 열기
-        try {
-          window.open(cleanUrl, '_blank');
-        } catch (e) { }
-
-        // 2. 모달 내부는 흰 iframe 대신 상품 요약 카드 + [네이버스토어로 이동] 버튼 노출
-        if (webviewContainer) webviewContainer.style.display = 'block';
-        if (iframe) {
-          iframe.src = '';
-          iframe.style.display = 'none';
-        }
-        if (fallbackView) {
-          fallbackView.style.display = 'block';
-          const imgEl = document.getElementById('pdetail-img');
-          const titleEl = document.getElementById('pdetail-title');
-          const priceEl = document.getElementById('pdetail-price');
-          const origPriceEl = document.getElementById('pdetail-original-price');
-          const discRateEl = document.getElementById('pdetail-discount-rate');
-
-          if (imgEl) imgEl.src = item.image || '';
-          if (titleEl) titleEl.textContent = item.name || '상품명';
-
-          const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
-          const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
-
-          if (pNum > 0) {
-            if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
-            if (npNum > pNum) {
-              if (origPriceEl) {
-                origPriceEl.textContent = `${npNum.toLocaleString()}원`;
-                origPriceEl.style.display = 'inline';
-              }
-              if (discRateEl) {
-                const rate = Math.round(((npNum - pNum) / npNum) * 100);
-                discRateEl.textContent = `${rate}%`;
-                discRateEl.style.display = 'inline';
-              }
-            } else {
-              if (origPriceEl) origPriceEl.style.display = 'none';
-              if (discRateEl) discRateEl.style.display = 'none';
-            }
-          } else if (item.price === '0' || item.price === 0) {
-            if (priceEl) priceEl.textContent = '무료나눔';
-            if (origPriceEl) origPriceEl.style.display = 'none';
-            if (discRateEl) discRateEl.style.display = 'none';
-          } else {
-            if (priceEl) priceEl.textContent = '가격 준비중';
-            if (origPriceEl) origPriceEl.style.display = 'none';
-            if (discRateEl) discRateEl.style.display = 'none';
-          }
-
-          const naverBanner = document.getElementById('pdetail-naver-banner');
-          const naverBtn = document.getElementById('pdetail-naver-btn');
-          if (naverBanner) naverBanner.style.display = 'block';
-          if (naverBtn) naverBtn.href = cleanUrl;
-        }
-      } else {
-        // 일반 자사몰: 기존대로 프록시 웹뷰로 모달 로드
-        const naverBanner = document.getElementById('pdetail-naver-banner');
-        if (naverBanner) naverBanner.style.display = 'none';
-
-        if (webviewContainer) webviewContainer.style.display = 'block';
-        const targetLiveId = LIVE_ID || 'N45ZMPL';
-        const proxyUrl = `/api/proxy?url=${encodeURIComponent(cleanUrl)}&live_id=${targetLiveId}&clean=true`;
-        
-        if (iframe) {
-          iframe.src = proxyUrl;
-          iframe.style.display = 'block';
-        }
-        if (fallbackView) fallbackView.style.display = 'none';
-      }
     } else {
-      // 3순위: 이미지와 URL 모두 없을 때의 기본 폴백 카드
-      const naverBanner = document.getElementById('pdetail-naver-banner');
-      if (naverBanner) naverBanner.style.display = 'none';
-      if (customPage) customPage.style.display = 'none';
-      if (webviewContainer) webviewContainer.style.display = 'block';
+      // 2순위: 상세페이지가 등록되어 있지 않은 경우 (브랜드 페이지로 바로 이동하지 않고 빈 화면에 안내 문구 노출)
       if (iframe) {
-        iframe.src = '';
+        iframe.src = 'about:blank';
         iframe.style.display = 'none';
       }
-      if (fallbackView) {
-        fallbackView.style.display = 'block';
-        const imgEl = document.getElementById('pdetail-img');
-        const titleEl = document.getElementById('pdetail-title');
-        const priceEl = document.getElementById('pdetail-price');
-        const origPriceEl = document.getElementById('pdetail-original-price');
-        const discRateEl = document.getElementById('pdetail-discount-rate');
-
-        if (imgEl) imgEl.src = item.image || '';
-        if (titleEl) titleEl.textContent = item.name || '상품명';
-
-        const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
-        const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
-
-        if (pNum > 0) {
-          if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
-          if (npNum > pNum) {
-            if (origPriceEl) {
-              origPriceEl.textContent = `${npNum.toLocaleString()}원`;
-              origPriceEl.style.display = 'inline';
-            }
-            if (discRateEl) {
-              const rate = Math.round(((npNum - pNum) / npNum) * 100);
-              discRateEl.textContent = `${rate}%`;
-              discRateEl.style.display = 'inline';
-            }
-          } else {
-            if (origPriceEl) origPriceEl.style.display = 'none';
-            if (discRateEl) discRateEl.style.display = 'none';
-          }
-        } else if (item.price === '0' || item.price === 0) {
-          if (priceEl) priceEl.textContent = '무료나눔';
-          if (origPriceEl) origPriceEl.style.display = 'none';
-          if (discRateEl) discRateEl.style.display = 'none';
-        } else {
-          if (priceEl) priceEl.textContent = '가격 준비중';
-          if (origPriceEl) origPriceEl.style.display = 'none';
-          if (discRateEl) discRateEl.style.display = 'none';
+      if (customPage) customPage.style.display = 'none';
+      if (fallbackView) fallbackView.style.display = 'none';
+      if (emptyView) {
+        emptyView.style.display = 'flex';
+        const subtext = document.getElementById('pdetail-empty-subtext');
+        const rawUrl = (item.url || item.link || '').trim();
+        const hasExtUrl = Boolean(rawUrl && rawUrl !== '#' && rawUrl !== '__LEAD_FORM__');
+        if (subtext) {
+          subtext.textContent = hasExtUrl
+            ? '하단의 [제품 판매 링크]를 통해 상세 정보를 확인하실 수 있습니다.'
+            : '판매처 정보가 등록되지 않았습니다.';
         }
       }
     }
@@ -1638,6 +1537,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const customPage = document.getElementById('pdetail-custom-page');
     if (customPage) customPage.style.display = 'none';
+    const emptyView = document.getElementById('pdetail-empty-view');
+    if (emptyView) emptyView.style.display = 'none';
 
     // 전체화면 복귀 직후 즉시 동기 실행 + 연속 다단계 딜레이 호출로 무조건 영상 재생 보장
     if (typeof window.resumeAllMedia === 'function') {
