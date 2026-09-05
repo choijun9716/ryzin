@@ -3880,8 +3880,10 @@ function addToCart(product) {
   }
 
   const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.95); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.18); color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; font-weight:700; z-index:9999999; animation: fadeOut 2s forwards; text-align:center; box-shadow:0 12px 32px rgba(0,0,0,0.4);';
-  toast.innerHTML = exists ? `장바구니 수량이 추가되었습니다. (총 ${exists.quantity}개)` : '장바구니에 담겼습니다.';
+  toast.className = 'cart-white-toast';
+  const checkSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  const msg = exists ? `장바구니 수량이 추가되었습니다. (총 ${exists.quantity}개)` : '장바구니에 담겼습니다.';
+  toast.innerHTML = `${checkSvg}<span>${msg}</span>`;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
 }

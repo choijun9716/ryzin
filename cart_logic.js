@@ -35,10 +35,11 @@ function addToCart(product) {
   cartItems.push(product);
   updateCartUI();
   
-  // 간단한 토스트 메시지
+  // 화이트 미니멀 토스트 메시지
   const toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed; bottom:100px; right:20px; background:rgba(0,0,0,0.8); color:#fff; padding:12px 20px; border-radius:8px; font-size:14px; z-index:99999; animation: fadeOut 2s forwards;';
-  toast.innerHTML = '장바구니에 담겼습니다.';
+  toast.style.cssText = 'position:fixed; bottom:96px; left:50%; transform:translateX(-50%); background:#ffffff; color:#0f172a; border:1px solid rgba(15,23,42,0.08); padding:10px 20px; border-radius:9999px; font-size:13.5px; font-weight:600; letter-spacing:-0.3px; display:inline-flex; align-items:center; gap:8px; z-index:1000002; box-shadow:0 10px 25px -5px rgba(0,0,0,0.1),0 8px 10px -6px rgba(0,0,0,0.05); animation: fadeOut 2s forwards; pointer-events:none; white-space:nowrap;';
+  const checkSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  toast.innerHTML = `${checkSvg}<span>장바구니에 담겼습니다.</span>`;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
 }
