@@ -1340,6 +1340,27 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { }
   }
 
+  // ── 카카오 로그인 여부 검사 및 로그인 유도 헬퍼 ──
+  window.isKakaoLoggedIn = function() {
+    let kakaoUserObj = null;
+    try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+    const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
+    return Boolean(kakaoUserObj || currentAcc);
+  };
+
+  window.promptKakaoLogin = function(pendingItem = null) {
+    if (pendingItem) {
+      window.__pendingCartItem = pendingItem;
+    }
+    alert('카카오 로그인을 먼저 진행해 주세요.');
+    const modal = document.getElementById('nickname-modal');
+    if (modal) {
+      modal.style.display = 'flex';
+    } else if (typeof window.loginWithKakao === 'function') {
+      window.loginWithKakao('cart');
+    }
+  };
+
   // ── 상품 상세 보기 시 라이브 영상 PIP 모드 및 소리 지속 재생 엔진 ──
   window.openProductDetailSheet = function(item) {
     if (!item) return;
@@ -1503,6 +1524,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
         if (!currentConfig.isLive) {
           alert('라이브 방송 중에만 구매 가능합니다.');
+          return;
+        }
+
+        // 카카오 로그인 여부 체크
+        if (typeof window.isKakaoLoggedIn === 'function' && !window.isKakaoLoggedIn()) {
+          if (typeof window.promptKakaoLogin === 'function') window.promptKakaoLogin(item);
           return;
         }
 
@@ -1698,7 +1725,16 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               if (item.url === '__LEAD_FORM__') {
                 openLeadModal(item.name);
-              } else if (typeof addToCart === 'function') {
+                return;
+              }
+
+              // 카카오 로그인 여부 체크
+              if (typeof window.isKakaoLoggedIn === 'function' && !window.isKakaoLoggedIn()) {
+                if (typeof window.promptKakaoLogin === 'function') window.promptKakaoLogin(item);
+                return;
+              }
+
+              if (typeof addToCart === 'function') {
                 addToCart(item);
               }
 
@@ -3814,6 +3850,12 @@ function addToCart(product) {
     return;
   }
 
+  // 카카오 로그인 여부 체크
+  if (typeof window.isKakaoLoggedIn === 'function' && !window.isKakaoLoggedIn()) {
+    if (typeof window.promptKakaoLogin === 'function') window.promptKakaoLogin(product);
+    return;
+  }
+
   const exists = cartItems.find(item => item.name === product.name);
   if (exists) {
     exists.quantity = (exists.quantity || 1) + 1;
@@ -3843,17 +3885,10 @@ function addToCart(product) {
 
 function openCartModal() {
   // 장바구니 클릭 시 로그인 체크 (미로그인 시 카카오 1초 시작하기 팝업)
-  let kakaoUserObj = null;
-  try { kakaoUserObj = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
-  const currentAcc = (window.userNickname || localStorage.getItem('ryzin_nickname') || '').trim();
-
-  if (!kakaoUserObj && !currentAcc) {
-    const modal = document.getElementById('nickname-modal');
-    if (modal) {
-      modal.style.display = 'flex';
-      window.__openCartAfterLogin = true; // 로그인 완료 후 장바구니 자동 오픈 플래그
-    } else if (typeof window.loginWithKakao === 'function') {
-      window.loginWithKakao('cart');
+  if (typeof window.isKakaoLoggedIn === 'function' && !window.isKakaoLoggedIn()) {
+    window.__openCartAfterLogin = true;
+    if (typeof window.promptKakaoLogin === 'function') {
+      window.promptKakaoLogin();
     }
     return;
   }
