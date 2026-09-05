@@ -736,7 +736,8 @@ body.ui-hidden .bottom-product-banner {
   position: absolute;
   bottom: 80px; /* input-section 위에 안정적으로 안착하도록 높이 조절 */
   left: 12px;
-  width: 250px; /* 가로 너비 아담하게 제한 */
+  width: 275px; /* 가로 너비 여유 조율 */
+  max-width: calc(100% - 95px);
   height: 72px; /* 세로 높이 아담하게 조율 */
   background-color: #ffffff;
   border-radius: 10px;
