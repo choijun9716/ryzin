@@ -4412,59 +4412,32 @@ Minimum version required to store current data is: `+c+`.
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        min-height: 100vh;
         width: 100vw;
-        background: linear-gradient(135deg, #f6f8fd 0%, #f1f5f9 100%);
+        background-color: #f8fafc;
+        background-image: radial-gradient(at 50% 0%, rgba(226, 232, 240, 0.6) 0px, transparent 65%);
         position: relative;
-        overflow: hidden;
-      }
-      .login-wrapper::before, .login-wrapper::after {
-        content: "";
-        position: absolute;
-        width: 600px;
-        height: 600px;
-        border-radius: 50%;
-        filter: blur(80px);
-        z-index: 0;
-        opacity: 0.5;
-        animation: float 10s infinite ease-in-out alternate;
-      }
-      .login-wrapper::before {
-        background: rgba(59, 130, 246, 0.15);
-        top: -100px;
-        left: -100px;
-      }
-      .login-wrapper::after {
-        background: rgba(139, 92, 246, 0.15);
-        bottom: -150px;
-        right: -100px;
-        animation-delay: -5s;
-      }
-      @keyframes float {
-        0% { transform: translateY(0) scale(1); }
-        100% { transform: translateY(-30px) scale(1.05); }
+        font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, sans-serif;
+        color: #0f172a;
       }
       .login-card-container {
         width: 100%;
-        max-width: 420px;
-        z-index: 1;
+        max-width: 390px;
         position: relative;
         overflow: hidden;
-        border-radius: 24px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.05);
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 16px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
       }
       .slide-container {
         display: flex;
         width: 200%;
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       }
       .slide-pane {
         width: 50%;
-        padding: 40px;
+        padding: 40px 32px 36px 32px;
         flex-shrink: 0;
         text-align: center;
         box-sizing: border-box;
@@ -4475,19 +4448,21 @@ Minimum version required to store current data is: `+c+`.
         margin-bottom: 8px;
       }
       .login-logo img {
-        height: 38px;
-        max-width: 220px;
+        height: 30px;
+        max-width: 180px;
         object-fit: contain;
       }
       .login-subtitle {
-        color: var(--text-secondary, #6b7280);
-        font-size: 14px;
+        color: #64748b;
+        font-size: 13px;
         margin-bottom: 28px;
+        font-weight: 400;
+        letter-spacing: -0.01em;
       }
       .login-form {
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
         text-align: left;
       }
       .input-group {
@@ -4495,73 +4470,125 @@ Minimum version required to store current data is: `+c+`.
       }
       .login-input {
         width: 100%;
-        padding: 13px 16px;
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 12px;
-        font-size: 15px;
-        color: var(--text-primary, #111827);
-        transition: all 0.2s ease;
+        padding: 11px 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #0f172a;
+        transition: all 0.15s ease;
         box-sizing: border-box;
       }
       .login-input::placeholder {
-        color: var(--text-tertiary, #9ca3af);
+        color: #94a3b8;
+        font-size: 13px;
       }
       .login-input:focus {
         outline: none;
-        background: #fff;
-        border-color: #111111;
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+        background: #ffffff;
+        border-color: #0f172a;
+        box-shadow: 0 0 0 1px #0f172a;
       }
       .login-label {
         display: block;
         margin-bottom: 6px;
         font-weight: 600;
-        color: var(--text-secondary, #4b5563);
-        font-size: 13px;
-        letter-spacing: 0.02em;
+        color: #334155;
+        font-size: 12px;
+        letter-spacing: -0.01em;
       }
       .login-btn {
         width: 100%;
-        padding: 13px;
-        background: #111111;
-        color: white;
+        height: 42px;
+        background: #0f172a;
+        color: #ffffff;
         border: none;
-        border-radius: 12px;
-        font-size: 15px;
+        border-radius: 8px;
+        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
         margin-top: 4px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .login-btn:hover:not(:disabled) {
-        transform: translateY(-1px);
-        background: #000000;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        background: #1e293b;
       }
       .login-btn:disabled {
-        opacity: 0.6;
+        opacity: 0.5;
         cursor: not-allowed;
       }
-      .email-badge-box {
+      .security-icon-badge {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 52px;
-        height: 52px;
-        background: #eff6ff;
-        border-radius: 16px;
+        width: 44px;
+        height: 44px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
         margin-bottom: 12px;
-        color: #2563eb;
+        color: #0f172a;
       }
-      .otp-timer-badge {
+      .otp-email-pill {
+        display: inline-block;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 12px;
         font-weight: 600;
-        color: #dc2626;
-        background: #fef2f2;
+        color: #0f172a;
+        background: #f1f5f9;
+        padding: 3px 8px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        margin-top: 4px;
+      }
+      .otp-timer-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #e11d48;
+        background: #fff1f2;
         padding: 2px 8px;
         border-radius: 6px;
+      }
+      .timer-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #e11d48;
+        animation: pulse 1.5s infinite ease-in-out;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.3; transform: scale(0.8); }
+      }
+      .btn-sub-action {
+        flex: 1;
+        height: 36px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #64748b;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-sub-action:hover:not(:disabled) {
+        color: #0f172a;
+        border-color: #cbd5e1;
+        background: #f8fafc;
+      }
+      .btn-sub-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
     </style>
     <div class="login-wrapper">
@@ -4573,15 +4600,15 @@ Minimum version required to store current data is: `+c+`.
             <div class="login-logo">
               <img src="${sr}" alt="Ryzin Logo" />
             </div>
-            <div class="login-subtitle">라이브커머스 운영 관리 시스템</div>
+            <div class="login-subtitle">운영 관리 시스템</div>
             <form class="login-form" id="login-form">
               <div class="input-group">
                 <label class="login-label">아이디</label>
-                <input type="text" id="login-id" class="login-input" placeholder="계정 아이디를 입력하세요" required autocomplete="username">
+                <input type="text" id="login-id" class="login-input" placeholder="아이디 입력" required autocomplete="username">
               </div>
               <div class="input-group">
                 <label class="login-label">비밀번호</label>
-                <input type="password" id="login-pw" class="login-input" placeholder="비밀번호를 입력하세요" required autocomplete="current-password">
+                <input type="password" id="login-pw" class="login-input" placeholder="비밀번호 입력" required autocomplete="current-password">
               </div>
               <button type="submit" class="login-btn" id="btn-login-submit">로그인</button>
             </form>
@@ -4589,31 +4616,34 @@ Minimum version required to store current data is: `+c+`.
 
           <!-- Step 2: 사내메일 2단계 OTP 인증 -->
           <div class="slide-pane" id="step-2">
-            <div class="email-badge-box">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
+            <div class="security-icon-badge">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
             </div>
-            <div style="font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 6px;">사내메일 2단계 인증</div>
-            <div style="font-size: 13px; color: #6b7280; line-height: 1.5; margin-bottom: 20px;">
-              사내 메일(<span id="otp-target-email" style="font-weight: 600; color: #111827;"></span>)로<br>
-              6자리 인증번호가 발송되었습니다.
+            <div style="font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 6px; letter-spacing: -0.02em;">사내 보안 인증</div>
+            <div style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 22px;">
+              인증번호가 사내 메일로 발송되었습니다.<br>
+              <span id="otp-target-email" class="otp-email-pill"></span>
             </div>
 
             <form class="login-form" id="otp-form">
               <div class="input-group">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <label class="login-label" style="margin-bottom: 0;">인증번호 (6자리)</label>
-                  <span id="otp-timer" class="otp-timer-badge">05:00</span>
+                  <label class="login-label" style="margin-bottom: 0;">인증코드</label>
+                  <div class="otp-timer-container">
+                    <span class="timer-dot"></span>
+                    <span id="otp-timer">05:00</span>
+                  </div>
                 </div>
-                <input type="text" id="login-otp" class="login-input" placeholder="6자리 숫자" required maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="text-align: center; font-size: 24px; letter-spacing: 6px; font-weight: bold; font-family: monospace;">
+                <input type="text" id="login-otp" class="login-input" placeholder="6자리 번호" required maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="text-align: center; font-size: 26px; letter-spacing: 8px; font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; padding: 10px; height: 50px;">
               </div>
               <button type="submit" class="login-btn" id="btn-verify-otp">인증 및 로그인</button>
 
               <div style="display: flex; gap: 8px; margin-top: 4px;">
-                <button type="button" class="btn" id="btn-resend-otp" style="flex: 1; font-size: 13px; padding: 10px; color: #4b5563; border: 1px solid #e5e7eb; border-radius: 10px; background: white; cursor: pointer;">인증번호 재발송</button>
-                <button type="button" class="btn" id="btn-back" style="flex: 1; font-size: 13px; padding: 10px; color: #4b5563; border: 1px solid #e5e7eb; border-radius: 10px; background: white; cursor: pointer;">뒤로 가기</button>
+                <button type="button" class="btn-sub-action" id="btn-resend-otp">인증코드 재발송</button>
+                <button type="button" class="btn-sub-action" id="btn-back">뒤로 가기</button>
               </div>
             </form>
           </div>
@@ -4621,7 +4651,7 @@ Minimum version required to store current data is: `+c+`.
         </div>
       </div>
     </div>
-  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-resend-otp`),a=document.getElementById(`login-otp`),o=document.getElementById(`otp-target-email`),s=document.getElementById(`otp-timer`),c=document.getElementById(`btn-verify-otp`),l=null,u=null,d=300;function f(e=300){u&&clearInterval(u),d=e,p(),u=setInterval(()=>{--d,d<=0?(clearInterval(u),s&&(s.textContent=`시간 만료`,s.style.color=`#dc2626`),c&&(c.disabled=!0),J(`인증번호 유효시간이 만료되었습니다. 재발송 버튼을 눌러주세요.`)):p()},1e3)}function p(){s&&(s.textContent=`${Math.floor(d/60).toString().padStart(2,`0`)}:${(d%60).toString().padStart(2,`0`)}`,s.style.color=d<=60?`#dc2626`:`#2563eb`,c&&(c.disabled=!1))}e&&e.addEventListener(`submit`,async e=>{e.preventDefault();let t=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value,i=document.getElementById(`btn-login-submit`),s=i?i.textContent:`로그인`;i&&(i.textContent=`인증 메일 발송 중...`,i.disabled=!0);try{let e=await fetch(`/api/admin/login`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({id:t,password:r})}),i=await e.json().catch(()=>({}));if(e.ok&&i.success){if(i.step===`otp_required`){l=i.sessionToken,o&&(o.textContent=i.email||`사내 메일`),a&&(a.value=``),f(300),n.style.transform=`translateX(-50%)`,setTimeout(()=>{a&&a.focus()},400),q(`사내 메일로 인증번호가 발송되었습니다.`);return}if(i.token&&i.user){m(i.token,i.user);return}}J(i.error||`로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.`)}catch(e){console.error(`[Login] 오류 발생:`,e),J(`로그인 처리 중 네트워크 오류가 발생했습니다.`)}finally{i&&(i.textContent=s,i.disabled=!1)}}),t&&t.addEventListener(`submit`,async e=>{if(e.preventDefault(),!l){J(`인증 세션이 유효하지 않습니다. 다시 로그인해주세요.`),n.style.transform=`translateX(0)`;return}let t=a.value.trim();if(!t||t.length!==6){J(`6자리 인증번호를 정확히 입력해주세요.`);return}c&&(c.textContent=`인증 중...`,c.disabled=!0);try{let e=await fetch(`/api/admin/login`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({action:`verify_otp`,sessionToken:l,code:t})}),n=await e.json().catch(()=>({}));e.ok&&n.success?(u&&clearInterval(u),m(n.token,n.user)):(J(n.error||`인증번호가 일치하지 않습니다.`),a.value=``,a.focus())}catch(e){console.error(`[OTP Verify] 오류:`,e),J(`인증 확인 중 오류가 발생했습니다.`)}finally{c&&(c.textContent=`인증 및 로그인`,c.disabled=!1)}}),i&&i.addEventListener(`click`,async()=>{if(!l){J(`다시 처음부터 로그인해주세요.`),n.style.transform=`translateX(0)`;return}i.textContent=`발송 중...`,i.disabled=!0;try{let e=await fetch(`/api/admin/login`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({action:`resend_otp`,sessionToken:l})}),t=await e.json().catch(()=>({}));e.ok&&t.success?(l=t.sessionToken,f(300),a.value=``,a.focus(),q(`새 인증번호가 사내 메일로 재발송되었습니다.`)):J(t.error||`인증번호 재발송에 실패했습니다.`)}catch{J(`재발송 요청 중 네트워크 오류가 발생했습니다.`)}finally{i.textContent=`인증번호 재발송`,i.disabled=!1}}),r&&r.addEventListener(`click`,()=>{u&&clearInterval(u),n.style.transform=`translateX(0)`,l=null,a&&(a.value=``)});async function m(e,t){if(localStorage.setItem(`ryzin_admin_token`,e),!H.isDemoMode)try{await H.init()}catch(e){console.warn(`init after login failed:`,e)}H.completeLogin(t),q(`사내 보안 인증 완료! 환영합니다.`),t.role&&t.role.startsWith(`live_stream:`)?M.navigate(`/live_stream`):t.role&&t.role.startsWith(`brand:`)?M.navigate(`/projects`):M.navigate(`/`)}},0),e}var lr=`https://vybrnhyaeugfwezbygdt.supabase.co`,ur=`sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9`,dr={"Content-Type":`application/json`,apikey:ur,Authorization:`Bearer ${ur}`,Prefer:`return=representation`};async function fr(e,t=``){let n=await fetch(`${lr}/rest/v1/${e}?${t}`,{headers:dr});if(!n.ok)throw Error(`DB fetch error: ${n.status}`);return n.json()}async function pr(e,t){let n=await fetch(`${lr}/rest/v1/${e}`,{method:`POST`,headers:dr,body:JSON.stringify(t)});if(!n.ok)throw Error(`DB insert error: ${n.status}`);return n.json()}async function mr(e,t,n){let r=await fetch(`${lr}/rest/v1/${e}?id=eq.${t}`,{method:`PATCH`,headers:dr,body:JSON.stringify(n)});if(!r.ok)throw Error(`DB update error: ${r.status}`);return r.json()}async function hr(e,t){let n=await fetch(`${lr}/rest/v1/${e}?id=eq.${t}`,{method:`DELETE`,headers:dr});if(!n.ok)throw Error(`DB delete error: ${n.status}`);return!0}var gr={getAll:()=>fr(`shop_banners`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_banners`,e),update:(e,t)=>mr(`shop_banners`,e,t),delete:e=>hr(`shop_banners`,e)},_r={getAll:()=>fr(`shop_sections`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_sections`,e),update:(e,t)=>mr(`shop_sections`,e,t),delete:e=>hr(`shop_sections`,e)},vr={getAll:()=>fr(`shop_menus`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_menus`,e),update:(e,t)=>mr(`shop_menus`,e,t),delete:e=>hr(`shop_menus`,e)},yr={getAll:()=>fr(`shop_products`,`select=*&order=sort_order.asc`),getBySectionId:e=>fr(`shop_products`,`select=*&section_id=eq.${e}&order=sort_order.asc`),insert:e=>pr(`shop_products`,e),update:(e,t)=>mr(`shop_products`,e,t),delete:e=>hr(`shop_products`,e)},br={getAll:()=>fr(`shop_magazines`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_magazines`,e),update:(e,t)=>mr(`shop_magazines`,e,t),delete:e=>hr(`shop_magazines`,e)},xr={getAll:()=>fr(`shop_users`,`select=*&order=created_at.desc`),insert:e=>pr(`shop_users`,e),update:(e,t)=>mr(`shop_users`,e,t),delete:e=>hr(`shop_users`,e)};function Sr(){return`PROD-${Math.floor(Math.random()*89999+1e4)}`}function Cr(e){let t=document.createElement(`style`);t.innerHTML=`
+  `,setTimeout(()=>{let e=document.getElementById(`login-form`),t=document.getElementById(`otp-form`),n=document.getElementById(`login-slider`),r=document.getElementById(`btn-back`),i=document.getElementById(`btn-resend-otp`),a=document.getElementById(`login-otp`),o=document.getElementById(`otp-target-email`),s=document.getElementById(`otp-timer`),c=document.getElementById(`btn-verify-otp`),l=null,u=null,d=300;function f(e=300){u&&clearInterval(u),d=e,p(),u=setInterval(()=>{--d,d<=0?(clearInterval(u),s&&(s.textContent=`시간 만료`,s.style.color=`#dc2626`),c&&(c.disabled=!0),J(`인증번호 유효시간이 만료되었습니다. 재발송을 눌러주세요.`)):p()},1e3)}function p(){s&&(s.textContent=`${Math.floor(d/60).toString().padStart(2,`0`)}:${(d%60).toString().padStart(2,`0`)}`,c&&(c.disabled=!1))}e&&e.addEventListener(`submit`,async e=>{e.preventDefault();let t=document.getElementById(`login-id`).value.trim(),r=document.getElementById(`login-pw`).value,i=document.getElementById(`btn-login-submit`),s=i?i.textContent:`로그인`;i&&(i.textContent=`인증 메일 발송 중...`,i.disabled=!0);try{let e=await fetch(`/api/admin/login`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({id:t,password:r})}),i=await e.json().catch(()=>({}));if(e.ok&&i.success){if(i.step===`otp_required`){l=i.sessionToken,o&&(o.textContent=i.email||`사내 메일`),a&&(a.value=``),f(300),n.style.transform=`translateX(-50%)`,setTimeout(()=>{a&&a.focus()},350),q(`사내 메일로 인증코드가 발송되었습니다.`);return}if(i.token&&i.user){m(i.token,i.user);return}}J(i.error||`로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.`)}catch(e){console.error(`[Login] 오류 발생:`,e),J(`로그인 처리 중 네트워크 오류가 발생했습니다.`)}finally{i&&(i.textContent=s,i.disabled=!1)}}),t&&t.addEventListener(`submit`,async e=>{if(e.preventDefault(),!l){J(`인증 세션이 유효하지 않습니다. 다시 로그인해주세요.`),n.style.transform=`translateX(0)`;return}let t=a.value.trim();if(!t||t.length!==6){J(`6자리 인증번호를 정확히 입력해주세요.`);return}c&&(c.textContent=`확인 중...`,c.disabled=!0);try{let e=await fetch(`/api/admin/login`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({action:`verify_otp`,sessionToken:l,code:t})}),n=await e.json().catch(()=>({}));e.ok&&n.success?(u&&clearInterval(u),m(n.token,n.user)):(J(n.error||`인증코드가 일치하지 않습니다.`),a.value=``,a.focus())}catch(e){console.error(`[OTP Verify] 오류:`,e),J(`인증 확인 중 오류가 발생했습니다.`)}finally{c&&(c.textContent=`인증 및 로그인`,c.disabled=!1)}}),i&&i.addEventListener(`click`,async()=>{if(!l){J(`다시 처음부터 로그인해주세요.`),n.style.transform=`translateX(0)`;return}i.textContent=`발송 중...`,i.disabled=!0;try{let e=await fetch(`/api/admin/login`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({action:`resend_otp`,sessionToken:l})}),t=await e.json().catch(()=>({}));e.ok&&t.success?(l=t.sessionToken,f(300),a.value=``,a.focus(),q(`새 인증코드가 사내 메일로 재발송되었습니다.`)):J(t.error||`인증코드 재발송에 실패했습니다.`)}catch{J(`재발송 요청 중 네트워크 오류가 발생했습니다.`)}finally{i.textContent=`인증코드 재발송`,i.disabled=!1}}),r&&r.addEventListener(`click`,()=>{u&&clearInterval(u),n.style.transform=`translateX(0)`,l=null,a&&(a.value=``)});async function m(e,t){if(localStorage.setItem(`ryzin_admin_token`,e),!H.isDemoMode)try{await H.init()}catch(e){console.warn(`init after login failed:`,e)}H.completeLogin(t),q(`보안 인증 완료! 환영합니다.`),t.role&&t.role.startsWith(`live_stream:`)?M.navigate(`/live_stream`):t.role&&t.role.startsWith(`brand:`)?M.navigate(`/projects`):M.navigate(`/`)}},0),e}var lr=`https://vybrnhyaeugfwezbygdt.supabase.co`,ur=`sb_publishable_FxH6HGkUaKfcJD9by_TLFQ_0PJk80J9`,dr={"Content-Type":`application/json`,apikey:ur,Authorization:`Bearer ${ur}`,Prefer:`return=representation`};async function fr(e,t=``){let n=await fetch(`${lr}/rest/v1/${e}?${t}`,{headers:dr});if(!n.ok)throw Error(`DB fetch error: ${n.status}`);return n.json()}async function pr(e,t){let n=await fetch(`${lr}/rest/v1/${e}`,{method:`POST`,headers:dr,body:JSON.stringify(t)});if(!n.ok)throw Error(`DB insert error: ${n.status}`);return n.json()}async function mr(e,t,n){let r=await fetch(`${lr}/rest/v1/${e}?id=eq.${t}`,{method:`PATCH`,headers:dr,body:JSON.stringify(n)});if(!r.ok)throw Error(`DB update error: ${r.status}`);return r.json()}async function hr(e,t){let n=await fetch(`${lr}/rest/v1/${e}?id=eq.${t}`,{method:`DELETE`,headers:dr});if(!n.ok)throw Error(`DB delete error: ${n.status}`);return!0}var gr={getAll:()=>fr(`shop_banners`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_banners`,e),update:(e,t)=>mr(`shop_banners`,e,t),delete:e=>hr(`shop_banners`,e)},_r={getAll:()=>fr(`shop_sections`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_sections`,e),update:(e,t)=>mr(`shop_sections`,e,t),delete:e=>hr(`shop_sections`,e)},vr={getAll:()=>fr(`shop_menus`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_menus`,e),update:(e,t)=>mr(`shop_menus`,e,t),delete:e=>hr(`shop_menus`,e)},yr={getAll:()=>fr(`shop_products`,`select=*&order=sort_order.asc`),getBySectionId:e=>fr(`shop_products`,`select=*&section_id=eq.${e}&order=sort_order.asc`),insert:e=>pr(`shop_products`,e),update:(e,t)=>mr(`shop_products`,e,t),delete:e=>hr(`shop_products`,e)},br={getAll:()=>fr(`shop_magazines`,`select=*&order=sort_order.asc`),insert:e=>pr(`shop_magazines`,e),update:(e,t)=>mr(`shop_magazines`,e,t),delete:e=>hr(`shop_magazines`,e)},xr={getAll:()=>fr(`shop_users`,`select=*&order=created_at.desc`),insert:e=>pr(`shop_users`,e),update:(e,t)=>mr(`shop_users`,e,t),delete:e=>hr(`shop_users`,e)};function Sr(){return`PROD-${Math.floor(Math.random()*89999+1e4)}`}function Cr(e){let t=document.createElement(`style`);t.innerHTML=`
     .sm-input { 
       width: 100%; 
       padding: 8px 12px; 

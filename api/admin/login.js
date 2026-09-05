@@ -78,35 +78,79 @@ async function sendEmailOtp(toEmail, code) {
   });
 
   const mailOptions = {
-    from: `"라이진 보안센터" <${user}>`,
+    from: `"RYZIN" <${user}>`,
     to: toEmail,
-    subject: `[라이진 어드민] 로그인 인증번호: [${code}]`,
+    subject: `[RYZIN] 관리자 보안 인증번호 [${code}]`,
     html: `
-      <div style="max-width: 500px; margin: 0 auto; padding: 32px 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px;">
-        <div style="margin-bottom: 24px; border-bottom: 2px solid #111827; padding-bottom: 16px;">
-          <h2 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.5px;">RYZIN Corp.</h2>
-          <p style="margin: 0; font-size: 13px; color: #4b5563;">어드민 시스템 2단계 사내메일 인증</p>
-        </div>
-        
-        <p style="font-size: 14px; color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
-          라이진 관리자 시스템 로그인을 위한 일회용 인증번호(OTP)입니다.<br>
-          아래 번호를 로그인 화면에 입력하여 인증을 완료해 주세요.
-        </p>
+      <!DOCTYPE html>
+      <html lang="ko">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>RYZIN 관리자 인증번호</title>
+      </head>
+      <body style="margin: 0; padding: 40px 16px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #09090b; -webkit-font-smoothing: antialiased;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 460px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); overflow: hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 36px 36px 20px 36px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td>
+                    <div style="font-size: 20px; font-weight: 900; letter-spacing: 2px; color: #09090b;">RYZIN</div>
+                  </td>
+                  <td align="right">
+                    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: #64748b; background-color: #f1f5f9; padding: 4px 10px; border-radius: 9999px;">ADMIN 2FA</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Divider -->
+          <tr>
+            <td style="padding: 0 36px;">
+              <div style="height: 1px; background-color: #f1f5f9; width: 100%;"></div>
+            </td>
+          </tr>
 
-        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 24px;">
-          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">보안 인증번호</div>
-          <div style="font-size: 34px; font-weight: 800; letter-spacing: 6px; color: #2563eb; font-family: Consolas, monospace;">${code}</div>
-          <div style="font-size: 12px; color: #ef4444; margin-top: 10px; font-weight: 500;">유효시간: 발송 후 5분</div>
-        </div>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 28px 36px 24px 36px;">
+              <h1 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: #09090b; letter-spacing: -0.02em;">보안 인증번호</h1>
+              <p style="margin: 0 0 28px 0; font-size: 14px; line-height: 1.5; color: #64748b;">
+                라이진 관리자 시스템 로그인을 위한 일회용 인증코드입니다. 아래 번호를 로그인 창에 입력해 주세요.
+              </p>
 
-        <p style="font-size: 12px; color: #6b7280; line-height: 1.5; margin: 0 0 20px 0;">
-          본인이 로그인 요청을 하지 않은 경우, 비밀번호 유출 가능성이 있으므로 즉시 관리자에게 알려주시기 바랍니다.
-        </p>
+              <!-- OTP Box -->
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px 16px; text-align: center; margin-bottom: 24px;">
+                <div style="font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 38px; font-weight: 800; letter-spacing: 12px; color: #09090b; padding-left: 12px; line-height: 1;">
+                  ${code}
+                </div>
+                <div style="margin-top: 14px;">
+                  <span style="display: inline-block; font-size: 11px; font-weight: 600; color: #e11d48; background-color: #ffe4e6; padding: 3px 10px; border-radius: 9999px;">
+                    유효시간 5분
+                  </span>
+                </div>
+              </div>
 
-        <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; font-size: 11px; color: #94a3b8; text-align: center;">
-          (주)라이진 | 보안팀 | 본 메일은 발신 전용 메일입니다.
-        </div>
-      </div>
+              <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #94a3b8;">
+                * 본인이 요청하지 않은 경우 타인의 접속 시도일 수 있으니 사내 보안 담당자에게 즉시 문의해 주세요.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 20px 36px 28px 36px; background-color: #fafafa; border-top: 1px solid #f1f5f9; text-align: center;">
+              <p style="margin: 0; font-size: 11px; color: #94a3b8; font-weight: 500;">
+                © 2026 RYZIN Corp. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `,
   };
 
