@@ -1,14 +1,15 @@
 // api/admin/login.js
-// 어드민 로그인 API: service_role 키로 users 조회 후 비밀번호 검증 및 JWT 발급
+// 어드민 로그인 API: 사내메일(네이버웍스 SMTP) 2단계 보안 인증(OTP) 지원
 // 절대로 클라이언트 번들에 포함되지 않으며, Vercel Serverless Function으로만 실행됩니다.
 
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://vybrnhyaeugfwezbygdt.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'ryzin_admin_jwt_secret_change_this_in_vercel';
 
-// SHA256 해시 (crypto-js 없이 Node.js 내장 모듈 사용)
+// SHA256 해시
 function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
@@ -41,10 +42,81 @@ function verifyJWT(token, secret) {
   }
 }
 
+// 이메일 마스킹 (예: choijun@ryzincorp.com -> cho***@ryzincorp.com)
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return email || '';
+  const [local, domain] = email.split('@');
+  if (local.length <= 3) {
+    return `${local}***@${domain}`;
+  }
+  return `${local.slice(0, 3)}***@${domain}`;
+}
+
+// 사용자별 인증메일 수신 주소 결정
+function getRecipientEmail(user) {
+  if (user.email && user.email.includes('@')) return user.email;
+  if (user.id === 'choijun') return 'choijun@ryzincorp.com';
+  return 'choijun@ryzincorp.com'; // 기본 사내 보안 담당자 메일로 전달
+}
+
+// 네이버웍스 SMTP 발송 함수
+async function sendEmailOtp(toEmail, code) {
+  const host = process.env.SMTP_HOST || 'smtp.worksmobile.com';
+  const port = parseInt(process.env.SMTP_PORT || '465', 10);
+  const user = process.env.SMTP_USER || 'choijun@ryzincorp.com';
+  const pass = process.env.SMTP_PASS;
+
+  if (!pass) {
+    throw new Error('SMTP_PASS 환경변수가 설정되지 않았습니다.');
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+  });
+
+  const mailOptions = {
+    from: `"라이진 보안센터" <${user}>`,
+    to: toEmail,
+    subject: `[라이진 어드민] 로그인 인증번호: [${code}]`,
+    html: `
+      <div style="max-width: 500px; margin: 0 auto; padding: 32px 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px;">
+        <div style="margin-bottom: 24px; border-bottom: 2px solid #111827; padding-bottom: 16px;">
+          <h2 style="margin: 0 0 6px 0; font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.5px;">RYZIN Corp.</h2>
+          <p style="margin: 0; font-size: 13px; color: #4b5563;">어드민 시스템 2단계 사내메일 인증</p>
+        </div>
+        
+        <p style="font-size: 14px; color: #374151; line-height: 1.6; margin: 0 0 20px 0;">
+          라이진 관리자 시스템 로그인을 위한 일회용 인증번호(OTP)입니다.<br>
+          아래 번호를 로그인 화면에 입력하여 인증을 완료해 주세요.
+        </p>
+
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">보안 인증번호</div>
+          <div style="font-size: 34px; font-weight: 800; letter-spacing: 6px; color: #2563eb; font-family: Consolas, monospace;">${code}</div>
+          <div style="font-size: 12px; color: #ef4444; margin-top: 10px; font-weight: 500;">유효시간: 발송 후 5분</div>
+        </div>
+
+        <p style="font-size: 12px; color: #6b7280; line-height: 1.5; margin: 0 0 20px 0;">
+          본인이 로그인 요청을 하지 않은 경우, 비밀번호 유출 가능성이 있으므로 즉시 관리자에게 알려주시기 바랍니다.
+        </p>
+
+        <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; font-size: 11px; color: #94a3b8; text-align: center;">
+          (주)라이진 | 보안팀 | 본 메일은 발신 전용 메일입니다.
+        </div>
+      </div>
+    `,
+  };
+
+  return await transporter.sendMail(mailOptions);
+}
+
 module.exports = { verifyJWT, ADMIN_JWT_SECRET };
 
 module.exports.default = async function handler(req, res) {
-  // CORS 허용 (어드민 도메인에서만)
+  // CORS 허용
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -57,7 +129,6 @@ module.exports.default = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // service_role 키 없으면 서버 설정 오류
   if (!SUPABASE_SERVICE_ROLE_KEY) {
     console.error('[Admin Login] SUPABASE_SERVICE_ROLE_KEY 환경변수가 설정되지 않았습니다.');
     return res.status(500).json({ error: '서버 설정 오류입니다. 관리자에게 문의하세요.' });
@@ -70,16 +141,162 @@ module.exports.default = async function handler(req, res) {
     return res.status(400).json({ error: '잘못된 요청 형식입니다.' });
   }
 
-  const { id, password } = body || {};
-
-  if (!id || !password) {
-    return res.status(400).json({ error: '아이디와 비밀번호를 입력하세요.' });
-  }
+  const { action, id, password, sessionToken, code } = body || {};
 
   try {
-    // service_role 키로 users 테이블 조회 (RLS 우회)
+    // ==========================================
+    // 1. 인증번호 검증 (Step 2)
+    // ==========================================
+    if (action === 'verify_otp') {
+      if (!sessionToken || !code) {
+        return res.status(400).json({ error: '인증 세션 정보 또는 인증번호가 누락되었습니다.' });
+      }
+
+      let sessionData;
+      try {
+        const decoded = Buffer.from(sessionToken, 'base64url').toString();
+        sessionData = JSON.parse(decoded);
+      } catch {
+        return res.status(400).json({ error: '유효하지 않은 인증 세션입니다.' });
+      }
+
+      const { u: userId, exp, sig } = sessionData || {};
+      if (!userId || !exp || !sig) {
+        return res.status(400).json({ error: '잘못된 세션 데이터입니다.' });
+      }
+
+      // 유효시간(5분) 검사
+      if (Date.now() > exp) {
+        return res.status(401).json({ error: '인증번호 유효시간(5분)이 만료되었습니다. 다시 로그인해 주세요.' });
+      }
+
+      // 서명 검증 (클라이언트가 보낸 6자리 code와 서버 비밀키로 검증)
+      const cleanCode = code.toString().trim();
+      const expectedSig = crypto
+        .createHmac('sha256', ADMIN_JWT_SECRET)
+        .update(`${userId}:${cleanCode}:${exp}`)
+        .digest('hex');
+
+      if (sig !== expectedSig) {
+        return res.status(401).json({ error: '인증번호가 일치하지 않습니다. 다시 확인해 주세요.' });
+      }
+
+      // 검증 완료 -> DB에서 최신 사용자 정보 조회
+      const resp = await fetch(
+        `${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}&select=id,name,role,created_at`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          }
+        }
+      );
+
+      if (!resp.ok) {
+        return res.status(500).json({ error: '사용자 정보를 불러올 수 없습니다.' });
+      }
+
+      const users = await resp.json();
+      if (!users || users.length === 0) {
+        return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+      }
+
+      const user = users[0];
+
+      // 정식 관리자 JWT 발급 (24시간 유효)
+      const token = createJWT(
+        {
+          sub: user.id,
+          name: user.name,
+          role: user.role,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 86400,
+        },
+        ADMIN_JWT_SECRET
+      );
+
+      return res.status(200).json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          role: user.role,
+        }
+      });
+    }
+
+    // ==========================================
+    // 2. 인증번호 재발송 (Resend OTP)
+    // ==========================================
+    if (action === 'resend_otp') {
+      if (!sessionToken) {
+        return res.status(400).json({ error: '세션 정보가 누락되었습니다.' });
+      }
+
+      let sessionData;
+      try {
+        const decoded = Buffer.from(sessionToken, 'base64url').toString();
+        sessionData = JSON.parse(decoded);
+      } catch {
+        return res.status(400).json({ error: '유효하지 않은 인증 세션입니다.' });
+      }
+
+      const { u: userId } = sessionData || {};
+      if (!userId) {
+        return res.status(400).json({ error: '잘못된 세션 정보입니다.' });
+      }
+
+      const resp = await fetch(
+        `${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}&select=id,name,role`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          }
+        }
+      );
+
+      if (!resp.ok) {
+        return res.status(500).json({ error: '사용자 조회 실패' });
+      }
+      const users = await resp.json();
+      if (!users || users.length === 0) {
+        return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+      }
+
+      const user = users[0];
+      const targetEmail = getRecipientEmail(user);
+      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const newExp = Date.now() + 5 * 60 * 1000;
+      const newSig = crypto
+        .createHmac('sha256', ADMIN_JWT_SECRET)
+        .update(`${user.id}:${newCode}:${newExp}`)
+        .digest('hex');
+
+      const newSessionToken = Buffer.from(
+        JSON.stringify({ u: user.id, exp: newExp, sig: newSig })
+      ).toString('base64url');
+
+      await sendEmailOtp(targetEmail, newCode);
+
+      return res.status(200).json({
+        success: true,
+        sessionToken: newSessionToken,
+        email: maskEmail(targetEmail),
+        message: '새 인증번호가 사내 메일로 발송되었습니다.',
+      });
+    }
+
+    // ==========================================
+    // 3. 아이디/비밀번호 1차 검증 (Step 1)
+    // ==========================================
+    if (!id || !password) {
+      return res.status(400).json({ error: '아이디와 비밀번호를 입력하세요.' });
+    }
+
     const resp = await fetch(
-      `${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}&select=id,name,role,password,otp_secret`,
+      `${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}&select=id,name,role,password`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
@@ -108,27 +325,60 @@ module.exports.default = async function handler(req, res) {
       return res.status(401).json({ error: '아이디 또는 비밀번호가 일치하지 않습니다.' });
     }
 
-    // JWT 발급 (24시간 유효)
-    const token = createJWT(
-      {
-        sub: user.id,
-        name: user.name,
-        role: user.role,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 86400,
-      },
-      ADMIN_JWT_SECRET
-    );
+    // SMTP 설정 확인
+    const hasSmtp = Boolean(process.env.SMTP_PASS);
+
+    if (!hasSmtp) {
+      // SMTP 미설정 시 fallback (긴급 접속용)
+      console.warn('[Admin Login] SMTP 미설정으로 OTP 건너뜀');
+      const token = createJWT(
+        {
+          sub: user.id,
+          name: user.name,
+          role: user.role,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 86400,
+        },
+        ADMIN_JWT_SECRET
+      );
+      return res.status(200).json({
+        success: true,
+        token,
+        user: { id: user.id, name: user.name, role: user.role }
+      });
+    }
+
+    // 6자리 일회용 보안코드 생성
+    const codeGen = Math.floor(100000 + Math.random() * 900000).toString();
+    const exp = Date.now() + 5 * 60 * 1000; // 5분 유효
+    const sig = crypto
+      .createHmac('sha256', ADMIN_JWT_SECRET)
+      .update(`${user.id}:${codeGen}:${exp}`)
+      .digest('hex');
+
+    const sessionTokenPayload = Buffer.from(
+      JSON.stringify({ u: user.id, exp, sig })
+    ).toString('base64url');
+
+    const targetEmail = getRecipientEmail(user);
+
+    // 네이버웍스 SMTP로 이메일 발송
+    try {
+      await sendEmailOtp(targetEmail, codeGen);
+    } catch (mailErr) {
+      console.error('[Admin Login] 이메일 발송 실패:', mailErr);
+      return res.status(500).json({
+        error: '사내메일 인증번호 발송에 실패했습니다. 관리자에게 문의하세요.',
+        details: mailErr.message
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        otpSecret: user.otp_secret || ''
-      }
+      step: 'otp_required',
+      userId: user.id,
+      email: maskEmail(targetEmail),
+      sessionToken: sessionTokenPayload,
     });
 
   } catch (err) {

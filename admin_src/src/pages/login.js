@@ -2,11 +2,9 @@ import { store } from '../data/store.js';
 import { router } from '../router.js';
 import { showSuccess, showError } from '../components/toast.js';
 import ryzinLogo from '../assets/ryzin_studio_black.png';
-import * as OTPAuth from 'otpauth';
-import QRCode from 'qrcode';
 
 export function renderLogin() {
-  // 로그인 화면 진입 시 데모 모드가 켜져있다면 강제로 끔 (갇힘 방지)
+  // 로그인 화면 진입 시 데모 모드가 켜져있다면 강제로 끔
   if (store.isDemoMode) {
     localStorage.setItem('ryzin_is_demo_mode', 'false');
     store.isDemoMode = false;
@@ -62,10 +60,10 @@ export function renderLogin() {
         overflow: hidden;
         border-radius: 24px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0,0,0,0.05);
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.6);
       }
       .slide-container {
         display: flex;
@@ -77,6 +75,7 @@ export function renderLogin() {
         padding: 40px;
         flex-shrink: 0;
         text-align: center;
+        box-sizing: border-box;
       }
       .login-logo {
         display: flex;
@@ -89,14 +88,14 @@ export function renderLogin() {
         object-fit: contain;
       }
       .login-subtitle {
-        color: var(--text-secondary);
-        font-size: 15px;
-        margin-bottom: 32px;
+        color: var(--text-secondary, #6b7280);
+        font-size: 14px;
+        margin-bottom: 28px;
       }
       .login-form {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 18px;
         text-align: left;
       }
       .input-group {
@@ -104,60 +103,73 @@ export function renderLogin() {
       }
       .login-input {
         width: 100%;
-        padding: 14px 16px;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 13px 16px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 12px;
         font-size: 15px;
-        color: var(--text-primary);
+        color: var(--text-primary, #111827);
         transition: all 0.2s ease;
+        box-sizing: border-box;
       }
       .login-input::placeholder {
-        color: var(--text-tertiary);
+        color: var(--text-tertiary, #9ca3af);
       }
       .login-input:focus {
         outline: none;
         background: #fff;
-        border-color: #000000;
-        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+        border-color: #111111;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
       }
       .login-label {
         display: block;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: var(--text-secondary, #4b5563);
         font-size: 13px;
         letter-spacing: 0.02em;
       }
       .login-btn {
         width: 100%;
-        padding: 14px;
+        padding: 13px;
         background: #111111;
         color: white;
         border: none;
         border-radius: 12px;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+        margin-top: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
       }
-      .login-btn:hover {
-        transform: translateY(-2px);
+      .login-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
         background: #000000;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
-      .otp-qrcode {
-        margin: 16px auto;
-        padding: 8px;
-        background: white;
-        border-radius: 8px;
-        width: fit-content;
+      .login-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
-      .otp-qrcode img {
-        width: 150px;
-        height: 150px;
+      .email-badge-box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        background: #eff6ff;
+        border-radius: 16px;
+        margin-bottom: 12px;
+        color: #2563eb;
+      }
+      .otp-timer-badge {
+        font-size: 12px;
+        font-weight: 600;
+        color: #dc2626;
+        background: #fef2f2;
+        padding: 2px 8px;
+        border-radius: 6px;
       }
     </style>
     <div class="login-wrapper">
@@ -179,30 +191,38 @@ export function renderLogin() {
                 <label class="login-label">비밀번호</label>
                 <input type="password" id="login-pw" class="login-input" placeholder="비밀번호를 입력하세요" required autocomplete="current-password">
               </div>
-              <button type="submit" class="login-btn">로그인</button>
+              <button type="submit" class="login-btn" id="btn-login-submit">로그인</button>
             </form>
           </div>
 
-          <!-- Step 2: Google OTP -->
+          <!-- Step 2: 사내메일 2단계 OTP 인증 -->
           <div class="slide-pane" id="step-2">
-            <div class="login-logo">
-              <img src="${ryzinLogo}" alt="Ryzin Logo" />
+            <div class="email-badge-box">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
             </div>
-            <div class="login-subtitle" style="margin-bottom: 16px;">보안 강화를 위해 2단계 인증을 완료해주세요.</div>
-            
-            <div id="otp-setup-container" style="display: none; text-align: center; margin-bottom: 20px;">
-
-              <div class="otp-qrcode" id="qrcode-box"></div>
+            <div style="font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 6px;">사내메일 2단계 인증</div>
+            <div style="font-size: 13px; color: #6b7280; line-height: 1.5; margin-bottom: 20px;">
+              사내 메일(<span id="otp-target-email" style="font-weight: 600; color: #111827;"></span>)로<br>
+              6자리 인증번호가 발송되었습니다.
             </div>
 
             <form class="login-form" id="otp-form">
               <div class="input-group">
-                <label class="login-label">Google OTP 인증번호</label>
-                <input type="text" id="login-otp" class="login-input" placeholder="6자리 숫자를 입력하세요" required maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="text-align: center; font-size: 24px; letter-spacing: 4px; font-weight: bold;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label class="login-label" style="margin-bottom: 0;">인증번호 (6자리)</label>
+                  <span id="otp-timer" class="otp-timer-badge">05:00</span>
+                </div>
+                <input type="text" id="login-otp" class="login-input" placeholder="6자리 숫자" required maxlength="6" pattern="[0-9]{6}" autocomplete="off" style="text-align: center; font-size: 24px; letter-spacing: 6px; font-weight: bold; font-family: monospace;">
               </div>
-              <button type="submit" class="login-btn">인증 및 로그인</button>
+              <button type="submit" class="login-btn" id="btn-verify-otp">인증 및 로그인</button>
 
-              <button type="button" class="btn btn-ghost" id="btn-back" style="width: 100%; margin-top: 8px; color: var(--text-tertiary);">뒤로 가기</button>
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button type="button" class="btn" id="btn-resend-otp" style="flex: 1; font-size: 13px; padding: 10px; color: #4b5563; border: 1px solid #e5e7eb; border-radius: 10px; background: white; cursor: pointer;">인증번호 재발송</button>
+                <button type="button" class="btn" id="btn-back" style="flex: 1; font-size: 13px; padding: 10px; color: #4b5563; border: 1px solid #e5e7eb; border-radius: 10px; background: white; cursor: pointer;">뒤로 가기</button>
+              </div>
             </form>
           </div>
 
@@ -216,111 +236,100 @@ export function renderLogin() {
     const otpForm = document.getElementById('otp-form');
     const slider = document.getElementById('login-slider');
     const btnBack = document.getElementById('btn-back');
-    const btnResetOtp = document.getElementById('btn-reset-otp');
-    const setupContainer = document.getElementById('otp-setup-container');
-    const qrcodeBox = document.getElementById('qrcode-box');
+    const btnResendOtp = document.getElementById('btn-resend-otp');
     const otpInput = document.getElementById('login-otp');
-    
-    let pendingUser = null;
-    let newSecret = null;
+    const otpTargetEmail = document.getElementById('otp-target-email');
+    const otpTimerEl = document.getElementById('otp-timer');
+    const btnVerifyOtp = document.getElementById('btn-verify-otp');
 
+    let currentSessionToken = null;
+    let timerInterval = null;
+    let remainingSeconds = 300;
+
+    function startTimer(seconds = 300) {
+      if (timerInterval) clearInterval(timerInterval);
+      remainingSeconds = seconds;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        remainingSeconds -= 1;
+        if (remainingSeconds <= 0) {
+          clearInterval(timerInterval);
+          if (otpTimerEl) {
+            otpTimerEl.textContent = '시간 만료';
+            otpTimerEl.style.color = '#dc2626';
+          }
+          if (btnVerifyOtp) btnVerifyOtp.disabled = true;
+          showError('인증번호 유효시간이 만료되었습니다. 재발송 버튼을 눌러주세요.');
+        } else {
+          updateTimerDisplay();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      if (!otpTimerEl) return;
+      const m = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
+      const s = (remainingSeconds % 60).toString().padStart(2, '0');
+      otpTimerEl.textContent = `${m}:${s}`;
+      otpTimerEl.style.color = remainingSeconds <= 60 ? '#dc2626' : '#2563eb';
+      if (btnVerifyOtp) btnVerifyOtp.disabled = false;
+    }
+
+    // Step 1: 아이디/비밀번호 검증 및 사내메일 OTP 발송
     if (loginForm) {
       loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('login-id').value.trim();
         const pw = document.getElementById('login-pw').value;
 
-        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const submitBtn = document.getElementById('btn-login-submit');
         const originalText = submitBtn ? submitBtn.textContent : '로그인';
         if (submitBtn) {
-          submitBtn.textContent = '로그인 중...';
+          submitBtn.textContent = '인증 메일 발송 중...';
           submitBtn.disabled = true;
         }
 
         try {
-          // [보안] 로그인은 /api/admin/login 서버 엔드포인트를 통해 처리합니다.
-          // 비밀번호 검증 및 JWT 발급이 서버에서 service_role 키로 안전하게 처리됩니다.
           const resp = await fetch('/api/admin/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, password: pw }),
           });
 
-          if (resp.ok) {
-            const result = await resp.json();
-            const { token, user } = result;
+          const result = await resp.json().catch(() => ({}));
 
-            // JWT 토큰 저장 (이후 모든 어드민 API 요청에 자동으로 첨부됩니다)
-            localStorage.setItem('ryzin_admin_token', token);
-
-            // 데모 모드가 아닐 때 store 초기화 (토큰이 있으므로 이제 데이터 조회 가능)
-            if (!store.isDemoMode) {
-              try {
-                await store.init();
-              } catch (err) {
-                console.warn('init after login failed:', err);
+          if (resp.ok && result.success) {
+            // 2단계 OTP 인증이 필요한 경우 (사내메일 발송 완료)
+            if (result.step === 'otp_required') {
+              currentSessionToken = result.sessionToken;
+              if (otpTargetEmail) {
+                otpTargetEmail.textContent = result.email || '사내 메일';
               }
+              if (otpInput) {
+                otpInput.value = '';
+              }
+              startTimer(300);
+              slider.style.transform = 'translateX(-50%)';
+              setTimeout(() => {
+                if (otpInput) otpInput.focus();
+              }, 400);
+              showSuccess('사내 메일로 인증번호가 발송되었습니다.');
+              return;
             }
 
-            // store에 로그인 상태 반영
-            store.completeLogin(user);
-
-            if (store.isDemoMode) {
-              showSuccess('데모 모드로 접속되었습니다.');
-            } else {
-              showSuccess('환영합니다.');
-            }
-
-            if (user.role && user.role.startsWith('live_stream:')) {
-              router.navigate('/live_stream');
-            } else if (user.role && user.role.startsWith('brand:')) {
-              router.navigate('/projects');
-            } else {
-              router.navigate('/');
-            }
-          } else {
-            // 서버 로그인 실패 시 fallback: 로컬 캐시 데이터로 검증 시도 (오프라인/서버 미배포 환경)
-            const errData = await resp.json().catch(() => ({}));
-            const errMsg = errData.error || '로그인 실패';
-
-            // 서버가 배포되지 않은 환경(로컬 개발) 또는 오프라인일 때 로컬 검증 fallback
-            if (resp.status >= 500 || resp.status === 404) {
-              console.warn('[Login] 서버 로그인 불가, 로컬 캐시 fallback 시도...');
-              try {
-                await store.init();
-              } catch (err) {
-                console.warn('store init failed:', err);
-              }
-              const user = store.verifyPassword(id, pw);
-              if (user) {
-                store.completeLogin(user);
-                showSuccess('환영합니다. (로컬 모드)');
-                if (user.role && user.role.startsWith('live_stream:')) {
-                  router.navigate('/live_stream');
-                } else if (user.role && user.role.startsWith('brand:')) {
-                  router.navigate('/projects');
-                } else {
-                  router.navigate('/');
-                }
-              } else {
-                showError('로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.');
-              }
-            } else {
-              showError(`로그인 실패: ${errMsg}`);
+            // OTP가 생략된 경우 (바로 토큰 발급)
+            if (result.token && result.user) {
+              handleLoginSuccess(result.token, result.user);
+              return;
             }
           }
+
+          // 오류 처리
+          showError(result.error || '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
         } catch (err) {
-          // 네트워크 오류 시 로컬 fallback
-          console.warn('[Login] 네트워크 오류, 로컬 캐시 fallback:', err);
-          try { await store.init(); } catch (_) {}
-          const user = store.verifyPassword(id, pw);
-          if (user) {
-            store.completeLogin(user);
-            showSuccess('환영합니다. (오프라인 모드)');
-            router.navigate('/');
-          } else {
-            showError('로그인 실패: 아이디 또는 비밀번호가 일치하지 않습니다.');
-          }
+          console.error('[Login] 오류 발생:', err);
+          showError('로그인 처리 중 네트워크 오류가 발생했습니다.');
         } finally {
           if (submitBtn) {
             submitBtn.textContent = originalText;
@@ -330,69 +339,136 @@ export function renderLogin() {
       });
     }
 
+    // Step 2: 6자리 OTP 검증
     if (otpForm) {
-      otpForm.addEventListener('submit', (e) => {
+      otpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!pendingUser) return;
-        
-        const token = otpInput.value.trim();
-        const savedSecret = pendingUser.otpSecret || localStorage.getItem(`ryzin_otp_${pendingUser.id}`);
-        const secretToUse = savedSecret || newSecret;
-        
+        if (!currentSessionToken) {
+          showError('인증 세션이 유효하지 않습니다. 다시 로그인해주세요.');
+          slider.style.transform = 'translateX(0)';
+          return;
+        }
+
+        const code = otpInput.value.trim();
+        if (!code || code.length !== 6) {
+          showError('6자리 인증번호를 정확히 입력해주세요.');
+          return;
+        }
+
+        if (btnVerifyOtp) {
+          btnVerifyOtp.textContent = '인증 중...';
+          btnVerifyOtp.disabled = true;
+        }
+
         try {
-          let totpValidate = new OTPAuth.TOTP({
-            issuer: 'Ryzin Admin',
-            label: pendingUser.id,
-            algorithm: 'SHA1',
-            digits: 6,
-            period: 30,
-            secret: OTPAuth.Secret.fromBase32(secretToUse)
+          const resp = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'verify_otp',
+              sessionToken: currentSessionToken,
+              code,
+            }),
           });
-          
-          const delta = totpValidate.validate({ token: token, window: 1 });
-          if (delta !== null) {
-            if (!savedSecret && newSecret) {
-              localStorage.setItem(`ryzin_otp_${pendingUser.id}`, newSecret);
-              pendingUser.otpSecret = newSecret;
-              store.updateUser(pendingUser);
-            }
-            localStorage.setItem(`ryzin_otp_trusted_${pendingUser.id}`, 'true');
-            
-            store.completeLogin(pendingUser);
-            showSuccess('OTP 인증 성공! 환영합니다.');
-            router.navigate('/');
+
+          const result = await resp.json().catch(() => ({}));
+
+          if (resp.ok && result.success) {
+            if (timerInterval) clearInterval(timerInterval);
+            handleLoginSuccess(result.token, result.user);
           } else {
-            showError('인증번호가 올바르지 않습니다.');
+            showError(result.error || '인증번호가 일치하지 않습니다.');
             otpInput.value = '';
             otpInput.focus();
           }
         } catch (err) {
-          showError('인증 과정에 문제가 발생했습니다.');
-        }
-      });
-    }
-
-    if (btnResetOtp) {
-      btnResetOtp.addEventListener('click', () => {
-        if (pendingUser) {
-          if (confirm('OTP 설정을 초기화하시겠습니까? 기기에서 기존 계정을 삭제하고 새로 등록해야 합니다.')) {
-            localStorage.removeItem(`ryzin_otp_${pendingUser.id}`);
-            alert('OTP 설정이 초기화되었습니다. 다시 로그인하여 새 QR 코드를 스캔하세요.');
-            slider.style.transform = 'translateX(0)';
-            pendingUser = null;
-            otpInput.value = '';
+          console.error('[OTP Verify] 오류:', err);
+          showError('인증 확인 중 오류가 발생했습니다.');
+        } finally {
+          if (btnVerifyOtp) {
+            btnVerifyOtp.textContent = '인증 및 로그인';
+            btnVerifyOtp.disabled = false;
           }
         }
       });
     }
 
-    if (btnBack) {
-      btnBack.addEventListener('click', () => {
-        slider.style.transform = 'translateX(0)';
-        pendingUser = null;
-        otpInput.value = '';
+    // 인증번호 재발송
+    if (btnResendOtp) {
+      btnResendOtp.addEventListener('click', async () => {
+        if (!currentSessionToken) {
+          showError('다시 처음부터 로그인해주세요.');
+          slider.style.transform = 'translateX(0)';
+          return;
+        }
+
+        btnResendOtp.textContent = '발송 중...';
+        btnResendOtp.disabled = true;
+
+        try {
+          const resp = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'resend_otp',
+              sessionToken: currentSessionToken,
+            }),
+          });
+
+          const result = await resp.json().catch(() => ({}));
+
+          if (resp.ok && result.success) {
+            currentSessionToken = result.sessionToken;
+            startTimer(300);
+            otpInput.value = '';
+            otpInput.focus();
+            showSuccess('새 인증번호가 사내 메일로 재발송되었습니다.');
+          } else {
+            showError(result.error || '인증번호 재발송에 실패했습니다.');
+          }
+        } catch (err) {
+          showError('재발송 요청 중 네트워크 오류가 발생했습니다.');
+        } finally {
+          btnResendOtp.textContent = '인증번호 재발송';
+          btnResendOtp.disabled = false;
+        }
       });
     }
+
+    // 뒤로 가기
+    if (btnBack) {
+      btnBack.addEventListener('click', () => {
+        if (timerInterval) clearInterval(timerInterval);
+        slider.style.transform = 'translateX(0)';
+        currentSessionToken = null;
+        if (otpInput) otpInput.value = '';
+      });
+    }
+
+    // 로그인 완료 공통 처리 함수
+    async function handleLoginSuccess(token, user) {
+      localStorage.setItem('ryzin_admin_token', token);
+
+      if (!store.isDemoMode) {
+        try {
+          await store.init();
+        } catch (err) {
+          console.warn('init after login failed:', err);
+        }
+      }
+
+      store.completeLogin(user);
+      showSuccess('사내 보안 인증 완료! 환영합니다.');
+
+      if (user.role && user.role.startsWith('live_stream:')) {
+        router.navigate('/live_stream');
+      } else if (user.role && user.role.startsWith('brand:')) {
+        router.navigate('/projects');
+      } else {
+        router.navigate('/');
+      }
+    }
+
   }, 0);
 
   return container;
