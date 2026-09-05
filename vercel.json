@@ -17,11 +17,6 @@
       "permanent": true
     },
     {
-      "source": "/ryzin-ops-gate",
-      "destination": "/ryzin-ops-gate/",
-      "permanent": true
-    },
-    {
       "source": "/admin",
       "destination": "/admin/",
       "permanent": true
@@ -63,22 +58,6 @@
     {
       "source": "/paystmt.html",
       "destination": "/api/paystmt"
-    },
-    {
-      "source": "/ryzin-ops-gate/assets/(.*)",
-      "destination": "/admin/assets/$1"
-    },
-    {
-      "source": "/ryzin-ops-gate/(.*\\.(?:js|css|png|jpg|jpeg|svg|ico|json|html|webp))",
-      "destination": "/admin/$1"
-    },
-    {
-      "source": "/ryzin-ops-gate/(.*)",
-      "destination": "/admin/index.html"
-    },
-    {
-      "source": "/ryzin-ops-gate",
-      "destination": "/admin/index.html"
     },
     {
       "source": "/admin/(.*)",
