@@ -1374,6 +1374,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return isNaN(num) ? Infinity : Math.max(0, num);
   };
 
+  // ── 상품 1인당 구매 가능 한도 계산 헬퍼 ──
+  window.getProductLimitPerUser = function(prod) {
+    if (!prod) return Infinity;
+    if (prod.maxPerUser === undefined || prod.maxPerUser === null || prod.maxPerUser === '') {
+      return Infinity;
+    }
+    const num = parseInt(prod.maxPerUser, 10);
+    return isNaN(num) ? Infinity : Math.max(1, num);
+  };
+
   // ── 화이트 미니멀 토스트 알럿 헬퍼 ──
   window.showWhiteToast = function(msg, isError = false) {
     const prevToast = document.querySelector('.cart-white-toast');
@@ -1700,8 +1710,13 @@ document.addEventListener('DOMContentLoaded', () => {
             priceHtml = `<span style="font-size:13px; color:#94a3b8; font-weight:600;">가격 준비중</span>`;
           }
 
+          const limitPerUser = (typeof window.getProductLimitPerUser === 'function') ? window.getProductLimitPerUser(item) : Infinity;
+
           if (maxStock < Infinity && maxStock > 0) {
             priceHtml += `<span style="font-size:11px; color:#64748b; font-weight:600; margin-left:6px;">(재고 ${maxStock}개)</span>`;
+          }
+          if (limitPerUser < Infinity && limitPerUser > 0) {
+            priceHtml += `<span style="font-size:11px; color:#2563eb; font-weight:700; margin-left:6px;">(1인 ${limitPerUser}개 한정)</span>`;
           }
 
           const soldOutBadge = isSoldOut ? '<span style="color:#ef4444; font-weight:800; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; margin-right:4px;">[품절]</span>' : '';
@@ -3950,6 +3965,18 @@ function addToCart(product) {
   const exists = cartItems.find(item => item.name === product.name);
   const currentQty = exists ? (exists.quantity || 1) : 0;
 
+  // 1인당 구매 제한(maxPerUser) 검증
+  const limitPerUser = (typeof window.getProductLimitPerUser === 'function') ? window.getProductLimitPerUser(product) : Infinity;
+  if (currentQty + 1 > limitPerUser) {
+    const limitMsg = `해당 상품은 1인당 최대 ${limitPerUser}개까지만 구매 가능합니다.`;
+    if (typeof window.showWhiteToast === 'function') {
+      window.showWhiteToast(limitMsg, true);
+    } else {
+      alert(limitMsg);
+    }
+    return false;
+  }
+
   if (currentQty + 1 > maxStock) {
     const limitMsg = `해당 상품은 최대 ${maxStock}개까지만 담을 수 있습니다.`;
     if (typeof window.showWhiteToast === 'function') {
@@ -3963,6 +3990,7 @@ function addToCart(product) {
   if (exists) {
     exists.quantity = currentQty + 1;
     if (product.stock !== undefined) exists.stock = product.stock;
+    if (product.maxPerUser !== undefined) exists.maxPerUser = product.maxPerUser;
   } else {
     cartItems.push({
       ...product,
@@ -4109,8 +4137,21 @@ function renderCartItems() {
       const idx = parseInt(e.currentTarget.dataset.index, 10);
       const item = cartItems[idx];
       if (item) {
-        const maxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
         const currentQty = item.quantity || 1;
+
+        // 1인당 구매 제한 검증
+        const limitPerUser = (typeof window.getProductLimitPerUser === 'function') ? window.getProductLimitPerUser(item) : Infinity;
+        if (currentQty + 1 > limitPerUser) {
+          const limitMsg = `해당 상품은 1인당 최대 ${limitPerUser}개까지만 구매 가능합니다.`;
+          if (typeof window.showWhiteToast === 'function') {
+            window.showWhiteToast(limitMsg, true);
+          } else {
+            alert(limitMsg);
+          }
+          return;
+        }
+
+        const maxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
         if (currentQty + 1 > maxStock) {
           const limitMsg = `최대 ${maxStock}개까지만 구매 가능합니다.`;
           if (typeof window.showWhiteToast === 'function') {

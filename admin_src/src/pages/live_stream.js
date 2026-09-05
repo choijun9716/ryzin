@@ -3089,9 +3089,14 @@ function renderLiveEditView(container, liveId, showView) {
             <input type="text" class="modern-input price-input" style="flex:1;" value="${p.normalPrice ? Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
             <input type="text" class="modern-input price-input" style="flex:1;" value="${p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="price" placeholder="라이브가">
             <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="width:48px; text-align:center;">
-            <div style="display:flex; align-items:center; gap:4px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:0 8px; flex-shrink:0;" title="담을 수 있는 최대 재고 수량 (비워두면 무제한)">
+            <div style="display:flex; align-items:center; gap:4px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:0 8px; flex-shrink:0;" title="담을 수 있는 전체 재고 수량 (비워두면 무제한)">
               <span style="font-size:11.5px; font-weight:700; color:#475569; white-space:nowrap;">재고:</span>
-              <input type="number" min="0" class="modern-input" style="width:56px; padding:6px 2px; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent;" value="${p.stock !== undefined && p.stock !== null && p.stock !== '' ? p.stock : ''}" data-idx="${idx}" data-field="stock" placeholder="무제한">
+              <input type="number" min="0" class="modern-input" style="width:52px; padding:6px 2px; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent;" value="${p.stock !== undefined && p.stock !== null && p.stock !== '' ? p.stock : ''}" data-idx="${idx}" data-field="stock" placeholder="무제한">
+              <span style="font-size:11px; color:#94a3b8;">개</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:0 8px; flex-shrink:0;" title="1인당 담을 수 있는 최대 구매 수량 (비워두면 무제한)">
+              <span style="font-size:11.5px; font-weight:700; color:#475569; white-space:nowrap;">1인당:</span>
+              <input type="number" min="1" class="modern-input" style="width:50px; padding:6px 2px; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent;" value="${p.maxPerUser !== undefined && p.maxPerUser !== null && p.maxPerUser !== '' ? p.maxPerUser : ''}" data-idx="${idx}" data-field="maxPerUser" placeholder="무제한">
               <span style="font-size:11px; color:#94a3b8;">개</span>
             </div>
           </div>
@@ -3428,6 +3433,9 @@ function renderLiveEditView(container, liveId, showView) {
           } else if (field === 'stock') {
             const val = input.value.trim();
             products[idx].stock = val === '' ? '' : Math.max(0, parseInt(val, 10) || 0);
+          } else if (field === 'maxPerUser') {
+            const val = input.value.trim();
+            products[idx].maxPerUser = val === '' ? '' : Math.max(1, parseInt(val, 10) || 1);
           }
 
           triggerRealtimeSave();
@@ -3704,7 +3712,7 @@ function renderLiveEditView(container, liveId, showView) {
     bindProductEvents();
 
     const handleAddProduct = () => {
-      products.push({ id: Date.now(), name: '새 상품', price: '', normalPrice: '', discountRate: 0, stock: '', image: 'https://via.placeholder.com/72', url: '#' });
+      products.push({ id: Date.now(), name: '새 상품', price: '', normalPrice: '', discountRate: 0, stock: '', maxPerUser: '', image: 'https://via.placeholder.com/72', url: '#' });
       saveProducts(true);
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
@@ -3773,6 +3781,7 @@ function renderLiveEditView(container, liveId, showView) {
           const priceInput = row.querySelector('input[data-field="price"]');
           const normalPriceInput = row.querySelector('input[data-field="normalPrice"]');
           const stockInput = row.querySelector('input[data-field="stock"]');
+          const maxPerUserInput = row.querySelector('input[data-field="maxPerUser"]');
           const urlInput = row.querySelector('input[data-field="url"]');
           const isLeadForm = row.querySelector('input[data-field="isLeadForm"]');
           const isFeatured = row.querySelector('input[data-field="isFeatured"]');
@@ -3787,6 +3796,10 @@ function renderLiveEditView(container, liveId, showView) {
           if (stockInput) {
             const sv = stockInput.value.trim();
             products[idx].stock = sv === '' ? '' : Math.max(0, parseInt(sv, 10) || 0);
+          }
+          if (maxPerUserInput) {
+            const mv = maxPerUserInput.value.trim();
+            products[idx].maxPerUser = mv === '' ? '' : Math.max(1, parseInt(mv, 10) || 1);
           }
           if (urlInput) products[idx].url = urlInput.value.trim();
           const detailImageInput = row.querySelector('input[data-field="detailImage"]');
