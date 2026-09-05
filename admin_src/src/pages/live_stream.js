@@ -3031,6 +3031,18 @@ function renderLiveEditView(container, liveId, showView) {
           <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px; background:#f8fafc; padding:8px 12px; border-radius:10px; border:1px solid #e2e8f0;">
+          <span style="font-size:12px; font-weight:800; color:#0f172a; white-space:nowrap;">상세페이지 이미지</span>
+          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" value="${p.detailImage || ''}" data-idx="${idx}" data-field="detailImage" placeholder="상세 이미지 URL 직접 입력 또는 우측 파일 업로드">
+          <input type="file" id="upload-detail-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-detail-upload">
+          <button type="button" class="action-btn" onclick="document.getElementById('upload-detail-${idx}').click()" style="padding:6px 12px; font-size:12px; font-weight:700; background:#2563eb; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
+            ${p.detailImage ? '상세이미지 변경' : '+ 상세이미지 업로드'}
+          </button>
+          ${p.detailImage ? `
+            <a href="${p.detailImage}" target="_blank" style="font-size:11.5px; color:#2563eb; text-decoration:underline; font-weight:700; white-space:nowrap;">미리보기</a>
+            <button type="button" class="btn-del-detail-img" data-idx="${idx}" style="background:transparent; border:none; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; padding:0 4px;">삭제</button>
+          ` : ''}
+        </div>
         ${isLiveStreamOnly ? '' : `
         <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
           <summary style="padding:10px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none;">고급 설정 (깜짝딜 / 좋아요 조건)</summary>
@@ -3251,6 +3263,40 @@ function renderLiveEditView(container, liveId, showView) {
             alert('상품 이미지 등록 에러: ' + err.message);
           } finally {
             if (preview) preview.style.opacity = '1';
+          }
+        });
+      });
+      plc.querySelectorAll('.prod-detail-upload').forEach(input => {
+        input.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const idx = parseInt(e.target.dataset.idx);
+          try {
+            // 상세 이미지는 세로로 길 수 있으므로 900x3500, quality 0.85로 압축
+            const base64Data = await compressImage(file, 900, 3500, 0.85);
+            const dataUrl = base64Data.startsWith('data:') ? base64Data : `data:image/jpeg;base64,${base64Data}`;
+            products[idx].detailImage = dataUrl;
+            saveProducts(true);
+            syncToSheetDB(liveId, config, stats, products, true);
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+            if (typeof toast === 'function') toast('상세페이지 이미지가 업로드되었습니다.');
+          } catch (err) {
+            console.error('상세 이미지 등록 에러:', err);
+            alert('상세 이미지 등록 에러: ' + err.message);
+          }
+        });
+      });
+      plc.querySelectorAll('.btn-del-detail-img').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.idx);
+          if (confirm('등록된 상세페이지 이미지를 삭제하시겠습니까?')) {
+            products[idx].detailImage = '';
+            saveProducts(true);
+            syncToSheetDB(liveId, config, stats, products, true);
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+            if (typeof toast === 'function') toast('상세페이지 이미지가 삭제되었습니다.');
           }
         });
       });

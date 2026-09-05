@@ -1332,12 +1332,79 @@ document.addEventListener('DOMContentLoaded', () => {
     if (headerTitle) headerTitle.textContent = item.name || '상품 상세';
 
     const iframe = document.getElementById('pdetail-webview-iframe');
+    const webviewContainer = document.getElementById('pdetail-webview-container');
     const fallbackView = document.getElementById('pdetail-fallback-view');
-    const btnBuy = document.getElementById('btn-pdetail-buy');
+    const customPage = document.getElementById('pdetail-custom-page');
     const btnCart = document.getElementById('btn-pdetail-cart');
 
-    // 데모버전처럼 실제 제품 상세 페이지를 풀스크린 웹뷰 iframe으로 렌더링
-    if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
+    const detailImg = item.detailImage || item.detail_image || item.detailImages;
+    if (detailImg) {
+      // 1순위: 관리자가 별도로 등록/업로드한 상세페이지 뷰
+      if (webviewContainer) webviewContainer.style.display = 'none';
+      if (iframe) iframe.src = '';
+      if (customPage) {
+        customPage.style.display = 'block';
+        customPage.scrollTop = 0;
+
+        const thumbEl = document.getElementById('pdetail-custom-thumb');
+        const titleEl = document.getElementById('pdetail-custom-title');
+        const priceEl = document.getElementById('pdetail-custom-price');
+        const origPriceEl = document.getElementById('pdetail-custom-orig');
+        const discEl = document.getElementById('pdetail-custom-disc');
+        const imagesContainer = document.getElementById('pdetail-custom-images-container');
+
+        if (thumbEl) thumbEl.src = item.image || '';
+        if (titleEl) titleEl.textContent = item.name || '상품 상세';
+
+        const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+        const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+
+        if (pNum > 0) {
+          if (priceEl) priceEl.textContent = `${pNum.toLocaleString()}원`;
+          if (npNum > pNum) {
+            if (origPriceEl) {
+              origPriceEl.textContent = `${npNum.toLocaleString()}원`;
+              origPriceEl.style.display = 'inline';
+            }
+            if (discEl) {
+              const rate = Math.round(((npNum - pNum) / npNum) * 100);
+              discEl.textContent = `${rate}%`;
+              discEl.style.display = 'inline';
+            }
+          } else {
+            if (origPriceEl) origPriceEl.style.display = 'none';
+            if (discEl) discEl.style.display = 'none';
+          }
+        } else if (item.price === '0' || item.price === 0) {
+          if (priceEl) priceEl.textContent = '무료나눔';
+          if (origPriceEl) origPriceEl.style.display = 'none';
+          if (discEl) discEl.style.display = 'none';
+        } else {
+          if (priceEl) priceEl.textContent = '가격 준비중';
+          if (origPriceEl) origPriceEl.style.display = 'none';
+          if (discEl) discEl.style.display = 'none';
+        }
+
+        // 상세페이지 이미지 렌더링 (쉼표 또는 배열 지원)
+        if (imagesContainer) {
+          imagesContainer.innerHTML = '';
+          const imgList = Array.isArray(detailImg) ? detailImg : String(detailImg).split(',').map(s => s.trim()).filter(Boolean);
+          imgList.forEach(src => {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = `${item.name || '상품'} 상세페이지`;
+            img.style.width = '100%';
+            img.style.height = 'auto';
+            img.style.display = 'block';
+            img.loading = 'lazy';
+            imagesContainer.appendChild(img);
+          });
+        }
+      }
+    } else if (item.url && item.url !== '#' && item.url !== '__LEAD_FORM__') {
+      // 2순위: 상세 이미지가 없는 경우 기존 외부 쇼핑몰 링크 프록시 웹뷰
+      if (customPage) customPage.style.display = 'none';
+      if (webviewContainer) webviewContainer.style.display = 'block';
       let cleanUrl = String(item.url).trim();
       if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
         cleanUrl = 'https://' + cleanUrl;
@@ -1351,7 +1418,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (fallbackView) fallbackView.style.display = 'none';
     } else {
-      // URL이 없는 경우 기본 상품 카드 정보 노출
+      // 3순위: 이미지와 URL 모두 없을 때의 기본 폴백 카드
+      if (customPage) customPage.style.display = 'none';
+      if (webviewContainer) webviewContainer.style.display = 'block';
       if (iframe) {
         iframe.src = '';
         iframe.style.display = 'none';
@@ -1436,6 +1505,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sheet) sheet.style.display = 'none';
     const iframe = document.getElementById('pdetail-webview-iframe');
     if (iframe) iframe.src = '';
+    const customPage = document.getElementById('pdetail-custom-page');
+    if (customPage) customPage.style.display = 'none';
 
     // 전체화면 복귀 후에도 소리와 영상 지속 재생 보장
     if (typeof window.resumeAllMedia === 'function') {
