@@ -2994,6 +2994,7 @@ function renderLiveEditView(container, liveId, showView) {
   const renderProductList = () => products.map((p, idx) => {
     const clickCount = p.clicks || 0;
     const isFeatured = p.isFeatured === true || p.isFeatured === 'true';
+    const detailImages = p.detailImage ? String(p.detailImage).split(',').map(s => s.trim()).filter(Boolean) : [];
     return `
     <div class="product-row" style="${isFeatured ? 'border: 2px solid #2563eb; background: #f8faff; box-shadow:0 4px 12px rgba(37,99,235,0.08);' : ''}">
       <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative;">
@@ -3040,17 +3041,48 @@ function renderLiveEditView(container, liveId, showView) {
           <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
           <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
         </div>
-        <div style="display:flex; align-items:center; gap:8px; margin-top:8px; background:#f8fafc; padding:8px 12px; border-radius:10px; border:1px solid #e2e8f0;">
-          <span style="font-size:12px; font-weight:800; color:#0f172a; white-space:nowrap;">상세 이미지/GIF (Cloudinary)</span>
-          <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" value="${p.detailImage || ''}" data-idx="${idx}" data-field="detailImage" placeholder="이미지/GIF URL 직접 입력 또는 우측 파일 업로드 (쉼표 구분 다중 지원)">
-          <input type="file" id="upload-detail-${idx}" accept="image/*,.gif" style="display:none;" data-idx="${idx}" class="prod-detail-upload">
-          <button type="button" id="btn-upload-detail-${idx}" class="action-btn" onclick="document.getElementById('upload-detail-${idx}').click()" style="padding:6px 12px; font-size:12px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
-            ${p.detailImage ? '+ 이미지/GIF 추가' : '+ 이미지/GIF 업로드'}
-          </button>
-          ${p.detailImage ? `
-            <a href="${String(p.detailImage).split(',')[0].trim()}" target="_blank" style="font-size:11.5px; color:#2563eb; text-decoration:underline; font-weight:700; white-space:nowrap;">미리보기</a>
-            <button type="button" class="btn-del-detail-img" data-idx="${idx}" style="background:transparent; border:none; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; padding:0 4px;">전체 삭제</button>
-          ` : ''}
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px; background:#f8fafc; padding:12px 14px; border-radius:12px; border:1.5px solid #e2e8f0;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:12.5px; font-weight:800; color:#0f172a;">상세 이미지/GIF (순서대로 렌더링)</span>
+              <span style="font-size:11px; font-weight:700; color:#475569; background:#e2e8f0; padding:2px 8px; border-radius:6px;">총 ${detailImages.length}장</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="file" id="upload-detail-${idx}" accept="image/*,.gif" multiple style="display:none;" data-idx="${idx}" class="prod-detail-upload">
+              <button type="button" id="btn-upload-detail-${idx}" class="action-btn" onclick="document.getElementById('upload-detail-${idx}').click()" style="padding:6px 12px; font-size:12px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">
+                + 이미지/GIF 다중 추가
+              </button>
+              ${detailImages.length > 0 ? `
+                <button type="button" class="btn-del-all-detail-img" data-idx="${idx}" style="background:#fee2e2; border:1px solid #fecaca; color:#ef4444; font-size:11.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px;">전체 삭제</button>
+              ` : ''}
+            </div>
+          </div>
+
+          ${detailImages.length > 0 ? `
+            <div style="display:flex; gap:10px; overflow-x:auto; padding:6px 0; -webkit-overflow-scrolling:touch;">
+              ${detailImages.map((imgUrl, imgIdx) => `
+                <div style="position:relative; width:92px; flex-shrink:0; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:10px; padding:6px; display:flex; flex-direction:column; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                  <div style="position:relative; width:100%; aspect-ratio:1/1; border-radius:6px; overflow:hidden; background:#f1f5f9; border:1px solid #e2e8f0;">
+                    <span style="position:absolute; top:2px; left:2px; background:rgba(15,23,42,0.85); color:#ffffff; font-size:10px; font-weight:800; padding:1px 5px; border-radius:4px; z-index:2;">${imgIdx + 1}</span>
+                    <a href="${imgUrl}" target="_blank" title="클릭하여 원본 보기">
+                      <img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; display:block;">
+                    </a>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:2px;">
+                    <button type="button" class="btn-move-detail-left" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="앞으로 이동">◀</button>
+                    <button type="button" class="btn-move-detail-right" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; cursor:pointer;" ${imgIdx === detailImages.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''} title="뒤로 이동">▶</button>
+                    <button type="button" class="btn-del-single-detail" data-prod-idx="${idx}" data-img-idx="${imgIdx}" style="flex:1; padding:3px 0; background:#fee2e2; border:1px solid #fca5a5; color:#ef4444; border-radius:4px; font-size:11px; font-weight:800; cursor:pointer;" title="이 이미지 삭제">✕</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div style="font-size:12px; color:#94a3b8; padding:10px; text-align:center; background:#ffffff; border:1px dashed #cbd5e1; border-radius:8px;">
+              등록된 상세페이지 이미지가 없습니다. [+ 이미지/GIF 다중 추가]를 눌러 여러 이미지를 한 번에 선택할 수 있습니다.
+            </div>
+          `}
+
+          <input type="text" class="modern-input" style="padding:6px 10px; font-size:11.5px;" value="${p.detailImage || ''}" data-idx="${idx}" data-field="detailImage" placeholder="이미지 URL 직접 편집 (쉼표로 구분하여 여러 장 순서대로 지정)">
         </div>
         ${isLiveStreamOnly ? '' : `
         <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
@@ -3312,60 +3344,70 @@ function renderLiveEditView(container, liveId, showView) {
 
       plc.querySelectorAll('.prod-detail-upload').forEach(input => {
         input.addEventListener('change', async (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
+          const files = Array.from(e.target.files || []);
+          if (files.length === 0) return;
           const idx = parseInt(e.target.dataset.idx, 10);
           const uploadBtn = document.getElementById(`btn-upload-detail-${idx}`);
-          const origBtnText = uploadBtn ? uploadBtn.textContent : '+ 이미지/GIF 업로드';
+          const origBtnText = uploadBtn ? uploadBtn.textContent : '+ 이미지/GIF 다중 추가';
           if (uploadBtn) {
             uploadBtn.disabled = true;
-            uploadBtn.textContent = '클라우드 업로드 중...';
             uploadBtn.style.opacity = '0.7';
           }
           try {
-            let uploadedUrl = null;
-            let lastError = null;
+            const uploadedUrls = [];
+            const total = files.length;
 
-            // 1순위: Cloudinary 직접 직행 업로드 (가장 빠르고 대용량 GIF도 무손실 전송)
-            try {
-              uploadedUrl = await uploadToCloudinaryDirect(file);
-            } catch (errDirect) {
-              console.warn('[Cloudinary Direct Upload Fail] 서버리스 API 폴백 시도:', errDirect);
-              lastError = errDirect;
-            }
+            for (let i = 0; i < total; i++) {
+              const file = files[i];
+              if (uploadBtn) {
+                uploadBtn.textContent = `업로드 중 (${i + 1}/${total})...`;
+              }
 
-            // 2순위: 실패 시 서버리스 프록시 폴백 (/api/upload-cloudinary 및 절대 경로)
-            if (!uploadedUrl) {
-              const reader = new FileReader();
-              const dataUrl = await new Promise((resolve, reject) => {
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-              });
+              let fileUrl = null;
+              // 1순위: Cloudinary 직접 직행 업로드
+              try {
+                fileUrl = await uploadToCloudinaryDirect(file);
+              } catch (errDirect) {
+                console.warn(`[Cloudinary Direct Fail] 파일 ${i + 1} 폴백 시도:`, errDirect);
+              }
 
-              const endpoints = ['/api/upload-cloudinary', 'https://ryzincorp.com/api/upload-cloudinary'];
-              for (const ep of endpoints) {
-                try {
-                  const res = await fetch(ep, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: dataUrl })
-                  });
-                  if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.url) {
-                      uploadedUrl = data.url;
-                      break;
+              // 2순위: 서버리스 프록시 폴백
+              if (!fileUrl) {
+                const reader = new FileReader();
+                const dataUrl = await new Promise((resolve, reject) => {
+                  reader.onload = () => resolve(reader.result);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(file);
+                });
+
+                const endpoints = ['/api/upload-cloudinary', 'https://ryzincorp.com/api/upload-cloudinary'];
+                for (const ep of endpoints) {
+                  try {
+                    const res = await fetch(ep, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ image: dataUrl })
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      if (data && data.url) {
+                        fileUrl = data.url;
+                        break;
+                      }
                     }
-                  }
-                } catch (epErr) {
-                  console.warn(`[Proxy Fail] ${ep}:`, epErr);
+                  } catch (epErr) { }
                 }
+              }
+
+              if (fileUrl) {
+                uploadedUrls.push(fileUrl);
+              } else {
+                console.error(`파일 ${file.name} 업로드 실패`);
               }
             }
 
-            if (!uploadedUrl) {
-              throw new Error(lastError ? lastError.message : '이미지 업로드에 실패했습니다. 파일 용량 및 형식을 확인해 주세요.');
+            if (uploadedUrls.length === 0) {
+              throw new Error('이미지 업로드에 실패했습니다. 파일 형식과 용량을 확인해 주세요.');
             }
 
             if (!products[idx]) {
@@ -3373,20 +3415,17 @@ function renderLiveEditView(container, liveId, showView) {
             }
 
             const current = products[idx].detailImage ? String(products[idx].detailImage).trim() : '';
-            if (current) {
-              // 이미 등록된 이미지가 있으면 쉼표로 연결하여 여러 장 지원
-              products[idx].detailImage = `${current}, ${uploadedUrl}`;
-            } else {
-              products[idx].detailImage = uploadedUrl;
-            }
+            const existingList = current ? current.split(',').map(s => s.trim()).filter(Boolean) : [];
+            const combined = [...existingList, ...uploadedUrls];
+            products[idx].detailImage = combined.join(', ');
 
             saveProducts(true);
             syncToSheetDB(liveId, config, stats, products, true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
-            if (typeof toast === 'function') toast('Cloudinary에 이미지/GIF가 성공적으로 업로드되었습니다.');
+            if (typeof toast === 'function') toast(`${uploadedUrls.length}장의 상세 이미지가 순서대로 추가되었습니다.`);
           } catch (err) {
-            console.error('상세 이미지 Cloudinary 업로드 에러:', err);
+            console.error('상세 이미지 다중 업로드 에러:', err);
             alert('업로드 실패: ' + err.message);
           } finally {
             if (uploadBtn) {
@@ -3397,16 +3436,80 @@ function renderLiveEditView(container, liveId, showView) {
           }
         });
       });
-      plc.querySelectorAll('.btn-del-detail-img').forEach(btn => {
+
+      // 상세 이미지 좌측(앞) 이동
+      plc.querySelectorAll('.btn-move-detail-left').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          const idx = parseInt(e.target.dataset.idx);
-          if (confirm('등록된 상세페이지 이미지를 삭제하시겠습니까?')) {
-            products[idx].detailImage = '';
+          const prodIdx = parseInt(e.currentTarget.dataset.prodIdx, 10);
+          const imgIdx = parseInt(e.currentTarget.dataset.imgIdx, 10);
+          if (!products[prodIdx]) return;
+          const current = products[prodIdx].detailImage ? String(products[prodIdx].detailImage).split(',').map(s => s.trim()).filter(Boolean) : [];
+          if (imgIdx > 0 && imgIdx < current.length) {
+            const temp = current[imgIdx - 1];
+            current[imgIdx - 1] = current[imgIdx];
+            current[imgIdx] = temp;
+            products[prodIdx].detailImage = current.join(', ');
             saveProducts(true);
             syncToSheetDB(liveId, config, stats, products, true);
             plc.innerHTML = renderProductList();
             bindProductEvents();
-            if (typeof toast === 'function') toast('상세페이지 이미지가 삭제되었습니다.');
+            if (typeof toast === 'function') toast('이미지 순서가 변경되었습니다.');
+          }
+        });
+      });
+
+      // 상세 이미지 우측(뒤) 이동
+      plc.querySelectorAll('.btn-move-detail-right').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const prodIdx = parseInt(e.currentTarget.dataset.prodIdx, 10);
+          const imgIdx = parseInt(e.currentTarget.dataset.imgIdx, 10);
+          if (!products[prodIdx]) return;
+          const current = products[prodIdx].detailImage ? String(products[prodIdx].detailImage).split(',').map(s => s.trim()).filter(Boolean) : [];
+          if (imgIdx >= 0 && imgIdx < current.length - 1) {
+            const temp = current[imgIdx + 1];
+            current[imgIdx + 1] = current[imgIdx];
+            current[imgIdx] = temp;
+            products[prodIdx].detailImage = current.join(', ');
+            saveProducts(true);
+            syncToSheetDB(liveId, config, stats, products, true);
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+            if (typeof toast === 'function') toast('이미지 순서가 변경되었습니다.');
+          }
+        });
+      });
+
+      // 상세 이미지 개별 삭제
+      plc.querySelectorAll('.btn-del-single-detail').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const prodIdx = parseInt(e.currentTarget.dataset.prodIdx, 10);
+          const imgIdx = parseInt(e.currentTarget.dataset.imgIdx, 10);
+          if (!products[prodIdx]) return;
+          const current = products[prodIdx].detailImage ? String(products[prodIdx].detailImage).split(',').map(s => s.trim()).filter(Boolean) : [];
+          if (imgIdx >= 0 && imgIdx < current.length) {
+            current.splice(imgIdx, 1);
+            products[prodIdx].detailImage = current.join(', ');
+            saveProducts(true);
+            syncToSheetDB(liveId, config, stats, products, true);
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+            if (typeof toast === 'function') toast('선택한 이미지가 삭제되었습니다.');
+          }
+        });
+      });
+
+      // 상세 이미지 전체 삭제
+      plc.querySelectorAll('.btn-del-all-detail-img').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const prodIdx = parseInt(e.currentTarget.dataset.idx, 10);
+          if (!products[prodIdx]) return;
+          if (confirm('등록된 모든 상세페이지 이미지를 삭제하시겠습니까?')) {
+            products[prodIdx].detailImage = '';
+            saveProducts(true);
+            syncToSheetDB(liveId, config, stats, products, true);
+            plc.innerHTML = renderProductList();
+            bindProductEvents();
+            if (typeof toast === 'function') toast('상세페이지 이미지가 전체 삭제되었습니다.');
           }
         });
       });
