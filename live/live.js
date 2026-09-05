@@ -3611,16 +3611,33 @@ function prefillCheckoutForm() {
 }
 
 // 주문서 정보 로컬 영구 보존 헬퍼 함수
-// ── 카카오/다음 공식 주소 검색 API 연동 ──
-window.openPostcodeSearch = function() {
+// ── 카카오/다음 공식 주소 검색 API 연동 (안드로이드/모바일 완벽 핏 바텀시트 레이어) ──
+window.closePostcodeLayer = function() {
+  const layer = document.getElementById('daum-postcode-layer-wrap');
+  if (layer) {
+    layer.style.display = 'none';
+  }
+  const embedBox = document.getElementById('daum-postcode-embed-box');
+  if (embedBox) {
+    embedBox.innerHTML = '';
+  }
+};
+
+window.openPostcodeSearchModal = function(targetMode = 'checkout') {
   if (typeof daum === 'undefined' || !daum.Postcode) {
     alert('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
     return;
   }
 
+  const layer = document.getElementById('daum-postcode-layer-wrap');
+  const embedBox = document.getElementById('daum-postcode-embed-box');
+  if (!layer || !embedBox) return;
+
+  embedBox.innerHTML = '';
+  layer.style.display = 'flex';
+
   new daum.Postcode({
     oncomplete: function(data) {
-      // 도로명 주소 또는 지번 주소 선택 결과
       let fullAddr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
       let extraAddr = '';
 
@@ -3636,23 +3653,46 @@ window.openPostcodeSearch = function() {
         }
       }
 
-      const baseInput = document.getElementById('checkout-base-address');
-      const detailInput = document.getElementById('checkout-detail-address');
-      const hiddenInput = document.getElementById('checkout-address');
+      window.closePostcodeLayer();
 
-      if (baseInput) baseInput.value = fullAddr;
-      if (hiddenInput) hiddenInput.value = fullAddr + (detailInput && detailInput.value.trim() ? ' ' + detailInput.value.trim() : '');
+      if (targetMode === 'my_profile') {
+        const baseInput = document.getElementById('my-p-base-addr');
+        if (baseInput) baseInput.value = fullAddr;
+        const detailInput = document.getElementById('my-p-detail-addr');
+        if (detailInput) {
+          setTimeout(() => detailInput.focus(), 150);
+        }
+      } else {
+        const baseInput = document.getElementById('checkout-base-address');
+        const detailInput = document.getElementById('checkout-detail-address');
+        const hiddenInput = document.getElementById('checkout-address');
 
-      // 주소 입력 후 즉시 로컬 저장 및 장바구니 갱신
-      if (typeof saveCheckoutForm === 'function') saveCheckoutForm();
-      if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+        if (baseInput) baseInput.value = fullAddr;
+        if (hiddenInput) {
+          hiddenInput.value = fullAddr + (detailInput && detailInput.value.trim() ? ' ' + detailInput.value.trim() : '');
+        }
 
-      // 상세 주소 입력칸으로 포커스 이동
-      if (detailInput) {
-        detailInput.focus();
+        // 주소 입력 후 즉시 로컬 저장 및 장바구니 갱신
+        if (typeof saveCheckoutForm === 'function') saveCheckoutForm();
+        if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+
+        // 상세 주소 입력칸으로 포커스 이동
+        if (detailInput) {
+          setTimeout(() => detailInput.focus(), 150);
+        }
       }
-    }
-  }).open();
+    },
+    width: '100%',
+    height: '100%'
+  }).embed(embedBox);
+};
+
+window.openPostcodeSearch = function() {
+  window.openPostcodeSearchModal('checkout');
+};
+
+window.openMyPostcodeSearch = function() {
+  window.openPostcodeSearchModal('my_profile');
 };
 
 function updateFullAddressFromInputs() {
@@ -4878,27 +4918,9 @@ window.openMyProfileModal = async function() {
 };
 
 window.openMyPostcodeSearch = function() {
-  if (typeof daum === 'undefined' || !daum.Postcode) {
-    alert('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
-    return;
+  if (typeof window.openPostcodeSearchModal === 'function') {
+    window.openPostcodeSearchModal('my_profile');
   }
-  new daum.Postcode({
-    oncomplete: function(data) {
-      let addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
-      let extraAddr = '';
-      if (data.userSelectedType === 'R') {
-        if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
-        if (data.buildingName !== '' && data.apartment === 'Y') {
-          extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-        }
-        if (extraAddr !== '') extraAddr = ' (' + extraAddr + ')';
-      }
-      const baseInput = document.getElementById('my-p-base-addr');
-      if (baseInput) baseInput.value = addr + extraAddr;
-      const detailInput = document.getElementById('my-p-detail-addr');
-      if (detailInput) detailInput.focus();
-    }
-  }).open();
 };
 
 window.saveMyProfileInfo = async function() {
