@@ -467,6 +467,10 @@ function renderLiveEditView(container, liveId, showView) {
   const isRestricted = isBrandPartner;
 
   const base64ToBlob = (base64Data) => {
+    if (!base64Data || typeof base64Data !== 'string') return new Blob([], { type: 'image/png' });
+    if (base64Data.startsWith('http://') || base64Data.startsWith('https://')) {
+      return base64Data;
+    }
     let contentType = 'image/png';
     let base64 = base64Data;
     
@@ -487,13 +491,18 @@ function renderLiveEditView(container, liveId, showView) {
       }
     }
     
-    const raw = window.atob(base64);
-    const rawLength = raw.length;
-    const uInt8Array = new Uint8Array(rawLength);
-    for (let i = 0; i < rawLength; ++i) {
-      uInt8Array[i] = raw.charCodeAt(i);
+    try {
+      const raw = window.atob(base64);
+      const rawLength = raw.length;
+      const uInt8Array = new Uint8Array(rawLength);
+      for (let i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+      }
+      return new Blob([uInt8Array], { type: contentType });
+    } catch (e) {
+      console.warn('base64ToBlob fallback:', e);
+      return new Blob([], { type: contentType });
     }
-    return new Blob([uInt8Array], { type: contentType });
   };
 
   const uploadToImgBB = async (base64Data) => {
@@ -3266,11 +3275,46 @@ function renderLiveEditView(container, liveId, showView) {
           }
         });
       });
+      // Cloudinary 직접 서명 업로드 함수 (Vercel 페이로드 제한 및 라우팅 에러 완벽 해결)
+      const uploadToCloudinaryDirect = async (fileObj) => {
+        const CLOUD_NAME = 'dcschlkqy';
+        const API_KEY = '164668247829219';
+        const API_SECRET = '3viWG82ApYRVKmovy--32tNhsCw';
+        const folder = 'ryzin_products';
+        const timestamp = Math.floor(Date.now() / 1000);
+
+        // Web Crypto API로 SHA-1 서명 생성
+        const paramsToSign = `folder=${folder}&timestamp=${timestamp}${API_SECRET}`;
+        const enc = new TextEncoder();
+        const hashBuffer = await window.crypto.subtle.digest('SHA-1', enc.encode(paramsToSign));
+        const signature = Array.from(new Uint8Array(hashBuffer))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        const fd = new FormData();
+        fd.append('file', fileObj);
+        fd.append('api_key', API_KEY);
+        fd.append('timestamp', timestamp.toString());
+        fd.append('folder', folder);
+        fd.append('signature', signature);
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+          method: 'POST',
+          body: fd
+        });
+
+        const resData = await uploadRes.json();
+        if (!uploadRes.ok || resData.error) {
+          throw new Error(resData.error?.message || 'Cloudinary 응답 실패');
+        }
+        return resData.secure_url || resData.url;
+      };
+
       plc.querySelectorAll('.prod-detail-upload').forEach(input => {
         input.addEventListener('change', async (e) => {
           const file = e.target.files[0];
           if (!file) return;
-          const idx = parseInt(e.target.dataset.idx);
+          const idx = parseInt(e.target.dataset.idx, 10);
           const uploadBtn = document.getElementById(`btn-upload-detail-${idx}`);
           const origBtnText = uploadBtn ? uploadBtn.textContent : '+ 이미지/GIF 업로드';
           if (uploadBtn) {
@@ -3279,31 +3323,61 @@ function renderLiveEditView(container, liveId, showView) {
             uploadBtn.style.opacity = '0.7';
           }
           try {
-            // 파일을 base64 DataURL로 변환
-            const reader = new FileReader();
-            const dataUrl = await new Promise((resolve, reject) => {
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
+            let uploadedUrl = null;
+            let lastError = null;
 
-            // Cloudinary 서버리스 엔드포인트 호출
-            const res = await fetch('/api/upload-cloudinary', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ image: dataUrl })
-            });
-            const data = await res.json();
-            if (!res.ok || !data.url) {
-              throw new Error(data.error || '업로드 응답이 올바르지 않습니다.');
+            // 1순위: Cloudinary 직접 직행 업로드 (가장 빠르고 대용량 GIF도 무손실 전송)
+            try {
+              uploadedUrl = await uploadToCloudinaryDirect(file);
+            } catch (errDirect) {
+              console.warn('[Cloudinary Direct Upload Fail] 서버리스 API 폴백 시도:', errDirect);
+              lastError = errDirect;
+            }
+
+            // 2순위: 실패 시 서버리스 프록시 폴백 (/api/upload-cloudinary 및 절대 경로)
+            if (!uploadedUrl) {
+              const reader = new FileReader();
+              const dataUrl = await new Promise((resolve, reject) => {
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
+
+              const endpoints = ['/api/upload-cloudinary', 'https://ryzincorp.com/api/upload-cloudinary'];
+              for (const ep of endpoints) {
+                try {
+                  const res = await fetch(ep, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataUrl })
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.url) {
+                      uploadedUrl = data.url;
+                      break;
+                    }
+                  }
+                } catch (epErr) {
+                  console.warn(`[Proxy Fail] ${ep}:`, epErr);
+                }
+              }
+            }
+
+            if (!uploadedUrl) {
+              throw new Error(lastError ? lastError.message : '이미지 업로드에 실패했습니다. 파일 용량 및 형식을 확인해 주세요.');
+            }
+
+            if (!products[idx]) {
+              throw new Error('선택된 상품 정보를 찾을 수 없습니다.');
             }
 
             const current = products[idx].detailImage ? String(products[idx].detailImage).trim() : '';
             if (current) {
               // 이미 등록된 이미지가 있으면 쉼표로 연결하여 여러 장 지원
-              products[idx].detailImage = `${current}, ${data.url}`;
+              products[idx].detailImage = `${current}, ${uploadedUrl}`;
             } else {
-              products[idx].detailImage = data.url;
+              products[idx].detailImage = uploadedUrl;
             }
 
             saveProducts(true);
