@@ -571,6 +571,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (payload.config) {
       localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(payload.config));
+      // 당첨 배너(소통왕/구매인증) 실시간 강제 종료 및 시작 즉각 반영
+      if (payload.config.winner_timestamp !== undefined || payload.config.winner_name !== undefined) {
+        applyLiveConfig({
+          winner_name: payload.config.winner_name,
+          winner_timestamp: payload.config.winner_timestamp,
+          ...payload.config
+        });
+      }
     }
     if (payload.stats) {
       localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(payload.stats));
@@ -615,10 +623,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 백그라운드 1.2초 스마트 폴링 백업 (실시간 채널 끊김 및 캐시 딜레이 무력화)
+  // === RYZIN 전용 실시간 웹소켓 클러스터 연동 (Fly.io) ===
+  try {
+    if (typeof io !== 'undefined') {
+      const socket = io('https://ryzin-live-chat.fly.dev', {
+        transports: ['websocket', 'polling'],
+        reconnectionAttempts: 15,
+        reconnectionDelay: 1000,
+        timeout: 10000,
+      });
+      window.ryzinSocket = socket;
+
+      socket.on('connect', () => {
+        console.log(`[Socket Cluster] Connected to RYZIN Live Cluster! (room: live_${LIVE_ID})`);
+        socket.emit('join_room', { liveId: LIVE_ID, role: 'viewer' });
+      });
+
+      // 어드민 제어 신호 0.05초 무지연 즉시 반영
+      socket.on('live_control_sync', (payload) => {
+        if (payload) {
+          console.log('[Socket Cluster] Instant admin_control received (0.05s):', payload);
+          applyLiveControlSync(payload);
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('[Socket Cluster] Init error (fallback to Supabase):', e);
+  }
+
+  // 백그라운드 스마트 폴링 백업 (실시간 연결 끊김 대비 안정적 3.5초 주기)
   let lastPolledHash = '';
   setInterval(async () => {
-    if (!db) return;
+    if (!db || document.hidden) return; // 탭이 숨겨져 있으면 불필요한 DB 쿼리 방지
     try {
       const { data, error } = await db
         .from('live_control')
@@ -640,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.warn("Polling fallback failed:", e);
     }
-  }, 1200);
+  }, 3500);
 
   // 2. 실시간 라이브 제어 감지 설정 (Broadcast + Postgres Changes 이중 구독)
   function subscribeConfig() {
@@ -660,19 +696,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_control', filter: `live_id=eq.${LIVE_ID}` }, async payload => {
-        try {
-          const { data, error } = await db
-            .from('live_control')
-            .select('*')
-            .eq('live_id', LIVE_ID)
-            .maybeSingle();
-          if (!error && data) {
-            applyLiveConfig(data);
-          }
-        } catch (e) {
-          if (payload.new) {
-            applyLiveConfig(payload.new);
-          }
+        // [0초 즉시 반영] DB를 다시 조회하지 않고, 알림에 포함된 최신 데이터를 즉시 화면에 렌더링!
+        if (payload && payload.new) {
+          applyLiveConfig(payload.new);
+        } else {
+          try {
+            const { data } = await db.from('live_control').select('*').eq('live_id', LIVE_ID).maybeSingle();
+            if (data) applyLiveConfig(data);
+          } catch (e) {}
         }
       })
       .subscribe((status) => {

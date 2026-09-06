@@ -10,3 +10,9 @@ ios/App/build/
 *.xcuserstate
 project.xcworkspace/xcuserdata/
 DerivedData/
+
+# Next.js build
+.next
+admin_next/.next
+admin_next/out
+

@@ -9,9 +9,75 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://vybrnhyaeugfwezbygdt.s
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'ryzin_admin_jwt_secret_change_this_in_vercel';
 
-// SHA256 해시
+// SHA256 해시 (레거시 검증용)
 function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
+}
+
+// PBKDF2 기반 강화된 비밀번호 해시 생성 (Salt + 100,000회 반복 스트레칭)
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const iterations = 100000;
+  const hash = crypto.pbkdf2Sync(password, salt, iterations, 64, 'sha512').toString('hex');
+  return `pbkdf2$sha512$${iterations}$${salt}$${hash}`;
+}
+
+// 비밀번호 검증: PBKDF2 및 기존 SHA-256 하위 호환 검증
+function verifyPassword(inputPassword, storedHash) {
+  if (!storedHash || !inputPassword) {
+    return { verified: false, needsRehash: false };
+  }
+
+  // 1. 최신 PBKDF2 포맷 검증
+  if (typeof storedHash === 'string' && storedHash.startsWith('pbkdf2$')) {
+    const parts = storedHash.split('$');
+    if (parts.length === 5) {
+      const [, algo, iterStr, salt, expectedHash] = parts;
+      const iterations = parseInt(iterStr, 10);
+      const computedHash = crypto.pbkdf2Sync(inputPassword, salt, iterations, 64, algo).toString('hex');
+      try {
+        const isMatch = crypto.timingSafeEqual(
+          Buffer.from(computedHash, 'hex'),
+          Buffer.from(expectedHash, 'hex')
+        );
+        return { verified: isMatch, needsRehash: false };
+      } catch {
+        return { verified: false, needsRehash: false };
+      }
+    }
+  }
+
+  // 2. 레거시 SHA-256 검증 (로그인 성공 시 최신 PBKDF2로 자동 승격 플래그 반환)
+  const legacyHash = sha256(inputPassword);
+  if (storedHash.toLowerCase() === legacyHash.toLowerCase()) {
+    return { verified: true, needsRehash: true };
+  }
+
+  return { verified: false, needsRehash: false };
+}
+
+// CORS Origin 화이트리스트 검증 헬퍼
+function setCorsHeaders(req, res, allowedMethods = 'POST, OPTIONS') {
+  const origin = req.headers.origin;
+  const isAllowedOrigin = (orig) => {
+    if (!orig) return false;
+    if (/^https:\/\/(www\.)?ryzincorp\.com$/.test(orig)) return true;
+    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(orig)) return true;
+    if (/^https:\/\/[a-zA-Z0-9_\-]+\.vercel\.app$/.test(orig)) return true;
+    if (orig === 'capacitor://localhost' || orig === 'ionic://localhost') return true;
+    return false;
+  };
+
+  if (origin && isAllowedOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  } else if (!origin) {
+    res.setHeader('Vary', 'Origin');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', allowedMethods);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Token');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 }
 
 // 간단한 JWT 생성 (HS256)
@@ -245,10 +311,8 @@ async function checkAccountLockout(userId, ip) {
 module.exports = { verifyJWT, ADMIN_JWT_SECRET };
 
 module.exports.default = async function handler(req, res) {
-  // CORS 허용
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // CORS 화이트리스트 적용
+  setCorsHeaders(req, res, 'POST, OPTIONS');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -523,9 +587,9 @@ module.exports.default = async function handler(req, res) {
 
     const user = users[0];
 
-    // 비밀번호 검증 (SHA256 해시 비교)
-    const hashedInput = sha256(password);
-    if (user.password !== hashedInput) {
+    // 비밀번호 검증 (PBKDF2 및 기존 SHA256 하위 호환)
+    const { verified, needsRehash } = verifyPassword(password, user.password);
+    if (!verified) {
       await recordAccessLog({
         userId: user.id,
         userName: user.name,
@@ -535,6 +599,27 @@ module.exports.default = async function handler(req, res) {
         failReason: '비밀번호 불일치'
       });
       return res.status(401).json({ error: '아이디 또는 비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 기존 SHA-256 사용자인 경우, 안전한 PBKDF2(Salted SHA-512)로 백그라운드 자동 업그레이드
+    if (needsRehash) {
+      try {
+        const upgradedHash = hashPassword(password);
+        fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({ password: upgradedHash }),
+        }).catch((upgErr) => {
+          console.warn('[Password Auto-Upgrade] 해시 자동 업그레이드 실패 (무시됨):', upgErr.message);
+        });
+      } catch (e) {
+        console.warn('[Password Auto-Upgrade] 업그레이드 예외 (무시됨):', e.message);
+      }
     }
 
     // SMTP 설정 확인

@@ -1,4 +1,5 @@
 import { showSuccess, showError } from '../components/toast.js';
+import { openModal, closeModal } from '../components/modal.js';
 import QRCode from 'qrcode';
 // ============================================================
 //  RYZIN LIVE STREAM ADMIN — 멀티 라이브 관리 시스템
@@ -180,6 +181,8 @@ let syncTimers = {};
 const db = window.supabaseClient;
 const getSupabase = () => db || window.supabaseClient;
 
+let lastAdminSelfSyncTime = 0;
+
 function syncToSheetDB(liveId, config, stats, products, force = false) {
   // 데이터 로드가 완료되지 않았다면 임시 데이터로 원격 DB를 덮어쓰는 사고 방지
   if (window[`live_loaded_${liveId}`] === false) {
@@ -189,6 +192,8 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
   if (syncTimers[liveId]) clearTimeout(syncTimers[liveId]);
   const doSync = async () => {
     if (!db) return;
+    lastAdminSelfSyncTime = Date.now();
+    window.__lastAdminSelfSyncTime = lastAdminSelfSyncTime;
     const data = {
       live_id: liveId,
       title: config.brandName,
@@ -219,6 +224,8 @@ function syncToSheetDB(liveId, config, stats, products, force = false) {
       like_image_url: config.likeImageUrl || '',
       banned_words: config.bannedWords || '',
       banned_users: config.bannedUsers || '',
+      winner_name: config.winner_name || null,
+      winner_timestamp: config.winner_timestamp ? Number(config.winner_timestamp) : 0,
       updated_at: new Date().toISOString()
     };
     try {
@@ -1043,6 +1050,26 @@ function renderLiveEditView(container, liveId, showView) {
       auction: currentAuction,
       timestamp: Date.now()
     };
+
+    // 0. RYZIN 전용 실시간 웹소켓 클러스터 (Fly.io) 즉각 전송 (0.05초 지연)
+    try {
+      if (typeof io !== 'undefined') {
+        if (!window.ryzinAdminSocket) {
+          window.ryzinAdminSocket = io('https://ryzin-live-chat.fly.dev', {
+            transports: ['websocket', 'polling'],
+          });
+          window.ryzinAdminSocket.on('connect', () => {
+            window.ryzinAdminSocket.emit('join_room', { liveId: liveId, role: 'admin' });
+          });
+        }
+        if (window.ryzinAdminSocket.connected) {
+          window.ryzinAdminSocket.emit('admin_control_sync', {
+            liveId: liveId,
+            payload: payload
+          });
+        }
+      }
+    } catch (e) {}
 
     // 1. 우측 iframe 미리보기 즉각 동기화
     postMessageToPreview();
@@ -2366,19 +2393,21 @@ function renderLiveEditView(container, liveId, showView) {
 
 
 
+  let chatSubTab = 'admin';
+
   const renderChatTab = () => {
     contentArea.innerHTML = `
       <!-- 서브 탭 네비게이션 -->
       <div style="display:flex; gap:8px; margin-bottom:16px; background:#f1f5f9; padding:4px; border-radius:10px;">
-        <button class="chat-sub-tab-btn active" data-subtab="admin" style="flex:1; padding:8px 0; font-size:13px; font-weight:700; border:none; background:#fff; color:#0f172a; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;">관리자 채팅 & 정책</button>
+        <button class="chat-sub-tab-btn ${chatSubTab === 'admin' ? 'active' : ''}" data-subtab="admin" style="flex:1; padding:8px 0; font-size:13px; font-weight:${chatSubTab === 'admin' ? '700' : '600'}; border:none; background:${chatSubTab === 'admin' ? '#fff' : 'transparent'}; color:${chatSubTab === 'admin' ? '#0f172a' : '#64748b'}; border-radius:8px; box-shadow:${chatSubTab === 'admin' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}; cursor:pointer;">관리자 채팅 & 정책</button>
         ${isLiveStreamOnly ? '' : `
-        <button class="chat-sub-tab-btn" data-subtab="bot" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">채팅 봇 관리</button>
+        <button class="chat-sub-tab-btn ${chatSubTab === 'bot' ? 'active' : ''}" data-subtab="bot" style="flex:1; padding:8px 0; font-size:13px; font-weight:${chatSubTab === 'bot' ? '700' : '600'}; border:none; background:${chatSubTab === 'bot' ? '#fff' : 'transparent'}; color:${chatSubTab === 'bot' ? '#0f172a' : '#64748b'}; border-radius:8px; box-shadow:${chatSubTab === 'bot' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}; cursor:pointer;">채팅 봇 관리</button>
         `}
-        <button class="chat-sub-tab-btn" data-subtab="event" style="flex:1; padding:8px 0; font-size:13px; font-weight:600; border:none; background:transparent; color:#64748b; border-radius:8px; cursor:pointer;">이벤트 관리</button>
+        <button class="chat-sub-tab-btn ${chatSubTab === 'event' ? 'active' : ''}" data-subtab="event" style="flex:1; padding:8px 0; font-size:13px; font-weight:${chatSubTab === 'event' ? '700' : '600'}; border:none; background:${chatSubTab === 'event' ? '#fff' : 'transparent'}; color:${chatSubTab === 'event' ? '#0f172a' : '#64748b'}; border-radius:8px; box-shadow:${chatSubTab === 'event' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}; cursor:pointer;">이벤트 관리</button>
       </div>
 
       <!-- 관리자 채팅 & 정책 뷰 -->
-      <div id="chat-sub-admin" class="chat-sub-view">
+      <div id="chat-sub-admin" class="chat-sub-view" style="display:${chatSubTab === 'admin' ? 'block' : 'none'};">
         <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1.5px solid #f1f5f9;">
           <h3 style="margin:0; border:none; padding:0;">관리자 채팅 발송</h3>
@@ -2464,7 +2493,7 @@ function renderLiveEditView(container, liveId, showView) {
 
       <!-- 채팅 봇 관리 뷰 -->
       ${isLiveStreamOnly ? '' : `
-      <div id="chat-sub-bot" class="chat-sub-view" style="display:none;">
+      <div id="chat-sub-bot" class="chat-sub-view" style="display:${chatSubTab === 'bot' ? 'block' : 'none'};">
         <div class="section-card">
         <h3>채팅 봇</h3>
         <p style="font-size:13px; color:#64748b; margin:0 0 16px; line-height:1.6;">
@@ -2512,7 +2541,7 @@ function renderLiveEditView(container, liveId, showView) {
       `}
 
       <!-- 이벤트 관리 뷰 -->
-      <div id="chat-sub-event" class="chat-sub-view" style="display:none;">
+      <div id="chat-sub-event" class="chat-sub-view" style="display:${chatSubTab === 'event' ? 'block' : 'none'};">
       <!-- 소통왕/구매인증 당첨 배너 제어 (깜짝딜 방식) -->
       <div class="section-card">
         <h3 style="margin:0 0 8px 0; border:none; padding:0; display:flex; align-items:center; gap:6px;">
@@ -2594,6 +2623,7 @@ function renderLiveEditView(container, liveId, showView) {
 
         // 뷰 전환
         subViews.forEach(v => v.style.display = 'none');
+        chatSubTab = btn.dataset.subtab;
         const targetView = document.getElementById(`chat-sub-${btn.dataset.subtab}`);
         if (targetView) targetView.style.display = 'block';
       });
@@ -3229,15 +3259,32 @@ function renderLiveEditView(container, liveId, showView) {
             winner_timestamp: endTS,
             updated_at: new Date().toISOString()
           }).eq('live_id', liveId);
-          if (error) throw error;
+
+          if (error) {
+            console.error('[Winner Start Error]', error);
+            throw error;
+          }
+
           config.winner_name = compositeName;
           config.winner_timestamp = endTS;
-          renderChatTab();
+          saveLiveConfig(liveId, config);
+          broadcastLiveSync();
+          syncToSheetDB(liveId, config, stats, products, true);
+
+          try {
+            renderChatTab();
+          } catch (renderErr) {
+            console.warn('[renderChatTab non-fatal error]:', renderErr);
+          }
         } catch (err) {
-          alert('시작 처리에 실패했습니다.');
+          console.error('[Winner Start Handler Failed]:', err);
+          alert('시작 처리에 실패했습니다: ' + (err.message || '네트워크 오류'));
         } finally {
-          btnWStart.disabled = false;
-          btnWStart.textContent = '시작';
+          const btn = document.getElementById('btn-winner-start');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '시작';
+          }
         }
       });
     }
@@ -3252,14 +3299,31 @@ function renderLiveEditView(container, liveId, showView) {
             winner_timestamp: 0,
             updated_at: new Date().toISOString()
           }).eq('live_id', liveId);
-          if (error) throw error;
+
+          if (error) {
+            console.error('[Winner Cancel Error]', error);
+            throw error;
+          }
+
           config.winner_timestamp = 0;
-          renderChatTab();
+          saveLiveConfig(liveId, config);
+          broadcastLiveSync();
+          syncToSheetDB(liveId, config, stats, products, true);
+
+          try {
+            renderChatTab();
+          } catch (renderErr) {
+            console.warn('[renderChatTab non-fatal error]:', renderErr);
+          }
         } catch (err) {
-          alert('종료 처리에 실패했습니다.');
+          console.error('[Winner Cancel Handler Failed]:', err);
+          alert('종료 처리에 실패했습니다: ' + (err.message || '네트워크 오류'));
         } finally {
-          btnWCancel.disabled = false;
-          btnWCancel.textContent = '종료';
+          const btn = document.getElementById('btn-winner-cancel');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '종료';
+          }
         }
       });
     }
@@ -3320,118 +3384,121 @@ function renderLiveEditView(container, liveId, showView) {
       `;
     }
 
-    return auctionBannerHtml + winnersBannerHtml + products.map((p, idx) => {
+    const rowsHtml = products.map((p, idx) => {
       const clickCount = p.clicks || 0;
       const isFeatured = p.isFeatured === true || p.isFeatured === 'true';
       const isAuctionThisProduct = currentAuction && currentAuction.productId == (p.id || p.product_code || idx);
       const isAuctionOngoing = isAuctionThisProduct && currentAuction.status === 'ongoing';
       const isAuctionEnabled = p.isAuctionOpen === true || isAuctionThisProduct;
+      const isGiveawayOngoing = p.isGiveawayActive === true || p.isGiveawayActive === 'true';
+      const isDealOngoing = p.dealEndTime && p.dealEndTime > Date.now();
+
+      const normalPriceFormatted = p.normalPrice ? Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : '';
+      const priceFormatted = p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() : '0';
+      const discountRate = p.discountRate || 0;
+      const stockText = (p.stock !== undefined && p.stock !== null && p.stock !== '') ? `${p.stock}개` : '무제한';
+
+      let rowStyle = 'background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:14px; transition:all 0.15s ease; box-shadow:0 1px 3px rgba(0,0,0,0.02);';
+      if (isAuctionOngoing) {
+        rowStyle = 'background:#fffdf7; border:2px solid #f59e0b; border-radius:12px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:14px; transition:all 0.15s ease; box-shadow:0 4px 12px rgba(245,158,11,0.12);';
+      } else if (isFeatured) {
+        rowStyle = 'background:#f8faff; border:2px solid #2563eb; border-radius:12px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:14px; transition:all 0.15s ease; box-shadow:0 4px 12px rgba(37,99,235,0.1);';
+      } else if (isGiveawayOngoing) {
+        rowStyle = 'background:#fef2f2; border:2px solid #ef4444; border-radius:12px; padding:12px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:14px; transition:all 0.15s ease; box-shadow:0 4px 12px rgba(239,68,68,0.1);';
+      }
+
       return `
-      <div class="product-row" style="${isAuctionOngoing ? 'border: 2px solid #f59e0b; background: #fffdf7; box-shadow:0 4px 12px rgba(245,158,11,0.12);' : (isFeatured ? 'border: 2px solid #2563eb; background: #f8faff; box-shadow:0 4px 12px rgba(37,99,235,0.08);' : '')}">
-        <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative;">
-          <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}">
-          <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
-          ${isAuctionOngoing ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#f59e0b; color:#ffffff; font-size:10px; font-weight:900; text-align:center; border-radius:4px; padding:1px 0;">경매중</span>` : (isFeatured ? `<span style="position:absolute; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-size:10px; font-weight:800; text-align:center; border-radius:4px; padding:1px 0;">소개중</span>` : '')}
+      <div class="product-row-slim" style="${rowStyle}" data-idx="${idx}">
+        <!-- 좌측: 순서 & 썸네일 & 상품 기본 정보 -->
+        <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
+          <!-- 순서 조정 버튼 -->
+          <div style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;">
+            <button type="button" class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:2px 6px; font-size:10px; line-height:1; min-width:24px; height:20px;" ${idx === 0 ? 'disabled' : ''} title="위로 이동">▲</button>
+            <button type="button" class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:2px 6px; font-size:10px; line-height:1; min-width:24px; height:20px;" ${idx === products.length - 1 ? 'disabled' : ''} title="아래로 이동">▼</button>
+          </div>
+
+          <!-- 썸네일 -->
+          <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative; width:52px; height:52px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1; cursor:pointer; flex-shrink:0; background:#f8fafc;">
+            <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}" style="width:100%; height:100%; object-fit:cover; display:block;">
+            <input type="file" id="upload-prod-${idx}" accept="image/*" style="display:none;" data-idx="${idx}" class="prod-img-upload">
+            ${isAuctionOngoing ? `<span style="position:absolute; bottom:0; left:0; right:0; background:#f59e0b; color:#ffffff; font-size:9px; font-weight:900; text-align:center; padding:1px 0;">경매중</span>` : (isFeatured ? `<span style="position:absolute; bottom:0; left:0; right:0; background:#2563eb; color:#ffffff; font-size:9px; font-weight:800; text-align:center; padding:1px 0;">소개중</span>` : (isGiveawayOngoing ? `<span style="position:absolute; bottom:0; left:0; right:0; background:#ef4444; color:#ffffff; font-size:9px; font-weight:800; text-align:center; padding:1px 0;">나눔중</span>` : ''))}
+          </div>
+
+          <!-- 상품명, 가격, 뱃지 -->
+          <div style="min-width:0; display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span style="font-size:11px; font-weight:800; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:4px;">#${idx + 1}</span>
+              <span style="font-size:14px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px;" title="${p.name || '무명 상품'}">${p.name || '무명 상품'}</span>
+              ${p.isLeadForm ? `<span style="font-size:10.5px; font-weight:700; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; padding:1px 6px; border-radius:4px;">상담문의</span>` : ''}
+              ${p.hideByDefault ? `<span style="font-size:10.5px; font-weight:700; color:#16a34a; background:#f0fdf4; border:1px solid #bbf7d0; padding:1px 6px; border-radius:4px;">평소숨김</span>` : ''}
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; flex-wrap:wrap;">
+              <span style="font-weight:800; color:#0f172a;">${priceFormatted}원</span>
+              ${normalPriceFormatted ? `<span style="font-size:11.5px; color:#94a3b8; text-decoration:line-through;">${normalPriceFormatted}원</span>` : ''}
+              ${discountRate > 0 ? `<span style="font-size:11.5px; font-weight:800; color:#ef4444;">${discountRate}%</span>` : ''}
+              <span style="font-size:11px; color:#64748b; background:#f8fafc; border:1px solid #e2e8f0; padding:1px 6px; border-radius:4px;">재고: ${stockText}</span>
+              <span style="font-size:11px; color:#3b82f6; background:#eff6ff; border:1px solid #dbeafe; padding:1px 6px; border-radius:4px;">조회: ${clickCount.toLocaleString()}</span>
+            </div>
+          </div>
         </div>
-        <div class="product-inputs">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <input type="text" class="modern-input" style="flex:2;" value="${p.name || ''}" data-idx="${idx}" data-field="name" placeholder="상품명">
-            <input type="text" class="modern-input price-input" style="flex:1;" value="${p.normalPrice ? Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="normalPrice" placeholder="정상가">
-            <input type="text" class="modern-input price-input" style="flex:1;" value="${p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() : ''}" data-idx="${idx}" data-field="price" placeholder="라이브가">
-            <input type="number" class="modern-input" value="${p.discountRate || 0}" data-idx="${idx}" data-field="discountRate" placeholder="%" readonly style="width:48px; text-align:center;">
-            <div style="display:flex; align-items:center; gap:4px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:0 8px; flex-shrink:0;" title="담을 수 있는 전체 재고 수량 (비워두면 무제한)">
-              <span style="font-size:11.5px; font-weight:700; color:#475569; white-space:nowrap;">재고:</span>
-              <input type="number" min="0" class="modern-input" style="width:52px; padding:6px 2px; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent;" value="${p.stock !== undefined && p.stock !== null && p.stock !== '' ? p.stock : ''}" data-idx="${idx}" data-field="stock" placeholder="무제한">
-              <span style="font-size:11px; color:#94a3b8;">개</span>
+
+        <!-- 우측: 온에어 1초 컷 제어 & 관리 버튼군 -->
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end;">
+          <!-- 지금소개 버튼 -->
+          <button type="button" class="btn-toggle-featured" data-idx="${idx}" style="padding:6px 14px; font-size:12px; font-weight:800; border-radius:8px; cursor:pointer; transition:all 0.15s; ${isFeatured ? 'background:#2563eb; color:#ffffff; border:1.5px solid #2563eb; box-shadow:0 2px 6px rgba(37,99,235,0.2);' : 'background:#ffffff; color:#334155; border:1.5px solid #cbd5e1;'}">
+            ${isFeatured ? '소개중 (ON)' : '지금소개'}
+          </button>
+
+          <!-- 무료나눔 제어 -->
+          ${(p.isFreeGiveaway === true || p.isFreeGiveaway === 'true') ? `
+            <div style="display:flex; align-items:center; gap:4px; background:#fef2f2; border:1.5px solid #fecaca; border-radius:8px; padding:3px 6px;">
+              <span style="font-size:11px; font-weight:700; color:#dc2626;">나눔</span>
+              ${isGiveawayOngoing ? `
+                <button type="button" class="btn-giveaway-stop" data-idx="${idx}" style="padding:4px 8px; font-size:11px; font-weight:800; background:#dc2626; color:#ffffff; border:none; border-radius:6px; cursor:pointer;">종료</button>
+              ` : `
+                <button type="button" class="btn-giveaway-start" data-idx="${idx}" style="padding:4px 8px; font-size:11px; font-weight:800; background:#ffffff; color:#dc2626; border:1px solid #fca5a5; border-radius:6px; cursor:pointer;">시작</button>
+              `}
             </div>
-            <div style="display:flex; align-items:center; gap:4px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:0 8px; flex-shrink:0;" title="1인당 담을 수 있는 최대 구매 수량 (비워두면 무제한)">
-              <span style="font-size:11.5px; font-weight:700; color:#475569; white-space:nowrap;">1인당:</span>
-              <input type="number" min="1" class="modern-input" style="width:50px; padding:6px 2px; font-size:12px; font-weight:700; text-align:center; border:none; background:transparent;" value="${p.maxPerUser !== undefined && p.maxPerUser !== null && p.maxPerUser !== '' ? p.maxPerUser : ''}" data-idx="${idx}" data-field="maxPerUser" placeholder="무제한">
-              <span style="font-size:11px; color:#94a3b8;">개</span>
-            </div>
+          ` : ''}
+
+          <!-- 깜짝딜 제어 -->
+          <div style="display:flex; align-items:center; gap:4px; background:#fff1f2; border:1.5px solid #fecdd3; border-radius:8px; padding:3px 6px;">
+            <span style="font-size:11px; font-weight:700; color:#e11d48;">깜짝딜</span>
+            ${isDealOngoing ? `
+              <button type="button" class="btn-deal-cancel" data-idx="${idx}" style="padding:4px 8px; font-size:11px; font-weight:800; background:#e11d48; color:#ffffff; border:none; border-radius:6px; cursor:pointer;">종료</button>
+            ` : `
+              <button type="button" class="btn-quick-deal-start" data-idx="${idx}" style="padding:4px 8px; font-size:11px; font-weight:800; background:#ffffff; color:#e11d48; border:1px solid #fda4af; border-radius:6px; cursor:pointer;">시작</button>
+            `}
           </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-            <input type="text" class="modern-input" style="flex:1;" value="${p.url || ''}" data-idx="${idx}" data-field="url" placeholder="구매 링크 URL" ${p.isLeadForm ? 'disabled' : ''}>
-            <label style="font-size:12px; color:${isFeatured ? '#1d4ed8' : '#334155'}; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:${isFeatured ? '#eff6ff' : '#f8fafc'}; padding:8px 12px; border:${isFeatured ? '1.5px solid #2563eb' : '1px solid #cbd5e1'}; border-radius:8px; transition:all 0.15s;">
-              <input type="checkbox" data-idx="${idx}" data-field="isFeatured" class="chk-featured-product" ${isFeatured ? 'checked' : ''} style="width:14px; height:14px; accent-color:#2563eb; cursor:pointer;">
-              지금소개중
-            </label>
-            <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
-              <input type="checkbox" data-idx="${idx}" data-field="isLeadForm" ${p.isLeadForm === true || p.isLeadForm === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#3b82f6;">
-              상담문의
-            </label>
-            <label style="font-size:12px; color:#475569; font-weight:700; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#f8fafc; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px;">
-              <input type="checkbox" data-idx="${idx}" data-field="hideByDefault" ${p.hideByDefault === true || p.hideByDefault === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#16a34a;">
-              평소숨김
-            </label>
-            <label style="font-size:12px; color:#b45309; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#fef3c7; padding:8px 12px; border:1.5px solid #fcd34d; border-radius:8px;">
-              <input type="checkbox" data-idx="${idx}" class="chk-auction-enable" ${isAuctionEnabled ? 'checked' : ''} style="width:14px; height:14px; accent-color:#f59e0b;">
-              실시간 경매
-            </label>
-            ${isAuctionEnabled ? `
-              <div style="display:flex; align-items:center; gap:6px; background:#fffbeb; padding:4px 8px; border-radius:8px; border:1.5px solid #fde68a; white-space:nowrap;">
-                <span style="font-size:11.5px; font-weight:700; color:#b45309;">시작가:</span>
-                <input type="text" class="modern-input price-input auction-start-input" style="width:75px; padding:4px 6px; font-size:12px; font-weight:700; text-align:right;" data-idx="${idx}" value="${Number(p.auctionStartPrice || (p.price ? p.price.toString().replace(/[^0-9]/g, '') : 1000) || 1000).toLocaleString()}">
-                <button class="btn-auction-start" data-idx="${idx}" style="padding:4px 10px; background:#f59e0b; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap;">${isAuctionOngoing ? '진행중' : '경매 시작'}</button>
-                ${isAuctionOngoing ? `
-                  <button class="btn-auction-sold-row" data-idx="${idx}" style="padding:4px 9px; background:#16a34a; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">낙찰</button>
-                  <button class="btn-auction-stop-row" data-idx="${idx}" style="padding:4px 9px; background:#ef4444; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">종료</button>
-                ` : ''}
-              </div>
-            ` : ''}
-            <label style="font-size:12px; color:#dc2626; font-weight:800; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; white-space:nowrap; background:#fef2f2; padding:8px 12px; border:1.5px solid #fca5a5; border-radius:8px;">
-              <input type="checkbox" data-idx="${idx}" data-field="isFreeGiveaway" ${p.isFreeGiveaway === true || p.isFreeGiveaway === 'true' ? 'checked' : ''} style="width:14px; height:14px; accent-color:#ef4444;" class="chk-giveaway">
-              선착순 무료나눔
-            </label>
-            ${(p.isFreeGiveaway === true || p.isFreeGiveaway === 'true') ? `
-              <div style="display:flex; align-items:center; gap:6px; background:#fff1f2; padding:4px 8px; border-radius:8px; border:1px solid #fecdd3; white-space:nowrap;">
-                <span style="font-size:11.5px; font-weight:700; color:#dc2626;">수량:</span>
-                <input type="number" class="modern-input" style="width:50px; padding:4px 6px; font-size:12px; font-weight:700; text-align:center;" data-idx="${idx}" data-field="giveawayStock" value="${p.giveawayStock || 3}">
-                <button class="btn-giveaway-start" data-idx="${idx}" style="padding:4px 9px; background:#dc2626; color:#fff; border:none; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
-                <button class="btn-giveaway-stop" data-idx="${idx}" style="padding:4px 9px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-                ${p.isGiveawayActive ? `<span style="font-size:11px; font-weight:800; color:#16a34a; background:#dcfce7; padding:2px 6px; border-radius:4px;">송출중</span>` : `<span style="font-size:11px; font-weight:600; color:#94a3b8;">대기</span>`}
-              </div>
-            ` : ''}
-            <span style="font-size:12px; font-weight:700; color:#3b82f6; background:#eff6ff; padding:8px 10px; border-radius:8px; white-space:nowrap;">조회: ${clickCount.toLocaleString()}</span>
-            <button class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === 0 ? 'disabled' : ''}>▲</button>
-            <button class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:8px 10px; font-size:13px; flex-shrink:0; cursor:pointer;" ${idx === products.length - 1 ? 'disabled' : ''}>▼</button>
-            <button class="action-btn btn-danger-solid btn-del-product" data-idx="${idx}" style="padding:8px 14px; font-size:13px; white-space:nowrap; flex-shrink:0;">삭제</button>
-          </div>
-          ${isLiveStreamOnly ? '' : `
-          <details style="margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-            <summary style="padding:10px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; user-select:none;">고급 설정 (깜짝딜 / 좋아요 조건)</summary>
-            <div style="padding:10px 14px; border-top:1px solid #e2e8f0; display:flex; flex-direction:column; gap:8px;">
-              <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
-                <span style="font-size:12px; font-weight:700; color:#e11d48;">깜짝딜</span>
-                <input type="text" class="modern-input" style="flex:1; padding:6px 10px; font-size:12px;" id="deal-text-${idx}" placeholder="배너 문구" value="${p.dealText || '깜짝딜 종료까지'}">
-                <input type="number" class="modern-input" style="width:64px; padding:6px; font-size:12px;" id="deal-min-${idx}" placeholder="분">
-                <button class="btn-deal-start" data-idx="${idx}" style="padding:6px 12px; background:#e11d48; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">시작</button>
-                <button class="btn-deal-cancel" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-                ${p.dealEndTime && p.dealEndTime > Date.now() ? `<span style="font-size:11px; font-weight:700; color:#e11d48;">진행중</span>` : ''}
-              </div>
-              <div style="display:flex; gap:8px; align-items:center; background:#f0fdf4; padding:10px 14px; border-radius:8px; border:1px solid #bbf7d0;">
-                <span style="font-size:12px; font-weight:700; color:#16a34a;">좋아요 달성</span>
-                <input type="number" class="modern-input" style="width:90px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetLikes" placeholder="목표 좋아요" value="${p.targetLikes || ''}">
-                <span style="font-size:12px; color:#16a34a; font-weight:600;">개 달성 시</span>
-                <input type="number" class="modern-input" style="width:60px; padding:6px 10px; font-size:12px;" data-idx="${idx}" data-field="targetDealMin" placeholder="시간(분)" value="${p.targetDealMin || ''}">
-                <span style="font-size:12px; color:#16a34a; font-weight:600;">분 자동 오픈</span>
-              </div>
-              <div style="display:flex; gap:8px; align-items:center; background:#fef2f2; padding:10px 14px; border-radius:8px; border:1px solid #fecdd3;">
-                <span style="font-size:12px; font-weight:800; color:#dc2626;">화면 중앙 무료나눔 드롭</span>
-                <span style="font-size:12px; color:#475569; font-weight:600;">한정 수량:</span>
-                <input type="number" class="modern-input" style="width:65px; padding:6px 8px; font-size:12px;" data-idx="${idx}" data-field="giveawayStock" placeholder="수량" value="${p.giveawayStock || 3}">
-                <span style="font-size:12px; color:#475569;">개</span>
-                <button class="btn-giveaway-start" data-idx="${idx}" style="padding:6px 12px; background:#dc2626; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">화면 송출 시작</button>
-                <button class="btn-giveaway-stop" data-idx="${idx}" style="padding:6px 12px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">종료</button>
-                ${p.isGiveawayActive ? `<span style="font-size:11.5px; font-weight:800; color:#dc2626; background:#fee2e2; padding:3px 8px; border-radius:6px;">화면 송출중 (잔여: ${Math.max(0, (parseInt(p.giveawayStock) || 0) - (parseInt(p.giveawayClaimed) || 0))}개)</span>` : ''}
-              </div>
+
+          <!-- 실시간 경매 제어 (설정된 경우) -->
+          ${isAuctionEnabled ? `
+            <div style="display:flex; align-items:center; gap:4px; background:#fffdf7; border:1.5px solid #fde68a; border-radius:8px; padding:3px 6px;">
+              <span style="font-size:11px; font-weight:700; color:#b45309;">경매</span>
+              ${isAuctionOngoing ? `
+                <button type="button" class="btn-auction-sold-row" data-idx="${idx}" style="padding:4px 8px; font-size:11px; font-weight:800; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer;">낙찰</button>
+                <button type="button" class="btn-auction-stop-row" data-idx="${idx}" style="padding:4px 8px; font-size:11px; font-weight:800; background:#ef4444; color:#fff; border:none; border-radius:6px; cursor:pointer;">종료</button>
+              ` : `
+                <button type="button" class="btn-auction-start" data-idx="${idx}" style="padding:4px 8px; font-size:11px; font-weight:800; background:#f59e0b; color:#fff; border:none; border-radius:6px; cursor:pointer;">시작</button>
+              `}
             </div>
-          </details>
-          `}
+          ` : ''}
+
+          <!-- 관리 버튼: 상세 설정 & 삭제 -->
+          <div style="display:flex; align-items:center; gap:6px; margin-left:4px; border-left:1px solid #e2e8f0; padding-left:10px;">
+            <button type="button" class="btn-edit-prod-modal" data-idx="${idx}" style="padding:6px 12px; font-size:12px; font-weight:700; background:#f8fafc; color:#1e293b; border:1.5px solid #cbd5e1; border-radius:8px; cursor:pointer; transition:all 0.15s ease;">
+              상세 설정
+            </button>
+            <button type="button" class="btn-del-product" data-idx="${idx}" style="padding:6px 10px; font-size:12px; font-weight:700; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; border-radius:8px; cursor:pointer; transition:all 0.15s ease;">
+              삭제
+            </button>
+          </div>
         </div>
       </div>
       `;
     }).join('');
+
+    return auctionBannerHtml + winnersBannerHtml + rowsHtml;
   };
 
   // 2. 상세페이지 관리 뷰 (상품별 상세 이미지/GIF 다중 업로드 및 순서 제어)
@@ -3675,9 +3742,9 @@ function renderLiveEditView(container, liveId, showView) {
                     }
                   });
                 }
-                saveProducts();
+                saveProducts(false);
                 const listContainer = document.getElementById('product-list-container');
-                if (listContainer) {
+                if (listContainer && !listContainer.contains(document.activeElement)) {
                   listContainer.innerHTML = renderProductList();
                   bindProductEvents();
                 }
@@ -3688,9 +3755,279 @@ function renderLiveEditView(container, liveId, showView) {
         .catch(err => console.warn('Failed to load product clicks from Supabase', err));
     }
 
+    const openProductEditModal = (idx) => {
+      const p = products[idx];
+      if (!p) return;
+
+      const content = document.createElement('div');
+      content.style.cssText = 'display:flex; flex-direction:column; gap:16px; font-size:13px; color:#1e293b; max-height:72vh; overflow-y:auto; padding:4px 2px;';
+
+      const normalPriceVal = p.normalPrice ? Number(p.normalPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : '';
+      const priceVal = p.price ? Number(p.price.toString().replace(/[^0-9]/g, '')).toLocaleString() : '';
+      let currentDiscount = p.discountRate || 0;
+      const isLeadForm = p.isLeadForm === true || p.isLeadForm === 'true' || p.url === '__LEAD_FORM__';
+      const hideByDefault = p.hideByDefault === true || p.hideByDefault === 'true';
+      const isAuctionOpen = p.isAuctionOpen === true || p.isAuctionOpen === 'true';
+      const auctionStartVal = p.auctionStartPrice ? Number(p.auctionStartPrice.toString().replace(/[^0-9]/g, '')).toLocaleString() : (priceVal || '1,000');
+      const isFreeGiveaway = p.isFreeGiveaway === true || p.isFreeGiveaway === 'true';
+      const giveawayStock = p.giveawayStock || 3;
+      const dealText = p.dealText || '깜짝딜 종료까지';
+      const dealMin = p.dealMin || 5;
+
+      content.innerHTML = `
+        <div style="background:#f8fafc; padding:12px 14px; border-radius:10px; border:1px solid #e2e8f0; display:flex; gap:14px; align-items:center;">
+          <div style="width:60px; height:60px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1; flex-shrink:0; background:#fff;">
+            <img src="${p.image || 'https://via.placeholder.com/72'}" id="modal-img-preview" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">상품 썸네일 이미지</div>
+            <button type="button" class="action-btn btn-secondary" id="modal-btn-trigger-upload" style="padding:4px 12px; font-size:12px; font-weight:600;">이미지 변경</button>
+            <input type="file" id="modal-upload-img" accept="image/*" style="display:none;">
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:5px;">
+          <label style="font-weight:700; color:#334155;">상품명 <span style="color:#ef4444;">*</span></label>
+          <input type="text" id="modal-prod-name" class="modern-input" value="${p.name || ''}" placeholder="상품명을 입력하세요">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 80px; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <label style="font-weight:700; color:#334155;">정상가 (원)</label>
+            <input type="text" id="modal-prod-normal-price" class="modern-input price-input" value="${normalPriceVal}" placeholder="예: 45,000">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <label style="font-weight:700; color:#334155;">라이브 판매가 (원) <span style="color:#ef4444;">*</span></label>
+            <input type="text" id="modal-prod-price" class="modern-input price-input" value="${priceVal}" placeholder="예: 29,000">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <label style="font-weight:700; color:#334155;">할인율</label>
+            <input type="text" id="modal-prod-discount" class="modern-input" value="${currentDiscount}%" readonly style="background:#f1f5f9; text-align:center; font-weight:700; color:#ef4444;">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <label style="font-weight:700; color:#334155;">전체 재고 수량 <span style="font-size:11px; color:#94a3b8; font-weight:400;">(비워두면 무제한)</span></label>
+            <input type="number" min="0" id="modal-prod-stock" class="modern-input" value="${p.stock !== undefined && p.stock !== null ? p.stock : ''}" placeholder="무제한">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <label style="font-weight:700; color:#334155;">1인당 최대 구매 수량 <span style="font-size:11px; color:#94a3b8; font-weight:400;">(비워두면 무제한)</span></label>
+            <input type="number" min="1" id="modal-prod-max-per-user" class="modern-input" value="${p.maxPerUser !== undefined && p.maxPerUser !== null ? p.maxPerUser : ''}" placeholder="무제한">
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <label style="font-weight:700; color:#334155;">구매 링크 URL</label>
+            <input type="text" id="modal-prod-url" class="modern-input" value="${p.url && p.url !== '__LEAD_FORM__' ? p.url : ''}" placeholder="https://..." ${isLeadForm ? 'disabled' : ''}>
+          </div>
+          <div style="display:flex; gap:16px; margin-top:4px;">
+            <label style="display:flex; align-items:center; gap:6px; font-weight:700; color:#334155; cursor:pointer;">
+              <input type="checkbox" id="modal-prod-leadform" ${isLeadForm ? 'checked' : ''} style="width:15px; height:15px; accent-color:#2563eb;">
+              상담문의(리드폼) 연결
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; font-weight:700; color:#334155; cursor:pointer;">
+              <input type="checkbox" id="modal-prod-hide" ${hideByDefault ? 'checked' : ''} style="width:15px; height:15px; accent-color:#16a34a;">
+              평소 상품목록에서 숨김
+            </label>
+          </div>
+        </div>
+
+        <details style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:6px 12px;">
+          <summary style="padding:6px 0; font-weight:700; color:#475569; cursor:pointer; font-size:12.5px;">추가 프로모션 설정 (실시간 경매 / 깜짝딜 / 무료나눔)</summary>
+          <div style="display:flex; flex-direction:column; gap:10px; padding:10px 0 6px 0; border-top:1px solid #e2e8f0; margin-top:6px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#fffdf7; border:1px solid #fde68a; padding:8px 12px; border-radius:8px;">
+              <label style="display:flex; align-items:center; gap:6px; font-weight:700; color:#b45309; cursor:pointer;">
+                <input type="checkbox" id="modal-prod-auction" ${isAuctionOpen ? 'checked' : ''} style="width:15px; height:15px; accent-color:#f59e0b;">
+                실시간 경매 사용
+              </label>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:11.5px; font-weight:700; color:#b45309;">시작가:</span>
+                <input type="text" id="modal-prod-auction-price" class="modern-input" value="${auctionStartVal}" style="width:90px; padding:4px 8px; font-size:12px; text-align:right;">
+                <span style="font-size:11.5px; color:#b45309;">원</span>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#fef2f2; border:1px solid #fecaca; padding:8px 12px; border-radius:8px;">
+              <label style="display:flex; align-items:center; gap:6px; font-weight:700; color:#dc2626; cursor:pointer;">
+                <input type="checkbox" id="modal-prod-giveaway" ${isFreeGiveaway ? 'checked' : ''} style="width:15px; height:15px; accent-color:#ef4444;">
+                선착순 무료나눔 사용
+              </label>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:11.5px; font-weight:700; color:#dc2626;">나눔 수량:</span>
+                <input type="number" min="1" id="modal-prod-giveaway-stock" class="modern-input" value="${giveawayStock}" style="width:55px; padding:4px 8px; font-size:12px; text-align:center;">
+                <span style="font-size:11.5px; color:#dc2626;">개</span>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; align-items:center; background:#fff1f2; border:1px solid #fecdd3; padding:8px 12px; border-radius:8px;">
+              <span style="font-size:12px; font-weight:700; color:#e11d48; white-space:nowrap;">깜짝딜:</span>
+              <input type="text" id="modal-prod-deal-text" class="modern-input" value="${dealText}" placeholder="배너 문구" style="flex:1; padding:4px 8px; font-size:12px;">
+              <input type="number" min="1" id="modal-prod-deal-min" class="modern-input" value="${dealMin}" placeholder="분" style="width:50px; padding:4px 8px; font-size:12px; text-align:center;">
+              <span style="font-size:11.5px; color:#e11d48;">분</span>
+            </div>
+          </div>
+        </details>
+      `;
+
+      const footer = document.createElement('div');
+      footer.style.cssText = 'display:flex; justify-content:flex-end; gap:8px; width:100%;';
+      footer.innerHTML = `
+        <button type="button" class="action-btn btn-neutral" id="modal-btn-cancel" style="padding:7px 16px; font-size:13px;">취소</button>
+        <button type="button" class="action-btn btn-primary-solid" id="modal-btn-save" style="padding:7px 20px; font-size:13px; font-weight:700;">저장 및 적용</button>
+      `;
+
+      openModal({
+        title: `상품 상세 설정 (#${idx + 1})`,
+        size: 'lg',
+        content,
+        footer
+      });
+
+      const modalUploadInput = content.querySelector('#modal-upload-img');
+      content.querySelector('#modal-btn-trigger-upload')?.addEventListener('click', () => modalUploadInput?.click());
+      modalUploadInput?.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const preview = content.querySelector('#modal-img-preview');
+        if (preview) preview.style.opacity = '0.5';
+        try {
+          const url = await uploadImageUniversal(file, 'ryzin_products');
+          p.image = url;
+          if (preview) preview.src = url;
+        } catch (err) {
+          alert('이미지 업로드 실패: ' + err.message);
+        } finally {
+          if (preview) preview.style.opacity = '1';
+        }
+      });
+
+      const inpPrice = content.querySelector('#modal-prod-price');
+      const inpNormal = content.querySelector('#modal-prod-normal-price');
+      const inpDiscount = content.querySelector('#modal-prod-discount');
+
+      const calcDiscount = () => {
+        const rawNormal = (inpNormal.value || '').replace(/[^0-9]/g, '');
+        const rawPrice = (inpPrice.value || '').replace(/[^0-9]/g, '');
+        inpNormal.value = rawNormal ? Number(rawNormal).toLocaleString() : '';
+        inpPrice.value = rawPrice ? Number(rawPrice).toLocaleString() : '';
+        const n = Number(rawNormal || 0);
+        const pr = Number(rawPrice || 0);
+        if (n > 0 && n >= pr && pr > 0) {
+          currentDiscount = Math.floor(((n - pr) / n) * 100);
+        } else {
+          currentDiscount = 0;
+        }
+        if (inpDiscount) inpDiscount.value = `${currentDiscount}%`;
+      };
+
+      inpPrice?.addEventListener('input', calcDiscount);
+      inpNormal?.addEventListener('input', calcDiscount);
+
+      const chkLead = content.querySelector('#modal-prod-leadform');
+      const inpUrl = content.querySelector('#modal-prod-url');
+      chkLead?.addEventListener('change', (e) => {
+        if (inpUrl) {
+          inpUrl.disabled = e.target.checked;
+          if (e.target.checked) inpUrl.placeholder = '상담문의 리드폼 자동 연결';
+          else inpUrl.placeholder = 'https://...';
+        }
+      });
+
+      footer.querySelector('#modal-btn-cancel')?.addEventListener('click', closeModal);
+      footer.querySelector('#modal-btn-save')?.addEventListener('click', () => {
+        const nameVal = content.querySelector('#modal-prod-name')?.value.trim() || '상품';
+        p.name = nameVal;
+        p.normalPrice = (content.querySelector('#modal-prod-normal-price')?.value || '').replace(/[^0-9]/g, '');
+        p.price = (content.querySelector('#modal-prod-price')?.value || '').replace(/[^0-9]/g, '');
+        p.discountRate = currentDiscount;
+
+        const stockVal = content.querySelector('#modal-prod-stock')?.value.trim();
+        p.stock = stockVal === '' ? '' : Math.max(0, parseInt(stockVal, 10) || 0);
+
+        const maxVal = content.querySelector('#modal-prod-max-per-user')?.value.trim();
+        p.maxPerUser = maxVal === '' ? '' : Math.max(1, parseInt(maxVal, 10) || 1);
+
+        const isLead = content.querySelector('#modal-prod-leadform')?.checked;
+        p.isLeadForm = isLead;
+        if (isLead) {
+          p.url = '__LEAD_FORM__';
+        } else {
+          p.url = content.querySelector('#modal-prod-url')?.value.trim() || '';
+        }
+
+        p.hideByDefault = content.querySelector('#modal-prod-hide')?.checked || false;
+
+        const isAuction = content.querySelector('#modal-prod-auction')?.checked || false;
+        p.isAuctionOpen = isAuction;
+        p.auctionStartPrice = parseInt((content.querySelector('#modal-prod-auction-price')?.value || '').replace(/[^0-9]/g, ''), 10) || 1000;
+
+        const isGiveaway = content.querySelector('#modal-prod-giveaway')?.checked || false;
+        p.isFreeGiveaway = isGiveaway;
+        if (isGiveaway) {
+          p.giveawayStock = parseInt(content.querySelector('#modal-prod-giveaway-stock')?.value, 10) || 3;
+        }
+
+        p.dealText = content.querySelector('#modal-prod-deal-text')?.value.trim() || '깜짝딜 종료까지';
+        p.dealMin = parseInt(content.querySelector('#modal-prod-deal-min')?.value, 10) || 5;
+
+        saveProducts(true);
+        const listContainer = document.getElementById('product-list-container');
+        if (listContainer) {
+          listContainer.innerHTML = renderProductList();
+          bindProductEvents();
+        }
+        closeModal();
+        if (typeof toast === 'function') toast(`[${p.name}] 상품 설정이 저장되었습니다.`);
+      });
+    };
+
     const bindProductEvents = () => {
+      window.__bindCurrentProductEvents = bindProductEvents;
       const plc = document.getElementById('product-list-container');
       if (!plc) return;
+
+      // ── 온에어 슬림 행 이벤트 ──
+      // 지금소개 토글 버튼
+      plc.querySelectorAll('.btn-toggle-featured').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.currentTarget.dataset.idx, 10);
+          if (!products[idx]) return;
+          const isCurrentlyFeatured = products[idx].isFeatured === true || products[idx].isFeatured === 'true';
+          products.forEach((prod, pIdx) => {
+            prod.isFeatured = (pIdx === idx && !isCurrentlyFeatured);
+          });
+          saveProducts(true);
+          plc.innerHTML = renderProductList();
+          bindProductEvents();
+        });
+      });
+
+      // 깜짝딜 1클릭 시작
+      plc.querySelectorAll('.btn-quick-deal-start').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.currentTarget.dataset.idx, 10);
+          const p = products[idx];
+          if (!p) return;
+          const min = parseInt(p.dealMin || 5, 10);
+          p.dealText = p.dealText || '깜짝딜 종료까지';
+          p.dealEndTime = Date.now() + min * 60 * 1000;
+          saveProducts(true);
+          plc.innerHTML = renderProductList();
+          bindProductEvents();
+          syncToSheetDB(liveId, config, stats, products, true);
+          if (typeof toast === 'function') toast(`[${p.name}] ${min}분 깜짝딜이 시작되었습니다.`);
+        });
+      });
+
+      // 상세 설정 모달 오픈
+      plc.querySelectorAll('.btn-edit-prod-modal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = parseInt(e.currentTarget.dataset.idx, 10);
+          openProductEditModal(idx);
+        });
+      });
 
       let typingTimer = null;
       const triggerRealtimeSave = () => {
@@ -4253,6 +4590,7 @@ function renderLiveEditView(container, liveId, showView) {
       saveProducts(true);
       document.getElementById('product-list-container').innerHTML = renderProductList();
       bindProductEvents();
+      openProductEditModal(products.length - 1);
     };
 
     contentArea.querySelectorAll('.prod-subtab-btn').forEach(btn => {
@@ -6230,8 +6568,9 @@ function renderLiveEditView(container, liveId, showView) {
           liveToggleBtn.className = `action-btn ${config.isLive ? 'btn-danger-solid' : 'btn-success-solid'}`;
         }
 
-        // 상품 목록 갱신 (포커스 방해 없을 때만)
-        if (newData.products && Array.isArray(newData.products)) {
+        // 상품 목록 갱신 (포커스 방해 없을 때 & 자신이 방금 보낸 업데이트가 아닐 때만)
+        const isRecentSelfUpdate = (Date.now() - (window.__lastAdminSelfSyncTime || 0)) < 1500;
+        if (!isRecentSelfUpdate && newData.products && Array.isArray(newData.products)) {
           const newProductsStr = JSON.stringify(newData.products);
           if (JSON.stringify(products) !== newProductsStr) {
             if (!Array.isArray(products)) products = [];
@@ -6242,6 +6581,9 @@ function renderLiveEditView(container, liveId, showView) {
             if (plc && !plc.contains(document.activeElement)) {
               if (typeof renderProductList === 'function') {
                 plc.innerHTML = renderProductList();
+                if (typeof window.__bindCurrentProductEvents === 'function') {
+                  window.__bindCurrentProductEvents();
+                }
               }
             }
           }

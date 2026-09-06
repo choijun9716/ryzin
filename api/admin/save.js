@@ -39,10 +39,32 @@ function verifyJWT(token, secret) {
   }
 }
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, PATCH, DELETE, OPTIONS');
+// CORS Origin 화이트리스트 검증 헬퍼
+function setCorsHeaders(req, res, allowedMethods = 'POST, PATCH, DELETE, OPTIONS') {
+  const origin = req.headers.origin;
+  const isAllowedOrigin = (orig) => {
+    if (!orig) return false;
+    if (/^https:\/\/(www\.)?ryzincorp\.com$/.test(orig)) return true;
+    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(orig)) return true;
+    if (/^https:\/\/[a-zA-Z0-9_\-]+\.vercel\.app$/.test(orig)) return true;
+    if (orig === 'capacitor://localhost' || orig === 'ionic://localhost') return true;
+    return false;
+  };
+
+  if (origin && isAllowedOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  } else if (!origin) {
+    res.setHeader('Vary', 'Origin');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', allowedMethods);
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Token, Prefer');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+}
+
+async function handler(req, res) {
+  setCorsHeaders(req, res, 'POST, PATCH, DELETE, OPTIONS');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -152,3 +174,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: '서버 오류가 발생했습니다.' });
   }
 }
+
+module.exports = handler;
+module.exports.default = handler;
+

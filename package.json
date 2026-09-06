@@ -5,7 +5,9 @@
   "main": "cart_logic.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build:admin": "cd admin_next && npm run build && cp -r out/_next ../admin/ && cp out/index.html ../admin/index.html && cp out/404.html ../admin/404.html",
+    "rollback:admin": "cd admin_src && npm run build"
   },
   "repository": {
     "type": "git",
