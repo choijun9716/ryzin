@@ -20,6 +20,9 @@
   },
   "homepage": "https://github.com/choijun9716/ryzin#readme",
   "dependencies": {
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
+    "@capacitor/ios": "^8.5.1",
     "nodemailer": "^10.0.0",
     "web-push": "^3.6.7"
   }

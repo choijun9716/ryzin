@@ -2,3 +2,11 @@
 node_modules
 .env
 .env.local
+
+# iOS / Xcode / CocoaPods
+ios/App/Pods/
+ios/App/Podfile.lock
+ios/App/build/
+*.xcuserstate
+project.xcworkspace/xcuserdata/
+DerivedData/

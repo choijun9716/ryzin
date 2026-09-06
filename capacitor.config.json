@@ -1,0 +1,9 @@
+{
+  "appId": "com.ryzincorp.app",
+  "appName": "RYZIN",
+  "webDir": "www",
+  "server": {
+    "url": "https://ryzincorp.com/shop/",
+    "cleartext": false
+  }
+}
