@@ -2169,31 +2169,43 @@ document.addEventListener('DOMContentLoaded', () => {
               
               const isCurrentlyFeatured = item.isFeatured === true || item.isFeatured === 'true';
               const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+              const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+              let discountRate = parseInt(item.discountRate, 10) || 0;
+              if (!discountRate && npNum > pNum && pNum > 0) {
+                discountRate = Math.round(((npNum - pNum) / npNum) * 100);
+              }
+
               let priceDisplay = pNum > 0 ? `${pNum.toLocaleString()}원` : (item.price === '0' || item.price === 0 ? '무료' : '가격 준비중');
 
               const prodMaxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
               const isProdSoldOut = (prodMaxStock === 0);
-              const limitPerUser = (typeof window.getProductLimitPerUser === 'function') ? window.getProductLimitPerUser(item) : Infinity;
 
-              let badgeHtml = '<span class="banner-badge">특가</span>';
+              // 상품 이미지 왼쪽 상단 원형 할인율 뱃지
+              const discountCircleHtml = discountRate > 0
+                ? `<span class="banner-discount-circle" style="position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#ef4444; color:#ffffff; font-size:9.5px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 1.5px 4px rgba(239,68,68,0.4); line-height:1; z-index:3; letter-spacing:-0.5px;">${discountRate}%</span>`
+                : '';
+
+              let badgeHtml = '';
               if (isProdSoldOut) {
-                badgeHtml = '<span class="banner-badge" style="background:#64748b; color:#ffffff; font-weight:800;">품절</span>';
+                badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#64748b; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">품절</span>';
               } else if (isCurrentlyFeatured) {
-                badgeHtml = '<span class="banner-badge" style="background:#2563eb; color:#ffffff; font-weight:800;">소개중</span>';
+                badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">소개중</span>';
               } else if (item.dealEndTime && item.dealEndTime > Date.now()) {
-                badgeHtml = '<span class="banner-badge" style="background:#e11d48; color:#ffffff;">깜짝딜</span>';
+                badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#e11d48; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">깜짝딜</span>';
               }
 
               // 텍스트에 [지금소개중]을 빼고, 원래 상품명만 깔끔하게 노출
               card.innerHTML = `
                 <div class="banner-img-box">
                   <img src="${item.image}" alt="product">
+                  ${discountCircleHtml}
                   ${badgeHtml}
                 </div>
                 <div class="banner-info-box">
                   <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
                   <div class="banner-price-row">
                     <span class="banner-price">${priceDisplay}</span>
+                    ${npNum > pNum && pNum > 0 ? `<span style="font-size:11px; color:#94a3b8; text-decoration:line-through; margin-left:4px;">${npNum.toLocaleString()}원</span>` : ''}
                   </div>
                 </div>
               `;
