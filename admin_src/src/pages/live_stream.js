@@ -3409,14 +3409,8 @@ function renderLiveEditView(container, liveId, showView) {
 
       return `
       <div class="product-row-slim" style="${rowStyle}" data-idx="${idx}">
-        <!-- 좌측: 순서 & 썸네일 & 상품 기본 정보 -->
+        <!-- 좌측: 썸네일 & 상품 기본 정보 -->
         <div style="display:flex; align-items:center; gap:12px; min-width:0; flex:1;">
-          <!-- 순서 조정 버튼 -->
-          <div style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;">
-            <button type="button" class="action-btn btn-neutral btn-move-up" data-idx="${idx}" style="padding:2px 6px; font-size:10px; line-height:1; min-width:24px; height:20px;" ${idx === 0 ? 'disabled' : ''} title="위로 이동">▲</button>
-            <button type="button" class="action-btn btn-neutral btn-move-down" data-idx="${idx}" style="padding:2px 6px; font-size:10px; line-height:1; min-width:24px; height:20px;" ${idx === products.length - 1 ? 'disabled' : ''} title="아래로 이동">▼</button>
-          </div>
-
           <!-- 썸네일 -->
           <div class="product-img-box" onclick="document.getElementById('upload-prod-${idx}').click()" title="클릭하여 이미지 변경" style="position:relative; width:52px; height:52px; border-radius:8px; overflow:hidden; border:1px solid #cbd5e1; cursor:pointer; flex-shrink:0; background:#f8fafc;">
             <img src="${p.image || 'https://via.placeholder.com/72'}" id="img-prev-${idx}" style="width:100%; height:100%; object-fit:cover; display:block;">
@@ -3428,7 +3422,7 @@ function renderLiveEditView(container, liveId, showView) {
           <div style="min-width:0; display:flex; flex-direction:column; gap:4px;">
             <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
               <span style="font-size:11px; font-weight:800; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:4px;">#${idx + 1}</span>
-              <span style="font-size:14px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:240px;" title="${p.name || '무명 상품'}">${p.name || '무명 상품'}</span>
+              <span style="font-size:14px; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px;" title="${p.name || '무명 상품'}">${p.name || '무명 상품'}</span>
               ${p.isLeadForm ? `<span style="font-size:10.5px; font-weight:700; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; padding:1px 6px; border-radius:4px;">상담문의</span>` : ''}
               ${p.hideByDefault ? `<span style="font-size:10.5px; font-weight:700; color:#16a34a; background:#f0fdf4; border:1px solid #bbf7d0; padding:1px 6px; border-radius:4px;">평소숨김</span>` : ''}
             </div>
@@ -3483,6 +3477,16 @@ function renderLiveEditView(container, liveId, showView) {
               `}
             </div>
           ` : ''}
+
+          <!-- 순서 조정 (미니멀 우측 배치) -->
+          <div style="display:flex; flex-direction:column; gap:2px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:2px; flex-shrink:0;">
+            <button type="button" class="btn-move-up" data-idx="${idx}" style="background:transparent; border:none; padding:2px 4px; cursor:pointer; color:#64748b; display:flex; align-items:center; justify-content:center; border-radius:4px; height:14px; width:20px; transition:all 0.15s;" ${idx === 0 ? 'disabled style="opacity:0.25; cursor:not-allowed;"' : 'title="위로 이동"'} onmouseover="if(!this.disabled){this.style.background='#e2e8f0'; this.style.color='#0f172a';}" onmouseout="this.style.background='transparent'; this.style.color='#64748b';">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </button>
+            <button type="button" class="btn-move-down" data-idx="${idx}" style="background:transparent; border:none; padding:2px 4px; cursor:pointer; color:#64748b; display:flex; align-items:center; justify-content:center; border-radius:4px; height:14px; width:20px; transition:all 0.15s;" ${idx === products.length - 1 ? 'disabled style="opacity:0.25; cursor:not-allowed;"' : 'title="아래로 이동"'} onmouseover="if(!this.disabled){this.style.background='#e2e8f0'; this.style.color='#0f172a';}" onmouseout="this.style.background='transparent'; this.style.color='#64748b';">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+          </div>
 
           <!-- 관리 버튼: 상세 설정 & 삭제 -->
           <div style="display:flex; align-items:center; gap:6px; margin-left:4px; border-left:1px solid #e2e8f0; padding-left:10px;">
