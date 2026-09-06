@@ -500,6 +500,11 @@ module.exports.default = async function handler(req, res) {
     if (!resp.ok) {
       const errText = await resp.text();
       console.error('[Admin Login] Supabase 조회 실패:', errText);
+      if (resp.status === 402 || errText.includes('exceed_egress_quota')) {
+        return res.status(500).json({
+          error: '데이터베이스(Supabase)의 무료 트래픽 한도가 초과되었습니다. Supabase 대시보드에서 Pro 플랜으로 업그레이드해 주세요.'
+        });
+      }
       return res.status(500).json({ error: '서버 인증 처리 중 오류가 발생했습니다.' });
     }
 
