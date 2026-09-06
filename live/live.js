@@ -2079,9 +2079,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const soldOutBadge = isSoldOut ? '<span style="color:#ef4444; font-weight:800; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; margin-right:4px;">[품절]</span>' : '';
           const dealBadge = item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '';
 
-          // 그림자 없이 미니멀하고 플랫한 원형 할인율 뱃지 (좌측 상단)
-          const modalDiscountCircle = discountRate > 0
-            ? `<span class="product-discount-circle" style="position:absolute; top:4px; left:4px; width:26px; height:26px; border-radius:50%; background:#ef4444; color:#ffffff; font-size:10.5px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; letter-spacing:-0.5px; box-shadow:none; border:none; z-index:2; pointer-events:none;">${discountRate}%</span>`
+          // 모던하고 슬림한 직사각형 미니 할인율 뱃지 (썸네일 좌측 상단)
+          const modalDiscountBadge = discountRate > 0
+            ? `<span class="product-discount-badge" style="position:absolute; top:5px; left:5px; padding:2px 5px; border-radius:4px; background:#ef4444; color:#ffffff; font-size:10px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; line-height:1.1; letter-spacing:-0.3px; box-shadow:none; border:none; z-index:2; pointer-events:none;">${discountRate}%</span>`
             : '';
 
           const btnAddStyle = isSoldOut
@@ -2091,7 +2091,7 @@ document.addEventListener('DOMContentLoaded', () => {
           el.innerHTML = `
             <div class="product-image-box" style="position:relative; width:80px; height:80px; flex-shrink:0; border-radius:8px; overflow:hidden; cursor:pointer; background:#f1f5f9;">
               <img src="${item.image}" alt="product" class="product-image" style="width:100%; height:100%; object-fit:cover; display:block;">
-              ${modalDiscountCircle}
+              ${modalDiscountBadge}
             </div>
             <div class="product-info" style="flex:1; min-width:0; cursor:pointer;">
               <div class="product-name">${soldOutBadge}${dealBadge}${item.name}</div>
