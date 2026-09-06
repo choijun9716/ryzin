@@ -78,16 +78,16 @@ async function sendEmailOtp(toEmail, code) {
   });
 
   const mailOptions = {
-    from: `"RYZIN" <${user}>`,
+    from: `"라이진 보안센터" <${user}>`,
     to: toEmail,
-    subject: `[RYZIN] 관리자 보안 인증번호 [${code}]`,
+    subject: `[라이진 어드민] 로그인 인증번호: [${code}]`,
     html: `
       <!DOCTYPE html>
       <html lang="ko">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>RYZIN 관리자 인증번호</title>
+        <title>[라이진 어드민] 로그인 인증번호</title>
       </head>
       <body style="margin: 0; padding: 40px 16px; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #09090b; -webkit-font-smoothing: antialiased;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 460px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); overflow: hidden;">
@@ -100,7 +100,7 @@ async function sendEmailOtp(toEmail, code) {
                     <div style="font-size: 20px; font-weight: 900; letter-spacing: 2px; color: #09090b;">RYZIN</div>
                   </td>
                   <td align="right">
-                    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: #64748b; background-color: #f1f5f9; padding: 4px 10px; border-radius: 9999px;">ADMIN 2FA</span>
+                    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: #64748b; background-color: #f1f5f9; padding: 4px 10px; border-radius: 9999px;">라이진 보안센터</span>
                   </td>
                 </tr>
               </table>
