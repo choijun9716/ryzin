@@ -7048,6 +7048,85 @@ window.handleMyLogout = function() {
   alert('로그아웃되었습니다.');
 };
 
+window.openLiveWithdrawModal = function() {
+  const modal = document.getElementById('live-withdraw-modal');
+  if (!modal) return;
+  const agree = document.getElementById('live-withdraw-agree');
+  if (agree) agree.checked = false;
+  window.toggleLiveWithdrawAgree();
+  modal.style.display = 'flex';
+};
+
+window.closeLiveWithdrawModal = function() {
+  const modal = document.getElementById('live-withdraw-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.toggleLiveWithdrawAgree = function() {
+  const agree = document.getElementById('live-withdraw-agree');
+  const btn = document.getElementById('btn-live-confirm-withdraw');
+  if (!agree || !btn) return;
+  if (agree.checked) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor = 'not-allowed';
+  }
+};
+
+window.handleLiveWithdraw = async function() {
+  const btn = document.getElementById('btn-live-confirm-withdraw');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '처리 중...';
+  }
+
+  let kakaoUser = null;
+  try { kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null'); } catch(e) {}
+  const userCode = (kakaoUser && (kakaoUser.user_code || `KAKAO-${kakaoUser.id}`)) || localStorage.getItem('ryzin_user_code') || '';
+
+  // 1) 카카오 회원 탈퇴 (앱 연결 끊기)
+  try {
+    if (typeof Kakao !== 'undefined' && Kakao.Auth && Kakao.Auth.getAccessToken()) {
+      Kakao.API.request({ url: '/v1/user/unlink' }).catch(() => {});
+      Kakao.Auth.logout();
+    }
+  } catch(e) {}
+
+  // 2) Supabase 사용자 정보 영구 삭제
+  try {
+    const clientDb = (typeof db !== 'undefined' && db) || window.supabaseClient;
+    if (clientDb && userCode) {
+      await clientDb.from('shop_cart').delete().eq('user_code', userCode);
+      await clientDb.from('shop_addresses').delete().eq('user_code', userCode);
+      await clientDb.from('shop_users').delete().eq('user_code', userCode);
+    }
+  } catch(e) {}
+
+  // 3) 로컬 스토리지 & 세션 정보 완전 삭제
+  const keys = [
+    'ryzin_kakao_user', 'ryzin_nickname', 'ryzin_user_code', 'ryzin_user_email',
+    'ryzin_saved_order_info', 'ryzin_live_cart_items', 'ryzin_user_points',
+    'ryzin_user_coupons', 'ryzin_chat_nickname', 'ryzin_live_userid',
+    'ryzin_live_username', 'ryzin_chat_user'
+  ];
+  keys.forEach(k => {
+    localStorage.removeItem(k);
+    sessionStorage.removeItem(k);
+  });
+  window.userNickname = '';
+
+  window.closeLiveWithdrawModal();
+  if (typeof closeMyMenuModal === 'function') closeMyMenuModal();
+  if (typeof updateCartShippingPreview === 'function') updateCartShippingPreview();
+
+  alert('회원 탈퇴 및 개인정보 삭제 처리가 완료되었습니다.');
+  window.location.reload();
+};
+
 
 // ====================================================
 // [NEW] 장바구니 포인트 및 쿠폰 실시간 계산 및 차감 엔진

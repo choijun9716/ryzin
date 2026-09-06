@@ -593,13 +593,43 @@
       </div>
     </div>
 
-    <!-- 6. 계정 로그아웃 그룹 4 -->
+    <!-- 6. 약관 및 정책 그룹 -->
     <div class="menu-group-card">
-      <div class="menu-row" onclick="showToast('로그아웃 되었습니다.')">
+      <div class="menu-row" onclick="window.location.href='/privacy.html'">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>개인정보처리방침</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+      <div class="menu-row" onclick="window.location.href='/terms.html'">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>서비스 이용약관</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+
+    <!-- 7. 계정 관리 그룹 (로그아웃 & 회원탈퇴) -->
+    <div class="menu-group-card">
+      <div class="menu-row" onclick="handleLogout()">
         <div class="menu-left">
           <svg viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
           <span style="color:var(--text-sub);">로그아웃</span>
         </div>
+      </div>
+      <div class="menu-row" onclick="openWithdrawModal()" style="border-top:1px solid rgba(255,255,255,0.05);">
+        <div class="menu-left">
+          <svg viewBox="0 0 24 24" style="stroke:#ef4444;" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <line x1="18" y1="8" x2="23" y2="13"></line>
+            <line x1="23" y1="8" x2="18" y2="13"></line>
+          </svg>
+          <span style="color:#ef4444; font-weight:600;">회원 탈퇴</span>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
       </div>
     </div>
 
@@ -655,8 +685,51 @@
   </div>
 </div>
 
+<!-- ── 회원 탈퇴 확인 모달 (Apple Guideline 5.1.1 대응, 모던 라이트 팝업) ── -->
+<div class="addr-modal" id="withdraw-modal" style="align-items:center; padding:20px;">
+  <div style="background:#ffffff; width:100%; max-width:360px; border-radius:24px; padding:26px 22px 20px 22px; box-shadow:0 24px 60px rgba(0,0,0,0.35); position:relative; color:#0f172a; border:1px solid #e2e8f0; display:flex; flex-direction:column; text-align:left; max-height:85vh; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h3 style="margin:0; font-size:17px; font-weight:700; color:#ef4444;">회원 탈퇴 안내</h3>
+      <button type="button" onclick="closeWithdrawModal()" style="background:none; border:none; font-size:19px; color:#94a3b8; cursor:pointer; outline:none; line-height:1;">✕</button>
+    </div>
+    <p style="font-size:12px; color:#64748b; margin:0 0 16px 0; line-height:1.4;">계정 탈퇴 시 모든 혜택과 개인 데이터가 영구 삭제됩니다.</p>
+
+    <div style="background:#fff5f5; border:1px solid #fee2e2; border-radius:12px; padding:12px 14px; margin-bottom:16px;">
+      <div style="font-size:12px; font-weight:700; color:#ef4444; margin-bottom:6px;">탈퇴 전 꼭 확인해주세요</div>
+      <ul style="margin:0; padding-left:16px; font-size:11.5px; color:#64748b; line-height:1.65;">
+        <li>보유 중인 모든 포인트 및 다운로드 쿠폰이 즉시 소멸됩니다.</li>
+        <li>등록된 배송지 목록, 장바구니 상품 및 계정 설정이 즉시 파기됩니다.</li>
+        <li>전자상거래법 등 관계 법령에 따른 결제/주문 내역은 법정 기간 보관 후 안전하게 파기됩니다.</li>
+        <li>탈퇴 완료 시 즉시 로그아웃되며 이전 내역은 복구되지 않습니다.</li>
+      </ul>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11.5px; font-weight:600; color:#475569; display:block; margin-bottom:4px;">탈퇴 사유 (선택)</label>
+      <select id="withdraw-reason" style="width:100%; height:38px; padding:0 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; color:#334155; outline:none; background:#ffffff;">
+        <option value="서비스 이용 빈도가 낮음">서비스 이용 빈도가 낮음</option>
+        <option value="원하는 상품이나 혜택이 부족함">원하는 상품이나 혜택이 부족함</option>
+        <option value="개인정보 보호 및 삭제 목적">개인정보 보호 및 삭제 목적</option>
+        <option value="기타 사유">기타 사유</option>
+      </select>
+    </div>
+
+    <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:18px; padding:10px 12px; background:#f8fafc; border-radius:8px; border:1px solid #f1f5f9;">
+      <input type="checkbox" id="withdraw-agree" style="margin-top:2px; accent-color:#ef4444; cursor:pointer;" onchange="toggleWithdrawButton()">
+      <label for="withdraw-agree" style="font-size:11.5px; color:#475569; line-height:1.45; cursor:pointer;">
+        안내 사항을 모두 확인하였으며, 보유 혜택 소멸 및 회원 데이터 영구 삭제에 동의합니다.
+      </label>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button type="button" onclick="closeWithdrawModal()" style="flex:1; padding:11px; background:#f1f5f9; color:#475569; border:none; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;">취소</button>
+      <button type="button" id="btn-confirm-withdraw" onclick="executeWithdraw()" disabled style="flex:1.2; padding:11px; background:#ef4444; color:#ffffff; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:not-allowed; opacity:0.4; transition:all 0.15s;">회원 탈퇴 완료</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
-  import { getUserProfile, getAddresses, addAddress, updateGlobalCartBadge } from './user_store.js';
+  import { getUserProfile, getAddresses, addAddress, updateGlobalCartBadge, withdrawUserAccount, logoutUser } from './user_store.js';
 
   function showToast(msg) {
     const toast = document.getElementById('toast');
@@ -668,8 +741,6 @@
     }, 2200);
   }
   window.showToast = showToast;
-
-
 
   async function loadProfile() {
     const profile = await getUserProfile();
@@ -720,6 +791,69 @@
     document.getElementById('new-addr-title').value = '';
     document.getElementById('new-addr-detail').value = '';
     await loadAddresses();
+  };
+
+  window.handleLogout = async () => {
+    await logoutUser();
+    showToast('로그아웃 되었습니다.');
+    setTimeout(() => {
+      window.location.reload();
+    }, 900);
+  };
+
+  window.openWithdrawModal = () => {
+    const modal = document.getElementById('withdraw-modal');
+    if (!modal) return;
+    const agree = document.getElementById('withdraw-agree');
+    if (agree) agree.checked = false;
+    window.toggleWithdrawButton();
+    modal.classList.add('show');
+  };
+
+  window.closeWithdrawModal = () => {
+    const modal = document.getElementById('withdraw-modal');
+    if (modal) modal.classList.remove('show');
+  };
+
+  window.toggleWithdrawButton = () => {
+    const agree = document.getElementById('withdraw-agree');
+    const btn = document.getElementById('btn-confirm-withdraw');
+    if (!agree || !btn) return;
+    if (agree.checked) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+    }
+  };
+
+  window.executeWithdraw = async () => {
+    const btn = document.getElementById('btn-confirm-withdraw');
+    const reasonEl = document.getElementById('withdraw-reason');
+    const reason = reasonEl ? reasonEl.value : '기타';
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '처리 중...';
+    }
+
+    try {
+      await withdrawUserAccount(reason);
+      window.closeWithdrawModal();
+      showToast('회원 탈퇴 및 개인정보 삭제가 완료되었습니다.');
+      setTimeout(() => {
+        window.location.href = '/shop/index.html';
+      }, 1200);
+    } catch(e) {
+      showToast('탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '회원 탈퇴 완료';
+      }
+    }
   };
 
   document.addEventListener('DOMContentLoaded', loadProfile);

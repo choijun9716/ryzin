@@ -10,6 +10,19 @@ const SB_H = {
 
 const DEFAULT_USER_CODE = 'USER-CHAEJUN';
 
+export function getCurrentUserCode() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem('ryzin_user_code');
+      if (stored) return stored;
+      const kakaoUser = JSON.parse(localStorage.getItem('ryzin_kakao_user') || 'null');
+      if (kakaoUser && kakaoUser.user_code) return kakaoUser.user_code;
+      if (kakaoUser && kakaoUser.id) return `KAKAO-${kakaoUser.id}`;
+    }
+  } catch(e) {}
+  return DEFAULT_USER_CODE;
+}
+
 // Supabase API Helper
 async function sbFetch(endpoint, method = 'GET', body = null) {
   try {
@@ -25,12 +38,13 @@ async function sbFetch(endpoint, method = 'GET', body = null) {
 
 // 1. 유저 정보 (User Profile)
 export async function getUserProfile() {
-  const users = await sbFetch(`shop_users?user_code=eq.${DEFAULT_USER_CODE}`);
+  const userCode = getCurrentUserCode();
+  const users = await sbFetch(`shop_users?user_code=eq.${userCode}`);
   if (users && users.length) return users[0];
   
   // 폴백 유저 데이터
   return {
-    user_code: DEFAULT_USER_CODE,
+    user_code: userCode,
     name: '채이준',
     email: 'chaejun@ryzin.com',
     points: 2500,
@@ -42,14 +56,16 @@ export async function getUserProfile() {
 
 // 2. 장바구니 (Cart Operations)
 export async function getCartItems() {
-  const items = await sbFetch(`shop_cart?user_code=eq.${DEFAULT_USER_CODE}&order=created_at.asc`);
+  const userCode = getCurrentUserCode();
+  const items = await sbFetch(`shop_cart?user_code=eq.${userCode}&order=created_at.asc`);
   if (items) return items;
   return [];
 }
 
 export async function addCartItem(product) {
+  const userCode = getCurrentUserCode();
   const payload = {
-    user_code: DEFAULT_USER_CODE,
+    user_code: userCode,
     product_id: product.id || product.product_code || 'PROD-000',
     brand_name: product.brand_name || 'RYZIN',
     product_name: product.product_title || product.brand_title || '상품',
@@ -73,7 +89,8 @@ export async function toggleCartSelect(cartId, selected) {
 }
 
 export async function toggleAllCartSelect(selected) {
-  return await sbFetch(`shop_cart?user_code=eq.${DEFAULT_USER_CODE}`, 'PATCH', { selected });
+  const userCode = getCurrentUserCode();
+  return await sbFetch(`shop_cart?user_code=eq.${userCode}`, 'PATCH', { selected });
 }
 
 export async function deleteCartItem(cartId) {
@@ -90,12 +107,14 @@ export async function deleteSelectedCartItems(selectedIds) {
 }
 
 export async function clearAllCartItems() {
-  return await sbFetch(`shop_cart?user_code=eq.${DEFAULT_USER_CODE}`, 'DELETE');
+  const userCode = getCurrentUserCode();
+  return await sbFetch(`shop_cart?user_code=eq.${userCode}`, 'DELETE');
 }
 
 // 3. 배송지 관리 (Address Operations)
 export async function getAddresses() {
-  const addrs = await sbFetch(`shop_addresses?user_code=eq.${DEFAULT_USER_CODE}&order=is_default.desc`);
+  const userCode = getCurrentUserCode();
+  const addrs = await sbFetch(`shop_addresses?user_code=eq.${userCode}&order=is_default.desc`);
   if (addrs && addrs.length) return addrs;
 
   return [
@@ -111,8 +130,9 @@ export async function getAddresses() {
 }
 
 export async function addAddress(title, recipient, phone, address) {
+  const userCode = getCurrentUserCode();
   const payload = {
-    user_code: DEFAULT_USER_CODE,
+    user_code: userCode,
     title,
     recipient,
     phone,
@@ -122,7 +142,76 @@ export async function addAddress(title, recipient, phone, address) {
   return await sbFetch('shop_addresses', 'POST', payload);
 }
 
-// 4. 전역 장바구니 뱃지 수량 실시간 동기화 (0개일 경우 숨김, 1개 이상일 경우 숫자 표기)
+// 4. 회원 탈퇴 및 계정 영구 삭제 (Apple App Store Guideline 5.1.1 준수)
+export async function withdrawUserAccount(reason = '기타') {
+  const userCode = getCurrentUserCode();
+
+  // 1) 장바구니 데이터 삭제
+  try {
+    await sbFetch(`shop_cart?user_code=eq.${userCode}`, 'DELETE');
+  } catch(e) {}
+
+  // 2) 등록된 배송지 데이터 삭제
+  try {
+    await sbFetch(`shop_addresses?user_code=eq.${userCode}`, 'DELETE');
+  } catch(e) {}
+
+  // 3) 회원 프로필 DB 삭제
+  try {
+    await sbFetch(`shop_users?user_code=eq.${userCode}`, 'DELETE');
+  } catch(e) {}
+
+  // 4) 카카오 로그인 연동 해제 시도
+  try {
+    if (typeof window !== 'undefined' && window.Kakao && window.Kakao.Auth && window.Kakao.Auth.getAccessToken()) {
+      window.Kakao.API.request({ url: '/v1/user/unlink' }).catch(() => {});
+      window.Kakao.Auth.logout();
+    }
+  } catch(e) {}
+
+  // 5) 브라우저 로컬 스토리지 & 세션 스토리지 완전 초기화
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const keys = [
+        'ryzin_kakao_user', 'ryzin_nickname', 'ryzin_user_code', 'ryzin_user_email',
+        'ryzin_saved_order_info', 'ryzin_live_cart_items', 'ryzin_user_points',
+        'ryzin_user_coupons', 'ryzin_chat_nickname', 'ryzin_live_userid',
+        'ryzin_live_username', 'ryzin_chat_user'
+      ];
+      keys.forEach(k => localStorage.removeItem(k));
+    }
+  } catch(e) {}
+
+  // 6) 장바구니 뱃지 갱신
+  await updateGlobalCartBadge();
+
+  return { success: true };
+}
+
+// 5. 로그아웃
+export async function logoutUser() {
+  try {
+    if (typeof window !== 'undefined' && window.Kakao && window.Kakao.Auth && window.Kakao.Auth.getAccessToken()) {
+      window.Kakao.Auth.logout();
+    }
+  } catch(e) {}
+
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const keys = [
+        'ryzin_kakao_user', 'ryzin_nickname', 'ryzin_user_code', 'ryzin_user_email',
+        'ryzin_saved_order_info', 'ryzin_live_cart_items', 'ryzin_chat_nickname',
+        'ryzin_live_userid', 'ryzin_live_username', 'ryzin_chat_user'
+      ];
+      keys.forEach(k => localStorage.removeItem(k));
+    }
+  } catch(e) {}
+
+  await updateGlobalCartBadge();
+  return { success: true };
+}
+
+// 6. 전역 장바구니 뱃지 수량 실시간 동기화 (0개일 경우 숨김, 1개 이상일 경우 숫자 표기)
 export async function updateGlobalCartBadge() {
   const items = await getCartItems();
   const totalCount = items ? items.length : 0;
