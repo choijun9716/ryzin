@@ -565,12 +565,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch (e) {}
 
-  // 실시간 페이로드 즉시 적용 함수
+  // 실시간 페이로드 즉시 적용 함수 (상품 저장 시 불필요한 전체화면 새로고침/스트림 재로드 원천 차단)
   function applyLiveControlSync(payload) {
     if (!payload || (payload.liveId && payload.liveId !== LIVE_ID)) return;
 
+    let configChanged = false;
+    let productsChanged = false;
+
     if (payload.config) {
-      localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(payload.config));
+      const prevConfigStr = localStorage.getItem(`ryzin_live_config_${LIVE_ID}`);
+      const newConfigStr = JSON.stringify(payload.config);
+      if (prevConfigStr !== newConfigStr) {
+        localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, newConfigStr);
+        configChanged = true;
+      }
       // 당첨 배너(소통왕/구매인증) 실시간 강제 종료 및 시작 즉각 반영
       if (payload.config.winner_timestamp !== undefined || payload.config.winner_name !== undefined) {
         applyLiveConfig({
@@ -578,25 +586,35 @@ document.addEventListener('DOMContentLoaded', () => {
           winner_timestamp: payload.config.winner_timestamp,
           ...payload.config
         });
+        return;
       }
     }
     if (payload.stats) {
       localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(payload.stats));
+      loadLiveStats();
     }
     if (payload.products) {
       try {
         const pList = typeof payload.products === 'string' ? JSON.parse(payload.products) : payload.products;
-        localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(pList));
-        localStorage.setItem(`ryzin_products_${LIVE_ID}`, JSON.stringify(pList));
+        const prevProdStr = localStorage.getItem(`ryzin_live_products_${LIVE_ID}`);
+        const newProdStr = JSON.stringify(pList);
+        if (prevProdStr !== newProdStr) {
+          localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, newProdStr);
+          localStorage.setItem(`ryzin_products_${LIVE_ID}`, newProdStr);
+          productsChanged = true;
+        }
       } catch (e) {}
     }
     if (payload.auction !== undefined) {
       handleAuctionSync(payload.auction);
     }
 
-    loadLiveConfig();
-    loadLiveStats();
-    loadLiveProducts();
+    if (configChanged) {
+      loadLiveConfig();
+    }
+    if (productsChanged) {
+      loadLiveProducts();
+    }
     updateOpenDetailProductModal();
   }
 
@@ -841,21 +859,33 @@ document.addEventListener('DOMContentLoaded', () => {
       cumViewers: parseInt(row.cum_viewers) || 0
     };
 
-    localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(config));
+    const prevCfgStr = localStorage.getItem(`ryzin_live_config_${LIVE_ID}`);
+    const newCfgStr = JSON.stringify(config);
+    const configChanged = (prevCfgStr !== newCfgStr);
+    localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, newCfgStr);
     localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(stats));
 
+    let productsChanged = false;
     if (row.products) {
       try {
         const productsList = typeof row.products === 'string' ? JSON.parse(row.products) : row.products;
-        localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(productsList));
-        localStorage.setItem(`ryzin_products_${LIVE_ID}`, JSON.stringify(productsList));
-        loadLiveProducts();
+        const prevProdStr = localStorage.getItem(`ryzin_live_products_${LIVE_ID}`);
+        const newProdStr = JSON.stringify(productsList);
+        if (prevProdStr !== newProdStr) {
+          localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, newProdStr);
+          localStorage.setItem(`ryzin_products_${LIVE_ID}`, newProdStr);
+          productsChanged = true;
+        }
       } catch (e) {}
     }
 
-    loadLiveConfig();
+    if (configChanged) {
+      loadLiveConfig();
+    }
     loadLiveStats();
-    loadLiveProducts();
+    if (productsChanged) {
+      loadLiveProducts();
+    }
     if (typeof updateOpenDetailProductModal === 'function') {
       updateOpenDetailProductModal();
     }
@@ -1372,23 +1402,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 라이브 상태 및 스트리밍 재생 제어
         // [중요] 1. 예비 썸네일이 방금 OFF 되었거나, 2. streamUrl 또는 isLive 상태가 변경된 경우 즉시 본방송 스트리밍 URL 재생
-        const isStreamChanged = (window.__lastStreamUrl !== c.streamUrl || window.__lastIsLive !== c.isLive);
-        if (c.streamUrl && (!isStandbyActive || c.isLive)) {
+        const curStreamUrl = (c.streamUrl || '').trim();
+        const curIsLive = (c.isLive === true || c.isLive === 'true');
+        const prevStreamUrl = (window.__lastStreamUrl || '').trim();
+        const prevIsLive = (window.__lastIsLive === true || window.__lastIsLive === 'true');
+
+        const isStreamChanged = (prevStreamUrl !== curStreamUrl || prevIsLive !== curIsLive);
+        if (curStreamUrl && (!isStandbyActive || curIsLive)) {
           if (standbyTurnedOff || isStreamChanged) {
-            window.__lastStreamUrl = c.streamUrl;
-            window.__lastIsLive = c.isLive;
-            playStreamUrl(c.streamUrl, c.isLive);
-          } else if (!isStandbyActive && c.isLive !== false) {
-            // 예비 썸네일이 꺼져 있고 방송 중인데 비디오가 멈춰있을 경우 즉시 재생 보장
-            if (typeof window.resumeAllMedia === 'function') {
-              window.resumeAllMedia();
-            }
+            window.__lastStreamUrl = curStreamUrl;
+            window.__lastIsLive = curIsLive;
+            playStreamUrl(curStreamUrl, curIsLive);
           }
         }
 
-        // 예비 썸네일이 방금 꺼졌거나 스트리밍 URL이 변경되었을 때 브라우저 딜레이를 완벽 회피하기 위해 다단계 강제 재생 재시도
-        if ((standbyTurnedOff || isStreamChanged) && c.streamUrl && c.isLive !== false) {
-          [50, 150, 300, 600, 1200, 2500].forEach(delay => {
+        // 예비 썸네일이 방금 꺼졌거나 스트리밍 URL이 실제로 변경되었을 때만 강제 재생 시도
+        if ((standbyTurnedOff || isStreamChanged) && curStreamUrl && curIsLive) {
+          [50, 150, 300, 600, 1200].forEach(delay => {
             setTimeout(() => {
               if (typeof window.resumeAllMedia === 'function' && !window.__lastStandbyActive) {
                 window.resumeAllMedia();
@@ -1942,12 +1972,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (p && Array.isArray(p) && p.length > 0) {
         // 일반 상품 목록 유무와 무관하게 무료나눔 상태 즉시 검사 & 동기화
-        if (typeof checkAndShowGiveaway === 'function') {
-          checkAndShowGiveaway(p);
-        }
-        const modalProductsList = document.getElementById('modal-products-list');
-        const prevScrollTop = modalProductsList ? modalProductsList.scrollTop : 0;
-        modalProductsList.innerHTML = '';
         const now = Date.now();
         
         // 롤링 배너에 노출될 수 있는 유효한 상품 목록 필터링
@@ -1977,6 +2001,21 @@ document.addEventListener('DOMContentLoaded', () => {
           // 일반 상품은 상시 노출
           return true;
         });
+
+        // [최적화] 상품 데이터가 이전 렌더링된 상태와 완벽히 동일하다면 DOM 재빌드를 스킵하여 새로고침/깜빡임 원천 차단!
+        const productsRenderKey = JSON.stringify(activeProducts.map(it => [
+          it.id, it.name, it.price, it.normalPrice, it.discountRate, it.isFeatured, it.stock, it.image, it.url, (it.dealEndTime && it.dealEndTime > now)
+        ]));
+        if (window.__lastProductsRenderKey === productsRenderKey) {
+          return;
+        }
+        window.__lastProductsRenderKey = productsRenderKey;
+
+        const modalProductsList = document.getElementById('modal-products-list');
+        const prevScrollTop = modalProductsList ? modalProductsList.scrollTop : 0;
+        if (modalProductsList) {
+          modalProductsList.innerHTML = '';
+        }
 
         // 1. 기존 모달 리스트 렌더링
         activeProducts.forEach(item => {
@@ -2214,10 +2253,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="banner-info-box">
                   <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
-                  <div class="banner-price-row" style="display:flex; align-items:center;">
+                  <div class="banner-price-row" style="display:flex; align-items:center; white-space:nowrap;">
                     <span class="banner-price">${priceDisplay}</span>
                     ${discountTextHtml}
-                    ${npNum > pNum && pNum > 0 ? `<span style="font-size:11px; color:#94a3b8; text-decoration:line-through; margin-left:5px;">${npNum.toLocaleString()}원</span>` : ''}
                   </div>
                 </div>
               `;
@@ -3118,13 +3156,34 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     if (e.data && e.data.type === 'sync_preview') {
-      if (e.data.config) localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(e.data.config));
+      let cfgChanged = false;
+      if (e.data.config) {
+        const prevCfg = localStorage.getItem(`ryzin_live_config_${LIVE_ID}`);
+        const newCfg = JSON.stringify(e.data.config);
+        if (prevCfg !== newCfg) {
+          localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, newCfg);
+          cfgChanged = true;
+        }
+      }
       if (e.data.stats) localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(e.data.stats));
-      if (e.data.products) localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(e.data.products));
+      let prodChanged = false;
+      if (e.data.products) {
+        const prevProd = localStorage.getItem(`ryzin_live_products_${LIVE_ID}`);
+        const newProd = JSON.stringify(e.data.products);
+        if (prevProd !== newProd) {
+          localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, newProd);
+          localStorage.setItem(`ryzin_products_${LIVE_ID}`, newProd);
+          prodChanged = true;
+        }
+      }
       if (e.data.auction !== undefined) handleAuctionSync(e.data.auction);
-      loadLiveConfig();
+      if (cfgChanged) {
+        loadLiveConfig();
+      }
       loadLiveStats();
-      loadLiveProducts();
+      if (prodChanged) {
+        loadLiveProducts();
+      }
     }
   });
 
