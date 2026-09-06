@@ -2465,9 +2465,9 @@ document.addEventListener('DOMContentLoaded', () => {
                       track.classList.add('no-transition');
                       currentIdx = 0;
                       track.style.transform = 'translateY(0)';
-                    }, 300);
+                    }, 420);
                   }
-                }, 1500);
+                }, 3500);
               } else {
                 track.style.transform = 'translateY(0)';
               }

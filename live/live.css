@@ -1100,7 +1100,7 @@ body.ui-hidden .bottom-product-banner {
 .banner-product-track {
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .banner-product-track.no-transition {
   transition: none !important;
