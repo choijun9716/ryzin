@@ -573,20 +573,41 @@ document.addEventListener('DOMContentLoaded', () => {
     let productsChanged = false;
 
     if (payload.config) {
-      const prevConfigStr = localStorage.getItem(`ryzin_live_config_${LIVE_ID}`);
-      const newConfigStr = JSON.stringify(payload.config);
-      if (prevConfigStr !== newConfigStr) {
-        localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, newConfigStr);
-        configChanged = true;
-      }
-      // 당첨 배너(소통왕/구매인증) 실시간 강제 종료 및 시작 즉각 반영
-      if (payload.config.winner_timestamp !== undefined || payload.config.winner_name !== undefined) {
-        applyLiveConfig({
-          winner_name: payload.config.winner_name,
-          winner_timestamp: payload.config.winner_timestamp,
-          ...payload.config
-        });
-        return;
+      const prevCfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+      const newCfg = payload.config;
+      configChanged = !prevCfg ||
+        prevCfg.streamUrl !== newCfg.streamUrl ||
+        prevCfg.isLive !== newCfg.isLive ||
+        prevCfg.standbyImageUrl !== newCfg.standbyImageUrl ||
+        prevCfg.useStandbyImage !== newCfg.useStandbyImage ||
+        prevCfg.logoUrl !== newCfg.logoUrl ||
+        prevCfg.brandName !== newCfg.brandName ||
+        prevCfg.title !== newCfg.title ||
+        prevCfg.thumbnailUrl !== newCfg.thumbnailUrl;
+
+      localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(newCfg));
+
+      // 당첨 배너(소통왕/구매인증) 실시간 강제 종료 및 시작 즉각 반영 (새로운 타임스탬프일 때만)
+      if (newCfg.winner_timestamp !== undefined) {
+        const rowTS = Number(newCfg.winner_timestamp) || 0;
+        const prevTS = Number(localStorage.getItem(`ryzin_winner_timestamp_${LIVE_ID}`)) || 0;
+        if (rowTS !== prevTS) {
+          localStorage.setItem(`ryzin_winner_name_${LIVE_ID}`, newCfg.winner_name || '');
+          localStorage.setItem(`ryzin_winner_timestamp_${LIVE_ID}`, rowTS.toString());
+          if (rowTS > 0) {
+            window.__lastWinnerTimestamp = rowTS;
+            const diffSec = Math.round((rowTS - Date.now()) / 1000);
+            window.__winnerCountdownSeconds = diffSec > 0 ? diffSec : 60;
+            window.__confettiTriggerCount = 2;
+          } else {
+            window.__winnerCountdownSeconds = 0;
+            window.__lastWinnerTimestamp = 0;
+            const winnerEl = document.getElementById('winner-alert-overlay');
+            if (winnerEl) winnerEl.style.display = 'none';
+            const chatSectionForModal = document.querySelector('.chat-section');
+            if (chatSectionForModal) chatSectionForModal.classList.remove('banner-active');
+          }
+        }
       }
     }
     if (payload.stats) {
@@ -859,9 +880,20 @@ document.addEventListener('DOMContentLoaded', () => {
       cumViewers: parseInt(row.cum_viewers) || 0
     };
 
-    const prevCfgStr = localStorage.getItem(`ryzin_live_config_${LIVE_ID}`);
+    const prevCfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
     const newCfgStr = JSON.stringify(config);
-    const configChanged = (prevCfgStr !== newCfgStr);
+    const configChanged = !prevCfg ||
+      (prevCfg.streamUrl || '').trim() !== (config.streamUrl || '').trim() ||
+      Boolean(prevCfg.isLive) !== Boolean(config.isLive) ||
+      (prevCfg.standbyImageUrl || '').trim() !== (config.standbyImageUrl || '').trim() ||
+      Boolean(prevCfg.useStandbyImage) !== Boolean(config.useStandbyImage) ||
+      (prevCfg.logoUrl || '').trim() !== (config.logoUrl || '').trim() ||
+      (prevCfg.brandName || '').trim() !== (config.brandName || '').trim() ||
+      (prevCfg.title || '').trim() !== (config.title || '').trim() ||
+      (prevCfg.thumbnailUrl || '').trim() !== (config.thumbnailUrl || '').trim() ||
+      (prevCfg.showNoticeNote !== undefined && prevCfg.showNoticeNote !== config.showNoticeNote) ||
+      (prevCfg.noticeNoteTitle || '') !== (config.noticeNoteTitle || '') ||
+      (prevCfg.noticeNoteContent || '') !== (config.noticeNoteContent || '');
     localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, newCfgStr);
     localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(stats));
 
@@ -2213,132 +2245,201 @@ document.addEventListener('DOMContentLoaded', () => {
             // 엠비언트 라이트 제거 및 기본 클래스 유지
             bottomBanner.classList.remove('featured-active');
 
-            track.innerHTML = '';
-            displayProducts.forEach((item) => {
-              const card = document.createElement('a');
-              card.href = item.url || "#";
-              card.className = 'banner-product-card';
-              
-              const isCurrentlyFeatured = item.isFeatured === true || item.isFeatured === 'true';
-              const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
-              const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
-              let discountRate = parseInt(item.discountRate, 10) || 0;
-              if (!discountRate && npNum > pNum && pNum > 0) {
-                discountRate = Math.round(((npNum - pNum) / npNum) * 100);
-              }
+            // [Zero-Flicker In-Place Update]
+            // 기존 카드 노드가 이미 있고 개수가 같다면 DOM을 비우지 않고 텍스트/가격만 제자리에서 즉시 갱신!
+            const existingCards = track.querySelectorAll('.banner-product-card');
+            const expectedCardCount = displayProducts.length + (displayProducts.length > 1 ? 1 : 0);
+            const canInPlaceUpdate = (existingCards.length === expectedCardCount && existingCards.length > 0);
 
-              let priceDisplay = pNum > 0 ? `${pNum.toLocaleString()}원` : (item.price === '0' || item.price === 0 ? '무료' : '가격 준비중');
+            if (canInPlaceUpdate) {
+              displayProducts.forEach((item, idx) => {
+                const card = existingCards[idx];
+                if (!card) return;
 
-              const prodMaxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
-              const isProdSoldOut = (prodMaxStock === 0);
-
-              let badgeHtml = '';
-              if (isProdSoldOut) {
-                badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#64748b; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">품절</span>';
-              } else if (isCurrentlyFeatured) {
-                badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">소개중</span>';
-              } else if (item.dealEndTime && item.dealEndTime > Date.now()) {
-                badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#e11d48; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">깜짝딜</span>';
-              }
-
-              const discountTextHtml = discountRate > 0
-                ? `<span class="banner-discount-rate" style="font-size:12.5px; font-weight:800; color:#ef4444; margin-left:4px; letter-spacing:-0.3px; line-height:1;">${discountRate}%</span>`
-                : '';
-
-              // 롤링 배너는 썸네일 원형 뱃지 없이 깨끗하게 유지하고, 가격 옆에 할인율 텍스트 노출
-              card.innerHTML = `
-                <div class="banner-img-box">
-                  <img src="${item.image}" alt="product">
-                  ${badgeHtml}
-                </div>
-                <div class="banner-info-box">
-                  <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
-                  <div class="banner-price-row" style="display:flex; align-items:center; white-space:nowrap;">
-                    <span class="banner-price">${priceDisplay}</span>
-                    ${discountTextHtml}
-                  </div>
-                </div>
-              `;
-              
-              card.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
-                if (!currentConfig.isLive) {
-                  alert('라이브 방송 중에만 구매 가능합니다.');
-                  return;
+                const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+                const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+                let discountRate = parseInt(item.discountRate, 10) || 0;
+                if (!discountRate && npNum > pNum && pNum > 0) {
+                  discountRate = Math.round(((npNum - pNum) / npNum) * 100);
                 }
-                if (item.url === '__LEAD_FORM__') {
-                  openLeadModal(item.name);
-                  return;
+                const priceDisplay = pNum > 0 ? `${pNum.toLocaleString()}원` : (item.price === '0' || item.price === 0 ? '무료' : '가격 준비중');
+                const isCurrentlyFeatured = item.isFeatured === true || item.isFeatured === 'true';
+                const prodMaxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
+                const isProdSoldOut = (prodMaxStock === 0);
+
+                const img = card.querySelector('.banner-img-box img');
+                if (img && item.image && img.src !== item.image) img.src = item.image;
+
+                const titleEl = card.querySelector('.banner-title');
+                if (titleEl) {
+                  const dealPrefix = item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '';
+                  titleEl.innerHTML = `${dealPrefix}${item.name}`;
                 }
 
-                // 라이브 화면 내 PIP 모드 및 상세 시트 호출 (소리 무중단 유지)
-                if (typeof window.openProductDetailSheet === 'function') {
-                  window.openProductDetailSheet(item);
-                } else if (item.url && item.url !== '#') {
-                  window.open(item.url.startsWith('http') ? item.url : 'https://' + item.url, '_blank');
-                }
-                try {
-                  const targetLiveId = LIVE_ID || 'N45ZMPL';
-                  if (!targetLiveId || !db) return;
+                const priceEl = card.querySelector('.banner-price');
+                if (priceEl) priceEl.textContent = priceDisplay;
 
-                  const { data, error } = await db
-                    .from('live_control')
-                    .select('products')
-                    .eq('live_id', targetLiveId)
-                    .maybeSingle();
-
-                  if (data && data.products) {
-                    const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
-                    const targetProd = remoteProducts.find(p => p.name === item.name);
-                    if (targetProd) {
-                      targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
-                      localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(remoteProducts));
-                      await db
-                        .from('live_control')
-                        .update({ 
-                          products: remoteProducts,
-                          updated_at: new Date().toISOString()
-                        })
-                        .eq('live_id', targetLiveId);
+                let discEl = card.querySelector('.banner-discount-rate');
+                if (discountRate > 0) {
+                  if (discEl) {
+                    discEl.textContent = `${discountRate}%`;
+                    discEl.style.display = 'inline';
+                  } else {
+                    const priceRow = card.querySelector('.banner-price-row');
+                    if (priceRow) {
+                      discEl = document.createElement('span');
+                      discEl.className = 'banner-discount-rate';
+                      discEl.style.cssText = 'font-size:12.5px; font-weight:800; color:#ef4444; margin-left:4px; letter-spacing:-0.3px; line-height:1;';
+                      discEl.textContent = `${discountRate}%`;
+                      priceRow.appendChild(discEl);
                     }
                   }
-                } catch (err) { }
+                } else if (discEl) {
+                  discEl.style.display = 'none';
+                }
+
+                card.onclick = (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (typeof window.openProductDetailSheet === 'function') {
+                    window.openProductDetailSheet(item);
+                  }
+                };
               });
 
-              track.appendChild(card);
-            });
-
-            // 여러 개일 경우 수직 롤링 타이머 셋업
-            if (typeof checkAndShowGiveaway === 'function') {
-          checkAndShowGiveaway(p);
-        }
-
-        if (rollingInterval) clearInterval(rollingInterval);
-            if (displayProducts.length > 1) {
-              // Clone the first card for seamless infinite loop
-              const firstCardClone = track.firstElementChild.cloneNode(true);
-              track.appendChild(firstCardClone);
-              
-              let currentIdx = 0;
-              rollingInterval = setInterval(() => {
-                currentIdx++;
-                track.classList.remove('no-transition');
-                track.style.transform = `translateY(-${currentIdx * 72}px)`;
-                
-                if (currentIdx === displayProducts.length) {
-                  // After transition ends, instantly reset to first item
-                  setTimeout(() => {
-                    track.classList.add('no-transition');
-                    currentIdx = 0;
-                    track.style.transform = 'translateY(0)';
-                  }, 300);
-                }
-              }, 1500);
+              // 클론 카드 동기화
+              if (displayProducts.length > 1 && existingCards[displayProducts.length]) {
+                const cloneCard = existingCards[displayProducts.length];
+                const firstItem = displayProducts[0];
+                const firstPNum = Number((firstItem.price || '').toString().replace(/[^0-9]/g, ''));
+                const firstPriceDisplay = firstPNum > 0 ? `${firstPNum.toLocaleString()}원` : (firstItem.price === '0' || firstItem.price === 0 ? '무료' : '가격 준비중');
+                const clonePrice = cloneCard.querySelector('.banner-price');
+                if (clonePrice) clonePrice.textContent = firstPriceDisplay;
+                const cloneTitle = cloneCard.querySelector('.banner-title');
+                if (cloneTitle) cloneTitle.textContent = firstItem.name;
+              }
             } else {
-              track.style.transform = 'translateY(0)';
+              // 최초 생성 또는 카드 수 변경 시에만 DOM 재빌드
+              track.innerHTML = '';
+              displayProducts.forEach((item) => {
+                const card = document.createElement('a');
+                card.href = item.url || "#";
+                card.className = 'banner-product-card';
+                
+                const isCurrentlyFeatured = item.isFeatured === true || item.isFeatured === 'true';
+                const pNum = Number((item.price || '').toString().replace(/[^0-9]/g, ''));
+                const npNum = Number((item.normalPrice || item.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+                let discountRate = parseInt(item.discountRate, 10) || 0;
+                if (!discountRate && npNum > pNum && pNum > 0) {
+                  discountRate = Math.round(((npNum - pNum) / npNum) * 100);
+                }
+
+                let priceDisplay = pNum > 0 ? `${pNum.toLocaleString()}원` : (item.price === '0' || item.price === 0 ? '무료' : '가격 준비중');
+
+                const prodMaxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
+                const isProdSoldOut = (prodMaxStock === 0);
+
+                let badgeHtml = '';
+                if (isProdSoldOut) {
+                  badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#64748b; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">품절</span>';
+                } else if (isCurrentlyFeatured) {
+                  badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#2563eb; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">소개중</span>';
+                } else if (item.dealEndTime && item.dealEndTime > Date.now()) {
+                  badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#e11d48; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">깜짝딜</span>';
+                }
+
+                const discountTextHtml = discountRate > 0
+                  ? `<span class="banner-discount-rate" style="font-size:12.5px; font-weight:800; color:#ef4444; margin-left:4px; letter-spacing:-0.3px; line-height:1;">${discountRate}%</span>`
+                  : '';
+
+                // 롤링 배너는 썸네일 원형 뱃지 없이 깨끗하게 유지하고, 가격 옆에 할인율 텍스트 노출
+                card.innerHTML = `
+                  <div class="banner-img-box">
+                    <img src="${item.image}" alt="product">
+                    ${badgeHtml}
+                  </div>
+                  <div class="banner-info-box">
+                    <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
+                    <div class="banner-price-row" style="display:flex; align-items:center; white-space:nowrap;">
+                      <span class="banner-price">${priceDisplay}</span>
+                      ${discountTextHtml}
+                    </div>
+                  </div>
+                `;
+                
+                card.addEventListener('click', async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+                  if (!currentConfig.isLive) {
+                    alert('라이브 방송 중에만 구매 가능합니다.');
+                    return;
+                  }
+                  if (item.url === '__LEAD_FORM__') {
+                    openLeadModal(item.name);
+                    return;
+                  }
+
+                  // 라이브 화면 내 PIP 모드 및 상세 시트 호출 (소리 무중단 유지)
+                  if (typeof window.openProductDetailSheet === 'function') {
+                    window.openProductDetailSheet(item);
+                  } else if (item.url && item.url !== '#') {
+                    window.open(item.url.startsWith('http') ? item.url : 'https://' + item.url, '_blank');
+                  }
+                  try {
+                    const targetLiveId = LIVE_ID || 'N45ZMPL';
+                    if (!targetLiveId || !db) return;
+
+                    const { data, error } = await db
+                      .from('live_control')
+                      .select('products')
+                      .eq('live_id', targetLiveId)
+                      .maybeSingle();
+
+                    if (data && data.products) {
+                      const remoteProducts = typeof data.products === 'string' ? JSON.parse(data.products) : data.products;
+                      const targetProd = remoteProducts.find(p => p.name === item.name);
+                      if (targetProd) {
+                        targetProd.clicks = (parseInt(targetProd.clicks) || 0) + 1;
+                        localStorage.setItem(`ryzin_live_products_${LIVE_ID}`, JSON.stringify(remoteProducts));
+                        await db
+                          .from('live_control')
+                          .update({ 
+                            products: remoteProducts,
+                            updated_at: new Date().toISOString()
+                          })
+                          .eq('live_id', targetLiveId);
+                      }
+                    }
+                  } catch (err) { }
+                });
+
+                track.appendChild(card);
+              });
+
+              if (rollingInterval) clearInterval(rollingInterval);
+              if (displayProducts.length > 1) {
+                const firstCardClone = track.firstElementChild.cloneNode(true);
+                track.appendChild(firstCardClone);
+                
+                let currentIdx = 0;
+                rollingInterval = setInterval(() => {
+                  currentIdx++;
+                  track.classList.remove('no-transition');
+                  track.style.transform = `translateY(-${currentIdx * 72}px)`;
+                  
+                  if (currentIdx === displayProducts.length) {
+                    setTimeout(() => {
+                      track.classList.add('no-transition');
+                      currentIdx = 0;
+                      track.style.transform = 'translateY(0)';
+                    }, 300);
+                  }
+                }, 1500);
+              } else {
+                track.style.transform = 'translateY(0)';
+              }
             }
           }
         }
@@ -3158,12 +3259,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.data && e.data.type === 'sync_preview') {
       let cfgChanged = false;
       if (e.data.config) {
-        const prevCfg = localStorage.getItem(`ryzin_live_config_${LIVE_ID}`);
-        const newCfg = JSON.stringify(e.data.config);
-        if (prevCfg !== newCfg) {
-          localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, newCfg);
-          cfgChanged = true;
-        }
+        const prevCfg = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+        const newCfg = e.data.config;
+        cfgChanged = !prevCfg ||
+          (prevCfg.streamUrl || '').trim() !== (newCfg.streamUrl || '').trim() ||
+          Boolean(prevCfg.isLive) !== Boolean(newCfg.isLive) ||
+          (prevCfg.standbyImageUrl || '').trim() !== (newCfg.standbyImageUrl || '').trim() ||
+          Boolean(prevCfg.useStandbyImage) !== Boolean(newCfg.useStandbyImage) ||
+          (prevCfg.logoUrl || '').trim() !== (newCfg.logoUrl || '').trim() ||
+          (prevCfg.brandName || '').trim() !== (newCfg.brandName || '').trim() ||
+          (prevCfg.title || '').trim() !== (newCfg.title || '').trim() ||
+          (prevCfg.thumbnailUrl || '').trim() !== (newCfg.thumbnailUrl || '').trim();
+        localStorage.setItem(`ryzin_live_config_${LIVE_ID}`, JSON.stringify(newCfg));
       }
       if (e.data.stats) localStorage.setItem(`ryzin_live_stats_${LIVE_ID}`, JSON.stringify(e.data.stats));
       let prodChanged = false;
@@ -3225,7 +3332,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. 비디오 스트리밍 설정 (HLS 및 YouTube 라이브 자동 지원)
   const video = document.getElementById('live-video');
   const savedConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
-  const initialStreamUrl = savedConfig.streamUrl || 'https://ib3fjwlmgu0bwksrq8ao15010.edge.naverncp.com/live/video/ls-20260701130603-WkL1g/1080p-16-9/playlist.m3u8';
+  const initialStreamUrl = (savedConfig.streamUrl || '').trim();
 
   if (Hls.isSupported()) {
     window.hlsInstance = new Hls({
@@ -3236,8 +3343,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.__lastStreamUrl = initialStreamUrl;
-  window.__lastIsLive = savedConfig.isLive !== false;
-  playStreamUrl(initialStreamUrl, savedConfig.isLive !== false);
+  window.__lastIsLive = (savedConfig.isLive === true || savedConfig.isLive === 'true');
+  if (initialStreamUrl) {
+    playStreamUrl(initialStreamUrl, window.__lastIsLive);
+  }
   const initialBrandLogo = document.querySelector('.brand-logo');
   if (initialBrandLogo) {
     initialBrandLogo.classList.toggle('is-live', savedConfig.isLive !== false);

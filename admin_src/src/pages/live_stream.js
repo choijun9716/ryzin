@@ -3695,7 +3695,7 @@ function renderLiveEditView(container, liveId, showView) {
               <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10b981;"></span>
               실시간 자동 반영
             </span>
-            <button id="btn-save-products-manual" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15); transition:all 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+            <button type="button" id="btn-save-products-manual" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15); transition:all 0.15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
               저장
             </button>
           </div>
@@ -3706,8 +3706,8 @@ function renderLiveEditView(container, liveId, showView) {
 
         ${productSubTab === 'basic' && products.length > 0 ? `
         <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
-          <button id="btn-add-product-bottom" class="action-btn btn-secondary" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
-          <button id="btn-save-products-bottom" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15);">
+          <button type="button" id="btn-add-product-bottom" class="action-btn btn-secondary" style="padding:8px 16px; font-size:13px;">+ 상품 추가</button>
+          <button type="button" id="btn-save-products-bottom" class="action-btn" style="padding:8px 20px; font-size:13px; font-weight:700; background:#0f172a; color:#ffffff; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 6px rgba(15,23,42,0.15);">
             저장
           </button>
         </div>
@@ -4632,12 +4632,6 @@ function renderLiveEditView(container, liveId, showView) {
         saveProducts(true);
       }
 
-      try {
-        if (typeof syncToSheetDB === 'function') {
-          await syncToSheetDB(liveId, config, stats, products, true);
-        }
-      } catch(e) {}
-
       setTimeout(() => {
         btn.disabled = false;
         btn.textContent = '저장 완료';
@@ -4647,8 +4641,16 @@ function renderLiveEditView(container, liveId, showView) {
       }, 250);
     };
 
-    document.getElementById('btn-save-products-manual')?.addEventListener('click', (e) => handleManualProductSave(e.currentTarget));
-    document.getElementById('btn-save-products-bottom')?.addEventListener('click', (e) => handleManualProductSave(e.currentTarget));
+    document.getElementById('btn-save-products-manual')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleManualProductSave(e.currentTarget);
+    });
+    document.getElementById('btn-save-products-bottom')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleManualProductSave(e.currentTarget);
+    });
     // 모든 상품 변경사항 실시간 자동 저장 및 Supabase 즉시 반영 함수
     const autoSaveAllProducts = () => {
       const plc = document.getElementById('product-list-container');
