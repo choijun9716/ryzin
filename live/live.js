@@ -1851,12 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
         detailCartBtn.style.background = '#94a3b8';
         detailCartBtn.style.cursor = 'not-allowed';
       } else {
-        const limitPerUser = (typeof window.getProductLimitPerUser === 'function') ? window.getProductLimitPerUser(item) : Infinity;
-        if (limitPerUser < Infinity && limitPerUser > 0) {
-          cartText.textContent = `장바구니 담기 (1인 ${limitPerUser}개 한정)`;
-        } else {
-          cartText.textContent = '장바구니 담기';
-        }
+        cartText.textContent = '장바구니 담기';
         detailCartBtn.style.background = '#0f172a';
         detailCartBtn.style.cursor = 'pointer';
       }
@@ -2005,11 +2000,6 @@ document.addEventListener('DOMContentLoaded', () => {
             priceHtml = `<span style="font-size:13px; color:#94a3b8; font-weight:600;">가격 준비중</span>`;
           }
 
-          // 구매한도만 표시 (재고 표시는 제외)
-          const limitPerUser = (typeof window.getProductLimitPerUser === 'function') ? window.getProductLimitPerUser(item) : Infinity;
-          if (limitPerUser < Infinity && limitPerUser > 0) {
-            priceHtml += `<span style="font-size:11px; color:#2563eb; font-weight:700; margin-left:6px; background:#eff6ff; border:1px solid #bfdbfe; padding:2px 6px; border-radius:4px; vertical-align:middle;">1인 ${limitPerUser}개 한정</span>`;
-          }
           const soldOutBadge = isSoldOut ? '<span style="color:#ef4444; font-weight:800; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; margin-right:4px;">[품절]</span>' : '';
           const dealBadge = item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '';
 
@@ -2192,14 +2182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 badgeHtml = '<span class="banner-badge" style="background:#2563eb; color:#ffffff; font-weight:800;">소개중</span>';
               } else if (item.dealEndTime && item.dealEndTime > Date.now()) {
                 badgeHtml = '<span class="banner-badge" style="background:#e11d48; color:#ffffff;">깜짝딜</span>';
-              } else if (limitPerUser < Infinity && limitPerUser > 0) {
-                badgeHtml = `<span class="banner-badge" style="background:#2563eb; color:#ffffff; font-weight:800;">1인 ${limitPerUser}개</span>`;
               }
-
-              // 구매한도 태그 (가격 옆에 선명하게 노출)
-              const limitBadgeHtml = (limitPerUser < Infinity && limitPerUser > 0)
-                ? `<span style="font-size:10px; color:#2563eb; font-weight:800; background:#eff6ff; border:1px solid #bfdbfe; padding:1px 5px; border-radius:3px; margin-left:4px; vertical-align:middle; display:inline-block; line-height:1.2; white-space:nowrap;">1인 ${limitPerUser}개 한정</span>`
-                : '';
 
               // 텍스트에 [지금소개중]을 빼고, 원래 상품명만 깔끔하게 노출
               card.innerHTML = `
@@ -2211,7 +2194,6 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
                   <div class="banner-price-row">
                     <span class="banner-price">${priceDisplay}</span>
-                    ${limitBadgeHtml}
                   </div>
                 </div>
               `;
