@@ -1989,6 +1989,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const maxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
           const isSoldOut = (maxStock === 0);
 
+          let discountRate = parseInt(item.discountRate, 10) || 0;
+          if (!discountRate && npNum > pNum && pNum > 0) {
+            discountRate = Math.round(((npNum - pNum) / npNum) * 100);
+          }
+
           if (pNum > 0) {
             priceHtml = `<span class="discounted-price" style="font-weight:800; color:#e50914; font-size:14.5px;">${pNum.toLocaleString()}원</span>`;
             if (npNum > pNum) {
@@ -2003,12 +2008,20 @@ document.addEventListener('DOMContentLoaded', () => {
           const soldOutBadge = isSoldOut ? '<span style="color:#ef4444; font-weight:800; font-size:11px; background:#fee2e2; padding:2px 6px; border-radius:4px; margin-right:4px;">[품절]</span>' : '';
           const dealBadge = item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : '';
 
+          // 그림자 없이 미니멀하고 플랫한 원형 할인율 뱃지 (좌측 상단)
+          const modalDiscountCircle = discountRate > 0
+            ? `<span class="product-discount-circle" style="position:absolute; top:4px; left:4px; width:26px; height:26px; border-radius:50%; background:#ef4444; color:#ffffff; font-size:10.5px; font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; letter-spacing:-0.5px; box-shadow:none; border:none; z-index:2; pointer-events:none;">${discountRate}%</span>`
+            : '';
+
           const btnAddStyle = isSoldOut
             ? 'background:#94a3b8; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:not-allowed; display:flex; align-items:center; gap:4px; outline:none;'
             : 'background:#0f172a; color:#ffffff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.15s; outline:none; box-shadow:0 2px 6px rgba(15,23,42,0.15);';
 
           el.innerHTML = `
-            <img src="${item.image}" alt="product" class="product-image" style="cursor:pointer;">
+            <div class="product-image-box" style="position:relative; width:80px; height:80px; flex-shrink:0; border-radius:8px; overflow:hidden; cursor:pointer; background:#f1f5f9;">
+              <img src="${item.image}" alt="product" class="product-image" style="width:100%; height:100%; object-fit:cover; display:block;">
+              ${modalDiscountCircle}
+            </div>
             <div class="product-info" style="flex:1; min-width:0; cursor:pointer;">
               <div class="product-name">${soldOutBadge}${dealBadge}${item.name}</div>
               <div class="product-price">${priceHtml}</div>
@@ -2068,9 +2081,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btnDetail.addEventListener('click', handleDetailUrlNavigation);
           }
 
-          const imgEl = el.querySelector('.product-image');
+          const imgBoxEl = el.querySelector('.product-image-box');
           const infoEl = el.querySelector('.product-info');
-          [imgEl, infoEl].forEach(targetEl => {
+          [imgBoxEl, infoEl].forEach(targetEl => {
             if (targetEl) {
               targetEl.addEventListener('click', handleDetailUrlNavigation);
             }
@@ -2180,11 +2193,6 @@ document.addEventListener('DOMContentLoaded', () => {
               const prodMaxStock = (typeof window.getProductMaxStock === 'function') ? window.getProductMaxStock(item) : Infinity;
               const isProdSoldOut = (prodMaxStock === 0);
 
-              // 상품 이미지 왼쪽 상단 원형 할인율 뱃지
-              const discountCircleHtml = discountRate > 0
-                ? `<span class="banner-discount-circle" style="position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#ef4444; color:#ffffff; font-size:9.5px; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 1.5px 4px rgba(239,68,68,0.4); line-height:1; z-index:3; letter-spacing:-0.5px;">${discountRate}%</span>`
-                : '';
-
               let badgeHtml = '';
               if (isProdSoldOut) {
                 badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#64748b; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">품절</span>';
@@ -2194,18 +2202,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#e11d48; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">깜짝딜</span>';
               }
 
-              // 텍스트에 [지금소개중]을 빼고, 원래 상품명만 깔끔하게 노출
+              const discountTextHtml = discountRate > 0
+                ? `<span class="banner-discount-rate" style="font-size:12.5px; font-weight:800; color:#ef4444; margin-left:4px; letter-spacing:-0.3px; line-height:1;">${discountRate}%</span>`
+                : '';
+
+              // 롤링 배너는 썸네일 원형 뱃지 없이 깨끗하게 유지하고, 가격 옆에 할인율 텍스트 노출
               card.innerHTML = `
                 <div class="banner-img-box">
                   <img src="${item.image}" alt="product">
-                  ${discountCircleHtml}
                   ${badgeHtml}
                 </div>
                 <div class="banner-info-box">
                   <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
-                  <div class="banner-price-row">
+                  <div class="banner-price-row" style="display:flex; align-items:center;">
                     <span class="banner-price">${priceDisplay}</span>
-                    ${npNum > pNum && pNum > 0 ? `<span style="font-size:11px; color:#94a3b8; text-decoration:line-through; margin-left:4px;">${npNum.toLocaleString()}원</span>` : ''}
+                    ${discountTextHtml}
+                    ${npNum > pNum && pNum > 0 ? `<span style="font-size:11px; color:#94a3b8; text-decoration:line-through; margin-left:5px;">${npNum.toLocaleString()}원</span>` : ''}
                   </div>
                 </div>
               `;
