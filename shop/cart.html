@@ -2,47 +2,37 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>RYZIN CART — 라이진 장바구니</title>
   <meta name="description" content="라이진과 365일 우주 최저가 쇼핑! 장바구니에 담긴 상품과 단독 멤버십 할인 혜택을 확인해보세요.">
   
-  <!-- Open Graph / KakaoTalk / Social Share -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="RYZIN SHOP">
-  <meta property="og:title" content="RYZIN SHOP — 라이진과 365일 우주 최저가 쇼핑">
-  <meta property="og:description" content="라이브 커머스로 생생하게 즐기는 실시간 쇼핑! 365일 우주 최저가 혜택과 라이진 단독 큐레이션을 경험해보세요.">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85">
-  <meta property="og:url" content="https://ryzincorp.com/shop/cart.html">
-
-  <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="RYZIN SHOP — 라이진과 365일 우주 최저가 쇼핑">
-  <meta name="twitter:description" content="라이브 커머스로 생생하게 즐기는 실시간 쇼핑! 365일 우주 최저가 혜택과 라이진 단독 큐레이션을 경험해보세요.">
-  <meta name="twitter:image" content="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85">
-
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+  <!-- Daum Postcode SDK -->
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
   <style>
     :root {
-      --bg: #0c0d10;
-      --surface: #14151a;
-      --surface-card: #1c1d24;
-      --text-main: #ffffff;
-      --text-sub: #94a3b8;
-      --text-muted: #64748b;
-      --accent-blue: #3b82f6;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --border-light: #f1f5f9;
       --accent-orange: #FF8730;
-      --border: #232530;
+      --accent-blue: #2563eb;
+      --accent-red: #ef4444;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #000000;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
       color: var(--text-main);
       display: flex;
       justify-content: center;
@@ -57,7 +47,7 @@
       background: var(--bg);
       display: flex;
       flex-direction: column;
-      padding-bottom: 120px;
+      padding-bottom: 110px;
       position: relative;
     }
 
@@ -66,368 +56,319 @@
       position: sticky;
       top: 0;
       z-index: 200;
-      height: 52px;
-      background: rgba(12, 13, 16, 0.85);
+      height: 54px;
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: saturate(180%) blur(20px);
       -webkit-backdrop-filter: saturate(180%) blur(20px);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid var(--border);
     }
 
-    .tb-icon-btn {
+    .hdr-btn {
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: transparent;
+      border: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .tb-icon-btn svg {
-      width: 18px;
-      height: 18px;
-      stroke: #ffffff;
-      stroke-width: 2;
-      fill: none;
+      color: var(--text-main);
     }
 
     .hdr-title {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
-      color: #ffffff;
+      color: var(--text-main);
     }
 
-    /* ── SUB TABS ── */
-    .cart-sub-tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-    }
-
-    .cart-sub-tab {
-      flex: 1;
-      text-align: center;
-      padding: 14px 0;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-sub);
-      cursor: pointer;
-      position: relative;
-    }
-
-    .cart-sub-tab.active {
-      color: #ffffff;
-      font-weight: 800;
-    }
-
-    .cart-sub-tab.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 15%;
-      width: 70%;
-      height: 2px;
-      background: #ffffff;
-    }
-
-    /* ── CONTENT AREA ── */
-    .content {
+    /* ── MAIN CONTENT ── */
+    .main-body {
       padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    /* 1. 전체선택 & 선택삭제 행 */
-    .select-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .check-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      color: #ffffff;
-      cursor: pointer;
-    }
-
-    .custom-check {
-      width: 20px;
-      height: 20px;
-      border-radius: 5px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    .custom-check.checked {
-      background: var(--accent-orange);
-      border-color: var(--accent-orange);
-    }
-
-    .custom-check svg {
-      width: 13px; height: 13px; stroke: #fff; stroke-width: 3; fill: none; display: none;
-    }
-
-    .custom-check.checked svg {
-      display: block;
-    }
-
-    .del-btn {
-      padding: 5px 12px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: var(--text-sub);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    /* 2. 장바구니 상품 리스트 */
-    .cart-list {
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
 
-    .cart-item-card {
-      background: var(--surface-card);
+    /* 카드 컨테이너 */
+    .white-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-    }
-
-    .item-top {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
       display: flex;
-      gap: 12px;
-      margin-bottom: 14px;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
     }
 
-    .item-img {
-      width: 72px;
-      height: 72px;
+    .card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* 상품 아이템 */
+    .cart-item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .cart-item-row:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item-img {
+      width: 52px;
+      height: 52px;
       border-radius: 10px;
       object-fit: cover;
-      background: #1e2028;
+      border: 1px solid var(--border);
       flex-shrink: 0;
     }
 
-    .item-info { flex: 1; }
-
-    .item-brand {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--text-sub);
-      margin-bottom: 2px;
+    .cart-item-info {
+      flex: 1;
+      min-width: 0;
     }
 
-    .item-name {
-      font-size: 14px;
+    .cart-item-name {
+      font-size: 13.5px;
       font-weight: 700;
-      color: #ffffff;
-      line-height: 1.3;
-      margin-bottom: 6px;
-    }
-
-    .item-price-row {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-
-    .item-price {
-      font-size: 15px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .item-origin {
-      font-size: 12px;
-      color: var(--text-muted);
-      text-decoration: line-through;
-    }
-
-    /* 수량 컨트롤러 */
-    .item-bottom {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .qty-control {
-      display: flex;
-      align-items: center;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      color: var(--text-main);
+      margin-bottom: 3px;
       overflow: hidden;
-      background: rgba(255,255,255,0.04);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cart-item-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
+
+    .qty-stepper {
+      display: inline-flex;
+      align-items: center;
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 1px;
     }
 
     .qty-btn {
-      width: 32px; height: 32px;
+      width: 24px;
+      height: 24px;
+      background: none;
       border: none;
-      background: transparent;
-      color: #ffffff;
-      font-size: 16px;
       font-weight: 700;
+      font-size: 13px;
+      color: #475569;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      outline: none;
+      border-radius: 4px;
+    }
+    .qty-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
     }
 
     .qty-num {
-      width: 36px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      min-width: 26px;
       text-align: center;
-      font-size: 14px;
-      font-weight: 800;
-      color: #ffffff;
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-      line-height: 32px;
     }
 
-    .item-calc-box {
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      padding: 10px 14px;
-      text-align: center;
+    .item-price {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .btn-item-delete {
+      background: none;
+      border: none;
+      color: #cbd5e1;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: 4px;
+      transition: color 0.15s;
+    }
+    .btn-item-delete:hover {
+      color: var(--accent-red);
+    }
+
+    /* 혜택 섹션 */
+    .benefit-group {
+      border-top: 1px solid var(--border-light);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .select-box {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-main);
+      outline: none;
+      background: #f8fafc;
+    }
+
+    .points-input-box {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12.5px;
+      outline: none;
+      text-align: right;
+      font-weight: 600;
+      color: var(--text-main);
+      background: #ffffff;
+    }
+
+    .btn-all-points {
+      padding: 0 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* 금액 요약 */
+    .summary-group {
+      border-top: 1px solid var(--border-light);
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
       font-size: 12.5px;
       color: var(--text-sub);
-      font-weight: 600;
     }
 
-    .item-calc-box strong {
+    .summary-row.total {
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-light);
       font-size: 14px;
-      font-weight: 900;
-      color: #ffffff;
-      margin-left: 4px;
-    }
-
-    /* 3. 영수증 결제 금액 요약 카드 */
-    .receipt-card {
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px 16px;
-    }
-
-    .receipt-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--text-sub);
-    }
-
-    .receipt-row.highlight .val {
-      color: var(--accent-orange);
-      font-weight: 800;
-    }
-
-    .receipt-divider {
-      height: 1px;
-      background: rgba(255,255,255,0.08);
-      margin: 14px 0;
-    }
-
-    .receipt-total-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .receipt-total-row .label {
-      font-size: 15px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .receipt-total-row .val {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--accent-orange);
-    }
-
-    .receipt-tip {
-      background: rgba(255,255,255,0.04);
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    /* 4. 멤버십 비교 칩 */
-    .mem-compare-wrap {
-      position: relative;
-      margin-top: 6px;
-    }
-
-    .mem-tooltip {
-      position: absolute;
-      top: -24px;
-      left: 12px;
-      background: #334155;
-      color: #ffffff;
-      font-size: 10.5px;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 12px;
+      color: var(--text-main);
+      align-items: center;
     }
 
-    .mem-compare-box {
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      padding: 4px;
-      gap: 4px;
-    }
-
-    .mem-comp-col {
-      padding: 10px;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    .mem-comp-col.active {
-      background: rgba(255, 135, 48, 0.12);
-      border: 1px solid rgba(255, 135, 48, 0.4);
-    }
-
-    .mem-comp-label {
-      font-size: 11px;
+    .total-price {
+      font-size: 18px;
       font-weight: 800;
-      color: var(--accent-orange);
-      margin-bottom: 2px;
+      color: var(--text-main);
     }
 
-    .mem-comp-price {
-      font-size: 16px;
-      font-weight: 900;
+    /* 배송지 프리뷰 */
+    .shipping-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn-edit-addr {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      outline: none;
+      white-space: nowrap;
+    }
+
+    /* 결제 버튼 */
+    .btn-checkout {
+      width: 100%;
+      padding: 15px;
+      background: #0f172a;
       color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+      transition: all 0.2s;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-checkout:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
     }
 
-    /* ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV (MASTER UNIFIED SPEC) ── */
+    /* ── 모달 레이어 ── */
+    .custom-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      z-index: 100000;
+      padding: 20px;
+    }
+
+    .custom-modal-content {
+      background: #ffffff;
+      width: 100%;
+      max-width: 360px;
+      border-radius: 24px;
+      padding: 26px 22px 20px 22px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+      position: relative;
+      color: #0f172a;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    /* ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV ── */
     .bottom-nav-wrap {
       position: fixed;
       bottom: calc(16px + env(safe-area-inset-bottom));
@@ -442,7 +383,7 @@
       width: 100%;
       height: 64px;
       border-radius: 40px;
-      background: rgba(22, 23, 28, 0.78);
+      background: rgba(22, 23, 28, 0.85);
       backdrop-filter: saturate(180%) blur(24px);
       -webkit-backdrop-filter: saturate(180%) blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -502,137 +443,131 @@
       padding: 0 3px;
     }
 
-    /* ── 하단 고정 CTA 버튼 ── */
-    .bottom-cta-wrap {
-      position: fixed;
-      bottom: calc(92px + env(safe-area-inset-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 430px;
-      padding: 0 16px;
-      z-index: 300;
-    }
-
-    .cta-pay-btn {
-      width: 100%;
-      height: 50px;
-      border-radius: 14px;
-      background: var(--accent-orange);
-      border: none;
-      color: #ffffff;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 8px 24px rgba(255, 135, 48, 0.4);
-    }
-    }
-
+    /* 토스트 알림 */
     #toast {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
-      background: rgba(30,41,59,0.95);
+      background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(12px);
       color: #fff;
       padding: 10px 20px;
       border-radius: 30px;
       font-size: 13px;
       font-weight: 700;
-      z-index: 999;
-      transition: transform 0.3s ease;
+      z-index: 100002;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       white-space: nowrap;
-      border: 1px solid rgba(255,255,255,0.15);
+      pointer-events: none;
     }
   </style>
 </head>
-
 <body>
+
 <div class="app">
 
-  <!-- ── 헤더 ── -->
+  <!-- ── HEADER ── -->
   <header class="header">
-    <button class="tb-icon-btn" onclick="history.back()">
-      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    <button class="hdr-btn" onclick="window.location.href='/shop/index.html'" title="홈으로 이동">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
     </button>
     <div class="hdr-title">장바구니</div>
-    <button class="tb-icon-btn" onclick="window.location.href='/shop/index.html'">
-      <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
-    </button>
+    <div style="width:36px;"></div>
   </header>
 
-  <!-- ── 3종 서브 탭 ── -->
-  <div class="cart-sub-tabs">
-    <div class="cart-sub-tab active">담은 상품</div>
-  </div>
+  <!-- ── MAIN CONTENT ── -->
+  <div class="main-body">
 
-  <!-- ── 바디 영역 ── -->
-  <div class="content">
+    <!-- 장바구니 화이트 카드 (라이브 화면의 카트 구조와 100% 동일) -->
+    <div class="white-card">
+      <div class="card-title">
+        <span>담긴 상품 (<span id="cart-item-count">0</span>)</span>
+        <button type="button" onclick="clearCartConfirm()" style="background:none; border:none; color:var(--text-muted); font-size:12px; cursor:pointer; font-weight:600;">전체비우기</button>
+      </div>
 
-    <!-- 1. 전체선택 / 선택삭제 -->
-    <div class="select-bar">
-      <div class="check-wrap" onclick="toggleSelectAllItems()">
-        <div class="custom-check checked" id="all-check-box">
-          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+      <!-- 상품 리스트 -->
+      <div id="cart-items-container" style="display:flex; flex-direction:column; gap:8px;">
+        <!-- JS 동적 렌더링 -->
+      </div>
+
+      <!-- 쿠폰 및 포인트 사용 섹션 -->
+      <div class="benefit-group">
+        <!-- 쿠폰 선택 -->
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12.5px; font-weight:600; color:#475569;">할인 쿠폰</span>
+          <select id="cart-coupon-select" onchange="calculateCartBenefits()" class="select-box">
+            <option value="0">적용 가능한 쿠폰 선택</option>
+          </select>
         </div>
-        <span>전체선택</span>
-      </div>
-      <button class="del-btn" onclick="deleteSelected()">선택삭제</button>
-    </div>
 
-    <!-- 2. 동적 장바구니 상품 리스트 -->
-    <div class="cart-list" id="cart-item-list">
-      <!-- JS Rendered -->
-    </div>
-
-    <!-- 3. 결제 예상 금액 영수증 카드 -->
-    <div class="receipt-card">
-      <div class="receipt-row">
-        <span>선택 상품 금액</span>
-        <span id="rc-origin">0원</span>
-      </div>
-      <div class="receipt-row highlight">
-        <span>할인 예상 금액</span>
-        <span id="rc-discount">- 0원</span>
-      </div>
-      <div class="receipt-row">
-        <span>배송비</span>
-        <span id="rc-shipping">+ 3,000원</span>
-      </div>
-      
-      <div class="receipt-divider"></div>
-
-      <div class="receipt-total-row">
-        <span class="label">예상 결제 금액</span>
-        <span class="val" id="total-val">0원</span>
-      </div>
-
-      <div class="receipt-tip">
-        쿠폰/포인트는 결제 페이지에서 사용할 수 있어요
-      </div>
-    </div>
-
-    <!-- 4. 멤버십 회원이용 토글 카드 -->
-    <div class="mem-compare-wrap">
-      <div class="mem-tooltip">100원으로 이용 가능 ?</div>
-      <div class="mem-compare-box">
-        <div class="mem-comp-col active">
-          <div class="mem-comp-label">멤버십 회원가</div>
-          <div class="mem-comp-price" id="mem-price">0원</div>
-        </div>
-        <div class="mem-comp-col">
-          <div class="mem-comp-label" style="color:var(--text-muted);">일반가</div>
-          <div class="mem-comp-price" id="normal-price" style="color:var(--text-sub);">0원</div>
+        <!-- 포인트 사용 -->
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <span style="font-size:12.5px; font-weight:600; color:#475569;">포인트 사용</span>
+            <span style="font-size:11.5px; color:#64748b;">보유 <strong id="cart-available-points" style="color:#0f172a; font-weight:700;">0</strong>P</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <input type="number" id="cart-points-input" placeholder="0" min="0" value="0" oninput="calculateCartBenefits()" class="points-input-box">
+            <button type="button" onclick="applyAllPoints()" class="btn-all-points">전액 사용</button>
+          </div>
         </div>
       </div>
+
+      <!-- 금액 요약 블록 -->
+      <div class="summary-group">
+        <div class="summary-row">
+          <span>주문 금액</span>
+          <span id="cart-subtotal-price" style="font-weight:600; color:#0f172a;">0원</span>
+        </div>
+        <div class="summary-row" id="cart-discount-row" style="display:none; color:var(--accent-red);">
+          <span>할인 적용</span>
+          <span id="cart-discount-price" style="font-weight:600;">-0원</span>
+        </div>
+        <div class="summary-row total">
+          <span>총 결제 금액</span>
+          <span id="cart-total-price" class="total-price">0원</span>
+        </div>
+      </div>
+
+      <!-- 배송지 정보 박스 -->
+      <div class="shipping-box" id="cart-shipping-preview">
+        <div style="display:flex; align-items:flex-start; gap:8px; min-width:0;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <div style="min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+              <span id="cart-shipping-name" style="font-size:12px; font-weight:700; color:#0f172a;">배송지 정보</span>
+              <span id="cart-shipping-phone" style="font-size:11.5px; color:#64748b; font-weight:500;"></span>
+            </div>
+            <div id="cart-shipping-address" style="font-size:11.5px; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">
+              등록된 배송 정보 확인 중...
+            </div>
+          </div>
+        </div>
+        <button class="btn-edit-addr" id="btn-change-shipping" type="button" onclick="openAddressModal()">
+          주소 변경
+        </button>
+      </div>
+
+      <!-- 결제하기 버튼 -->
+      <div style="padding-top:6px;">
+        <button class="btn-checkout" id="btn-checkout" type="button" onclick="handleCheckout()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span>결제하기</span>
+        </button>
+      </div>
+
     </div>
 
-  </div>
-
-  <!-- ── 하단 결제 CTA 버튼 ── -->
-  <div class="bottom-cta-wrap">
-    <button class="cta-pay-btn" id="pay-btn" onclick="doCheckout()">0원 결제하기</button>
   </div>
 
   <!-- ── FLOATING TRANSLUCENT APPLE UI BOTTOM NAV ── -->
@@ -651,7 +586,7 @@
         <span>공동구매</span>
       </div>
       <div class="nav-item active" onclick="window.location.href='/shop/cart.html'">
-        <span class="nav-badge-count">2</span>
+        <span class="nav-badge-count" style="display:none;">0</span>
         <svg viewBox="0 0 24 24"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h6v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/></svg>
         <span>장바구니</span>
       </div>
@@ -662,23 +597,79 @@
     </nav>
   </div>
 
-  <!-- 토스트 -->
   <div id="toast"></div>
 
 </div>
 
-<script type="module">
-  import { 
-    getCartItems, 
-    updateCartQty, 
-    toggleCartSelect, 
-    toggleAllCartSelect, 
-    deleteCartItem, 
-    deleteSelectedCartItems,
-    updateGlobalCartBadge
-  } from './user_store.js';
+<!-- ── 배송지 정보 입력/수정 모달 (라이브 내정보 확인 모달과 100% 동일) ── -->
+<div class="custom-modal-overlay" id="checkout-address-modal">
+  <div class="custom-modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h3 style="margin:0; font-size:17px; font-weight:700; color:#0f172a;">배송지 정보 확인</h3>
+      <button type="button" onclick="closeAddressModal()" style="background:none; border:none; font-size:19px; color:#94a3b8; cursor:pointer; outline:none; line-height:1;">✕</button>
+    </div>
+    <p style="font-size:12px; color:#64748b; margin:0 0 16px 0; line-height:1.4;">상품을 배송받으실 수령인과 주소를 확인해주세요.</p>
 
-  let cartData = [];
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
+      <div>
+        <label style="font-size:11.5px; font-weight:600; color:#475569; display:block; margin-bottom:4px;">수령인 이름</label>
+        <input type="text" id="modal-name" placeholder="이름을 입력하세요"
+          style="width:100%; height:38px; padding:0 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; box-sizing:border-box; outline:none;">
+      </div>
+      <div>
+        <label style="font-size:11.5px; font-weight:600; color:#475569; display:block; margin-bottom:4px;">연락처</label>
+        <input type="tel" id="modal-phone" placeholder="010-0000-0000"
+          style="width:100%; height:38px; padding:0 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; box-sizing:border-box; outline:none;">
+      </div>
+      <div>
+        <label style="font-size:11.5px; font-weight:600; color:#475569; display:block; margin-bottom:4px;">기본 배송지</label>
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+          <input type="text" id="modal-base-addr" placeholder="주소를 검색해주세요" readonly onclick="openPostcodeSearch()"
+            style="flex:1; height:38px; padding:0 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; box-sizing:border-box; outline:none; background:#fff; cursor:pointer;">
+          <button type="button" onclick="openPostcodeSearch()"
+            style="height:38px; padding:0 10px; background:#0f172a; color:#fff; border:none; border-radius:8px; font-size:11.5px; font-weight:600; cursor:pointer; flex-shrink:0; white-space:nowrap;">
+            주소 검색
+          </button>
+        </div>
+        <input type="text" id="modal-detail-addr" placeholder="상세 주소 (동, 호수)"
+          style="width:100%; height:38px; padding:0 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px; box-sizing:border-box; outline:none;">
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button type="button" onclick="closeAddressModal()"
+        style="flex:1; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; font-size:13px; font-weight:600; color:#64748b; cursor:pointer;">
+        취소
+      </button>
+      <button type="button" onclick="saveAddressFromModal()"
+        style="flex:2; padding:12px; background:#0f172a; border:none; border-radius:12px; font-size:13px; font-weight:600; color:#ffffff; cursor:pointer;">
+        저장하기
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Daum 우편번호 바텀시트 ── -->
+<div id="daum-postcode-layer-wrap"
+  style="display:none; position:fixed; inset:0; z-index:200000; background:rgba(0,0,0,0.65); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); align-items:flex-end; justify-content:center; padding:0; pointer-events:auto;"
+  onclick="if(event.target===this) closePostcodeLayer();">
+  <div style="width:100%; max-width:420px; height:80vh; background:#ffffff; border-radius:24px 24px 0 0; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid #f1f5f9;">
+      <div style="font-size:15px; font-weight:700; color:#0f172a;">주소 검색</div>
+      <button type="button" onclick="closePostcodeLayer()" style="background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer;">✕</button>
+    </div>
+    <div id="daum-postcode-embed-box" style="flex:1; width:100%; height:100%; -webkit-overflow-scrolling:touch; overflow:hidden;"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { updateGlobalCartBadge } from './user_store.js';
+
+  let cartItems = [];
+  let subtotalAmount = 0;
+  let finalPaymentAmount = 0;
+  let couponDiscountAmount = 0;
+  let pointsUsedAmount = 0;
 
   function showToast(msg) {
     const toast = document.getElementById('toast');
@@ -689,161 +680,410 @@
       toast.style.transform = 'translateX(-50%) translateY(-100px)';
     }, 2200);
   }
+  window.showToast = showToast;
 
-  function esc(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-
-
-  async function loadCart() {
-    cartData = await getCartItems();
-    renderCartList();
-  }
-
-  function renderCartList() {
-    const container = document.getElementById('cart-item-list');
-    const ctaWrap = document.querySelector('.bottom-cta-wrap');
-
-    if (!cartData || cartData.length === 0) {
-      container.innerHTML = `
-        <div style="text-align:center; padding:60px 20px 40px; background:var(--surface-card); border-radius:18px; border:1px solid var(--border); margin-bottom:20px;">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" style="margin-bottom:16px;">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
-          </svg>
-          <div style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">장바구니에 담긴 상품이 없습니다</div>
-          <div style="font-size:13px; color:var(--text-sub); margin-bottom:24px;">RYZIN만의 단독 기획 특가 상품을 만나보세요!</div>
-          <button onclick="window.location.href='/shop/index.html'" style="padding:12px 24px; background:var(--accent-orange); color:#fff; border:none; border-radius:24px; font-size:14px; font-weight:800; cursor:pointer;">인기 상품 둘러보기</button>
-        </div>
-      `;
-      if (ctaWrap) ctaWrap.style.display = 'none';
-      recalcSummary();
-      updateGlobalCartBadge();
-      return;
+  // 장바구니 데이터 로드 (라이브와 완벽 호환)
+  function loadCartItems() {
+    try {
+      const saved = localStorage.getItem('ryzin_live_cart_items');
+      if (saved) {
+        cartItems = JSON.parse(saved);
+      } else {
+        cartItems = [];
+      }
+    } catch(e) {
+      cartItems = [];
     }
+    if (!Array.isArray(cartItems)) cartItems = [];
+  }
 
-    if (ctaWrap) ctaWrap.style.display = 'block';
-
-    container.innerHTML = cartData.map(item => {
-      const isChecked = item.selected !== false;
-      const originP = item.origin_price || (item.price * 2);
-      const totalP = (item.price * item.qty) + (isChecked ? 3000 : 0);
-
-      return `
-        <div class="cart-item-card" id="card-${item.id}">
-          <div class="item-top">
-            <div class="custom-check ${isChecked ? 'checked' : ''}" onclick="toggleItemSelect('${item.id}')" style="margin-top:2px; flex-shrink:0;">
-              <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-            </div>
-            <img class="item-img" src="${item.img_url}" alt="${esc(item.product_name)}">
-            <div class="item-info">
-              <div class="item-brand">${esc(item.brand_name || 'RYZIN')}</div>
-              <div class="item-name">${esc(item.product_name)}</div>
-              <div class="item-price-row">
-                <span class="item-price">${item.price.toLocaleString()}원</span>
-                ${originP ? `<span class="item-origin">${originP.toLocaleString()}원</span>` : ''}
-              </div>
-            </div>
-            <button onclick="removeItem('${item.id}')" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">&times;</button>
-          </div>
-          <div class="item-bottom">
-            <div class="qty-control">
-              <button class="qty-btn" onclick="changeQty('${item.id}', -1)">-</button>
-              <div class="qty-num">${item.qty}</div>
-              <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
-            </div>
-          </div>
-          <div class="item-calc-box">
-            상품 ${(item.price * item.qty).toLocaleString()}원 + 배송비 ${isChecked ? '3,000원' : '0원'} = <strong>${totalP.toLocaleString()}원</strong>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    recalcSummary();
+  function saveCartItems() {
+    try {
+      localStorage.setItem('ryzin_live_cart_items', JSON.stringify(cartItems));
+    } catch(e) {}
     updateGlobalCartBadge();
   }
 
-  window.toggleItemSelect = async (id) => {
-    const item = cartData.find(x => x.id === id);
-    if (!item) return;
-    item.selected = !item.selected;
-    await toggleCartSelect(id, item.selected);
-    renderCartList();
-  };
+  // 장바구니 화면 렌더링
+  function renderCart() {
+    loadCartItems();
+    const container = document.getElementById('cart-items-container');
+    const countEl = document.getElementById('cart-item-count');
+    const btnCheckout = document.getElementById('btn-checkout');
 
-  window.toggleSelectAllItems = async () => {
-    const allChecked = cartData.every(x => x.selected !== false);
-    const nextState = !allChecked;
-    cartData.forEach(x => x.selected = nextState);
-    
-    document.getElementById('all-check-box').classList.toggle('checked', nextState);
-    await toggleAllCartSelect(nextState);
-    renderCartList();
-  };
+    const totalQty = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    if (countEl) countEl.textContent = totalQty;
 
-  window.changeQty = async (id, delta) => {
-    const item = cartData.find(x => x.id === id);
-    if (!item) return;
-    item.qty = Math.max(1, item.qty + delta);
-    await updateCartQty(id, item.qty);
-    renderCartList();
-  };
-
-  window.removeItem = async (id) => {
-    cartData = cartData.filter(x => x.id !== id);
-    await deleteCartItem(id);
-    showToast('상품이 장바구니에서 삭제되었습니다.');
-    renderCartList();
-    await updateGlobalCartBadge();
-  };
-
-  window.deleteSelected = async () => {
-    const selectedIds = cartData.filter(x => x.selected !== false).map(x => x.id);
-    if (!selectedIds.length) {
-      showToast('선택된 상품이 없습니다.');
+    if (!cartItems.length) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:40px 20px; color:#94a3b8;">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;">
+            <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <p style="font-size:14px; margin:0 0 16px 0; font-weight:600; color:#64748b;">장바구니에 담긴 상품이 없습니다.</p>
+          <button type="button" onclick="window.location.href='/shop/index.html'"
+            style="padding:10px 20px; background:#0f172a; color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer;">
+            인기 상품 둘러보기
+          </button>
+        </div>
+      `;
+      if (btnCheckout) btnCheckout.disabled = true;
+      subtotalAmount = 0;
+      updateSummaryUI();
       return;
     }
-    cartData = cartData.filter(x => x.selected === false);
-    await deleteSelectedCartItems(selectedIds);
-    showToast('선택한 상품이 삭제되었습니다.');
-    renderCartList();
-  };
 
-  function recalcSummary() {
-    const selectedItems = cartData.filter(x => x.selected !== false);
-    let rawOriginSum = 0;
-    let saleSum = 0;
+    if (btnCheckout) btnCheckout.disabled = false;
 
-    selectedItems.forEach(item => {
-      const orig = item.origin_price || (item.price * 2);
-      rawOriginSum += (orig * item.qty);
-      saleSum += (item.price * item.qty);
+    let html = '';
+    let total = 0;
+
+    cartItems.forEach((item, index) => {
+      const qty = Math.max(1, item.quantity || 1);
+      item.quantity = qty;
+      const unitPrice = parseInt(String(item.price || 0).replace(/[^0-9]/g, '')) || 0;
+      const itemTotal = unitPrice * qty;
+      total += itemTotal;
+
+      const img = item.image || item.img_url || '/assets/001.jpg';
+      const name = item.name || item.product_name || item.product_title || '상품';
+      const isMin = qty <= 1;
+
+      html += `
+        <div class="cart-item-row">
+          <img src="${img}" alt="${name}" class="cart-item-img">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${name}</div>
+            <div class="cart-item-bottom">
+              <div class="qty-stepper">
+                <button type="button" class="qty-btn" onclick="changeQty(${index}, -1)" ${isMin ? 'disabled' : ''}>-</button>
+                <span class="qty-num">${qty}</span>
+                <button type="button" class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+              </div>
+              <div class="item-price">${itemTotal.toLocaleString()}원</div>
+            </div>
+          </div>
+          <button type="button" class="btn-item-delete" onclick="removeItem(${index})" title="삭제">✕</button>
+        </div>
+      `;
     });
 
-    const shipping = selectedItems.length ? 3000 : 0;
-    const discount = Math.max(0, rawOriginSum - saleSum);
-    const finalTotal = saleSum + shipping;
-    const normalTotal = rawOriginSum + shipping;
-
-    document.getElementById('rc-origin').textContent = rawOriginSum.toLocaleString() + '원';
-    document.getElementById('rc-discount').textContent = '- ' + discount.toLocaleString() + '원';
-    document.getElementById('rc-shipping').textContent = '+ ' + shipping.toLocaleString() + '원';
-    document.getElementById('total-val').textContent = finalTotal.toLocaleString() + '원';
-    document.getElementById('mem-price').textContent = finalTotal.toLocaleString() + '원';
-    document.getElementById('normal-price').textContent = normalTotal.toLocaleString() + '원';
-
-    document.getElementById('pay-btn').textContent = `${finalTotal.toLocaleString()}원 결제하기`;
-    document.getElementById('all-check-box').classList.toggle('checked', cartData.length > 0 && cartData.every(x => x.selected !== false));
+    container.innerHTML = html;
+    subtotalAmount = total;
+    calculateBenefits();
   }
 
-  window.doCheckout = () => {
-    const total = document.getElementById('total-val').textContent;
-    alert(`총 ${total} 결제 창으로 이동합니다.`);
+  window.changeQty = (index, delta) => {
+    if (!cartItems[index]) return;
+    const next = (cartItems[index].quantity || 1) + delta;
+    if (next < 1) return;
+    cartItems[index].quantity = next;
+    saveCartItems();
+    renderCart();
   };
 
-  document.addEventListener('DOMContentLoaded', loadCart);
+  window.removeItem = (index) => {
+    cartItems.splice(index, 1);
+    saveCartItems();
+    renderCart();
+    showToast('상품이 장바구니에서 삭제되었습니다.');
+  };
+
+  window.clearCartConfirm = () => {
+    if (!cartItems.length) return;
+    if (confirm('장바구니의 모든 상품을 비우시겠습니까?')) {
+      cartItems = [];
+      saveCartItems();
+      renderCart();
+      showToast('장바구니가 비워졌습니다.');
+    }
+  };
+
+  // 혜택 계산 (포인트 및 쿠폰)
+  function getBenefitsData() {
+    let points = 2500;
+    let coupons = 3;
+    try {
+      const sp = localStorage.getItem('ryzin_user_points');
+      if (sp !== null) points = Number(sp);
+      const sc = localStorage.getItem('ryzin_user_coupons');
+      if (sc !== null) coupons = Number(sc);
+    } catch(e) {}
+    return { points: Math.max(0, points), coupons: Math.max(0, coupons) };
+  }
+
+  function initCouponOptions() {
+    const select = document.getElementById('cart-coupon-select');
+    const { coupons } = getBenefitsData();
+    if (!select) return;
+
+    if (coupons <= 0) {
+      select.innerHTML = `<option value="0">보유 쿠폰 없음 (0장)</option>`;
+      select.disabled = true;
+      select.style.color = '#94a3b8';
+      select.style.cursor = 'not-allowed';
+      return;
+    }
+
+    select.disabled = false;
+    select.style.color = '#0f172a';
+    select.style.cursor = 'pointer';
+    select.innerHTML = `
+      <option value="0">쿠폰을 선택해주세요 (${coupons}장 보유)</option>
+      <option value="3000">웰컴 첫구매 3,000원 할인 쿠폰</option>
+      <option value="5000">단독 특별 5,000원 할인 쿠폰</option>
+    `;
+  }
+
+  window.calculateBenefits = () => {
+    const { points } = getBenefitsData();
+    const pointsAvailableEl = document.getElementById('cart-available-points');
+    if (pointsAvailableEl) pointsAvailableEl.textContent = points.toLocaleString();
+
+    const couponSelect = document.getElementById('cart-coupon-select');
+    const couponVal = couponSelect ? (parseInt(couponSelect.value, 10) || 0) : 0;
+    couponDiscountAmount = couponVal;
+
+    let afterCoupon = Math.max(0, subtotalAmount - couponDiscountAmount);
+
+    const pointsInput = document.getElementById('cart-points-input');
+    let inputPoints = pointsInput ? (parseInt(pointsInput.value, 10) || 0) : 0;
+    if (inputPoints < 0) inputPoints = 0;
+    if (inputPoints > points) inputPoints = points;
+    if (inputPoints > afterCoupon) inputPoints = afterCoupon;
+
+    if (pointsInput && pointsInput.value !== String(inputPoints) && document.activeElement !== pointsInput) {
+      pointsInput.value = inputPoints;
+    }
+    pointsUsedAmount = inputPoints;
+
+    finalPaymentAmount = Math.max(0, afterCoupon - pointsUsedAmount);
+    updateSummaryUI();
+  };
+  window.calculateCartBenefits = window.calculateBenefits;
+
+  window.applyAllPoints = () => {
+    const { points } = getBenefitsData();
+    const afterCoupon = Math.max(0, subtotalAmount - couponDiscountAmount);
+    const use = Math.min(points, afterCoupon);
+    const input = document.getElementById('cart-points-input');
+    if (input) {
+      input.value = use;
+      window.calculateBenefits();
+    }
+  };
+
+  function updateSummaryUI() {
+    const subtotalEl = document.getElementById('cart-subtotal-price');
+    const discountRow = document.getElementById('cart-discount-row');
+    const discountEl = document.getElementById('cart-discount-price');
+    const totalEl = document.getElementById('cart-total-price');
+
+    if (subtotalEl) subtotalEl.textContent = `${subtotalAmount.toLocaleString()}원`;
+
+    const totalDiscount = couponDiscountAmount + pointsUsedAmount;
+    if (totalDiscount > 0) {
+      if (discountRow) discountRow.style.display = 'flex';
+      if (discountEl) discountEl.textContent = `-${totalDiscount.toLocaleString()}원`;
+    } else {
+      if (discountRow) discountRow.style.display = 'none';
+    }
+
+    if (totalEl) totalEl.textContent = `${finalPaymentAmount.toLocaleString()}원`;
+  }
+
+  // 배송지 프리뷰 및 모달
+  function loadShippingPreview() {
+    let info = {};
+    try { info = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
+    let kakao = {};
+    try { kakao = JSON.parse(localStorage.getItem('ryzin_kakao_user') || '{}'); } catch(e) {}
+
+    const name = info.name || kakao.name || '채이준';
+    const phone = info.phone || kakao.phone || '010-8229-0119';
+    const address = info.address || '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2';
+
+    const nameEl = document.getElementById('cart-shipping-name');
+    const phoneEl = document.getElementById('cart-shipping-phone');
+    const addrEl = document.getElementById('cart-shipping-address');
+
+    if (nameEl) nameEl.textContent = name;
+    if (phoneEl) phoneEl.textContent = phone;
+    if (addrEl) addrEl.textContent = address;
+  }
+
+  window.openAddressModal = () => {
+    let info = {};
+    try { info = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
+    let kakao = {};
+    try { kakao = JSON.parse(localStorage.getItem('ryzin_kakao_user') || '{}'); } catch(e) {}
+
+    document.getElementById('modal-name').value = info.name || kakao.name || '채이준';
+    document.getElementById('modal-phone').value = info.phone || kakao.phone || '010-8229-0119';
+    document.getElementById('modal-base-addr').value = info.baseAddr || '경기도 하남시 미사강변동로 100-1';
+    document.getElementById('modal-detail-addr').value = info.detailAddr || '미사역 파라곤스퀘어 2064-2';
+
+    document.getElementById('checkout-address-modal').style.display = 'flex';
+  };
+
+  window.closeAddressModal = () => {
+    document.getElementById('checkout-address-modal').style.display = 'none';
+  };
+
+  window.saveAddressFromModal = () => {
+    const name = document.getElementById('modal-name').value.trim();
+    const phone = document.getElementById('modal-phone').value.trim();
+    const base = document.getElementById('modal-base-addr').value.trim();
+    const detail = document.getElementById('modal-detail-addr').value.trim();
+
+    if (!name || !phone || !base) {
+      showToast('수령인과 주소 정보를 입력해주세요.');
+      return;
+    }
+
+    const full = base + (detail ? ' ' + detail : '');
+    const info = { name, phone, baseAddr: base, detailAddr: detail, address: full };
+    try {
+      localStorage.setItem('ryzin_saved_order_info', JSON.stringify(info));
+    } catch(e) {}
+
+    loadShippingPreview();
+    window.closeAddressModal();
+    showToast('배송지 정보가 정상 저장되었습니다.');
+  };
+
+  // 다음 우편번호 검색
+  window.openPostcodeSearch = () => {
+    if (typeof daum === 'undefined' || !daum.Postcode) {
+      showToast('주소 검색 서비스를 불러오는 중입니다.');
+      return;
+    }
+    const layer = document.getElementById('daum-postcode-layer-wrap');
+    const box = document.getElementById('daum-postcode-embed-box');
+    if (!layer || !box) return;
+
+    box.innerHTML = '';
+    layer.style.display = 'flex';
+
+    new daum.Postcode({
+      oncomplete: function(data) {
+        let fullAddr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+        let extra = '';
+        if (data.userSelectedType === 'R') {
+          if (data.bname !== '') extra += data.bname;
+          if (data.buildingName !== '') extra += (extra !== '' ? ', ' + data.buildingName : data.buildingName);
+          if (extra !== '') fullAddr += ' (' + extra + ')';
+        }
+        window.closePostcodeLayer();
+        const baseInput = document.getElementById('modal-base-addr');
+        const detailInput = document.getElementById('modal-detail-addr');
+        if (baseInput) baseInput.value = fullAddr;
+        if (detailInput) setTimeout(() => detailInput.focus(), 150);
+      },
+      width: '100%',
+      height: '100%'
+    }).embed(box);
+  };
+
+  window.closePostcodeLayer = () => {
+    const layer = document.getElementById('daum-postcode-layer-wrap');
+    if (layer) layer.style.display = 'none';
+  };
+
+  // 결제 진행
+  window.handleCheckout = () => {
+    if (!cartItems.length) {
+      showToast('장바구니에 상품을 담아주세요.');
+      return;
+    }
+
+    let info = {};
+    try { info = JSON.parse(localStorage.getItem('ryzin_saved_order_info') || '{}'); } catch(e) {}
+    const name = info.name || '채이준';
+    const phone = info.phone || '010-8229-0119';
+    const address = info.address || '경기도 하남시 미사강변동로 파라곤스퀘어 100-1 2064-2';
+
+    const orderTitle = cartItems.length > 1 
+      ? `${cartItems[0].name || '상품'} 외 ${cartItems.length - 1}건`
+      : (cartItems[0].name || '상품');
+
+    // 0원 결제 (전액 포인트/쿠폰) 처리
+    if (finalPaymentAmount <= 0) {
+      if (!confirm('포인트/쿠폰 혜택으로 전액 결제(0원)를 진행하시겠습니까?')) return;
+      
+      const newOrder = {
+        id: 'ORDER-FREE-' + Date.now(),
+        items: [...cartItems],
+        totalPrice: 0,
+        subtotalPrice: subtotalAmount,
+        discountPrice: (couponDiscountAmount + pointsUsedAmount),
+        customer_name: name,
+        customer_phone: phone,
+        address: address,
+        created_at: new Date().toISOString(),
+        paymentMethod: '포인트/쿠폰 전액결제',
+        status: '결제완료'
+      };
+
+      try {
+        let history = JSON.parse(localStorage.getItem('ryzin_my_orders_history') || '[]');
+        history.unshift(newOrder);
+        localStorage.setItem('ryzin_my_orders_history', JSON.stringify(history));
+      } catch(e) {}
+
+      cartItems = [];
+      saveCartItems();
+      renderCart();
+      showToast('포인트/쿠폰 혜택으로 주문이 정상 완료되었습니다!');
+      return;
+    }
+
+    // 페이앱 결제 진행
+    const btn = document.getElementById('btn-checkout');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span>결제창 연결 중...</span>`;
+    }
+
+    fetch('/api/payapp-pay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        goodname: orderTitle,
+        price: finalPaymentAmount,
+        recvphone: phone.replace(/[^0-9]/g, ''),
+        memo: `주문자: ${name} / 배송지: ${address}`,
+        returnurl: window.location.href
+      })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.payurl) {
+        window.location.href = res.payurl;
+      } else {
+        showToast('결제 모듈을 연결하지 못했습니다. 잠시 후 다시 시도해주세요.');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>결제하기</span>`;
+        }
+      }
+    })
+    .catch(() => {
+      showToast('결제 요청 중 통신 오류가 발생했습니다.');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span>결제하기</span>`;
+      }
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initCouponOptions();
+    renderCart();
+    loadShippingPreview();
+  });
 </script>
+
 </body>
 </html>
