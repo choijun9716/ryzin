@@ -275,6 +275,9 @@ export function renderLogin() {
     let currentSessionToken = null;
     let timerInterval = null;
     let remainingSeconds = 300;
+    let isSubmittingLogin = false;
+    let resendCooldownTimer = null;
+    let resendCooldownSeconds = 0;
 
     function startTimer(seconds = 300) {
       if (timerInterval) clearInterval(timerInterval);
@@ -309,8 +312,16 @@ export function renderLogin() {
     if (loginForm) {
       loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const id = document.getElementById('login-id').value.trim();
-        const pw = document.getElementById('login-pw').value;
+        if (isSubmittingLogin) return;
+        isSubmittingLogin = true;
+
+        const idInput = document.getElementById('login-id');
+        const pwInput = document.getElementById('login-pw');
+        const id = idInput ? idInput.value.trim() : '';
+        const pw = pwInput ? pwInput.value : '';
+
+        if (idInput) idInput.disabled = true;
+        if (pwInput) pwInput.disabled = true;
 
         const submitBtn = document.getElementById('btn-login-submit');
         const originalText = submitBtn ? submitBtn.textContent : '로그인';
@@ -360,10 +371,13 @@ export function renderLogin() {
           console.error('[Login] 오류 발생:', err);
           showError('로그인 처리 중 네트워크 오류가 발생했습니다.');
         } finally {
+          if (idInput) idInput.disabled = false;
+          if (pwInput) pwInput.disabled = false;
           if (submitBtn) {
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
           }
+          isSubmittingLogin = false;
         }
       });
     }
@@ -404,6 +418,7 @@ export function renderLogin() {
 
           if (resp.ok && result.success) {
             if (timerInterval) clearInterval(timerInterval);
+            if (resendCooldownTimer) clearInterval(resendCooldownTimer);
             handleLoginSuccess(result.token, result.user);
           } else {
             showError(result.error || '인증코드가 일치하지 않습니다.');
@@ -431,6 +446,11 @@ export function renderLogin() {
           return;
         }
 
+        if (resendCooldownSeconds > 0) {
+          showError(`${resendCooldownSeconds}초 후에 재발송할 수 있습니다.`);
+          return;
+        }
+
         btnResendOtp.textContent = '발송 중...';
         btnResendOtp.disabled = true;
 
@@ -452,12 +472,29 @@ export function renderLogin() {
             otpInput.value = '';
             otpInput.focus();
             showSuccess('새 인증코드가 사내 메일로 재발송되었습니다.');
+
+            // 20초 쿨다운 타이머 시작
+            resendCooldownSeconds = 20;
+            btnResendOtp.disabled = true;
+            btnResendOtp.textContent = `재발송 (20s)`;
+            if (resendCooldownTimer) clearInterval(resendCooldownTimer);
+            resendCooldownTimer = setInterval(() => {
+              resendCooldownSeconds -= 1;
+              if (resendCooldownSeconds <= 0) {
+                clearInterval(resendCooldownTimer);
+                btnResendOtp.disabled = false;
+                btnResendOtp.textContent = '인증코드 재발송';
+              } else {
+                btnResendOtp.textContent = `재발송 (${resendCooldownSeconds}s)`;
+              }
+            }, 1000);
           } else {
             showError(result.error || '인증코드 재발송에 실패했습니다.');
+            btnResendOtp.textContent = '인증코드 재발송';
+            btnResendOtp.disabled = false;
           }
         } catch (err) {
           showError('재발송 요청 중 네트워크 오류가 발생했습니다.');
-        } finally {
           btnResendOtp.textContent = '인증코드 재발송';
           btnResendOtp.disabled = false;
         }
@@ -468,6 +505,12 @@ export function renderLogin() {
     if (btnBack) {
       btnBack.addEventListener('click', () => {
         if (timerInterval) clearInterval(timerInterval);
+        if (resendCooldownTimer) clearInterval(resendCooldownTimer);
+        resendCooldownSeconds = 0;
+        if (btnResendOtp) {
+          btnResendOtp.textContent = '인증코드 재발송';
+          btnResendOtp.disabled = false;
+        }
         slider.style.transform = 'translateX(0)';
         currentSessionToken = null;
         if (otpInput) otpInput.value = '';

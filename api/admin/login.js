@@ -59,6 +59,9 @@ function getRecipientEmail(user) {
   return 'choijun@ryzincorp.com'; // 기본 사내 보안 담당자 메일로 전달
 }
 
+// 서버 사이드 OTP 중복 발송 방지 (30초 쿨다운 메모리 맵)
+const activeOtpSessions = new Map(); // key: userId, value: { timestamp, sessionToken, email }
+
 // 네이버웍스 SMTP 발송 함수
 async function sendEmailOtp(toEmail, code) {
   const host = process.env.SMTP_HOST || 'smtp.worksmobile.com';
@@ -368,6 +371,9 @@ module.exports.default = async function handler(req, res) {
         failReason: null,
       });
 
+      // 성공 시 활성 OTP 세션 정리
+      activeOtpSessions.delete(userId);
+
       return res.status(200).json({
         success: true,
         token,
@@ -420,6 +426,17 @@ module.exports.default = async function handler(req, res) {
 
       const user = users[0];
       const targetEmail = getRecipientEmail(user);
+
+      // 재발송 20초 쿨다운 검사
+      const now = Date.now();
+      const existingSession = activeOtpSessions.get(userId);
+      if (existingSession && (now - existingSession.timestamp) < 20 * 1000) {
+        const remainingSec = Math.ceil((20000 - (now - existingSession.timestamp)) / 1000);
+        return res.status(429).json({
+          error: `인증번호는 ${remainingSec}초 후에 다시 발송할 수 있습니다.`,
+        });
+      }
+
       const newCode = Math.floor(100000 + Math.random() * 900000).toString();
       const newExp = Date.now() + 5 * 60 * 1000;
       const newSig = crypto
@@ -432,6 +449,12 @@ module.exports.default = async function handler(req, res) {
       ).toString('base64url');
 
       await sendEmailOtp(targetEmail, newCode);
+
+      activeOtpSessions.set(userId, {
+        timestamp: Date.now(),
+        sessionToken: newSessionToken,
+        email: targetEmail,
+      });
 
       return res.status(200).json({
         success: true,
@@ -542,6 +565,20 @@ module.exports.default = async function handler(req, res) {
       });
     }
 
+    // 중복 발송 방지: 30초 이내에 이미 발송된 활성 세션이 있다면 새 이메일을 보내지 않고 기존 세션 반환
+    const now = Date.now();
+    const existingOtp = activeOtpSessions.get(user.id);
+    if (existingOtp && (now - existingOtp.timestamp) < 30 * 1000) {
+      return res.status(200).json({
+        success: true,
+        step: 'otp_required',
+        userId: user.id,
+        email: maskEmail(existingOtp.email),
+        sessionToken: existingOtp.sessionToken,
+        message: '이미 인증번호가 발송되었습니다. 수신된 메일함을 확인해주세요.',
+      });
+    }
+
     // 6자리 일회용 보안코드 생성
     const codeGen = Math.floor(100000 + Math.random() * 900000).toString();
     const exp = Date.now() + 5 * 60 * 1000; // 5분 유효
@@ -559,6 +596,11 @@ module.exports.default = async function handler(req, res) {
     // 네이버웍스 SMTP로 이메일 발송
     try {
       await sendEmailOtp(targetEmail, codeGen);
+      activeOtpSessions.set(user.id, {
+        timestamp: Date.now(),
+        sessionToken: sessionTokenPayload,
+        email: targetEmail,
+      });
     } catch (mailErr) {
       console.error('[Admin Login] 이메일 발송 실패:', mailErr);
       return res.status(500).json({
