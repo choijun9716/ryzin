@@ -2279,23 +2279,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const priceEl = card.querySelector('.banner-price');
                 if (priceEl) priceEl.textContent = priceDisplay;
 
-                let discEl = card.querySelector('.banner-discount-rate');
-                if (discountRate > 0) {
-                  if (discEl) {
-                    discEl.textContent = `${discountRate}%`;
-                    discEl.style.display = 'inline';
-                  } else {
-                    const priceRow = card.querySelector('.banner-price-row');
-                    if (priceRow) {
-                      discEl = document.createElement('span');
-                      discEl.className = 'banner-discount-rate';
-                      discEl.style.cssText = 'font-size:12.5px; font-weight:800; color:#ef4444; margin-left:4px; letter-spacing:-0.3px; line-height:1;';
-                      discEl.textContent = `${discountRate}%`;
-                      priceRow.appendChild(discEl);
+                // 가격 옆의 기존 할인율 텍스트 제거
+                const oldDiscEl = card.querySelector('.banner-discount-rate');
+                if (oldDiscEl) oldDiscEl.remove();
+
+                // 상품 이미지 좌측 상단 직사각형 미니 뱃지 동기화
+                const imgBox = card.querySelector('.banner-img-box');
+                if (imgBox) {
+                  let discBadge = imgBox.querySelector('.banner-discount-badge');
+                  if (discountRate > 0) {
+                    if (discBadge) {
+                      discBadge.textContent = `${discountRate}%`;
+                      discBadge.style.display = 'inline-flex';
+                    } else {
+                      discBadge = document.createElement('span');
+                      discBadge.className = 'banner-discount-badge';
+                      discBadge.style.cssText = 'position:absolute; top:3px; left:3px; padding:1.5px 4px; border-radius:3px; background:#ef4444; color:#ffffff; font-size:9px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; line-height:1.1; letter-spacing:-0.3px; z-index:2; pointer-events:none;';
+                      discBadge.textContent = `${discountRate}%`;
+                      imgBox.appendChild(discBadge);
                     }
+                  } else if (discBadge) {
+                    discBadge.style.display = 'none';
                   }
-                } else if (discEl) {
-                  discEl.style.display = 'none';
                 }
 
                 card.onclick = (e) => {
@@ -2312,11 +2317,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cloneCard = existingCards[displayProducts.length];
                 const firstItem = displayProducts[0];
                 const firstPNum = Number((firstItem.price || '').toString().replace(/[^0-9]/g, ''));
+                const firstNpNum = Number((firstItem.normalPrice || firstItem.originalPrice || '').toString().replace(/[^0-9]/g, ''));
+                let firstDiscRate = parseInt(firstItem.discountRate, 10) || 0;
+                if (!firstDiscRate && firstNpNum > firstPNum && firstPNum > 0) {
+                  firstDiscRate = Math.round(((firstNpNum - firstPNum) / firstNpNum) * 100);
+                }
                 const firstPriceDisplay = firstPNum > 0 ? `${firstPNum.toLocaleString()}원` : (firstItem.price === '0' || firstItem.price === 0 ? '무료' : '가격 준비중');
                 const clonePrice = cloneCard.querySelector('.banner-price');
                 if (clonePrice) clonePrice.textContent = firstPriceDisplay;
                 const cloneTitle = cloneCard.querySelector('.banner-title');
                 if (cloneTitle) cloneTitle.textContent = firstItem.name;
+                const cloneOldDisc = cloneCard.querySelector('.banner-discount-rate');
+                if (cloneOldDisc) cloneOldDisc.remove();
+
+                const cloneImgBox = cloneCard.querySelector('.banner-img-box');
+                if (cloneImgBox) {
+                  let cloneDiscBadge = cloneImgBox.querySelector('.banner-discount-badge');
+                  if (firstDiscRate > 0) {
+                    if (cloneDiscBadge) {
+                      cloneDiscBadge.textContent = `${firstDiscRate}%`;
+                      cloneDiscBadge.style.display = 'inline-flex';
+                    } else {
+                      cloneDiscBadge = document.createElement('span');
+                      cloneDiscBadge.className = 'banner-discount-badge';
+                      cloneDiscBadge.style.cssText = 'position:absolute; top:3px; left:3px; padding:1.5px 4px; border-radius:3px; background:#ef4444; color:#ffffff; font-size:9px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; line-height:1.1; letter-spacing:-0.3px; z-index:2; pointer-events:none;';
+                      cloneDiscBadge.textContent = `${firstDiscRate}%`;
+                      cloneImgBox.appendChild(cloneDiscBadge);
+                    }
+                  } else if (cloneDiscBadge) {
+                    cloneDiscBadge.style.display = 'none';
+                  }
+                }
               }
             } else {
               // 최초 생성 또는 카드 수 변경 시에만 DOM 재빌드
@@ -2348,21 +2379,21 @@ document.addEventListener('DOMContentLoaded', () => {
                   badgeHtml = '<span class="banner-badge" style="position:absolute; top:auto; bottom:2px; left:2px; right:2px; background:#e11d48; color:#ffffff; font-weight:800; text-align:center; border-radius:3px; padding:1px 0; font-size:8.5px; line-height:1.2;">깜짝딜</span>';
                 }
 
-                const discountTextHtml = discountRate > 0
-                  ? `<span class="banner-discount-rate" style="font-size:12.5px; font-weight:800; color:#ef4444; margin-left:4px; letter-spacing:-0.3px; line-height:1;">${discountRate}%</span>`
+                const discountBadgeHtml = discountRate > 0
+                  ? `<span class="banner-discount-badge" style="position:absolute; top:3px; left:3px; padding:1.5px 4px; border-radius:3px; background:#ef4444; color:#ffffff; font-size:9px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; line-height:1.1; letter-spacing:-0.3px; z-index:2; pointer-events:none;">${discountRate}%</span>`
                   : '';
 
-                // 롤링 배너는 썸네일 원형 뱃지 없이 깨끗하게 유지하고, 가격 옆에 할인율 텍스트 노출
+                // 롤링 배너: 상품 이미지 좌측 상단에 직사각형 미니 뱃지 표출 및 가격만 노출
                 card.innerHTML = `
                   <div class="banner-img-box">
                     <img src="${item.image}" alt="product">
+                    ${discountBadgeHtml}
                     ${badgeHtml}
                   </div>
                   <div class="banner-info-box">
                     <div class="banner-title">${item.dealEndTime && item.dealEndTime > Date.now() ? '<span style="color:#e11d48; font-weight:800; margin-right:4px;">[깜짝딜]</span>' : ''}${item.name}</div>
                     <div class="banner-price-row" style="display:flex; align-items:center; white-space:nowrap;">
                       <span class="banner-price">${priceDisplay}</span>
-                      ${discountTextHtml}
                     </div>
                   </div>
                 `;
