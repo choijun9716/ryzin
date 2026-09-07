@@ -5066,6 +5066,42 @@ window.handleMoreMenuAction = function(action, e) {
     if (typeof window.toggleStreamSound === 'function') {
       window.toggleStreamSound();
     }
+  } else if (action === 'share') {
+    if (typeof window.shareLiveBroadcast === 'function') {
+      window.shareLiveBroadcast();
+    }
+  }
+};
+
+// 상단 더보기 내 라이브 방송 공유하기 함수
+window.shareLiveBroadcast = function() {
+  const currentConfig = JSON.parse(localStorage.getItem(`ryzin_live_config_${LIVE_ID}`) || '{}');
+  const liveTitle = currentConfig.title || document.title || '라이브 방송';
+  const brandName = currentConfig.brandName || 'RYZIN';
+  const liveUrl = window.location.href.split('#')[0];
+
+  if (navigator.share) {
+    navigator.share({
+      title: `${brandName} - ${liveTitle}`,
+      text: `${brandName} 라이브 특가 방송에 참여해보세요!`,
+      url: liveUrl
+    }).catch(() => {});
+  } else {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(liveUrl).then(() => {
+        if (typeof showToast === 'function') {
+          showToast('라이브 링크가 복사되었습니다.');
+        } else if (typeof window.showWhiteToast === 'function') {
+          window.showWhiteToast('라이브 링크가 복사되었습니다.');
+        } else {
+          alert('라이브 링크가 복사되었습니다.');
+        }
+      }).catch(() => {
+        prompt('아래 라이브 링크를 복사하여 공유하세요:', liveUrl);
+      });
+    } else {
+      prompt('아래 라이브 링크를 복사하여 공유하세요:', liveUrl);
+    }
   }
 };
 
